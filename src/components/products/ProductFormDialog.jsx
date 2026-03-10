@@ -117,7 +117,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
   return (
-    <>
+    <React.Fragment>
     {showCamera && (
       <BarcodeCameraScanner
         onDetected={(code) => {
