@@ -117,6 +117,16 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
   return (
+    <>
+    {showCamera && (
+      <BarcodeCameraScanner
+        onDetected={(code) => {
+          updateField("barcode", code);
+          setShowCamera(false);
+        }}
+        onClose={() => setShowCamera(false)}
+      />
+    )}
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
