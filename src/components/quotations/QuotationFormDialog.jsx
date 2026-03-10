@@ -21,6 +21,9 @@ const PAYMENT_METHODS = [
 export default function QuotationFormDialog({ open, onOpenChange, quotation, onSaved }) {
   const barcodeRef = useRef(null);
   const [products, setProducts] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [clientSearch, setClientSearch] = useState("");
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState("");
   const [barcodeNotFound, setBarcodeNotFound] = useState(false);
   const [applyTax, setApplyTax] = useState(true);
