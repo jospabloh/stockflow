@@ -31,6 +31,7 @@ export default function Settings() {
   const [suppliers, setSuppliers] = useState([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   // Category/Supplier form
   const [catFormOpen, setCatFormOpen] = useState(false);
