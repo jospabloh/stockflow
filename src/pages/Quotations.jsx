@@ -28,9 +28,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Search, MoreHorizontal, Pencil, ShoppingCart, Trash2 } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Pencil, ShoppingCart, FileDown } from "lucide-react";
 import moment from "moment";
 import QuotationFormDialog from "@/components/quotations/QuotationFormDialog";
+import { generateQuotationPDF } from "@/components/quotations/QuotationPDF";
 
 const statusConfig = {
   draft: { label: "Borrador", color: "bg-slate-100 text-slate-700" },
