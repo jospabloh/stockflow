@@ -48,6 +48,9 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       setForm({ product_id: "", type: "entry", quantity: 1, unit_price: 0, reason: "", reference: "" });
       setSelectedProduct(null);
       setBarcodeInput("");
+      setBarcodeNotFound(false);
+      // Autofocus en el campo de código de barras al abrir
+      setTimeout(() => barcodeRef.current?.focus(), 100);
     }
   }, [open]);
 
