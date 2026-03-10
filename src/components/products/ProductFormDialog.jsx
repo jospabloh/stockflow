@@ -33,6 +33,8 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   });
   const [saving, setSaving] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
   const lastKeystroke = useRef(Date.now());
   const barcodeBuffer = useRef("");
 
