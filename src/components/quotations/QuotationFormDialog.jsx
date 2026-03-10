@@ -172,9 +172,45 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
         <div className="space-y-5 pt-2">
           {/* Client info */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
+            <div className="relative">
               <Label>Cliente *</Label>
-              <Input value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })} placeholder="Nombre del cliente" />
+              <Input
+                value={clientSearch || form.client_name}
+                onChange={(e) => {
+                  setClientSearch(e.target.value);
+                  setForm({ ...form, client_name: e.target.value, client_email: "", client_phone: "" });
+                  setShowClientSuggestions(true);
+                }}
+                onFocus={() => setShowClientSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowClientSuggestions(false), 150)}
+                placeholder="Buscar o escribir cliente..."
+              />
+              {showClientSuggestions && (clientSearch || form.client_name) && (
+                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                  {clients
+                    .filter(c => c.name.toLowerCase().includes((clientSearch || form.client_name).toLowerCase()))
+                    .map(c => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        className="w-full text-left px-3 py-2 hover:bg-indigo-50 text-sm border-b border-slate-50 last:border-0"
+                        onMouseDown={() => {
+                          setForm({ ...form, client_name: c.name, client_email: c.email || "", client_phone: c.phone || "" });
+                          setClientSearch("");
+                          setShowClientSuggestions(false);
+                        }}
+                      >
+                        <p className="font-medium text-slate-700">{c.name}</p>
+                        {(c.email || c.phone) && (
+                          <p className="text-xs text-slate-400">{[c.email, c.phone].filter(Boolean).join(" · ")}</p>
+                        )}
+                      </button>
+                    ))}
+                  {clients.filter(c => c.name.toLowerCase().includes((clientSearch || form.client_name).toLowerCase())).length === 0 && (
+                    <p className="text-sm text-slate-400 px-3 py-2">Sin coincidencias — se guardará como nuevo</p>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <Label>Email</Label>
