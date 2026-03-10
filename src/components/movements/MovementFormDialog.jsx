@@ -27,7 +27,9 @@ const TYPES = [
 ];
 
 export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
+  const barcodeRef = useRef(null);
   const [products, setProducts] = useState([]);
+  const [barcodeNotFound, setBarcodeNotFound] = useState(false);
   const [form, setForm] = useState({
     product_id: "",
     type: "entry",
