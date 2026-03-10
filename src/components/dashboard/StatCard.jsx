@@ -1,0 +1,34 @@
+import React from "react";
+import { Card } from "@/components/ui/card";
+
+export default function StatCard({ title, value, subtitle, icon: Icon, color = "indigo", trend }) {
+  const colors = {
+    indigo: "from-indigo-500 to-indigo-600 shadow-indigo-200",
+    cyan: "from-cyan-500 to-cyan-600 shadow-cyan-200",
+    emerald: "from-emerald-500 to-emerald-600 shadow-emerald-200",
+    amber: "from-amber-500 to-amber-600 shadow-amber-200",
+    rose: "from-rose-500 to-rose-600 shadow-rose-200",
+  };
+
+  return (
+    <Card className="relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
+      <div className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">{title}</p>
+            <p className="text-3xl font-bold text-slate-800">{value}</p>
+            {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
+            {trend && (
+              <p className={`text-xs font-medium ${trend > 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}% vs periodo anterior
+              </p>
+            )}
+          </div>
+          <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${colors[color]} shadow-lg flex items-center justify-center`}>
+            <Icon className="h-6 w-6 text-white" />
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
