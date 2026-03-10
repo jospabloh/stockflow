@@ -245,5 +245,6 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
