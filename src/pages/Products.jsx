@@ -85,15 +85,9 @@ export default function Products() {
       p.name, p.sku || "", p.barcode || "", p.purchase_price || 0, p.sale_price, p.stock, p.unit || "pieza"
     ]);
     const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "productos.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    window.open(url, "_blank");
   };
 
   if (loading) {
