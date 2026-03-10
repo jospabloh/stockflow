@@ -31,6 +31,9 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
     status: "active",
   });
   const [saving, setSaving] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const lastKeystroke = React.useRef(Date.now());
+  const barcodeBuffer = React.useRef("");
 
   useEffect(() => {
     Promise.all([
