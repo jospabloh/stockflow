@@ -39,6 +39,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   useEffect(() => {
     if (open) {
       base44.entities.Product.filter({ status: "active" }).then(setProducts);
+      base44.entities.Client.filter({ status: "active" }).then(setClients);
       if (quotation) {
         setForm({
           client_name: quotation.client_name || "",

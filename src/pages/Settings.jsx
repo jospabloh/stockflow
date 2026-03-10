@@ -299,6 +299,11 @@ export default function Settings() {
           </Card>
         </TabsContent>
 
+        {/* Clients */}
+        <TabsContent value="clients">
+          <ClientsManager />
+        </TabsContent>
+
         {/* Import */}
         <TabsContent value="import">
           <ImportProducts />
