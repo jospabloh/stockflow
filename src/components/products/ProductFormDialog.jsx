@@ -138,15 +138,27 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
           <div>
             <Label>Código de barras</Label>
-            <div className="relative">
-              <Input
-                value={form.barcode}
-                onChange={(e) => updateField("barcode", e.target.value)}
-                onKeyDown={handleBarcodeKeyDown}
-                placeholder="Escanee o ingrese"
-                className={scanning ? "border-emerald-400 ring-1 ring-emerald-300" : ""}
-              />
-              <ScanBarcode className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${scanning ? "text-emerald-500 animate-pulse" : "text-slate-300"}`} />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  value={form.barcode}
+                  onChange={(e) => updateField("barcode", e.target.value)}
+                  onKeyDown={handleBarcodeKeyDown}
+                  placeholder={isMobile ? "Toca el ícono para escanear" : "Escanee con pistola o ingrese"}
+                  className={scanning ? "border-emerald-400 ring-1 ring-emerald-300 pr-8" : "pr-8"}
+                />
+                <ScanBarcode className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${scanning ? "text-emerald-500 animate-pulse" : "text-slate-300"}`} />
+              </div>
+              <Button
+                type="button"
+                variant={isMobile ? "default" : "outline"}
+                size="icon"
+                onClick={() => setShowCamera(true)}
+                title="Escanear con cámara"
+                className={isMobile ? "bg-indigo-600 hover:bg-indigo-700" : ""}
+              >
+                <Camera className="h-4 w-4" />
+              </Button>
             </div>
           </div>
           <div>
