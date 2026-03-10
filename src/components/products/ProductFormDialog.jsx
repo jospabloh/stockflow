@@ -126,11 +126,25 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
           <div>
             <Label>SKU</Label>
-            <Input value={form.sku} onChange={(e) => updateField("sku", e.target.value)} placeholder="Código SKU" />
+            <div className="flex gap-2">
+              <Input value={form.sku} onChange={(e) => updateField("sku", e.target.value)} placeholder="Código SKU" />
+              <Button type="button" variant="outline" size="icon" onClick={generateSKU} title="Generar SKU automático">
+                <Wand2 className="h-4 w-4 text-indigo-500" />
+              </Button>
+            </div>
           </div>
           <div>
             <Label>Código de barras</Label>
-            <Input value={form.barcode} onChange={(e) => updateField("barcode", e.target.value)} placeholder="Escanee o ingrese" />
+            <div className="relative">
+              <Input
+                value={form.barcode}
+                onChange={(e) => updateField("barcode", e.target.value)}
+                onKeyDown={handleBarcodeKeyDown}
+                placeholder="Escanee o ingrese"
+                className={scanning ? "border-emerald-400 ring-1 ring-emerald-300" : ""}
+              />
+              <ScanBarcode className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${scanning ? "text-emerald-500 animate-pulse" : "text-slate-300"}`} />
+            </div>
           </div>
           <div>
             <Label>Categoría</Label>
