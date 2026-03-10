@@ -18,7 +18,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Save, ScanLine } from "lucide-react";
-import { useRef, useEffect as useEffectRef } from "react";
 
 const TYPES = [
   { value: "entry", label: "Entrada (Compra)" },
