@@ -64,6 +64,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
         setApplyTax(true);
         setTaxRate(16);
         setTaxLabel("IVA");
+        setClientSearch("");
       }
       setBarcodeInput("");
       setBarcodeNotFound(false);
