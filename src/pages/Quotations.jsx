@@ -171,6 +171,9 @@ export default function Quotations() {
                             <DropdownMenuItem onClick={() => handleEdit(q)}>
                               <Pencil className="h-4 w-4 mr-2" /> Editar
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => generateQuotationPDF(q, settings)}>
+                              <FileDown className="h-4 w-4 mr-2" /> Descargar PDF
+                            </DropdownMenuItem>
                             {q.status !== "converted" && q.status !== "cancelled" && (
                               <DropdownMenuItem onClick={() => setConvertQuotation(q)}>
                                 <ShoppingCart className="h-4 w-4 mr-2" /> Convertir en Venta
