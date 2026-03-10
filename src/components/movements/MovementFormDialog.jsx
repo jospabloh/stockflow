@@ -120,17 +120,23 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         </DialogHeader>
 
         {/* Barcode scanner input */}
-        <div className="flex gap-2 pt-2">
-          <Input
-            placeholder="Escanee código de barras o SKU..."
-            value={barcodeInput}
-            onChange={(e) => setBarcodeInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleBarcodeSearch()}
-            className="flex-1"
-          />
-          <Button variant="outline" onClick={handleBarcodeSearch}>
-            <ScanLine className="h-4 w-4" />
-          </Button>
+        <div className="space-y-1 pt-2">
+          <div className="flex gap-2">
+            <Input
+              ref={barcodeRef}
+              placeholder="🔫 Escanee código de barras o SKU..."
+              value={barcodeInput}
+              onChange={(e) => { setBarcodeInput(e.target.value); setBarcodeNotFound(false); }}
+              onKeyDown={(e) => e.key === "Enter" && handleBarcodeSearch()}
+              className={`flex-1 ${barcodeNotFound ? "border-red-400 focus-visible:ring-red-300" : ""}`}
+            />
+            <Button variant="outline" onClick={handleBarcodeSearch}>
+              <ScanLine className="h-4 w-4" />
+            </Button>
+          </div>
+          {barcodeNotFound && (
+            <p className="text-xs text-red-500 pl-1">Código no encontrado. Verifica el SKU o código de barras del producto.</p>
+          )}
         </div>
 
         <div className="space-y-4">
