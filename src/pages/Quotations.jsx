@@ -64,10 +64,16 @@ export default function Quotations() {
 
   useEffect(() => { loadData(); }, []);
 
-  const filtered = quotations.filter((q) =>
-    q.client_name?.toLowerCase().includes(search.toLowerCase()) ||
-    q.folio?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = quotations.filter((q) => {
+    const s = search.toLowerCase();
+    return (
+      q.client_name?.toLowerCase().includes(s) ||
+      q.folio?.toLowerCase().includes(s) ||
+      q.client_email?.toLowerCase().includes(s) ||
+      q.client_phone?.toLowerCase().includes(s) ||
+      statusConfig[q.status]?.label?.toLowerCase().includes(s)
+    );
+  });
 
   const handleConvertToSale = async () => {
     if (!convertQuotation) return;
