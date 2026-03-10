@@ -71,6 +71,34 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
     }
   }, [product, open]);
 
+  const generateSKU = async () => {
+    const products = await base44.entities.Product.list();
+    const usedSKUs = new Set(products.map(p => p.sku).filter(Boolean));
+    let sku;
+    do {
+      const rand = Math.random().toString(36).substring(2, 7).toUpperCase();
+      sku = `SKU-${rand}`;
+    } while (usedSKUs.has(sku));
+    updateField("sku", sku);
+  };
+
+  const handleBarcodeKeyDown = (e) => {
+    const now = Date.now();
+    if (now - lastKeystroke.current < 50) {
+      // Fast input = scanner
+      barcodeBuffer.current += e.key === "Enter" ? "" : e.key;
+      setScanning(true);
+      clearTimeout(window._scannerTimeout);
+      window._scannerTimeout = setTimeout(() => {
+        setScanning(false);
+        barcodeBuffer.current = "";
+      }, 300);
+    } else {
+      setScanning(false);
+    }
+    lastKeystroke.current = now;
+  };
+
   const handleSave = async () => {
     setSaving(true);
     if (product) {
