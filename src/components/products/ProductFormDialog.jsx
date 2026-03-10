@@ -17,7 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, X, ScanBarcode, Wand2 } from "lucide-react";
+import { Save, X, ScanBarcode, Wand2, Camera } from "lucide-react";
+import BarcodeCameraScanner from "./BarcodeCameraScanner";
 
 const UNITS = ["pieza", "kg", "litro", "metro", "caja", "paquete"];
 
