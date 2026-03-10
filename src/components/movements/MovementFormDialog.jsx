@@ -55,16 +55,21 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   }, [open]);
 
   const handleBarcodeSearch = () => {
+    if (!barcodeInput.trim()) return;
     const found = products.find(
-      (p) => p.barcode === barcodeInput || p.sku === barcodeInput
+      (p) => p.barcode === barcodeInput.trim() || p.sku === barcodeInput.trim()
     );
     if (found) {
+      setBarcodeNotFound(false);
       setSelectedProduct(found);
       setForm((prev) => ({
         ...prev,
         product_id: found.id,
         unit_price: prev.type === "exit" ? found.sale_price : found.purchase_price,
       }));
+      setBarcodeInput("");
+    } else {
+      setBarcodeNotFound(true);
     }
   };
 
