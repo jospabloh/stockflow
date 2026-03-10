@@ -151,6 +151,21 @@ export default function Layout({ children, currentPageName }) {
         <main className="flex-1 p-4 lg:p-8 page-transition">
           {children}
         </main>
+
+        {/* Footer */}
+        <footer className="border-t border-slate-100 bg-white/60 px-4 lg:px-8 py-3 text-center space-y-1">
+          <p className="text-xs text-slate-500">
+            © {new Date().getFullYear()} <span className="font-medium text-slate-600">ACACIA Consultoría en Informática y Cómputo</span> — Todos los derechos reservados.
+          </p>
+          <p className="text-xs text-slate-400">
+            Licencia registrada a: <span className="font-medium text-slate-500">{user?.email || "—"}</span>
+            {" · "}Soporte:{" "}
+            <a href="mailto:soporte@acaciaco.com.mx" className="text-indigo-500 hover:underline">soporte@acaciaco.com.mx</a>
+            {" · "}WhatsApp:{" "}
+            <a href="https://wa.me/524498958291" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline">+52 449 895 8291</a>
+          </p>
+          <p className="text-[10px] text-slate-300 tracking-wide uppercase">by ACACIA Consultoría</p>
+        </footer>
       </div>
     </div>
   );
