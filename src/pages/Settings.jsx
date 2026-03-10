@@ -113,6 +113,16 @@ export default function Settings() {
 
   const updateSettings = (field, value) => setSettings((prev) => ({ ...prev, [field]: value }));
 
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingLogo(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    updateSettings("logo_url", file_url);
+    setUploadingLogo(false);
+    toast.success("Logo subido correctamente");
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
