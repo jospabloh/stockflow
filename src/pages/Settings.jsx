@@ -128,6 +128,7 @@ export default function Settings() {
           <TabsTrigger value="categories"><Palette className="h-4 w-4 mr-1" /> Categorías</TabsTrigger>
           <TabsTrigger value="suppliers"><Users className="h-4 w-4 mr-1" /> Proveedores</TabsTrigger>
           <TabsTrigger value="sat"><FileText className="h-4 w-4 mr-1" /> SAT 4.0</TabsTrigger>
+          <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>
         </TabsList>
 
         {/* Business Settings */}
@@ -257,6 +258,11 @@ export default function Settings() {
               </TableBody>
             </Table>
           </Card>
+        </TabsContent>
+
+        {/* Import */}
+        <TabsContent value="import">
+          <ImportProducts />
         </TabsContent>
 
         {/* SAT 4.0 */}
