@@ -1,0 +1,211 @@
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Plus, Search, MoreHorizontal, Pencil, ShoppingCart, Trash2 } from "lucide-react";
+import moment from "moment";
+import QuotationFormDialog from "@/components/quotations/QuotationFormDialog";
+
+const statusConfig = {
+  draft: { label: "Borrador", color: "bg-slate-100 text-slate-700" },
+  sent: { label: "Enviada", color: "bg-blue-100 text-blue-700" },
+  accepted: { label: "Aceptada", color: "bg-emerald-100 text-emerald-700" },
+  converted: { label: "Convertida", color: "bg-indigo-100 text-indigo-700" },
+  cancelled: { label: "Cancelada", color: "bg-red-100 text-red-700" },
+};
+
+export default function Quotations() {
+  const [quotations, setQuotations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingQuotation, setEditingQuotation] = useState(null);
+  const [convertQuotation, setConvertQuotation] = useState(null);
+
+  const loadData = () => {
+    setLoading(true);
+    base44.entities.Quotation.list("-created_date", 100).then((q) => {
+      setQuotations(q);
+      setLoading(false);
+    });
+  };
+
+  useEffect(() => { loadData(); }, []);
+
+  const filtered = quotations.filter((q) =>
+    q.client_name?.toLowerCase().includes(search.toLowerCase()) ||
+    q.folio?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleConvertToSale = async () => {
+    if (!convertQuotation) return;
+
+    // Create exit movements for each item
+    for (const item of (convertQuotation.items || [])) {
+      const products = await base44.entities.Product.filter({ id: item.product_id });
+      const product = products[0];
+      if (product) {
+        const newStock = (product.stock || 0) - item.quantity;
+        await base44.entities.Movement.create({
+          product_id: item.product_id,
+          product_name: item.product_name,
+          type: "exit",
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          total: item.total,
+          stock_after: newStock,
+          reference: `Venta ${convertQuotation.folio}`,
+          quotation_id: convertQuotation.id,
+        });
+        await base44.entities.Product.update(product.id, { stock: newStock });
+      }
+    }
+
+    await base44.entities.Quotation.update(convertQuotation.id, { status: "converted" });
+    setConvertQuotation(null);
+    loadData();
+  };
+
+  const handleEdit = (q) => {
+    setEditingQuotation(q);
+    setFormOpen(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="relative flex-1 max-w-md w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            placeholder="Buscar por cliente o folio..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingQuotation(null); setFormOpen(true); }}>
+          <Plus className="h-4 w-4 mr-1" /> Nueva Cotización
+        </Button>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-slate-50/50">
+                <TableHead className="font-semibold text-slate-600">Folio</TableHead>
+                <TableHead className="font-semibold text-slate-600">Cliente</TableHead>
+                <TableHead className="font-semibold text-slate-600">Fecha</TableHead>
+                <TableHead className="font-semibold text-slate-600 text-right">Total</TableHead>
+                <TableHead className="font-semibold text-slate-600 text-center">Estado</TableHead>
+                <TableHead className="font-semibold text-slate-600 text-center">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-12 text-slate-400">Sin cotizaciones</TableCell>
+                </TableRow>
+              ) : (
+                filtered.map((q) => {
+                  const status = statusConfig[q.status] || statusConfig.draft;
+                  return (
+                    <TableRow key={q.id} className="hover:bg-slate-50/50 transition-colors">
+                      <TableCell className="font-mono text-sm text-indigo-600">{q.folio}</TableCell>
+                      <TableCell className="font-medium text-slate-800">{q.client_name}</TableCell>
+                      <TableCell className="text-slate-600">{moment(q.created_date).format("DD/MM/YY")}</TableCell>
+                      <TableCell className="text-right font-semibold text-slate-700">
+                        ${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge className={`${status.color} border-0`}>{status.label}</Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEdit(q)}>
+                              <Pencil className="h-4 w-4 mr-2" /> Editar
+                            </DropdownMenuItem>
+                            {q.status !== "converted" && q.status !== "cancelled" && (
+                              <DropdownMenuItem onClick={() => setConvertQuotation(q)}>
+                                <ShoppingCart className="h-4 w-4 mr-2" /> Convertir en Venta
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      <QuotationFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        quotation={editingQuotation}
+        onSaved={loadData}
+      />
+
+      {/* Convert confirmation */}
+      <AlertDialog open={!!convertQuotation} onOpenChange={() => setConvertQuotation(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Convertir en venta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se descontará el stock de los {convertQuotation?.items?.length || 0} producto(s) de la cotización {convertQuotation?.folio}. Total: ${convertQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConvertToSale} className="bg-indigo-600 hover:bg-indigo-700">
+              Confirmar Venta
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
