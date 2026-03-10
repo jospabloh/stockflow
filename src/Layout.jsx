@@ -164,7 +164,6 @@ export default function Layout({ children, currentPageName }) {
             {" · "}WhatsApp:{" "}
             <a href="https://wa.me/524498958291" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline">+52 449 895 8291</a>
           </p>
-          <p className="text-[10px] text-slate-300 tracking-wide uppercase">by ACACIA Consultoría</p>
         </footer>
       </div>
     </div>
