@@ -146,6 +146,32 @@ export default function Settings() {
         <TabsContent value="business">
           <Card className="border-0 shadow-sm p-6 space-y-6">
             <h3 className="font-semibold text-slate-700 text-lg">Información del Negocio</h3>
+            {/* Logo Upload */}
+            <div className="flex items-center gap-6 p-4 bg-slate-50 rounded-xl">
+              <div className="h-20 w-20 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden bg-white">
+                {settings?.logo_url
+                  ? <img src={settings.logo_url} alt="Logo" className="h-full w-full object-contain" />
+                  : <Building2 className="h-8 w-8 text-slate-300" />
+                }
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-slate-700">Logo del negocio</p>
+                <p className="text-xs text-slate-400">Se usará en cotizaciones y documentos</p>
+                <label className="cursor-pointer">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
+                  <span className="inline-flex items-center gap-2 text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md font-medium transition-colors">
+                    <Upload className="h-3 w-3" />
+                    {uploadingLogo ? "Subiendo..." : "Subir logo"}
+                  </span>
+                </label>
+                {settings?.logo_url && (
+                  <button onClick={() => updateSettings("logo_url", "")} className="block text-xs text-red-400 hover:text-red-600">
+                    Quitar logo
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Nombre del negocio</Label>
