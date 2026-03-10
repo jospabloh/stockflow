@@ -48,6 +48,11 @@ export default function Quotations() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingQuotation, setEditingQuotation] = useState(null);
   const [convertQuotation, setConvertQuotation] = useState(null);
+  const [settings, setSettings] = useState(null);
+
+  useEffect(() => {
+    base44.entities.AppSettings.list().then(s => setSettings(s[0] || null)).catch(() => {});
+  }, []);
 
   const loadData = () => {
     setLoading(true);
