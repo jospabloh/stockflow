@@ -109,6 +109,17 @@ export default function Quotations() {
     loadData();
   };
 
+  const handleCancel = async () => {
+    if (!cancelQuotation) return;
+    await base44.entities.Quotation.update(cancelQuotation.id, {
+      status: "cancelled",
+      cancellation_reason: cancelReason,
+    });
+    setCancelQuotation(null);
+    setCancelReason("");
+    loadData();
+  };
+
   const handleEdit = (q) => {
     setEditingQuotation(q);
     setFormOpen(true);
