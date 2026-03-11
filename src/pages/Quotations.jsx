@@ -32,6 +32,7 @@ import { Plus, Search, MoreHorizontal, Pencil, ShoppingCart, FileDown } from "lu
 import moment from "moment";
 import QuotationFormDialog from "@/components/quotations/QuotationFormDialog";
 import { generateQuotationPDF } from "@/components/quotations/QuotationPDF";
+import QuotationPreviewDialog from "@/components/quotations/QuotationPreviewDialog";
 
 const statusConfig = {
   draft: { label: "Borrador", color: "bg-amber-100 text-amber-700", dot: "bg-amber-400" },
