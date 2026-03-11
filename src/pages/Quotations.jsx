@@ -34,11 +34,11 @@ import QuotationFormDialog from "@/components/quotations/QuotationFormDialog";
 import { generateQuotationPDF } from "@/components/quotations/QuotationPDF";
 
 const statusConfig = {
-  draft: { label: "Borrador", color: "bg-slate-100 text-slate-700" },
-  sent: { label: "Enviada", color: "bg-blue-100 text-blue-700" },
-  accepted: { label: "Aceptada", color: "bg-emerald-100 text-emerald-700" },
-  converted: { label: "Convertida", color: "bg-indigo-100 text-indigo-700" },
-  cancelled: { label: "Cancelada", color: "bg-red-100 text-red-700" },
+  draft: { label: "Borrador", color: "bg-amber-100 text-amber-700", dot: "bg-amber-400" },
+  sent: { label: "Enviada", color: "bg-amber-100 text-amber-700", dot: "bg-amber-400" },
+  accepted: { label: "Aceptada", color: "bg-amber-100 text-amber-700", dot: "bg-amber-400" },
+  converted: { label: "Concretada", color: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-500" },
+  cancelled: { label: "Cancelada", color: "bg-red-100 text-red-700", dot: "bg-red-500" },
 };
 
 export default function Quotations() {
