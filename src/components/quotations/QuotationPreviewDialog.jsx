@@ -98,7 +98,7 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
                     <td className="px-3 py-2 text-slate-400">{i + 1}</td>
                     <td className="px-3 py-2 text-slate-700">{item.product_name}</td>
                     <td className="px-3 py-2 text-center">
-                      {item.tax_rate > 0
+                      {(item.tax_rate ?? 16) > 0
                         ? <span className="bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded text-[10px]">16%</span>
                         : <span className="bg-slate-100 text-slate-400 font-bold px-1.5 py-0.5 rounded text-[10px]">Exento</span>
                       }
