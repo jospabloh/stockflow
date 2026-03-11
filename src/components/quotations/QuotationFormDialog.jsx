@@ -26,8 +26,6 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   const [showClientSuggestions, setShowClientSuggestions] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState("");
   const [barcodeNotFound, setBarcodeNotFound] = useState(false);
-  const [applyTax, setApplyTax] = useState(true);
-  const [taxRate, setTaxRate] = useState(16);
   const [taxLabel, setTaxLabel] = useState("IVA");
   const [form, setForm] = useState({
     client_name: "", client_email: "", client_phone: "",
