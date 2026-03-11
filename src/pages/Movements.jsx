@@ -64,7 +64,7 @@ export default function Movements() {
   const handleExportCSV = () => {
     const headers = ["Fecha", "Producto", "Tipo", "Cantidad", "Precio Unit.", "Total", "Referencia"];
     const rows = filtered.map((m) => [
-      moment(m.created_date).format("DD/MM/YYYY HH:mm"),
+      moment.utc(m.created_date).local().format("DD/MM/YYYY HH:mm"),
       m.product_name, typeConfig[m.type]?.label || m.type,
       m.quantity, m.unit_price || 0, m.total || 0, m.reference || "",
     ]);
