@@ -50,6 +50,14 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   }, []);
 
   useEffect(() => {
+    if (!open) {
+      // Reset camera and scanner state when dialog closes
+      setShowCamera(false);
+      setScanning(false);
+      barcodeBuffer.current = "";
+      if (scannerTimeoutRef.current) clearTimeout(scannerTimeoutRef.current);
+      return;
+    }
     if (product) {
       setForm({
         name: product.name || "",
@@ -71,7 +79,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         name: "", sku: "", barcode: "", description: "",
         category: "", supplier: "", purchase_price: 0,
         sale_price: 0, stock: 0, min_stock: 5, unit: "pieza",
-        status: "active",
+        status: "active", tax_rate: 16,
       });
     }
   }, [product, open]);
