@@ -1,7 +1,7 @@
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FileDown, X } from "lucide-react";
+import { FileDown, Truck, CheckCircle2, DollarSign } from "lucide-react";
 import { generateQuotationPDF } from "./QuotationPDF";
 
 function fmt(n) {
