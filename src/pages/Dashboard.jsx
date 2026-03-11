@@ -118,6 +118,64 @@ export default function Dashboard() {
         />
       </div>
 
+      {/* Today's Sales Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="border-0 shadow-sm p-5">
+          <h3 className="font-semibold text-slate-700 mb-4 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-indigo-500" /> Ventas del Día
+          </h3>
+          {todayExits.length === 0 ? (
+            <p className="text-sm text-slate-400 py-4 text-center">Sin ventas registradas hoy</p>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex justify-between items-center bg-blue-50 rounded-lg px-4 py-2.5">
+                <span className="text-sm text-slate-600">Monto vendido</span>
+                <span className="font-bold text-blue-700">${todaySalesRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between items-center bg-slate-50 rounded-lg px-4 py-2.5">
+                <span className="text-sm text-slate-600">Costo de lo vendido</span>
+                <span className="font-bold text-slate-700">${todaySalesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between items-center bg-emerald-50 rounded-lg px-4 py-2.5">
+                <span className="text-sm text-slate-600">Ganancia bruta</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-emerald-700">${todayProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                  <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">{todayMargin.toFixed(1)}%</Badge>
+                </div>
+              </div>
+            </div>
+          )}
+        </Card>
+
+        {/* Quotation Semaphore */}
+        <Card className="border-0 shadow-sm p-5">
+          <h3 className="font-semibold text-slate-700 mb-4">Semáforo de Cotizaciones</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center bg-emerald-50 rounded-lg px-4 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" />
+                <span className="text-sm text-slate-600">Concretadas en venta</span>
+              </div>
+              <span className="font-bold text-emerald-700 text-lg">{quotGreen}</span>
+            </div>
+            <div className="flex justify-between items-center bg-amber-50 rounded-lg px-4 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-amber-400 inline-block" />
+                <span className="text-sm text-slate-600">Sin concretar (activas)</span>
+              </div>
+              <span className="font-bold text-amber-600 text-lg">{quotYellow}</span>
+            </div>
+            <div className="flex justify-between items-center bg-red-50 rounded-lg px-4 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-red-500 inline-block" />
+                <span className="text-sm text-slate-600">Canceladas</span>
+              </div>
+              <span className="font-bold text-red-600 text-lg">{quotRed}</span>
+            </div>
+          </div>
+        </Card>
+      </div>
+
       {/* Charts and alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 border-0 shadow-sm p-6">
