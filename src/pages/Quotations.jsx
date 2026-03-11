@@ -172,6 +172,36 @@ export default function Quotations() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
+                        {q.status === "converted" && (
+                          <div className="flex items-center justify-center gap-3">
+                            <button
+                              title={q.in_route ? "En ruta" : "Marcar en ruta"}
+                              onClick={async () => { await base44.entities.Quotation.update(q.id, { in_route: !q.in_route, delivered: q.in_route ? false : q.delivered }); loadData(); }}
+                              className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${q.in_route ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-400 hover:bg-blue-50 hover:text-blue-500"}`}
+                            >
+                              <Truck className="h-3.5 w-3.5" />
+                              {q.in_route ? "En ruta" : "Ruta"}
+                            </button>
+                            <button
+                              title={q.delivered ? "Entregado" : "Marcar entregado"}
+                              onClick={async () => { await base44.entities.Quotation.update(q.id, { delivered: !q.delivered }); loadData(); }}
+                              className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${q.delivered ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-400 hover:bg-emerald-50 hover:text-emerald-500"}`}
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              {q.delivered ? "Entregado" : "Entrega"}
+                            </button>
+                            <button
+                              title={q.paid ? "Pagado" : "Marcar pagado"}
+                              onClick={async () => { await base44.entities.Quotation.update(q.id, { paid: !q.paid }); loadData(); }}
+                              className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${q.paid ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-400 hover:bg-green-50 hover:text-green-500"}`}
+                            >
+                              <DollarSign className="h-3.5 w-3.5" />
+                              {q.paid ? "Pagado" : "Pago"}
+                            </button>
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
