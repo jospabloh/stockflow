@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Package, ArrowLeftRight, DollarSign, AlertTriangle } from "lucide-react";
+import { Package, ArrowLeftRight, DollarSign, AlertTriangle, TrendingUp } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import LowStockAlert from "@/components/dashboard/LowStockAlert";
 import RecentMovements from "@/components/dashboard/RecentMovements";
@@ -14,19 +14,23 @@ import {
   CartesianGrid,
 } from "recharts";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function Dashboard() {
   const [products, setProducts] = useState([]);
   const [movements, setMovements] = useState([]);
+  const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       base44.entities.Product.list("-created_date", 500),
-      base44.entities.Movement.list("-created_date", 50),
-    ]).then(([prods, movs]) => {
+      base44.entities.Movement.list("-created_date", 200),
+      base44.entities.Quotation.list("-created_date", 200),
+    ]).then(([prods, movs, quots]) => {
       setProducts(prods);
       setMovements(movs);
+      setQuotations(quots);
       setLoading(false);
     });
   }, []);
