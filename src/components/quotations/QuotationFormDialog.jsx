@@ -135,8 +135,24 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   const taxAmount = taxableSubtotal * 0.16;
   const total = subtotal + taxAmount;
 
+  const generateFolio = async () => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    const prefix = `COT-${y}${m}${d}-`;
+    const all = await base44.entities.Quotation.list();
+    const todayFolios = all.filter(q => q.folio && q.folio.startsWith(prefix));
+    const maxNum = todayFolios.reduce((max, q) => {
+      const num = parseInt(q.folio.replace(prefix, ""), 10);
+      return isNaN(num) ? max : Math.max(max, num);
+    }, 0);
+    return `${prefix}${String(maxNum + 1).padStart(3, "0")}`;
+  };
+
   const handleSave = async () => {
     setSaving(true);
+    const folio = quotation?.folio || await generateFolio();
     const data = {
       ...form,
       subtotal,
@@ -144,7 +160,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       total,
       tax_rate: 16,
       tax_label: taxLabel,
-      folio: quotation?.folio || `COT-${Date.now().toString(36).toUpperCase()}`,
+      folio,
     };
     if (quotation) {
       await base44.entities.Quotation.update(quotation.id, data);
