@@ -122,6 +122,17 @@ export default function Quotations() {
     loadData();
   };
 
+  const handleConfirmPayment = async () => {
+    if (!payQuotation) return;
+    await base44.entities.Quotation.update(payQuotation.id, {
+      paid: true,
+      payment_method: paymentMethod,
+    });
+    setPayQuotation(null);
+    setPaymentMethod("");
+    loadData();
+  };
+
   const handleEdit = (q) => {
     setEditingQuotation(q);
     setFormOpen(true);
