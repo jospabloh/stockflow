@@ -96,6 +96,7 @@ export default function Dashboard() {
           subtitle={`${totalStock} unidades en stock`}
           icon={Package}
           color="indigo"
+          href={createPageUrl("Products")}
         />
         <StatCard
           title="Valor Total"
@@ -103,6 +104,7 @@ export default function Dashboard() {
           subtitle="Al costo de compra"
           icon={DollarSign}
           color="emerald"
+          href={createPageUrl("Reports")}
         />
         <StatCard
           title="Movimientos Hoy"
@@ -110,6 +112,7 @@ export default function Dashboard() {
           subtitle="Entradas y salidas"
           icon={ArrowLeftRight}
           color="cyan"
+          href={createPageUrl("Movements")}
         />
         <StatCard
           title="Stock Bajo"
@@ -117,6 +120,7 @@ export default function Dashboard() {
           subtitle="Requieren atención"
           icon={AlertTriangle}
           color={lowStockProducts.length > 0 ? "amber" : "emerald"}
+          href={createPageUrl("Products") + "?filter=low_stock"}
         />
       </div>
 
