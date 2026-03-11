@@ -209,6 +209,13 @@ export default function Quotations() {
         onSaved={loadData}
       />
 
+      <QuotationPreviewDialog
+        quotation={previewQuotation}
+        settings={settings}
+        open={!!previewQuotation}
+        onOpenChange={(v) => !v && setPreviewQuotation(null)}
+      />
+
       {/* Convert confirmation */}
       <AlertDialog open={!!convertQuotation} onOpenChange={() => setConvertQuotation(null)}>
         <AlertDialogContent>
