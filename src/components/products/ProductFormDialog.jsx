@@ -76,13 +76,18 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   }, [product, open]);
 
   const generateSKU = async () => {
+    const selectedCategory = categories.find(c => c.id === form.category);
+    const prefix = selectedCategory
+      ? selectedCategory.name.replace(/\s+/g, "").substring(0, 3).toUpperCase()
+      : "PRD";
     const products = await base44.entities.Product.list();
-    const usedSKUs = new Set(products.map(p => p.sku).filter(Boolean));
-    let sku;
-    do {
-      const rand = Math.random().toString(36).substring(2, 7).toUpperCase();
-      sku = `SKU-${rand}`;
-    } while (usedSKUs.has(sku));
+    const existing = products
+      .map(p => p.sku)
+      .filter(s => s && s.startsWith(prefix + "-"))
+      .map(s => parseInt(s.split("-")[1], 10))
+      .filter(n => !isNaN(n));
+    const next = existing.length > 0 ? Math.max(...existing) + 1 : 1;
+    const sku = `${prefix}-${String(next).padStart(4, "0")}`;
     updateField("sku", sku);
   };
 
