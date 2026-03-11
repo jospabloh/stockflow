@@ -115,15 +115,17 @@ export function generateQuotationPDF(quotation, settings) {
   const cols = {
     num: margin + 2,
     name: margin + 10,
-    qty: margin + contentW * 0.56,
-    price: margin + contentW * 0.7,
+    qty: margin + contentW * 0.5,
+    iva: margin + contentW * 0.6,
+    price: margin + contentW * 0.72,
     total: margin + contentW - 2,
   };
 
   doc.text("#", cols.num, y + 5.5);
   doc.text("DESCRIPCIÓN", cols.name, y + 5.5);
   doc.text("CANT.", cols.qty, y + 5.5);
-  doc.text("PRECIO UNIT.", cols.price, y + 5.5);
+  doc.text("IVA", cols.iva, y + 5.5);
+  doc.text("P. UNIT.", cols.price, y + 5.5);
   doc.text("TOTAL", cols.total, y + 5.5, { align: "right" });
   y += 8;
 
@@ -141,13 +143,18 @@ export function generateQuotationPDF(quotation, settings) {
     doc.text(String(i + 1), cols.num, y + 5.5);
 
     // truncate name
-    const maxNameW = contentW * 0.54;
+    const maxNameW = contentW * 0.46;
     const name = item.product_name || "";
     const nameClipped = doc.getTextWidth(name) > maxNameW
       ? name.substring(0, Math.floor(name.length * maxNameW / doc.getTextWidth(name))) + "..."
       : name;
     doc.text(nameClipped, cols.name, y + 5.5);
     doc.text(String(item.quantity || 0), cols.qty, y + 5.5);
+    // IVA label
+    const ivaLabel = (item.tax_rate > 0) ? "16%" : "Exento";
+    doc.setTextColor(...((item.tax_rate > 0) ? [180, 120, 0] : mutedText));
+    doc.text(ivaLabel, cols.iva, y + 5.5);
+    doc.setTextColor(...darkText);
     doc.text(`$${fmt(item.unit_price)}`, cols.price, y + 5.5);
     doc.text(`$${fmt(item.total)}`, cols.total, y + 5.5, { align: "right" });
     y += rowH;
