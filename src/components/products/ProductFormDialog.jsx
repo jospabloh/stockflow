@@ -221,6 +221,16 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
             </Select>
           </div>
           <div>
+            <Label>IVA del producto</Label>
+            <Select value={String(form.tax_rate ?? 16)} onValueChange={(v) => updateField("tax_rate", Number(v))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="16">16% (con IVA)</SelectItem>
+                <SelectItem value="0">0% (sin IVA / exento)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
             <Label>Estado</Label>
             <Select value={form.status} onValueChange={(v) => updateField("status", v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
