@@ -11,8 +11,8 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = "
     rose: "from-rose-500 to-rose-600 shadow-rose-200",
   };
 
-  return (
-    <Card className="relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
+  const content = (
+    <Card className={`relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 ${href ? "cursor-pointer hover:-translate-y-0.5" : ""}`}>
       <div className="p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-2">
