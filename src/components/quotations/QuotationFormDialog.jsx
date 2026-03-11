@@ -49,18 +49,13 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           status: quotation.status || "draft",
           payment_method: quotation.payment_method || "Por definir",
         });
-        setApplyTax(quotation.tax > 0);
-        if (quotation.tax > 0 && quotation.subtotal > 0) {
-          setTaxRate(Math.round((quotation.tax / quotation.subtotal) * 100));
-        }
+        setTaxLabel("IVA");
       } else {
         setForm({
           client_name: "", client_email: "", client_phone: "",
           items: [], notes: "", valid_until: "", status: "draft",
           payment_method: "Por definir",
         });
-        setApplyTax(true);
-        setTaxRate(16);
         setTaxLabel("IVA");
         setClientSearch("");
       }
