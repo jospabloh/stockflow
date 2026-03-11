@@ -143,8 +143,8 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       subtotal,
       tax: taxAmount,
       total,
-      tax_rate: applyTax ? taxRate : 0,
-      tax_label: applyTax ? taxLabel : "",
+      tax_rate: 16,
+      tax_label: taxLabel,
       folio: quotation?.folio || `COT-${Date.now().toString(36).toUpperCase()}`,
     };
     if (quotation) {
