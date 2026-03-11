@@ -248,6 +248,11 @@ export default function Quotations() {
                                 <ShoppingCart className="h-4 w-4 mr-2" /> Convertir en Venta
                               </DropdownMenuItem>
                             )}
+                            {q.status !== "cancelled" && !q.paid && (
+                              <DropdownMenuItem onClick={() => { setPayQuotation(q); setPaymentMethod(q.payment_method || ""); }}>
+                                <DollarSign className="h-4 w-4 mr-2" /> Confirmar Pago
+                              </DropdownMenuItem>
+                            )}
                             {q.status !== "converted" && q.status !== "cancelled" && (
                               <DropdownMenuItem
                                 className="text-red-600 focus:text-red-600"
