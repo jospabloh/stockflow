@@ -159,7 +159,7 @@ export default function Quotations() {
                   const status = statusConfig[q.status] || statusConfig.draft;
                   return (
                     <TableRow key={q.id} className="hover:bg-slate-50/50 transition-colors">
-                      <TableCell className="font-mono text-sm text-indigo-600">{q.folio}</TableCell>
+                      <TableCell className="font-mono text-sm text-indigo-600 cursor-pointer hover:underline" onClick={() => setPreviewQuotation(q)}>{q.folio}</TableCell>
                       <TableCell className="font-medium text-slate-800">{q.client_name}</TableCell>
                       <TableCell className="text-slate-600">{moment(q.created_date).format("DD/MM/YY")}</TableCell>
                       <TableCell className="text-right font-semibold text-slate-700">
