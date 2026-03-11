@@ -235,6 +235,14 @@ export default function Quotations() {
                                 <ShoppingCart className="h-4 w-4 mr-2" /> Convertir en Venta
                               </DropdownMenuItem>
                             )}
+                            {q.status !== "converted" && q.status !== "cancelled" && (
+                              <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600"
+                                onClick={() => { setCancelQuotation(q); setCancelReason(""); }}
+                              >
+                                <XCircle className="h-4 w-4 mr-2" /> Cancelar Cotización
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
