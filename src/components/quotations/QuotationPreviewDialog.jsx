@@ -150,6 +150,14 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
             </div>
           </div>
 
+          {/* Cancellation reason */}
+          {quotation.status === "cancelled" && quotation.cancellation_reason && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-[10px] font-bold uppercase text-red-400 mb-1">Motivo de cancelación</p>
+              <p className="text-red-700 text-xs whitespace-pre-wrap">{quotation.cancellation_reason}</p>
+            </div>
+          )}
+
           {/* Notes */}
           {quotation.notes && (
             <div className="bg-slate-50 rounded-lg p-4">
