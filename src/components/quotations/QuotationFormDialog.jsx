@@ -132,7 +132,8 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   };
 
   const subtotal = form.items.reduce((sum, item) => sum + (item.total || 0), 0);
-  const taxAmount = applyTax ? subtotal * (taxRate / 100) : 0;
+  const taxableSubtotal = form.items.reduce((sum, item) => (item.tax_rate > 0 ? sum + (item.total || 0) : sum), 0);
+  const taxAmount = taxableSubtotal * 0.16;
   const total = subtotal + taxAmount;
 
   const handleSave = async () => {
