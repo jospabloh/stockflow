@@ -219,12 +219,12 @@ export default function Quotations() {
                               {q.delivered ? "Entregado" : "Entrega"}
                             </button>
                             <button
-                              title={q.paid ? "Pagado" : "Marcar pagado"}
-                              onClick={async () => { await base44.entities.Quotation.update(q.id, { paid: !q.paid }); loadData(); }}
-                              className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${q.paid ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-400 hover:bg-green-50 hover:text-green-500"}`}
+                              title={q.paid ? `Pagado: ${q.payment_method || "—"}` : "Confirmar pago"}
+                              onClick={() => { if (!q.paid) { setPayQuotation(q); setPaymentMethod(q.payment_method || ""); } }}
+                              className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${q.paid ? "bg-green-100 text-green-700 cursor-default" : "bg-slate-100 text-slate-400 hover:bg-green-50 hover:text-green-500"}`}
                             >
                               <DollarSign className="h-3.5 w-3.5" />
-                              {q.paid ? "Pagado" : "Pago"}
+                              {q.paid ? (q.payment_method || "Pagado") : "Pago"}
                             </button>
                           </div>
                         )}
