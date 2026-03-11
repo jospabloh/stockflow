@@ -153,6 +153,7 @@ export default function Dashboard() {
             </div>
           )}
         </Card>
+        </Link>
 
         {/* Quotation Semaphore */}
         <Card className="border-0 shadow-sm p-5">
