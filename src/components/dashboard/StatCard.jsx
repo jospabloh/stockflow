@@ -1,7 +1,8 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
-export default function StatCard({ title, value, subtitle, icon: Icon, color = "indigo", trend }) {
+export default function StatCard({ title, value, subtitle, icon: Icon, color = "indigo", trend, href }) {
   const colors = {
     indigo: "from-indigo-500 to-indigo-600 shadow-indigo-200",
     cyan: "from-cyan-500 to-cyan-600 shadow-cyan-200",
