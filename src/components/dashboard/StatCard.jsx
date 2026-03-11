@@ -32,4 +32,6 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = "
       </div>
     </Card>
   );
+
+  return href ? <Link to={href}>{content}</Link> : content;
 }
