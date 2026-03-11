@@ -64,7 +64,7 @@ export default function Movements() {
   const handleExportCSV = () => {
     const headers = ["Fecha", "Producto", "Tipo", "Cantidad", "Precio Unit.", "Total", "Referencia"];
     const rows = filtered.map((m) => [
-      moment.utc(m.created_date).local().format("DD/MM/YYYY HH:mm"),
+      moment(m.created_date).format("DD/MM/YYYY HH:mm"),
       m.product_name, typeConfig[m.type]?.label || m.type,
       m.quantity, m.unit_price || 0, m.total || 0, m.reference || "",
     ]);
@@ -147,7 +147,7 @@ export default function Movements() {
                   return (
                     <TableRow key={m.id} className="hover:bg-slate-50/50 transition-colors">
                       <TableCell className="text-slate-600 text-sm">
-                        {moment(m.created_date).format("DD/MM/YY HH:mm")}
+                        {moment.utc(m.created_date).local().format("DD/MM/YY HH:mm")}
                       </TableCell>
                       <TableCell className="font-medium text-slate-800">{m.product_name}</TableCell>
                       <TableCell>
