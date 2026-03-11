@@ -49,6 +49,7 @@ export default function Quotations() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingQuotation, setEditingQuotation] = useState(null);
   const [convertQuotation, setConvertQuotation] = useState(null);
+  const [previewQuotation, setPreviewQuotation] = useState(null);
   const [settings, setSettings] = useState(null);
 
   useEffect(() => {
