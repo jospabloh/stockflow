@@ -269,6 +269,36 @@ export default function Quotations() {
         onOpenChange={(v) => !v && setPreviewQuotation(null)}
       />
 
+      {/* Cancel dialog */}
+      <AlertDialog open={!!cancelQuotation} onOpenChange={(v) => { if (!v) { setCancelQuotation(null); setCancelReason(""); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Cancelar cotización {cancelQuotation?.folio}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción marcará la cotización como cancelada. Por favor indica el motivo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="px-1 py-2">
+            <Textarea
+              placeholder="Razón de cancelación (requerida)..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              className="min-h-[80px]"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Volver</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancel}
+              disabled={!cancelReason.trim()}
+              className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
+            >
+              Confirmar Cancelación
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Convert confirmation */}
       <AlertDialog open={!!convertQuotation} onOpenChange={() => setConvertQuotation(null)}>
         <AlertDialogContent>
