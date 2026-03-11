@@ -86,6 +86,7 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
                 <tr className="bg-indigo-600 text-white">
                   <th className="px-3 py-2 text-left w-8">#</th>
                   <th className="px-3 py-2 text-left">Descripción</th>
+                  <th className="px-3 py-2 text-center w-16">IVA</th>
                   <th className="px-3 py-2 text-right w-16">Cant.</th>
                   <th className="px-3 py-2 text-right w-24">Precio unit.</th>
                   <th className="px-3 py-2 text-right w-24">Total</th>
@@ -96,6 +97,12 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
                   <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-slate-50"}>
                     <td className="px-3 py-2 text-slate-400">{i + 1}</td>
                     <td className="px-3 py-2 text-slate-700">{item.product_name}</td>
+                    <td className="px-3 py-2 text-center">
+                      {item.tax_rate > 0
+                        ? <span className="bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded text-[10px]">16%</span>
+                        : <span className="bg-slate-100 text-slate-400 font-bold px-1.5 py-0.5 rounded text-[10px]">Exento</span>
+                      }
+                    </td>
                     <td className="px-3 py-2 text-right text-slate-700">{item.quantity}</td>
                     <td className="px-3 py-2 text-right text-slate-700">${fmt(item.unit_price)}</td>
                     <td className="px-3 py-2 text-right font-medium text-slate-800">${fmt(item.total)}</td>
@@ -104,6 +111,24 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
               </tbody>
             </table>
           </div>
+
+          {/* Delivery & payment status (converted only) */}
+          {quotation.status === "converted" && (
+            <div className="bg-slate-50 rounded-lg p-4">
+              <p className="text-[10px] font-bold uppercase text-slate-400 mb-3">Estado de seguimiento</p>
+              <div className="flex flex-wrap gap-3">
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${quotation.in_route ? "bg-blue-100 text-blue-700" : "bg-white border text-slate-400"}`}>
+                  <Truck className="h-4 w-4" /> En ruta
+                </div>
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${quotation.delivered ? "bg-emerald-100 text-emerald-700" : "bg-white border text-slate-400"}`}>
+                  <CheckCircle2 className="h-4 w-4" /> Entregado
+                </div>
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${quotation.paid ? "bg-green-100 text-green-700" : "bg-white border text-slate-400"}`}>
+                  <DollarSign className="h-4 w-4" /> Pagado
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Totals */}
           <div className="flex justify-end">
