@@ -52,6 +52,8 @@ export default function Quotations() {
   const [convertQuotation, setConvertQuotation] = useState(null);
   const [cancelQuotation, setCancelQuotation] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
+  const [payQuotation, setPayQuotation] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("");
   const [previewQuotation, setPreviewQuotation] = useState(null);
   const [settings, setSettings] = useState(null);
 
