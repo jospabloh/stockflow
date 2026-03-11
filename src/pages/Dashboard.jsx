@@ -127,32 +127,32 @@ export default function Dashboard() {
       {/* Today's Sales Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Link to={createPageUrl("Movements")} className="block">
-        <Card className="border-0 shadow-sm p-5 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-0.5">
-          <h3 className="font-semibold text-slate-700 mb-4 flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-indigo-500" /> Ventas del Día
-          </h3>
-          {todayExits.length === 0 ? (
-            <p className="text-sm text-slate-400 py-4 text-center">Sin ventas registradas hoy</p>
-          ) : (
-            <div className="space-y-3">
-              <div className="flex justify-between items-center bg-blue-50 rounded-lg px-4 py-2.5">
-                <span className="text-sm text-slate-600">Monto vendido</span>
-                <span className="font-bold text-blue-700">${todaySalesRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-between items-center bg-slate-50 rounded-lg px-4 py-2.5">
-                <span className="text-sm text-slate-600">Costo de lo vendido</span>
-                <span className="font-bold text-slate-700">${todaySalesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-between items-center bg-emerald-50 rounded-lg px-4 py-2.5">
-                <span className="text-sm text-slate-600">Ganancia bruta</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-emerald-700">${todayProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-                  <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">{todayMargin.toFixed(1)}%</Badge>
+          <Card className="border-0 shadow-sm p-5 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-0.5">
+            <h3 className="font-semibold text-slate-700 mb-4 flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-indigo-500" /> Ventas del Día
+            </h3>
+            {todayExits.length === 0 ? (
+              <p className="text-sm text-slate-400 py-4 text-center">Sin ventas registradas hoy</p>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex justify-between items-center bg-blue-50 rounded-lg px-4 py-2.5">
+                  <span className="text-sm text-slate-600">Monto vendido</span>
+                  <span className="font-bold text-blue-700">${todaySalesRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between items-center bg-slate-50 rounded-lg px-4 py-2.5">
+                  <span className="text-sm text-slate-600">Costo de lo vendido</span>
+                  <span className="font-bold text-slate-700">${todaySalesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between items-center bg-emerald-50 rounded-lg px-4 py-2.5">
+                  <span className="text-sm text-slate-600">Ganancia bruta</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-emerald-700">${todayProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                    <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">{todayMargin.toFixed(1)}%</Badge>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </Card>
+            )}
+          </Card>
         </Link>
 
         {/* Quotation Semaphore */}
