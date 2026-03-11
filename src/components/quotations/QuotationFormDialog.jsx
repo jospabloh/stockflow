@@ -121,6 +121,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           items[index].product_name = product.name;
           items[index].unit_price = product.sale_price;
           items[index].total = items[index].quantity * product.sale_price;
+          items[index].tax_rate = product.tax_rate ?? 16;
         }
       }
       if (field === "quantity" || field === "unit_price") {
