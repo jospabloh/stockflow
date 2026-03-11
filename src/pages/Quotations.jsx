@@ -317,6 +317,48 @@ export default function Quotations() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Payment confirmation dialog */}
+      <AlertDialog open={!!payQuotation} onOpenChange={(v) => { if (!v) { setPayQuotation(null); setPaymentMethod(""); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar pago — {payQuotation?.folio}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Total: ${payQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })} · Cliente: {payQuotation?.client_name}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="px-1 py-3 space-y-2">
+            <p className="text-sm font-medium text-slate-700">Método de pago</p>
+            <div className="grid grid-cols-2 gap-2">
+              {["Efectivo", "Transferencia", "Tarjeta débito", "Tarjeta crédito", "Cheque", "Otro"].map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setPaymentMethod(m)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${paymentMethod === m ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300"}`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+            <Input
+              placeholder="Otro método de pago..."
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmPayment}
+              disabled={!paymentMethod.trim()}
+              className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
+            >
+              Confirmar Pago
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Convert confirmation */}
       <AlertDialog open={!!convertQuotation} onOpenChange={() => setConvertQuotation(null)}>
         <AlertDialogContent>
