@@ -72,7 +72,6 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     );
     if (found) {
       setBarcodeNotFound(false);
-      // Check if already in items, increase qty
       const existingIdx = form.items.findIndex(i => i.product_id === found.id);
       if (existingIdx >= 0) {
         const items = [...form.items];
@@ -91,6 +90,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
             quantity: 1,
             unit_price: found.sale_price,
             total: found.sale_price,
+            tax_rate: found.tax_rate ?? 16,
           }],
         }));
       }
