@@ -29,7 +29,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
     name: "", sku: "", barcode: "", description: "",
     category: "", supplier: "", purchase_price: 0,
     sale_price: 0, stock: 0, min_stock: 5, unit: "pieza",
-    status: "active",
+    status: "active", tax_rate: 16,
   });
   const [saving, setSaving] = useState(false);
   const [scanning, setScanning] = useState(false);
