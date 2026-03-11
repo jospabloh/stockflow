@@ -39,9 +39,24 @@ export default function Dashboard() {
   const totalStock = activeProducts.reduce((sum, p) => sum + (p.stock || 0), 0);
   const totalValue = activeProducts.reduce((sum, p) => sum + (p.stock || 0) * (p.purchase_price || 0), 0);
   const lowStockProducts = activeProducts.filter((p) => p.stock <= (p.min_stock || 5));
-  const todayMovements = movements.filter(
-    (m) => new Date(m.created_date).toDateString() === new Date().toDateString()
-  );
+
+  const today = new Date().toDateString();
+  const todayMovements = movements.filter((m) => new Date(m.created_date).toDateString() === today);
+
+  // Today's sales breakdown
+  const todayExits = todayMovements.filter((m) => m.type === "exit");
+  const todaySalesRevenue = todayExits.reduce((sum, m) => sum + (m.total || 0), 0);
+  const todaySalesCost = todayExits.reduce((sum, m) => {
+    const prod = products.find(p => p.id === m.product_id);
+    return sum + (m.quantity || 0) * (prod?.purchase_price || 0);
+  }, 0);
+  const todayProfit = todaySalesRevenue - todaySalesCost;
+  const todayMargin = todaySalesRevenue > 0 ? (todayProfit / todaySalesRevenue) * 100 : 0;
+
+  // Quotation semaphore counts
+  const quotGreen = quotations.filter(q => q.status === "converted").length;
+  const quotYellow = quotations.filter(q => ["draft", "sent", "accepted"].includes(q.status)).length;
+  const quotRed = quotations.filter(q => q.status === "cancelled").length;
 
   // Chart data: movements per day (last 7 days)
   const chartData = [];
