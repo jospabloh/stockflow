@@ -286,35 +286,20 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           </div>
 
           {/* Tax & totals */}
-          <div className="bg-slate-50 rounded-xl p-4 space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-500">Subtotal</span>
+          <div className="bg-slate-50 rounded-xl p-4 space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Subtotal (todos los productos)</span>
               <span className="font-medium">${subtotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <Switch checked={applyTax} onCheckedChange={setApplyTax} />
-                <Input
-                  value={taxLabel}
-                  onChange={(e) => setTaxLabel(e.target.value)}
-                  className="w-20 h-7 text-xs"
-                  placeholder="IVA"
-                  disabled={!applyTax}
-                />
-                <div className="flex items-center gap-1">
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={taxRate}
-                    onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
-                    className="w-16 h-7 text-xs"
-                    disabled={!applyTax}
-                  />
-                  <span className="text-xs text-slate-500">%</span>
-                </div>
+            {taxableSubtotal > 0 && (
+              <div className="flex justify-between text-slate-500">
+                <span>Base gravable (productos con IVA 16%)</span>
+                <span>${taxableSubtotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
               </div>
-              <span className="font-medium text-sm">{applyTax ? `$${taxAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}` : "Sin impuesto"}</span>
+            )}
+            <div className="flex justify-between text-slate-500">
+              <span>IVA 16%</span>
+              <span>${taxAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between text-lg border-t pt-2">
               <span className="font-semibold">Total</span>
