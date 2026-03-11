@@ -164,7 +164,10 @@ export default function Quotations() {
                         ${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge className={`${status.color} border-0`}>{status.label}</Badge>
+                        <Badge className={`${status.color} border-0 flex items-center gap-1.5 w-fit mx-auto`}>
+                          <span className={`h-2 w-2 rounded-full ${status.dot} inline-block`} />
+                          {status.label}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-center">
                         <DropdownMenu>
