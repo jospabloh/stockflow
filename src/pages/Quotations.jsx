@@ -28,7 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Search, MoreHorizontal, Pencil, ShoppingCart, FileDown, Truck, CheckCircle2, DollarSign, XCircle } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Pencil, ShoppingCart, FileDown, Truck, CheckCircle2, DollarSign, XCircle, AlertTriangle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import moment from "moment";
 import QuotationFormDialog from "@/components/quotations/QuotationFormDialog";
