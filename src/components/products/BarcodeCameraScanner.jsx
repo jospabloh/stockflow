@@ -6,22 +6,25 @@ import { Button } from "@/components/ui/button";
 export default function BarcodeCameraScanner({ onDetected, onClose }) {
   const videoRef = useRef(null);
   const readerRef = useRef(null);
+  const detectedRef = useRef(false); // prevent multiple fires
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    detectedRef.current = false;
     const reader = new BrowserMultiFormatReader();
     readerRef.current = reader;
 
     reader.decodeFromVideoDevice(undefined, videoRef.current, (result, err) => {
-      if (result) {
+      if (result && !detectedRef.current) {
+        detectedRef.current = true;
         onDetected(result.getText());
       }
-    }).catch((e) => {
+    }).catch(() => {
       setError("No se pudo acceder a la cámara. Verifica los permisos.");
     });
 
     return () => {
-      try { reader.reset(); } catch {}
+      try { readerRef.current?.reset(); } catch {}
     };
   }, []);
 
