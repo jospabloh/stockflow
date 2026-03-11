@@ -103,11 +103,9 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   const handleBarcodeKeyDown = (e) => {
     const now = Date.now();
     if (now - lastKeystroke.current < 50) {
-      // Fast input = scanner
-      barcodeBuffer.current += e.key === "Enter" ? "" : e.key;
       setScanning(true);
-      clearTimeout(window._scannerTimeout);
-      window._scannerTimeout = setTimeout(() => {
+      if (scannerTimeoutRef.current) clearTimeout(scannerTimeoutRef.current);
+      scannerTimeoutRef.current = setTimeout(() => {
         setScanning(false);
         barcodeBuffer.current = "";
       }, 300);
