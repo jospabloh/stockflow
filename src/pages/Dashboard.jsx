@@ -15,6 +15,8 @@ import {
 } from "recharts";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function Dashboard() {
   const [products, setProducts] = useState([]);
