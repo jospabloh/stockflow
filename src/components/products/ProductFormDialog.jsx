@@ -37,6 +37,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
   const lastKeystroke = useRef(Date.now());
   const barcodeBuffer = useRef("");
+  const scannerTimeoutRef = useRef(null);
 
   useEffect(() => {
     Promise.all([
