@@ -63,6 +63,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         min_stock: product.min_stock || 5,
         unit: product.unit || "pieza",
         status: product.status || "active",
+        tax_rate: product.tax_rate ?? 16,
       });
     } else {
       setForm({
