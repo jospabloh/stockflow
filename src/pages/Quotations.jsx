@@ -153,7 +153,7 @@ export default function Quotations() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12 text-slate-400">Sin cotizaciones</TableCell>
+                  <TableCell colSpan={7} className="text-center py-12 text-slate-400">Sin cotizaciones</TableCell>
                 </TableRow>
               ) : (
                 filtered.map((q) => {
