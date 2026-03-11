@@ -103,7 +103,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   const addItem = () => {
     setForm((prev) => ({
       ...prev,
-      items: [...prev.items, { product_id: "", product_name: "", quantity: 1, unit_price: 0, total: 0 }],
+      items: [...prev.items, { product_id: "", product_name: "", quantity: 1, unit_price: 0, total: 0, tax_rate: 16 }],
     }));
   };
 
