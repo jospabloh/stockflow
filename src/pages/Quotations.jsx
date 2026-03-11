@@ -203,16 +203,24 @@ export default function Quotations() {
                         {q.status === "converted" && (
                           <div className="flex items-center justify-center gap-3">
                             <button
-                              title={q.in_route ? "En ruta" : "Marcar en ruta"}
-                              onClick={async () => { await base44.entities.Quotation.update(q.id, { in_route: !q.in_route, delivered: q.in_route ? false : q.delivered }); loadData(); }}
+                              title={q.in_route ? "En ruta (click para desmarcar)" : "Marcar en ruta"}
+                              onClick={async () => {
+                                // Toggle in_route; if activating, clear delivered. If deactivating, just clear.
+                                await base44.entities.Quotation.update(q.id, { in_route: !q.in_route, delivered: false });
+                                loadData();
+                              }}
                               className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${q.in_route ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-400 hover:bg-blue-50 hover:text-blue-500"}`}
                             >
                               <Truck className="h-3.5 w-3.5" />
                               {q.in_route ? "En ruta" : "Ruta"}
                             </button>
                             <button
-                              title={q.delivered ? "Entregado" : "Marcar entregado"}
-                              onClick={async () => { await base44.entities.Quotation.update(q.id, { delivered: !q.delivered }); loadData(); }}
+                              title={q.delivered ? "Entregado (click para desmarcar)" : "Marcar entregado"}
+                              onClick={async () => {
+                                // Toggle delivered; if activating, clear in_route. If deactivating, just clear.
+                                await base44.entities.Quotation.update(q.id, { delivered: !q.delivered, in_route: false });
+                                loadData();
+                              }}
                               className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${q.delivered ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-400 hover:bg-emerald-50 hover:text-emerald-500"}`}
                             >
                               <CheckCircle2 className="h-3.5 w-3.5" />
