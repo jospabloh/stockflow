@@ -11,7 +11,6 @@ import { Plus, Trash2, Save, ScanLine, Search } from "lucide-react";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 
 const PAYMENT_METHODS = [
   "Efectivo", "Transferencia", "Tarjeta de crédito", "Tarjeta de débito",
