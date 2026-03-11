@@ -187,7 +187,16 @@ export default function Quotations() {
                   const status = statusConfig[q.status] || statusConfig.draft;
                   return (
                     <TableRow key={q.id} className="hover:bg-slate-50/50 transition-colors">
-                      <TableCell className="font-mono text-sm text-indigo-600 cursor-pointer hover:underline" onClick={() => setPreviewQuotation(q)}>{q.folio}</TableCell>
+                      <TableCell className="font-mono text-sm text-indigo-600 cursor-pointer hover:underline" onClick={() => setPreviewQuotation(q)}>
+                        <span className="flex items-center gap-1.5">
+                          {q.folio}
+                          {q.delivered && !q.paid && (
+                            <span title="Entregado sin confirmar pago">
+                              <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+                            </span>
+                          )}
+                        </span>
+                      </TableCell>
                       <TableCell className="font-medium text-slate-800">{q.client_name}</TableCell>
                       <TableCell className="text-slate-600">{moment(q.created_date).format("DD/MM/YY")}</TableCell>
                       <TableCell className="text-right font-semibold text-slate-700">
