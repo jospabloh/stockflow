@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Save, ScanLine } from "lucide-react";
+import { toast } from "sonner";
 
 const TYPES = [
   { value: "entry", label: "Entrada (Compra)" },
@@ -90,7 +91,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
     // BUG-014: Validar stock suficiente para salidas
     if (form.type === "exit" && newStock < form.quantity) {
-      alert(`Stock insuficiente. Solo hay ${newStock} unidad(es) disponibles de "${product.name}".`);
+      toast.error(`Stock insuficiente. Solo hay ${newStock} unidad(es) disponibles de "${product.name}".`);
       setSaving(false);
       return;
     }
