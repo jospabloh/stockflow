@@ -381,7 +381,7 @@ export default function Quotations() {
       </AlertDialog>
 
       {/* Payment confirmation dialog */}
-      <AlertDialog open={!!payQuotation} onOpenChange={(v) => { if (!v) { setPayQuotation(null); setPaymentMethod(""); } }}>
+      <AlertDialog open={!!payQuotation} onOpenChange={(v) => { if (!v) { setPayQuotation(null); setPaymentMethod(""); setPayMarkDelivered(false); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar pago — {payQuotation?.folio}</AlertDialogTitle>
