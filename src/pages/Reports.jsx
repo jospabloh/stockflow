@@ -214,6 +214,131 @@ export default function Reports() {
           <TabsTrigger value="category">Por Categoría</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="quotations">
+          {/* Filters */}
+          <Card className="border-0 shadow-sm p-4 mb-4">
+            <div className="flex flex-wrap gap-4 items-end">
+              <div className="min-w-[180px]">
+                <label className="text-xs text-slate-500 mb-1 block">Cliente</label>
+                <Select value={qClientFilter} onValueChange={setQClientFilter}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los clientes</SelectItem>
+                    {uniqueClients.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="min-w-[180px]">
+                <label className="text-xs text-slate-500 mb-1 block">Forma de pago</label>
+                <Select value={qPaymentFilter} onValueChange={setQPaymentFilter}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las formas</SelectItem>
+                    {uniquePaymentMethods.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => { setQClientFilter("all"); setQPaymentFilter("all"); }}>
+                Limpiar filtros
+              </Button>
+            </div>
+          </Card>
+
+          {/* Summary cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <Card className="border-0 shadow-sm p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Total Ventas</p>
+                  <p className="text-lg font-bold text-slate-800">${totalConverted.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
+                  <p className="text-xs text-slate-400">{filteredQuotations.length} cotizaciones</p>
+                </div>
+              </div>
+            </Card>
+            <Card className="border-0 shadow-sm p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Cobrado</p>
+                  <p className="text-lg font-bold text-emerald-700">${totalPaid.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
+                  <p className="text-xs text-slate-400">{paidQuotations.length} pagadas</p>
+                </div>
+              </div>
+            </Card>
+            <Card className="border-0 shadow-sm p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                  <AlertCircle className="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Pendiente de Pago</p>
+                  <p className="text-lg font-bold text-amber-700">${totalPending.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
+                  <p className="text-xs text-slate-400">{pendingPayment.length} pendientes</p>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Table */}
+          <Card className="border-0 shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="font-semibold text-slate-700">Detalle de Ventas Concretadas</h3>
+              <Button variant="outline" size="sm" onClick={() => handleExportCSV(filteredQuotations.map(q => ({
+                folio: q.folio, cliente: q.client_name, fecha: moment(q.created_date).format("DD/MM/YYYY"),
+                total: q.total, pagado: q.paid ? "Sí" : "No", forma_pago: q.payment_method || "—",
+                entregado: q.delivered ? "Sí" : "No"
+              })), "ventas")}>
+                <Download className="h-4 w-4 mr-1" /> CSV
+              </Button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50/70">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-slate-500 font-medium">Folio</th>
+                    <th className="text-left px-4 py-3 text-slate-500 font-medium">Cliente</th>
+                    <th className="text-left px-4 py-3 text-slate-500 font-medium">Fecha</th>
+                    <th className="text-right px-4 py-3 text-slate-500 font-medium">Total</th>
+                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Entrega</th>
+                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Pago</th>
+                    <th className="text-left px-4 py-3 text-slate-500 font-medium">Forma de Pago</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredQuotations.length === 0 ? (
+                    <tr><td colSpan={7} className="text-center py-10 text-slate-400">Sin ventas en el período seleccionado</td></tr>
+                  ) : (
+                    filteredQuotations.map((q) => (
+                      <tr key={q.id} className="border-t border-slate-100 hover:bg-slate-50/50">
+                        <td className="px-4 py-3 font-mono text-indigo-600">{q.folio}</td>
+                        <td className="px-4 py-3 font-medium text-slate-800">{q.client_name}</td>
+                        <td className="px-4 py-3 text-slate-500">{moment(q.created_date).format("DD/MM/YY")}</td>
+                        <td className="px-4 py-3 text-right font-semibold text-slate-700">${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
+                        <td className="px-4 py-3 text-center">
+                          {q.delivered ? <span className="inline-flex items-center gap-1 text-emerald-600 text-xs font-medium"><CheckCircle2 className="h-3.5 w-3.5" /> Entregado</span>
+                            : q.in_route ? <span className="inline-flex items-center gap-1 text-blue-600 text-xs font-medium">En ruta</span>
+                            : <span className="text-slate-400 text-xs">Pendiente</span>}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {q.paid
+                            ? <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full"><CheckCircle2 className="h-3 w-3" /> Pagado</span>
+                            : <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full"><AlertCircle className="h-3 w-3" /> Pendiente</span>}
+                        </td>
+                        <td className="px-4 py-3 text-slate-600">{q.payment_method || "—"}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="sales">
           <Card className="border-0 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
