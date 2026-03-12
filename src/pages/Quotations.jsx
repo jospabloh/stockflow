@@ -43,6 +43,11 @@ const statusConfig = {
   cancelled: { label: "Cancelada", color: "bg-red-100 text-red-700", dot: "bg-red-500" },
 };
 
+const isExpired = (q) => {
+  if (!q.valid_until || q.status === "converted" || q.status === "cancelled") return false;
+  return new Date(q.valid_until) < new Date(new Date().toDateString());
+};
+
 export default function Quotations() {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
