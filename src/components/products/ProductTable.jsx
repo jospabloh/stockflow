@@ -73,12 +73,16 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(product)}>
-                          <Pencil className="h-4 w-4 text-slate-400" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDelete(product)}>
-                          <Trash2 className="h-4 w-4 text-slate-400 hover:text-red-500" />
-                        </Button>
+                        {isAdmin && (
+                          <>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(product)}>
+                              <Pencil className="h-4 w-4 text-slate-400" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDelete(product)}>
+                              <Trash2 className="h-4 w-4 text-slate-400 hover:text-red-500" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
