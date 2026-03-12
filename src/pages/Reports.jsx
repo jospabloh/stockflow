@@ -132,6 +132,25 @@ export default function Reports() {
     }));
   })();
 
+  // Quotation data
+  const convertedQuotations = quotations.filter((q) => q.status === "converted");
+  const filteredQuotations = convertedQuotations.filter((q) => {
+    const date = moment(q.created_date);
+    const inRange = date.isSameOrAfter(dateFrom) && date.isSameOrBefore(moment(dateTo).endOf("day"));
+    const clientMatch = qClientFilter === "all" || q.client_name === qClientFilter;
+    const paymentMatch = qPaymentFilter === "all" || q.payment_method === qPaymentFilter;
+    return inRange && clientMatch && paymentMatch;
+  });
+
+  const pendingPayment = filteredQuotations.filter((q) => !q.paid);
+  const paidQuotations = filteredQuotations.filter((q) => q.paid);
+  const totalConverted = filteredQuotations.reduce((s, q) => s + (q.total || 0), 0);
+  const totalPaid = paidQuotations.reduce((s, q) => s + (q.total || 0), 0);
+  const totalPending = pendingPayment.reduce((s, q) => s + (q.total || 0), 0);
+
+  const uniqueClients = [...new Set(convertedQuotations.map((q) => q.client_name).filter(Boolean))].sort();
+  const uniquePaymentMethods = [...new Set(convertedQuotations.map((q) => q.payment_method).filter(Boolean))].sort();
+
   const totalSalesValue = filteredMovements
     .filter((m) => m.type === "exit")
     .reduce((sum, m) => sum + (m.total || 0), 0);
