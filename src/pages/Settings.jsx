@@ -90,6 +90,11 @@ export default function Settings() {
   };
 
   const handleDeleteCategory = async (id) => {
+    const products = await base44.entities.Product.filter({ category: id });
+    if (products.length > 0) {
+      toast.error(`No se puede eliminar: ${products.length} producto(s) usan esta categoría.`);
+      return;
+    }
     await base44.entities.Category.delete(id);
     setCategories(categories.filter((c) => c.id !== id));
   };
@@ -108,6 +113,11 @@ export default function Settings() {
   };
 
   const handleDeleteSupplier = async (id) => {
+    const products = await base44.entities.Product.filter({ supplier: id });
+    if (products.length > 0) {
+      toast.error(`No se puede eliminar: ${products.length} producto(s) tienen este proveedor asignado.`);
+      return;
+    }
     await base44.entities.Supplier.delete(id);
     setSuppliers(suppliers.filter((s) => s.id !== id));
   };
