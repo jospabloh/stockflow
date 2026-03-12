@@ -120,7 +120,21 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
     if (product) {
       await base44.entities.Product.update(product.id, form);
     } else {
-      await base44.entities.Product.create(form);
+      const created = await base44.entities.Product.create(form);
+      // BUG-007: Registrar stock inicial como movimiento de entrada
+      if (form.stock > 0 && created?.id) {
+        await base44.entities.Movement.create({
+          product_id: created.id,
+          product_name: form.name,
+          type: "entry",
+          quantity: form.stock,
+          unit_price: form.purchase_price || 0,
+          total: (form.stock) * (form.purchase_price || 0),
+          reason: "Stock inicial",
+          reference: "Stock inicial",
+          stock_after: form.stock,
+        });
+      }
     }
     setSaving(false);
     onSaved();

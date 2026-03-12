@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, AlertTriangle } from "lucide-react";
 
-export default function ProductTable({ products, categories, onEdit, onDelete }) {
+export default function ProductTable({ products, categories, onEdit, onDelete, isAdmin }) {
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || "—";
 
   return (
