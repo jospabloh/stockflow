@@ -383,11 +383,63 @@ export default function Settings() {
                 <Input placeholder="Se habilitará en Fase 2" disabled />
               </div>
             </div>
-            <div className="flex justify-end">
-              <Button onClick={handleSaveSettings} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
-                <Save className="h-4 w-4 mr-1" /> Guardar RFC
-              </Button>
+            <div className="flex justify-end gap-3">
+              {rfcSaved && (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => setConfirmDeleteRfc(true)}
+                    className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-400"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" /> Eliminar RFC
+                  </Button>
+                  <Button onClick={handleSaveSettings} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
+                    <RefreshCw className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Actualizar RFC"}
+                  </Button>
+                </>
+              )}
+              {!rfcSaved && (
+                <Button onClick={handleSaveSettings} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
+                  <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Guardar RFC"}
+                </Button>
+              )}
             </div>
+
+            {/* Confirm delete RFC */}
+            {confirmDeleteRfc && (
+              <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+                <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+                      <Trash2 className="h-5 w-5 text-red-500" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800">¿Eliminar RFC?</p>
+                      <p className="text-sm text-slate-500">Esta acción eliminará el RFC registrado del negocio.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 justify-end">
+                    <Button variant="outline" onClick={() => setConfirmDeleteRfc(false)}>No</Button>
+                    <Button
+                      className="bg-red-600 hover:bg-red-700"
+                      onClick={async () => {
+                        updateSettings("rfc", "");
+                        setSaving(true);
+                        if (settingsId) {
+                          await base44.entities.AppSettings.update(settingsId, { ...settings, rfc: "" });
+                        }
+                        setSaving(false);
+                        setRfcSaved(false);
+                        setConfirmDeleteRfc(false);
+                        toast.success("RFC eliminado");
+                      }}
+                    >
+                      Sí, eliminar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </Card>
         </TabsContent>
       </Tabs>
