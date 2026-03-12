@@ -61,6 +61,7 @@ export default function Quotations() {
   const [cancelReason, setCancelReason] = useState("");
   const [payQuotation, setPayQuotation] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [payMarkDelivered, setPayMarkDelivered] = useState(false);
   const [previewQuotation, setPreviewQuotation] = useState(null);
   const [settings, setSettings] = useState(null);
 
