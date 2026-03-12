@@ -33,7 +33,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
           <TableBody>
             {products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-slate-400">
+                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center py-12 text-slate-400">
                   No hay productos registrados
                 </TableCell>
               </TableRow>

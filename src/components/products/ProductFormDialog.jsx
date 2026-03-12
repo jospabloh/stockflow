@@ -220,10 +220,18 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label>Precio de compra</Label>
-            <Input type="number" min={0} step="0.01" value={form.purchase_price} onChange={(e) => updateField("purchase_price", parseFloat(e.target.value) || 0)} />
-          </div>
+          {!product && (
+            <div>
+              <Label>Precio de compra</Label>
+              <Input type="number" min={0} step="0.01" value={form.purchase_price} onChange={(e) => updateField("purchase_price", parseFloat(e.target.value) || 0)} />
+            </div>
+          )}
+          {product && (
+            <div>
+              <Label>Precio de compra</Label>
+              <Input type="number" min={0} step="0.01" value={form.purchase_price} onChange={(e) => updateField("purchase_price", parseFloat(e.target.value) || 0)} />
+            </div>
+          )}
           <div>
             <Label>Precio de venta *</Label>
             <Input type="number" min={0} step="0.01" value={form.sale_price} onChange={(e) => updateField("sale_price", parseFloat(e.target.value) || 0)} />
