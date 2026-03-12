@@ -135,16 +135,21 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   const taxAmount = taxableSubtotal * 0.16;
   const total = subtotal + taxAmount;
 
-  const generateFolio = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
-    return `COT-${code}`;
+  const generateFolio = async () => {
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(2);
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    const datePrefix = `COT-${yy}${mm}${dd}`;
+    const all = await base44.entities.Quotation.list();
+    const todayCount = all.filter(q => q.folio && q.folio.startsWith(datePrefix)).length;
+    const seq = String(todayCount).padStart(4, "0");
+    return `${datePrefix}-${seq}`;
   };
 
   const handleSave = async () => {
     setSaving(true);
-    const folio = quotation?.folio || generateFolio();
+    const folio = quotation?.folio || await generateFolio();
     const data = {
       ...form,
       subtotal,
