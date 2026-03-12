@@ -137,12 +137,18 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   const total = subtotal + taxAmount;
 
   const generateFolio = async () => {
+    // Use Mexico City local time to generate the date prefix
     const now = new Date();
-    const yy = String(now.getFullYear()).slice(2);
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const dd = String(now.getDate()).padStart(2, "0");
+    const mxDate = new Intl.DateTimeFormat("es-MX", {
+      timeZone: "America/Mexico_City",
+      year: "2-digit", month: "2-digit", day: "2-digit",
+    }).formatToParts(now);
+    const yy = mxDate.find(p => p.type === "year").value;
+    const mm = mxDate.find(p => p.type === "month").value;
+    const dd = mxDate.find(p => p.type === "day").value;
     const datePrefix = `COT-${yy}${mm}${dd}`;
-    const all = await base44.entities.Quotation.list();
+    // Fetch all quotations (high limit) to count today's folios correctly
+    const all = await base44.entities.Quotation.list("-created_date", 2000);
     const todayCount = all.filter(q => q.folio && q.folio.startsWith(datePrefix)).length;
     const seq = String(todayCount).padStart(4, "0");
     return `${datePrefix}-${seq}`;

@@ -314,10 +314,18 @@ export default function Quotations() {
                             <button
                               title={q.paid ? `Pagado: ${q.payment_method || "—"}` : "Confirmar pago"}
                               onClick={() => { if (!q.paid) { setPayQuotation(q); setPaymentMethod(q.payment_method || ""); } }}
-                              className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${q.paid ? "bg-green-100 text-green-700 cursor-default" : "bg-slate-100 text-slate-400 hover:bg-green-50 hover:text-green-500"}`}
+                              className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${
+                                q.paid && q.payment_method && !["Por definir","Pendiente de confirmar",""].includes(q.payment_method)
+                                  ? "bg-green-100 text-green-700 cursor-default"
+                                  : q.paid
+                                    ? "bg-orange-100 text-orange-700 hover:bg-orange-200 cursor-pointer"
+                                    : "bg-slate-100 text-slate-400 hover:bg-green-50 hover:text-green-500"
+                              }`}
                             >
                               <DollarSign className="h-3.5 w-3.5" />
-                              {q.paid ? (q.payment_method || "Pagado") : "Pago"}
+                              {q.paid && q.payment_method && !["Por definir","Pendiente de confirmar",""].includes(q.payment_method)
+                                ? (q.payment_method)
+                                : q.paid ? "Confirmar" : "Pago"}
                             </button>
                           </div>
                         )}
