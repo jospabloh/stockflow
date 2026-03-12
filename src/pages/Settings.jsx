@@ -421,7 +421,7 @@ export default function Settings() {
                   <Input placeholder="Se habilitará en Fase 2" disabled />
                 </div>
               </div>
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3 mt-2">
               {rfcSaved && (
                 <>
                   <Button
