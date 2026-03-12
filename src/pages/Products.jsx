@@ -78,6 +78,12 @@ export default function Products() {
 
   const handleDelete = async () => {
     if (deleteProduct) {
+      const movs = await base44.entities.Movement.filter({ product_id: deleteProduct.id });
+      if (movs.length > 0) {
+        toast.error(`No se puede eliminar: hay ${movs.length} movimiento(s) registrado(s) para este producto.`);
+        setDeleteProduct(null);
+        return;
+      }
       await base44.entities.Product.delete(deleteProduct.id);
       setDeleteProduct(null);
       loadData();
@@ -85,10 +91,13 @@ export default function Products() {
   };
 
   const handleExportCSV = () => {
-    const headers = ["Nombre", "SKU", "Código de barras", "Precio Compra", "Precio Venta", "Stock", "Unidad"];
-    const rows = filteredProducts.map((p) => [
-      p.name, p.sku || "", p.barcode || "", p.purchase_price || 0, p.sale_price, p.stock, p.unit || "pieza"
-    ]);
+    const headers = isAdmin
+      ? ["Nombre", "SKU", "Código de barras", "Precio Compra", "Precio Venta", "Stock", "Unidad"]
+      : ["Nombre", "SKU", "Código de barras", "Precio Venta", "Stock", "Unidad"];
+    const rows = filteredProducts.map((p) => isAdmin
+      ? [p.name, p.sku || "", p.barcode || "", p.purchase_price || 0, p.sale_price, p.stock, p.unit || "pieza"]
+      : [p.name, p.sku || "", p.barcode || "", p.sale_price, p.stock, p.unit || "pieza"]
+    );
     const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
