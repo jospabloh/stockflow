@@ -59,6 +59,7 @@ export default function Settings() {
       if (sets.length > 0) {
         setSettings(sets[0]);
         setSettingsId(sets[0].id);
+        setRfcSaved(!!sets[0].rfc);
       } else {
         setSettings({
           business_name: "", logo_url: "", primary_color: "#4F46E5",
