@@ -40,6 +40,7 @@ const typeConfig = {
 export default function Movements() {
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [formOpen, setFormOpen] = useState(false);
@@ -52,7 +53,10 @@ export default function Movements() {
     });
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    base44.auth.me().then(u => setIsAdmin(u?.role === "admin")).catch(() => {});
+    loadData();
+  }, []);
 
   const filtered = movements.filter((m) => {
     const matchSearch = m.product_name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -113,9 +117,11 @@ export default function Movements() {
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1" /> CSV
           </Button>
-          <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => setFormOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" /> Nuevo Movimiento
-          </Button>
+          {isAdmin && (
+            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => setFormOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" /> Nuevo Movimiento
+            </Button>
+          )}
         </div>
       </div>
 
