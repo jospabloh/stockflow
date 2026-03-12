@@ -140,10 +140,22 @@ export default function Settings() {
     toast.success("Logo subido correctamente");
   };
 
-  if (loading) {
+  if (loading || checkingAuth) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <div className="h-14 w-14 rounded-full bg-red-50 flex items-center justify-center">
+          <Save className="h-6 w-6 text-red-400" />
+        </div>
+        <p className="text-slate-600 font-medium">Acceso restringido</p>
+        <p className="text-sm text-slate-400">Solo los administradores pueden acceder a la configuración.</p>
       </div>
     );
   }
