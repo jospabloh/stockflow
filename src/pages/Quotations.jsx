@@ -417,7 +417,7 @@ export default function Quotations() {
       </AlertDialog>
 
       {/* Convert confirmation */}
-      <AlertDialog open={!!convertQuotation} onOpenChange={() => setConvertQuotation(null)}>
+      <AlertDialog open={!!convertQuotation} onOpenChange={(v) => { if (!v) { setConvertQuotation(null); setConvertPaymentMethod(""); setConvertError(""); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Convertir en venta?</AlertDialogTitle>
@@ -425,9 +425,31 @@ export default function Quotations() {
               Se descontará el stock de los {convertQuotation?.items?.length || 0} producto(s) de la cotización {convertQuotation?.folio}. Total: ${convertQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="px-1 py-3 space-y-2">
+            <p className="text-sm font-medium text-slate-700">Método de pago <span className="text-red-500">*</span></p>
+            <div className="grid grid-cols-2 gap-2">
+              {["Efectivo", "Transferencia", "Tarjeta débito", "Tarjeta crédito", "Cheque", "Otro"].map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => { setConvertPaymentMethod(m); setConvertError(""); }}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${convertPaymentMethod === m ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300"}`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+            <Input
+              placeholder="Otro método..."
+              value={convertPaymentMethod}
+              onChange={(e) => { setConvertPaymentMethod(e.target.value); setConvertError(""); }}
+              className="mt-1"
+            />
+            {convertError && <p className="text-sm text-red-600">{convertError}</p>}
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConvertToSale} className="bg-indigo-600 hover:bg-indigo-700">
+            <AlertDialogAction onClick={handleConvertToSale} disabled={!convertPaymentMethod.trim()} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50">
               Confirmar Venta
             </AlertDialogAction>
           </AlertDialogFooter>
