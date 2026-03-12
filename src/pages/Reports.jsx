@@ -204,7 +204,7 @@ export default function Reports() {
         </div>
       </Card>
 
-      <Tabs defaultValue="sales" className="space-y-6">
+      <Tabs defaultValue="quotations" className="space-y-6">
         <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="quotations">Cotizaciones/Ventas</TabsTrigger>
           <TabsTrigger value="sales">Más Vendidos</TabsTrigger>
