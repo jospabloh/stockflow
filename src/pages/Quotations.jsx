@@ -96,6 +96,11 @@ export default function Quotations() {
       setConvertError("Debes seleccionar un método de pago para continuar.");
       return;
     }
+    // Validar que la cotización no esté ya convertida
+    if (convertQuotation.status === "converted") {
+      setConvertError("Esta cotización ya fue convertida en venta.");
+      return;
+    }
 
     // BUG-018: Validar stock suficiente antes de proceder
     for (const item of (convertQuotation.items || [])) {
@@ -175,6 +180,11 @@ export default function Quotations() {
 
   const handleConfirmPayment = async () => {
     if (!payQuotation) return;
+    // Solo permitir confirmar pago si es cotización convertida
+    if (payQuotation.status !== "converted") {
+      setPayQuotation(null);
+      return;
+    }
     const update = { paid: true, payment_method: paymentMethod };
     if (payMarkDelivered) update.delivered = true;
     await base44.entities.Quotation.update(payQuotation.id, update);

@@ -100,8 +100,8 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       newStock += form.quantity;
     } else if (form.type === "exit") {
       newStock -= form.quantity;
-    } else {
-      newStock = form.quantity; // Adjustment sets absolute
+    } else if (form.type === "adjustment") {
+      newStock = form.quantity; // Ajuste establece valor absoluto
     }
 
     await base44.entities.Movement.create({
@@ -188,7 +188,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>{form.type === "adjustment" ? "Stock absoluto nuevo *" : "Cantidad *"}</Label>
+              <Label>{form.type === "adjustment" ? "Stock absoluto nuevo (valor final) *" : "Cantidad *"}</Label>
               <Input type="number" min={0} value={form.quantity} onChange={(e) => updateField("quantity", parseInt(e.target.value) || 0)} />
             </div>
             <div>
