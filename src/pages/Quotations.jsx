@@ -86,11 +86,25 @@ export default function Quotations() {
 
   const handleConvertToSale = async () => {
     if (!convertQuotation) return;
+    if (!convertPaymentMethod.trim()) {
+      setConvertError("Debes seleccionar un método de pago para continuar.");
+      return;
+    }
 
-    // Create exit movements for each item
+    // BUG-018: Validar stock suficiente antes de proceder
     for (const item of (convertQuotation.items || [])) {
-      const products = await base44.entities.Product.filter({ id: item.product_id });
-      const product = products[0];
+      const prods = await base44.entities.Product.filter({ id: item.product_id });
+      const product = prods[0];
+      if (product && item.quantity > (product.stock || 0)) {
+        setConvertError(`Stock insuficiente para "${item.product_name}": solo hay ${product.stock} unidad(es).`);
+        return;
+      }
+    }
+
+    // Create exit movements for each item — BUG-009: popular reason
+    for (const item of (convertQuotation.items || [])) {
+      const prods = await base44.entities.Product.filter({ id: item.product_id });
+      const product = prods[0];
       if (product) {
         const newStock = (product.stock || 0) - item.quantity;
         await base44.entities.Movement.create({
@@ -102,14 +116,20 @@ export default function Quotations() {
           total: item.total,
           stock_after: newStock,
           reference: `Venta ${convertQuotation.folio}`,
+          reason: `Venta a ${convertQuotation.client_name}`,
           quotation_id: convertQuotation.id,
         });
         await base44.entities.Product.update(product.id, { stock: newStock });
       }
     }
 
-    await base44.entities.Quotation.update(convertQuotation.id, { status: "converted" });
+    await base44.entities.Quotation.update(convertQuotation.id, {
+      status: "converted",
+      payment_method: convertPaymentMethod,
+    });
     setConvertQuotation(null);
+    setConvertPaymentMethod("");
+    setConvertError("");
     loadData();
   };
 
