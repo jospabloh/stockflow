@@ -148,6 +148,11 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         </div>
 
         <div className="space-y-4">
+          {form.type === "adjustment" && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
+              ⚠️ El <strong>ajuste</strong> establece el stock final de forma absoluta. Ejemplo: si ingresas 10, el stock quedará en 10 unidades.
+            </div>
+          )}
           <div>
             <Label>Producto *</Label>
             <Select value={form.product_id} onValueChange={handleProductSelect}>
