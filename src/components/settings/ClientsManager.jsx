@@ -101,7 +101,7 @@ export default function ClientsManager() {
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(c)}>
                   <Pencil className="h-4 w-4 text-slate-400" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(c.id)}>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(c)}>
                   <Trash2 className="h-4 w-4 text-slate-400" />
                 </Button>
               </TableCell>
