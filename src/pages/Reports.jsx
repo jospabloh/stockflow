@@ -45,19 +45,23 @@ export default function Reports() {
   const [qPaymentFilter, setQPaymentFilter] = useState("all");
 
   useEffect(() => {
-    base44.auth.me().then(u => setIsAdmin(u?.role === "admin")).catch(() => {});
-    Promise.all([
-      base44.entities.Product.list("-created_date", 500),
-      base44.entities.Movement.list("-created_date", 1000),
-      base44.entities.Category.list(),
-      base44.entities.Quotation.list("-created_date", 500),
-    ]).then(([prods, movs, cats, quots]) => {
+    base44.auth.me().then(async (u) => {
+      const admin = u?.role === "admin";
+      setIsAdmin(admin);
+      const [prods, movs, cats] = await Promise.all([
+        base44.entities.Product.list("-created_date", 500),
+        base44.entities.Movement.list("-created_date", 1000),
+        base44.entities.Category.list(),
+      ]);
       setProducts(prods);
       setMovements(movs);
       setCategories(cats);
-      setQuotations(quots);
+      if (admin) {
+        const quots = await base44.entities.Quotation.list("-created_date", 500).catch(() => []);
+        setQuotations(quots);
+      }
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   const filteredMovements = movements.filter((m) => {

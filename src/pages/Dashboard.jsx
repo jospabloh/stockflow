@@ -26,17 +26,21 @@ export default function Dashboard() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    base44.auth.me().then(u => setIsAdmin(u?.role === "admin")).catch(() => {});
-    Promise.all([
-      base44.entities.Product.list("-created_date", 500),
-      base44.entities.Movement.list("-created_date", 200),
-      base44.entities.Quotation.list("-created_date", 200),
-    ]).then(([prods, movs, quots]) => {
+    base44.auth.me().then(async (u) => {
+      const admin = u?.role === "admin";
+      setIsAdmin(admin);
+      const [prods, movs] = await Promise.all([
+        base44.entities.Product.list("-created_date", 500),
+        base44.entities.Movement.list("-created_date", 200),
+      ]);
       setProducts(prods);
       setMovements(movs);
-      setQuotations(quots);
+      if (admin) {
+        const quots = await base44.entities.Quotation.list("-created_date", 200).catch(() => []);
+        setQuotations(quots);
+      }
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   const activeProducts = products.filter((p) => p.status === "active");
