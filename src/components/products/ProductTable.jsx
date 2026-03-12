@@ -50,6 +50,11 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
                     </TableCell>
                     <TableCell className="text-slate-600">{product.sku || "—"}</TableCell>
                     <TableCell className="text-slate-600">{getCategoryName(product.category)}</TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-right text-slate-500">
+                        ${product.purchase_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "—"}
+                      </TableCell>
+                    )}
                     <TableCell className="text-right font-semibold text-slate-700">
                       ${product.sale_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                     </TableCell>

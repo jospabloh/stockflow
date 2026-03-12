@@ -54,7 +54,10 @@ export default function Products() {
     });
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    base44.auth.me().then(u => setIsAdmin(u?.role === "admin")).catch(() => {});
+    loadData();
+  }, []);
 
   const filteredProducts = products.filter((p) => {
     const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase()) ||
