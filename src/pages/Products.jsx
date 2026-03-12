@@ -150,9 +150,11 @@ export default function Products() {
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1" /> CSV
           </Button>
-          <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingProduct(null); setFormOpen(true); }}>
-            <Plus className="h-4 w-4 mr-1" /> Nuevo Producto
-          </Button>
+          {isAdmin && (
+            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingProduct(null); setFormOpen(true); }}>
+              <Plus className="h-4 w-4 mr-1" /> Nuevo Producto
+            </Button>
+          )}
         </div>
       </div>
 
