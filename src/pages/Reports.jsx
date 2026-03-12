@@ -37,6 +37,7 @@ export default function Reports() {
   const [categories, setCategories] = useState([]);
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [dateFrom, setDateFrom] = useState(moment().subtract(30, "days").format("YYYY-MM-DD"));
   const [dateTo, setDateTo] = useState(moment().format("YYYY-MM-DD"));
   // Quotation filters
@@ -44,6 +45,7 @@ export default function Reports() {
   const [qPaymentFilter, setQPaymentFilter] = useState("all");
 
   useEffect(() => {
+    base44.auth.me().then(u => setIsAdmin(u?.role === "admin")).catch(() => {});
     Promise.all([
       base44.entities.Product.list("-created_date", 500),
       base44.entities.Movement.list("-created_date", 1000),
@@ -195,11 +197,13 @@ export default function Reports() {
               <span className="text-slate-500">Ventas:</span>
               <span className="font-bold text-emerald-700">${totalSalesValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-blue-500" />
-              <span className="text-slate-500">Compras:</span>
-              <span className="font-bold text-blue-700">${totalPurchaseValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-            </div>
+            {isAdmin && (
+              <div className="flex items-center gap-2">
+                <TrendingDown className="h-4 w-4 text-blue-500" />
+                <span className="text-slate-500">Compras:</span>
+                <span className="font-bold text-blue-700">${totalPurchaseValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+              </div>
+            )}
           </div>
         </div>
       </Card>
@@ -208,10 +212,10 @@ export default function Reports() {
         <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="quotations">Cotizaciones/Ventas</TabsTrigger>
           <TabsTrigger value="sales">Más Vendidos</TabsTrigger>
-          <TabsTrigger value="margin">Mejor Margen</TabsTrigger>
+          {isAdmin && <TabsTrigger value="margin">Mejor Margen</TabsTrigger>}
           <TabsTrigger value="low">Baja Rotación</TabsTrigger>
           <TabsTrigger value="trend">Tendencia</TabsTrigger>
-          <TabsTrigger value="category">Por Categoría</TabsTrigger>
+          {isAdmin && <TabsTrigger value="category">Por Categoría</TabsTrigger>}
         </TabsList>
         {/* BUG-016: Nota para el usuario — las pestañas de margen y valor usan precios de compra (solo visibles para admins) */}
 
