@@ -230,6 +230,10 @@ export default function Settings() {
                 <Input value={settings?.address || ""} onChange={(e) => updateSettings("address", e.target.value)} />
               </div>
               <div>
+                <Label>RFC del negocio</Label>
+                <Input value={settings?.rfc || ""} onChange={(e) => updateSettings("rfc", e.target.value.toUpperCase())} placeholder="XAXX010101000" />
+              </div>
+              <div>
                 <Label>Tasa IVA (%)</Label>
                 <Input type="number" value={settings?.tax_rate || 16} onChange={(e) => updateSettings("tax_rate", parseFloat(e.target.value))} />
               </div>
