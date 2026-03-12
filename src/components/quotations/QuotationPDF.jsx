@@ -186,8 +186,7 @@ export function generateQuotationPDF(quotation, settings) {
 
   drawTotalRow("Subtotal", quotation.subtotal || 0);
   if (quotation.tax > 0) {
-    const label = `${quotation.tax_label || "IVA"} (${quotation.tax_rate || 16}%)`;
-    drawTotalRow(label, quotation.tax || 0);
+    drawTotalRow("IVA 16%", quotation.tax || 0);
   }
   drawTotalRow("TOTAL", quotation.total || 0, true, true);
 

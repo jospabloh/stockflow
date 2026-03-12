@@ -139,7 +139,7 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
               </div>
               {quotation.tax > 0 && (
                 <div className="flex justify-between text-slate-600 text-xs py-1">
-                  <span>{quotation.tax_label || "IVA"} ({quotation.tax_rate || 16}%)</span>
+                  <span>IVA 16%</span>
                   <span>${fmt(quotation.tax)}</span>
                 </div>
               )}
