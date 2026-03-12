@@ -45,6 +45,10 @@ export default function Settings() {
   const [supForm, setSupForm] = useState({ name: "", contact_name: "", email: "", phone: "" });
 
   useEffect(() => {
+    base44.auth.me().then(u => {
+      setIsAdmin(u?.role === "admin");
+      setCheckingAuth(false);
+    }).catch(() => setCheckingAuth(false));
     Promise.all([
       base44.entities.AppSettings.list("-created_date", 1),
       base44.entities.Category.list(),
