@@ -230,10 +230,15 @@ export default function Quotations() {
                         ${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge className={`${status.color} border-0 flex items-center gap-1.5 w-fit mx-auto`}>
-                          <span className={`h-2 w-2 rounded-full ${status.dot} inline-block`} />
-                          {status.label}
-                        </Badge>
+                        <div className="flex flex-col gap-1 items-center">
+                          <Badge className={`${status.color} border-0 flex items-center gap-1.5 w-fit`}>
+                            <span className={`h-2 w-2 rounded-full ${status.dot} inline-block`} />
+                            {status.label}
+                          </Badge>
+                          {isExpired(q) && (
+                            <Badge className="bg-red-100 text-red-700 border-0 text-xs w-fit">Vencida</Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-center">
                         {q.status === "converted" && (
