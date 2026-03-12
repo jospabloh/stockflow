@@ -292,9 +292,11 @@ export default function Quotations() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEdit(q)}>
-                              <Pencil className="h-4 w-4 mr-2" /> Editar
-                            </DropdownMenuItem>
+                            {q.status !== "converted" && q.status !== "cancelled" && (
+                              <DropdownMenuItem onClick={() => handleEdit(q)}>
+                                <Pencil className="h-4 w-4 mr-2" /> Editar
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem onClick={() => generateQuotationPDF(q, settings)}>
                               <FileDown className="h-4 w-4 mr-2" /> Descargar PDF
                             </DropdownMenuItem>
@@ -311,7 +313,7 @@ export default function Quotations() {
                                 <ShoppingCart className="h-4 w-4 mr-2" /> Convertir en Venta
                               </DropdownMenuItem>
                             )}
-                            {q.status !== "cancelled" && !q.paid && (
+                            {q.status === "converted" && !q.paid && (
                               <DropdownMenuItem onClick={() => { setPayQuotation(q); setPaymentMethod(q.payment_method || ""); }}>
                                 <DollarSign className="h-4 w-4 mr-2" /> Confirmar Pago
                               </DropdownMenuItem>
