@@ -141,6 +141,29 @@ export default function Quotations() {
 
   const handleCancel = async () => {
     if (!cancelQuotation) return;
+    // BUG-020: Revertir stock si la cotización ya había sido convertida
+    if (cancelQuotation.status === "converted") {
+      for (const item of (cancelQuotation.items || [])) {
+        const prods = await base44.entities.Product.filter({ id: item.product_id });
+        const product = prods[0];
+        if (product) {
+          const restoredStock = (product.stock || 0) + item.quantity;
+          await base44.entities.Movement.create({
+            product_id: item.product_id,
+            product_name: item.product_name,
+            type: "return",
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            total: item.total,
+            stock_after: restoredStock,
+            reference: `Cancelación ${cancelQuotation.folio}`,
+            reason: `Cancelación: ${cancelReason}`,
+            quotation_id: cancelQuotation.id,
+          });
+          await base44.entities.Product.update(product.id, { stock: restoredStock });
+        }
+      }
+    }
     await base44.entities.Quotation.update(cancelQuotation.id, {
       status: "cancelled",
       cancellation_reason: cancelReason,

@@ -26,6 +26,8 @@ import {
 import { toast } from "sonner";
 
 export default function Settings() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [settings, setSettings] = useState(null);
   const [settingsId, setSettingsId] = useState(null);
   const [categories, setCategories] = useState([]);
