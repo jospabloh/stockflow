@@ -152,6 +152,7 @@ export default function Products() {
         categories={categories}
         onEdit={handleEdit}
         onDelete={setDeleteProduct}
+        isAdmin={isAdmin}
       />
 
       {/* Form dialog */}
