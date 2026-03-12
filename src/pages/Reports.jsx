@@ -35,19 +35,25 @@ export default function Reports() {
   const [products, setProducts] = useState([]);
   const [movements, setMovements] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dateFrom, setDateFrom] = useState(moment().subtract(30, "days").format("YYYY-MM-DD"));
   const [dateTo, setDateTo] = useState(moment().format("YYYY-MM-DD"));
+  // Quotation filters
+  const [qClientFilter, setQClientFilter] = useState("all");
+  const [qPaymentFilter, setQPaymentFilter] = useState("all");
 
   useEffect(() => {
     Promise.all([
       base44.entities.Product.list("-created_date", 500),
       base44.entities.Movement.list("-created_date", 1000),
       base44.entities.Category.list(),
-    ]).then(([prods, movs, cats]) => {
+      base44.entities.Quotation.list("-created_date", 500),
+    ]).then(([prods, movs, cats, quots]) => {
       setProducts(prods);
       setMovements(movs);
       setCategories(cats);
+      setQuotations(quots);
       setLoading(false);
     });
   }, []);
