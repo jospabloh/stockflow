@@ -88,6 +88,13 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
     const product = selectedProduct;
     let newStock = product.stock || 0;
 
+    // BUG-014: Validar stock suficiente para salidas
+    if (form.type === "exit" && newStock < form.quantity) {
+      alert(`Stock insuficiente. Solo hay ${newStock} unidad(es) disponibles de "${product.name}".`);
+      setSaving(false);
+      return;
+    }
+
     if (form.type === "entry" || form.type === "return") {
       newStock += form.quantity;
     } else if (form.type === "exit") {

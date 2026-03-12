@@ -150,8 +150,6 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       subtotal,
       tax: taxAmount,
       total,
-      tax_rate: 16,
-      tax_label: taxLabel,
       folio,
     };
     if (quotation) {

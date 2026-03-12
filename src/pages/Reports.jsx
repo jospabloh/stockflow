@@ -213,6 +213,7 @@ export default function Reports() {
           <TabsTrigger value="trend">Tendencia</TabsTrigger>
           <TabsTrigger value="category">Por Categoría</TabsTrigger>
         </TabsList>
+        {/* BUG-016: Nota para el usuario — las pestañas de margen y valor usan precios de compra (solo visibles para admins) */}
 
         <TabsContent value="quotations">
           {/* Filters */}

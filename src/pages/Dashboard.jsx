@@ -23,8 +23,10 @@ export default function Dashboard() {
   const [movements, setMovements] = useState([]);
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    base44.auth.me().then(u => setIsAdmin(u?.role === "admin")).catch(() => {});
     Promise.all([
       base44.entities.Product.list("-created_date", 500),
       base44.entities.Movement.list("-created_date", 200),
@@ -98,14 +100,16 @@ export default function Dashboard() {
           color="indigo"
           href={createPageUrl("Products")}
         />
-        <StatCard
-          title="Valor Total"
-          value={`$${totalValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`}
-          subtitle="Al costo de compra"
-          icon={DollarSign}
-          color="emerald"
-          href={createPageUrl("Reports")}
-        />
+        {isAdmin && (
+          <StatCard
+            title="Valor Total"
+            value={`$${totalValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`}
+            subtitle="Al costo de compra"
+            icon={DollarSign}
+            color="emerald"
+            href={createPageUrl("Reports")}
+          />
+        )}
         <StatCard
           title="Movimientos Hoy"
           value={todayMovements.length}
@@ -139,17 +143,21 @@ export default function Dashboard() {
                   <span className="text-sm text-slate-600">Monto vendido</span>
                   <span className="font-bold text-blue-700">${todaySalesRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                 </div>
-                <div className="flex justify-between items-center bg-slate-50 rounded-lg px-4 py-2.5">
-                  <span className="text-sm text-slate-600">Costo de lo vendido</span>
-                  <span className="font-bold text-slate-700">${todaySalesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-                </div>
-                <div className="flex justify-between items-center bg-emerald-50 rounded-lg px-4 py-2.5">
-                  <span className="text-sm text-slate-600">Ganancia bruta</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-emerald-700">${todayProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-                    <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">{todayMargin.toFixed(1)}%</Badge>
-                  </div>
-                </div>
+                {isAdmin && (
+                  <>
+                    <div className="flex justify-between items-center bg-slate-50 rounded-lg px-4 py-2.5">
+                      <span className="text-sm text-slate-600">Costo de lo vendido</span>
+                      <span className="font-bold text-slate-700">${todaySalesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between items-center bg-emerald-50 rounded-lg px-4 py-2.5">
+                      <span className="text-sm text-slate-600">Ganancia bruta</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-emerald-700">${todayProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                        <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">{todayMargin.toFixed(1)}%</Badge>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </Card>
