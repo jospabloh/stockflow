@@ -152,12 +152,12 @@ export default function Quotations() {
 
   const handleConfirmPayment = async () => {
     if (!payQuotation) return;
-    await base44.entities.Quotation.update(payQuotation.id, {
-      paid: true,
-      payment_method: paymentMethod,
-    });
+    const update = { paid: true, payment_method: paymentMethod };
+    if (payMarkDelivered) update.delivered = true;
+    await base44.entities.Quotation.update(payQuotation.id, update);
     setPayQuotation(null);
     setPaymentMethod("");
+    setPayMarkDelivered(false);
     loadData();
   };
 
