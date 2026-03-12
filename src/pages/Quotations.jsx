@@ -313,7 +313,10 @@ export default function Quotations() {
                             </button>
                             <button
                               title={q.paid ? `Pagado: ${q.payment_method || "—"}` : "Confirmar pago"}
-                              onClick={() => { if (!q.paid) { setPayQuotation(q); setPaymentMethod(q.payment_method || ""); } }}
+                              onClick={() => {
+                                const needsConfirm = !q.paid || !q.payment_method || ["Por definir","Pendiente de confirmar",""].includes(q.payment_method);
+                                if (needsConfirm) { setPayQuotation(q); setPaymentMethod(""); }
+                              }}
                               className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${
                                 q.paid && q.payment_method && !["Por definir","Pendiente de confirmar",""].includes(q.payment_method)
                                   ? "bg-green-100 text-green-700 cursor-default"
