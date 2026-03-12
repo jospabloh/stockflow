@@ -121,6 +121,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           items[index].unit_price = product.sale_price;
           items[index].total = items[index].quantity * product.sale_price;
           items[index].tax_rate = product.tax_rate ?? 16;
+          items[index].available_stock = product.stock ?? 0;
         }
       }
       if (field === "quantity" || field === "unit_price") {
@@ -200,7 +201,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                         type="button"
                         className="w-full text-left px-3 py-2 hover:bg-indigo-50 text-sm border-b border-slate-50 last:border-0"
                         onMouseDown={() => {
-                          setForm({ ...form, client_name: c.name, client_email: c.email || "", client_phone: c.phone || "" });
+                        setForm({ ...form, client_id: c.id, client_name: c.name, client_email: c.email || "", client_phone: c.phone || "" });
                           setClientSearch("");
                           setShowClientSuggestions(false);
                         }}
@@ -272,7 +273,17 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                   </div>
                   <div className="col-span-4 md:col-span-2">
                     <Label className="text-xs">Cantidad</Label>
-                    <Input type="number" min={1} value={item.quantity} onChange={(e) => updateItem(idx, "quantity", parseInt(e.target.value) || 0)} />
+                    <Input
+                      type="number" min={1}
+                      value={item.quantity}
+                      onChange={(e) => updateItem(idx, "quantity", parseInt(e.target.value) || 0)}
+                      className={item.available_stock !== undefined && item.quantity > item.available_stock ? "border-red-400 focus-visible:ring-red-300" : ""}
+                    />
+                    {item.available_stock !== undefined && item.quantity > item.available_stock && (
+                      <p className="text-[10px] text-red-600 mt-0.5 flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" /> Solo {item.available_stock} en stock
+                      </p>
+                    )}
                   </div>
                   <div className="col-span-4 md:col-span-3">
                     <Label className="text-xs">Precio unitario</Label>
@@ -351,7 +362,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
 
         <div className="flex justify-end gap-3 pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={!form.client_name || form.items.length === 0 || saving} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button onClick={handleSave} disabled={!form.client_name || form.items.length === 0 || saving || form.items.some(i => i.available_stock !== undefined && i.quantity > i.available_stock)} className="bg-indigo-600 hover:bg-indigo-700">
             <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Guardar"}
           </Button>
         </div>

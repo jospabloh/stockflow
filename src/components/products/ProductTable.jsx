@@ -62,11 +62,16 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
                       ${product.sale_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {isLowStock && <AlertTriangle className="h-4 w-4 text-amber-500" />}
-                        <span className={`font-semibold ${isLowStock ? "text-amber-600" : "text-slate-700"}`}>
-                          {product.stock} {product.unit}
-                        </span>
+                      <div className="flex flex-col items-end gap-0.5">
+                        <div className="flex items-center gap-1">
+                          {(isOutOfStock || isBelowMin || isAtMin) && <AlertTriangle className={`h-4 w-4 ${isOutOfStock ? "text-red-500" : "text-amber-500"}`} />}
+                          <span className={`font-semibold ${isOutOfStock ? "text-red-600" : (isBelowMin || isAtMin) ? "text-amber-600" : "text-slate-700"}`}>
+                            {product.stock} {product.unit}
+                          </span>
+                        </div>
+                        {isOutOfStock && <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1 rounded">AGOTADO</span>}
+                        {isBelowMin && <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1 rounded">STOCK CRÍTICO</span>}
+                        {isAtMin && <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-1 rounded">STOCK MÍNIMO</span>}
                       </div>
                     </TableCell>
                     <TableCell className="text-center">

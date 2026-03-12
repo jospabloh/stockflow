@@ -176,6 +176,16 @@ export default function Settings() {
         <TabsContent value="business">
           <Card className="border-0 shadow-sm p-6 space-y-6">
             <h3 className="font-semibold text-slate-700 text-lg">Información del Negocio</h3>
+            {(!settings?.rfc || settings?.business_name === "Mi Negocio" || !settings?.business_name) && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-amber-800">
+                  <p className="font-semibold mb-1">Configuración incompleta</p>
+                  {!settings?.business_name || settings?.business_name === "Mi Negocio" ? <p>• Actualiza el <strong>nombre del negocio</strong> con el nombre real.</p> : null}
+                  {!settings?.rfc ? <p>• Registra el <strong>RFC</strong> en la pestaña SAT 4.0 para que aparezca en cotizaciones (requerido fiscalmente).</p> : null}
+                </div>
+              </div>
+            )}
             {/* Logo Upload */}
             <div className="flex items-center gap-6 p-4 bg-slate-50 rounded-xl">
               <div className="h-20 w-20 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden bg-white">
@@ -341,6 +351,12 @@ export default function Settings() {
         <TabsContent value="sat">
           <Card className="border-0 shadow-sm p-6 space-y-4">
             <h3 className="font-semibold text-slate-700 text-lg">Preparación SAT 4.0</h3>
+            {!settings?.rfc && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-red-700 font-medium">RFC del negocio no registrado — las cotizaciones generadas no son fiscalmente válidas ante el SAT.</p>
+              </div>
+            )}
             <div className="bg-amber-50 rounded-xl p-4 text-sm text-amber-800">
               <p className="font-medium mb-1">⚠ Módulo en preparación</p>
               <p>Este módulo está reservado para la integración de facturación electrónica (CFDI) conforme al SAT 4.0 de México. Puedes registrar tu RFC y datos fiscales para facilitar la futura integración.</p>
