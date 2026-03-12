@@ -482,6 +482,7 @@ export default function Settings() {
                 </div>
               </div>
             )}
+            </div>
           </Card>
         </TabsContent>
       </Tabs>
