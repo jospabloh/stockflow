@@ -39,7 +39,10 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
               </TableRow>
             ) : (
               products.map((product) => {
-                const isLowStock = product.stock <= (product.min_stock || 5);
+                const minStock = product.min_stock ?? 5;
+                const isOutOfStock = product.stock <= 0;
+                const isBelowMin = !isOutOfStock && product.stock < minStock;
+                const isAtMin = !isOutOfStock && product.stock === minStock;
                 return (
                   <TableRow key={product.id} className="hover:bg-slate-50/50 transition-colors">
                     <TableCell>
