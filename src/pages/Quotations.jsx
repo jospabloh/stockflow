@@ -187,7 +187,7 @@ export default function Quotations() {
       return;
     }
     const update = { paid: true, payment_method: paymentMethod };
-    if (payMarkDelivered) update.delivered = true;
+    if (payMarkDelivered) { update.delivered = true; update.in_route = false; }
     await base44.entities.Quotation.update(payQuotation.id, update);
     setPayQuotation(null);
     setPaymentMethod("");
@@ -266,12 +266,16 @@ export default function Quotations() {
                       </TableCell>
                       <TableCell className="text-center">
                         <div className="flex flex-col gap-1 items-center">
-                          <Badge className={`${status.color} border-0 flex items-center gap-1.5 w-fit`}>
-                            <span className={`h-2 w-2 rounded-full ${status.dot} inline-block`} />
-                            {status.label}
-                          </Badge>
-                          {isExpired(q) && (
-                            <Badge className="bg-red-100 text-red-700 border-0 text-xs w-fit">Vencida</Badge>
+                          {isExpired(q) ? (
+                            <Badge className="bg-red-100 text-red-700 border-0 flex items-center gap-1.5 w-fit">
+                              <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
+                              Vencida
+                            </Badge>
+                          ) : (
+                            <Badge className={`${status.color} border-0 flex items-center gap-1.5 w-fit`}>
+                              <span className={`h-2 w-2 rounded-full ${status.dot} inline-block`} />
+                              {status.label}
+                            </Badge>
                           )}
                         </div>
                       </TableCell>
