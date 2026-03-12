@@ -35,6 +35,8 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [rfcSaved, setRfcSaved] = useState(false);
+  const [confirmDeleteRfc, setConfirmDeleteRfc] = useState(false);
 
   // Category/Supplier form
   const [catFormOpen, setCatFormOpen] = useState(false);
