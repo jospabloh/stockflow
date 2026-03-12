@@ -23,6 +23,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
               <TableHead className="font-semibold text-slate-600">Producto</TableHead>
               <TableHead className="font-semibold text-slate-600">SKU</TableHead>
               <TableHead className="font-semibold text-slate-600">Categoría</TableHead>
+              {isAdmin && <TableHead className="font-semibold text-slate-600 text-right">Precio Compra</TableHead>}
               <TableHead className="font-semibold text-slate-600 text-right">Precio Venta</TableHead>
               <TableHead className="font-semibold text-slate-600 text-right">Stock</TableHead>
               <TableHead className="font-semibold text-slate-600 text-center">Estado</TableHead>
