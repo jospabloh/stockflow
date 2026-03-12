@@ -89,7 +89,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
             quantity: 1,
             unit_price: found.sale_price,
             total: found.sale_price,
-            tax_rate: found.tax_rate ?? 16,
+            tax_rate: found.tax_rate ?? 0,
           }],
         }));
       }
@@ -102,7 +102,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   const addItem = () => {
     setForm((prev) => ({
       ...prev,
-      items: [...prev.items, { product_id: "", product_name: "", quantity: 1, unit_price: 0, total: 0, tax_rate: 16 }],
+      items: [...prev.items, { product_id: "", product_name: "", quantity: 1, unit_price: 0, total: 0, tax_rate: 0 }],
     }));
   };
 
@@ -120,7 +120,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           items[index].product_name = product.name;
           items[index].unit_price = product.sale_price;
           items[index].total = items[index].quantity * product.sale_price;
-          items[index].tax_rate = product.tax_rate ?? 16;
+          items[index].tax_rate = product.tax_rate ?? 0;
         }
       }
       if (field === "quantity" || field === "unit_price") {
