@@ -263,6 +263,7 @@ export default function Quotations() {
                                   // BUG-010: Requerir método de pago antes de marcar entregado
                                   setPayQuotation(q);
                                   setPaymentMethod(q.payment_method || "");
+                                  setPayMarkDelivered(true);
                                 } else {
                                   base44.entities.Quotation.update(q.id, { delivered: false }).then(loadData);
                                 }
