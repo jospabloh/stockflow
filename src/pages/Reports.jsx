@@ -148,8 +148,10 @@ export default function Reports() {
     return inRange && clientMatch && paymentMatch;
   });
 
-  const pendingPayment = filteredQuotations.filter((q) => !q.paid);
-  const paidQuotations = filteredQuotations.filter((q) => q.paid);
+  const PLACEHOLDER_METHODS = ["Pendiente de confirmar", "Por definir", ""];
+  const isPaidConfirmed = (q) => q.paid && q.payment_method && !PLACEHOLDER_METHODS.includes(q.payment_method);
+  const pendingPayment = filteredQuotations.filter((q) => !isPaidConfirmed(q));
+  const paidQuotations = filteredQuotations.filter((q) => isPaidConfirmed(q));
   const totalConverted = filteredQuotations.reduce((s, q) => s + (q.total || 0), 0);
   const totalPaid = paidQuotations.reduce((s, q) => s + (q.total || 0), 0);
   const totalPending = pendingPayment.reduce((s, q) => s + (q.total || 0), 0);
@@ -334,9 +336,11 @@ export default function Reports() {
                             : <span className="text-slate-400 text-xs">Pendiente</span>}
                         </td>
                         <td className="px-4 py-3 text-center">
-                          {q.paid
+                          {isPaidConfirmed(q)
                             ? <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full"><CheckCircle2 className="h-3 w-3" /> Pagado</span>
-                            : <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full"><AlertCircle className="h-3 w-3" /> Pendiente</span>}
+                            : q.paid
+                              ? <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-700 text-xs font-medium px-2 py-0.5 rounded-full"><AlertCircle className="h-3 w-3" /> Confirmar forma</span>
+                              : <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full"><AlertCircle className="h-3 w-3" /> Pendiente</span>}
                         </td>
                         <td className="px-4 py-3 text-slate-600">{q.payment_method || "—"}</td>
                       </tr>
