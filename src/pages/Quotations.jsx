@@ -257,10 +257,14 @@ export default function Quotations() {
                             </button>
                             <button
                               title={q.delivered ? "Entregado (click para desmarcar)" : "Marcar entregado"}
-                              onClick={async () => {
-                                // Toggle delivered; if activating, clear in_route. If deactivating, just clear.
-                                await base44.entities.Quotation.update(q.id, { delivered: !q.delivered, in_route: false });
-                                loadData();
+                              onClick={() => {
+                                if (!q.delivered) {
+                                  // BUG-010: Requerir método de pago antes de marcar entregado
+                                  setPayQuotation(q);
+                                  setPaymentMethod(q.payment_method || "");
+                                } else {
+                                  base44.entities.Quotation.update(q.id, { delivered: false }).then(loadData);
+                                }
                               }}
                               className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${q.delivered ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-400 hover:bg-emerald-50 hover:text-emerald-500"}`}
                             >
