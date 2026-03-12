@@ -351,38 +351,76 @@ export default function Settings() {
           <ImportProducts />
         </TabsContent>
 
-        {/* SAT 4.0 */}
+        {/* Facturación */}
         <TabsContent value="sat">
-          <Card className="border-0 shadow-sm p-6 space-y-4">
-            <h3 className="font-semibold text-slate-700 text-lg">Preparación SAT 4.0</h3>
-            {!settings?.rfc && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-red-700 font-medium">RFC del negocio no registrado — las cotizaciones generadas no son fiscalmente válidas ante el SAT.</p>
+          <Card className="border-0 shadow-sm overflow-hidden">
+            {/* Under construction game section */}
+            <div className="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 p-8 flex flex-col items-center justify-center min-h-[360px] overflow-hidden">
+              {/* Animated stars */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                {[...Array(20)].map((_, i) => (
+                  <div key={i} className="absolute rounded-full bg-white animate-pulse"
+                    style={{
+                      width: Math.random() * 3 + 1 + "px",
+                      height: Math.random() * 3 + 1 + "px",
+                      top: Math.random() * 100 + "%",
+                      left: Math.random() * 100 + "%",
+                      animationDelay: Math.random() * 3 + "s",
+                      animationDuration: Math.random() * 2 + 1.5 + "s",
+                      opacity: Math.random() * 0.7 + 0.3,
+                    }}
+                  />
+                ))}
               </div>
-            )}
-            <div className="bg-amber-50 rounded-xl p-4 text-sm text-amber-800">
-              <p className="font-medium mb-1">⚠ Módulo en preparación</p>
-              <p>Este módulo está reservado para la integración de facturación electrónica (CFDI) conforme al SAT 4.0 de México. Puedes registrar tu RFC y datos fiscales para facilitar la futura integración.</p>
+
+              {/* Rocket */}
+              <div className="text-7xl mb-4 animate-bounce" style={{ animationDuration: "1.8s" }}>🚀</div>
+
+              <h2 className="text-white text-2xl font-bold mb-2 text-center">En Construcción</h2>
+              <p className="text-indigo-200 text-base text-center mb-1 font-medium">¡Estamos trabajando en algo genial!</p>
+              <p className="text-indigo-300 text-sm text-center max-w-sm">
+                El módulo de <strong className="text-white">Facturación Electrónica (CFDI 4.0)</strong> estará disponible muy pronto. Mientras tanto, puedes registrar tus datos fiscales abajo.
+              </p>
+
+              {/* Mini progress bar game */}
+              <div className="mt-6 w-64">
+                <div className="flex justify-between text-xs text-indigo-300 mb-1">
+                  <span>Progreso de desarrollo</span>
+                  <span>42%</span>
+                </div>
+                <div className="h-3 bg-indigo-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-cyan-400 to-indigo-400 rounded-full" style={{ width: "42%", animation: "progressFill 2s ease-out forwards" }} />
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>RFC del negocio</Label>
-                <Input value={settings?.rfc || ""} onChange={(e) => updateSettings("rfc", e.target.value)} placeholder="XAXX010101000" />
+
+            {/* Fiscal data form below */}
+            <div className="p-6 space-y-4">
+              <h3 className="font-semibold text-slate-700 text-lg">Datos Fiscales</h3>
+              {!settings?.rfc && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-red-700 font-medium">RFC del negocio no registrado — las cotizaciones generadas no son fiscalmente válidas ante el SAT.</p>
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>RFC del negocio</Label>
+                  <Input value={settings?.rfc || ""} onChange={(e) => updateSettings("rfc", e.target.value.toUpperCase())} placeholder="XAXX010101000" />
+                </div>
+                <div>
+                  <Label>Razón social</Label>
+                  <Input value={settings?.business_name || ""} onChange={(e) => updateSettings("business_name", e.target.value)} />
+                </div>
+                <div>
+                  <Label>Régimen fiscal</Label>
+                  <Input placeholder="601 - General de Ley" disabled />
+                </div>
+                <div>
+                  <Label>Código postal fiscal</Label>
+                  <Input placeholder="Se habilitará en Fase 2" disabled />
+                </div>
               </div>
-              <div>
-                <Label>Razón social</Label>
-                <Input value={settings?.business_name || ""} onChange={(e) => updateSettings("business_name", e.target.value)} />
-              </div>
-              <div>
-                <Label>Régimen fiscal</Label>
-                <Input placeholder="601 - General de Ley" disabled />
-              </div>
-              <div>
-                <Label>Código postal fiscal</Label>
-                <Input placeholder="Se habilitará en Fase 2" disabled />
-              </div>
-            </div>
             <div className="flex justify-end gap-3">
               {rfcSaved && (
                 <>
