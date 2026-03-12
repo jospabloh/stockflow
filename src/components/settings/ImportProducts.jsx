@@ -78,7 +78,21 @@ export default function ImportProducts() {
     let success = 0, errors = 0;
     for (const product of preview) {
       try {
-        await base44.entities.Product.create(product);
+        const created = await base44.entities.Product.create(product);
+        // BUG-030: Registrar stock inicial como movimiento
+        if (product.stock > 0 && created?.id) {
+          await base44.entities.Movement.create({
+            product_id: created.id,
+            product_name: product.name,
+            type: "entry",
+            quantity: product.stock,
+            unit_price: product.purchase_price || 0,
+            total: product.stock * (product.purchase_price || 0),
+            reason: "Stock inicial",
+            reference: "Importación CSV",
+            stock_after: product.stock,
+          });
+        }
         success++;
       } catch {
         errors++;

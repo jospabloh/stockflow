@@ -44,9 +44,14 @@ export default function ClientsManager() {
     toast.success(editing ? "Cliente actualizado" : "Cliente creado");
   };
 
-  const handleDelete = async (id) => {
-    await base44.entities.Client.delete(id);
-    setClients(clients.filter(c => c.id !== id));
+  const handleDelete = async (client) => {
+    const quots = await base44.entities.Quotation.filter({ client_name: client.name });
+    if (quots.length > 0) {
+      toast.error(`No se puede eliminar: ${quots.length} cotización(es) están registradas para este cliente.`);
+      return;
+    }
+    await base44.entities.Client.delete(client.id);
+    setClients(clients.filter(c => c.id !== client.id));
     toast.success("Cliente eliminado");
   };
 
