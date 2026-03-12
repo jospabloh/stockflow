@@ -135,7 +135,7 @@ export default function Movements() {
                 <TableHead className="font-semibold text-slate-600">Tipo</TableHead>
                 <TableHead className="font-semibold text-slate-600 text-right">Cantidad</TableHead>
                 <TableHead className="font-semibold text-slate-600 text-right">Total</TableHead>
-                <TableHead className="font-semibold text-slate-600">Referencia</TableHead>
+                <TableHead className="font-semibold text-slate-600">Referencia / Motivo</TableHead>
                 <TableHead className="font-semibold text-slate-600 text-right">Stock Después</TableHead>
               </TableRow>
             </TableHeader>
@@ -170,7 +170,10 @@ export default function Movements() {
                       <TableCell className="text-right text-slate-700">
                         ${m.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "0.00"}
                       </TableCell>
-                      <TableCell className="text-slate-500 text-sm">{m.reference || "—"}</TableCell>
+                      <TableCell className="text-slate-500 text-sm">
+                        <div>{m.reference || "—"}</div>
+                        {m.reason && <div className="text-xs text-slate-400 mt-0.5">{m.reason}</div>}
+                      </TableCell>
                       <TableCell className="text-right text-slate-600">{m.stock_after ?? "—"}</TableCell>
                     </TableRow>
                   );
