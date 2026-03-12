@@ -187,8 +187,8 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Cantidad *</Label>
-              <Input type="number" min={1} value={form.quantity} onChange={(e) => updateField("quantity", parseInt(e.target.value) || 0)} />
+              <Label>{form.type === "adjustment" ? "Stock absoluto nuevo *" : "Cantidad *"}</Label>
+              <Input type="number" min={0} value={form.quantity} onChange={(e) => updateField("quantity", parseInt(e.target.value) || 0)} />
             </div>
             <div>
               <Label>Precio unitario</Label>
