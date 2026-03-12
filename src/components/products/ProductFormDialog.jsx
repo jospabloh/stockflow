@@ -213,6 +213,9 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           <div>
             <Label>Precio de venta *</Label>
             <Input type="number" min={0} step="0.01" value={form.sale_price} onChange={(e) => updateField("sale_price", parseFloat(e.target.value) || 0)} />
+            {form.purchase_price > 0 && form.sale_price > 0 && form.sale_price <= form.purchase_price && (
+              <p className="text-xs text-amber-600 mt-1">⚠️ El precio de venta es menor o igual al costo. Verifica el margen.</p>
+            )}
           </div>
           <div>
             <Label>Stock actual</Label>
