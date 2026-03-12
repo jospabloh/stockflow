@@ -82,6 +82,7 @@ export default function Settings() {
       setSettingsId(created.id);
     }
     setSaving(false);
+    setRfcSaved(!!settings?.rfc);
     toast.success("Configuración guardada");
   };
 
