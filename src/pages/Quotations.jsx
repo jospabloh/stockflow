@@ -293,7 +293,15 @@ export default function Quotations() {
                               <FileDown className="h-4 w-4 mr-2" /> Descargar PDF
                             </DropdownMenuItem>
                             {q.status !== "converted" && q.status !== "cancelled" && (
-                              <DropdownMenuItem onClick={() => setConvertQuotation(q)}>
+                              <DropdownMenuItem onClick={() => {
+                                if (isExpired(q)) {
+                                  alert(`Cotización vencida el ${new Date(q.valid_until).toLocaleDateString("es-MX")}. No se puede convertir.`);
+                                  return;
+                                }
+                                setConvertQuotation(q);
+                                setConvertPaymentMethod(q.payment_method || "");
+                                setConvertError("");
+                              }}>
                                 <ShoppingCart className="h-4 w-4 mr-2" /> Convertir en Venta
                               </DropdownMenuItem>
                             )}
