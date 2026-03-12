@@ -50,6 +50,8 @@ export default function Quotations() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingQuotation, setEditingQuotation] = useState(null);
   const [convertQuotation, setConvertQuotation] = useState(null);
+  const [convertPaymentMethod, setConvertPaymentMethod] = useState("");
+  const [convertError, setConvertError] = useState("");
   const [cancelQuotation, setCancelQuotation] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
   const [payQuotation, setPayQuotation] = useState(null);
