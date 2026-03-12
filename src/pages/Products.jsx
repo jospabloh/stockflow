@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import ProductTable from "@/components/products/ProductTable";
 import ProductFormDialog from "@/components/products/ProductFormDialog";
+import { toast } from "sonner";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
