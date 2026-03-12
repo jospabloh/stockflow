@@ -341,12 +341,12 @@ export default function Quotations() {
                                 <DollarSign className="h-4 w-4 mr-2" /> Confirmar Pago
                               </DropdownMenuItem>
                             )}
-                            {q.status !== "converted" && q.status !== "cancelled" && (
+                            {q.status !== "cancelled" && (
                               <DropdownMenuItem
                                 className="text-red-600 focus:text-red-600"
                                 onClick={() => { setCancelQuotation(q); setCancelReason(""); }}
                               >
-                                <XCircle className="h-4 w-4 mr-2" /> Cancelar Cotización
+                                <XCircle className="h-4 w-4 mr-2" /> {q.status === "converted" ? "Anular Venta" : "Cancelar Cotización"}
                               </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
