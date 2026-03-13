@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Pencil, Trash2, UserCheck, UserX } from "lucide-react";
+import { useBusinessContext } from "@/components/BusinessContext";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 const emptyForm = { name: "", email: "", phone: "", address: "", rfc: "", notes: "", status: "active" };
 
 export default function ClientsManager() {
+  const { businessId } = useBusinessContext();
   const [clients, setClients] = useState([]);
   const [search, setSearch] = useState("");
   const [formOpen, setFormOpen] = useState(false);
@@ -36,7 +38,7 @@ export default function ClientsManager() {
     if (editing) {
       await base44.entities.Client.update(editing.id, form);
     } else {
-      await base44.entities.Client.create(form);
+      await base44.entities.Client.create({ ...form, business_id: businessId });
     }
     await load();
     setSaving(false);

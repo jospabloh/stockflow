@@ -19,10 +19,12 @@ import {
 } from "@/components/ui/select";
 import { Save, X, ScanBarcode, Wand2, Camera } from "lucide-react";
 import BarcodeCameraScanner from "./BarcodeCameraScanner";
+import { useBusinessContext } from "@/components/BusinessContext";
 
 const UNITS = ["pieza", "kg", "litro", "metro", "caja", "paquete"];
 
 export default function ProductFormDialog({ open, onOpenChange, product, onSaved }) {
+  const { businessId } = useBusinessContext();
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [form, setForm] = useState({
@@ -120,7 +122,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
     if (product) {
       await base44.entities.Product.update(product.id, form);
     } else {
-      const created = await base44.entities.Product.create(form);
+      const created = await base44.entities.Product.create({ ...form, business_id: businessId });
       // BUG-007: Registrar stock inicial como movimiento de entrada
       if (form.stock > 0 && created?.id) {
         await base44.entities.Movement.create({
@@ -133,6 +135,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           reason: "Stock inicial",
           reference: "Stock inicial",
           stock_after: form.stock,
+          business_id: businessId,
         });
       }
     }

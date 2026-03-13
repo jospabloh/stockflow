@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, Palette, Users, FileText, Plus, Trash2, Pencil, Upload, AlertTriangle, RefreshCw } from "lucide-react";
+import { Save, Building2, Palette, Users, FileText, Plus, Trash2, Pencil, Upload, AlertTriangle, RefreshCw, Copy, Key } from "lucide-react";
 import ImportProducts from "@/components/settings/ImportProducts";
 import ClientsManager from "@/components/settings/ClientsManager";
+import { useBusinessContext } from "@/components/BusinessContext";
 import {
   Table,
   TableBody,
@@ -26,10 +27,12 @@ import {
 import { toast } from "sonner";
 
 export default function Settings() {
+  const { businessId } = useBusinessContext();
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [settings, setSettings] = useState(null);
   const [settingsId, setSettingsId] = useState(null);
+  const [business, setBusiness] = useState(null);
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -71,6 +74,12 @@ export default function Settings() {
       setSuppliers(sups);
       setLoading(false);
     });
+    // Load business entity for invite code
+    if (businessId) {
+      base44.entities.Business.filter({ id: businessId }).then(list => {
+        if (list.length > 0) setBusiness(list[0]);
+      }).catch(() => {});
+    }
   }, []);
 
   const handleSaveSettings = async () => {
@@ -78,7 +87,7 @@ export default function Settings() {
     if (settingsId) {
       await base44.entities.AppSettings.update(settingsId, settings);
     } else {
-      const created = await base44.entities.AppSettings.create(settings);
+      const created = await base44.entities.AppSettings.create({ ...settings, business_id: businessId });
       setSettingsId(created.id);
     }
     setSaving(false);
@@ -90,7 +99,7 @@ export default function Settings() {
     if (editingCat) {
       await base44.entities.Category.update(editingCat.id, catForm);
     } else {
-      await base44.entities.Category.create(catForm);
+      await base44.entities.Category.create({ ...catForm, business_id: businessId });
     }
     const cats = await base44.entities.Category.list();
     setCategories(cats);
@@ -113,7 +122,7 @@ export default function Settings() {
     if (editingSup) {
       await base44.entities.Supplier.update(editingSup.id, supForm);
     } else {
-      await base44.entities.Supplier.create(supForm);
+      await base44.entities.Supplier.create({ ...supForm, business_id: businessId });
     }
     const sups = await base44.entities.Supplier.list();
     setSuppliers(sups);
@@ -167,12 +176,13 @@ export default function Settings() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <Tabs defaultValue="business" className="space-y-6">
-        <TabsList className="bg-white shadow-sm border">
+        <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="business"><Building2 className="h-4 w-4 mr-1" /> Negocio</TabsTrigger>
           <TabsTrigger value="categories"><Palette className="h-4 w-4 mr-1" /> Categorías</TabsTrigger>
           <TabsTrigger value="suppliers"><Users className="h-4 w-4 mr-1" /> Proveedores</TabsTrigger>
           <TabsTrigger value="sat"><FileText className="h-4 w-4 mr-1" /> Facturación</TabsTrigger>
           <TabsTrigger value="clients"><Users className="h-4 w-4 mr-1" /> Clientes</TabsTrigger>
+          <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>
           <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>
         </TabsList>
 
@@ -348,6 +358,38 @@ export default function Settings() {
         {/* Clients */}
         <TabsContent value="clients">
           <ClientsManager />
+        </TabsContent>
+
+        {/* Team / Invite Code */}
+        <TabsContent value="team">
+          <Card className="border-0 shadow-sm p-6 space-y-6">
+            <h3 className="font-semibold text-slate-700 text-lg">Equipo y Acceso</h3>
+            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 space-y-3">
+              <p className="text-sm text-slate-600">Comparte este código con tu equipo para que puedan unirse a tu negocio en StockFlow.</p>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 bg-white border border-indigo-200 rounded-xl px-4 py-3 font-mono text-2xl tracking-widest text-indigo-700 font-bold text-center">
+                  {business?.invite_code || "—"}
+                </div>
+                <button
+                  onClick={() => {
+                    if (business?.invite_code) {
+                      navigator.clipboard.writeText(business.invite_code);
+                      toast.success("Código copiado");
+                    }
+                  }}
+                  className="h-12 w-12 flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex-shrink-0"
+                  title="Copiar código"
+                >
+                  <Copy className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="text-xs text-slate-400">Al registrarse, los usuarios seleccionan "Unirme a un equipo" e ingresan este código.</p>
+            </div>
+            <div className="bg-slate-50 rounded-xl p-4">
+              <p className="text-sm font-medium text-slate-700 mb-1">ID del negocio</p>
+              <p className="font-mono text-xs text-slate-400 break-all">{businessId}</p>
+            </div>
+          </Card>
         </TabsContent>
 
         {/* Import */}

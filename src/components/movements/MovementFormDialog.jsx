@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Save, ScanLine } from "lucide-react";
 import { toast } from "sonner";
+import { useBusinessContext } from "@/components/BusinessContext";
 
 const TYPES = [
   { value: "entry", label: "Entrada (Compra)" },
@@ -28,6 +29,7 @@ const TYPES = [
 ];
 
 export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
+  const { businessId } = useBusinessContext();
   const barcodeRef = useRef(null);
   const [products, setProducts] = useState([]);
   const [barcodeNotFound, setBarcodeNotFound] = useState(false);
@@ -109,6 +111,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       product_name: product.name,
       total: form.quantity * form.unit_price,
       stock_after: newStock,
+      business_id: businessId,
     });
 
     await base44.entities.Product.update(product.id, { stock: newStock });

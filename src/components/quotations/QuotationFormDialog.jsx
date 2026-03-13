@@ -11,6 +11,7 @@ import { Plus, Trash2, Save, ScanLine, AlertTriangle } from "lucide-react";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useBusinessContext } from "@/components/BusinessContext";
 
 const PAYMENT_METHODS = [
   "Efectivo", "Transferencia", "Tarjeta de crédito", "Tarjeta de débito",
@@ -18,6 +19,7 @@ const PAYMENT_METHODS = [
 ];
 
 export default function QuotationFormDialog({ open, onOpenChange, quotation, onSaved }) {
+  const { businessId } = useBusinessContext();
   const barcodeRef = useRef(null);
   const [products, setProducts] = useState([]);
   const [clients, setClients] = useState([]);
@@ -167,7 +169,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     if (quotation) {
       await base44.entities.Quotation.update(quotation.id, data);
     } else {
-      await base44.entities.Quotation.create(data);
+      await base44.entities.Quotation.create({ ...data, business_id: businessId });
     }
     setSaving(false);
     onSaved();
