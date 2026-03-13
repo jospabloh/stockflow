@@ -243,7 +243,7 @@ export default function Quotations() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-slate-400">Sin cotizaciones</TableCell>
+                  <TableCell colSpan={8} className="text-center py-12 text-slate-400">Sin cotizaciones</TableCell>
                 </TableRow>
               ) : (
                 filtered.map((q) => {
@@ -279,6 +279,36 @@ export default function Quotations() {
                             </Badge>
                           )}
                         </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {(() => {
+                          const invoiceOptions = [
+                            { value: "pendiente", label: "Pendiente", cls: "bg-amber-100 text-amber-700 hover:bg-amber-200" },
+                            { value: "emitida", label: "Emitida", cls: "bg-emerald-100 text-emerald-700 hover:bg-emerald-200" },
+                            { value: "no_requerida", label: "No Requerida", cls: "bg-slate-100 text-slate-500 hover:bg-slate-200" },
+                          ];
+                          return (
+                            <div className="flex flex-col gap-1 items-center">
+                              {invoiceOptions.map((opt) => (
+                                <button
+                                  key={opt.value}
+                                  onClick={async () => {
+                                    const newVal = q.invoice_status === opt.value ? null : opt.value;
+                                    await base44.entities.Quotation.update(q.id, { invoice_status: newVal });
+                                    loadData();
+                                  }}
+                                  className={`text-xs font-medium px-2 py-0.5 rounded-full transition-colors border ${
+                                    q.invoice_status === opt.value
+                                      ? opt.cls + " border-transparent"
+                                      : "bg-transparent text-slate-300 border-slate-200 hover:border-slate-300 hover:text-slate-500"
+                                  }`}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell className="text-center">
                         {q.status === "converted" && (
