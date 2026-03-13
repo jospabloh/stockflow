@@ -235,6 +235,7 @@ export default function Quotations() {
                 <TableHead className="font-semibold text-slate-600">Fecha</TableHead>
                 <TableHead className="font-semibold text-slate-600 text-right">Total</TableHead>
                 <TableHead className="font-semibold text-slate-600 text-center">Estado</TableHead>
+                <TableHead className="font-semibold text-slate-600 text-center">Factura</TableHead>
                 <TableHead className="font-semibold text-slate-600 text-center">Seguimiento</TableHead>
                 <TableHead className="font-semibold text-slate-600 text-center">Acciones</TableHead>
               </TableRow>
