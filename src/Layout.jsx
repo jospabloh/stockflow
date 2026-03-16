@@ -224,7 +224,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Bottom Tab Bar — mobile only */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 flex lg:hidden select-none"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border flex lg:hidden select-none"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {bottomNavItems.map((item) => {
