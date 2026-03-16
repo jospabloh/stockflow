@@ -232,7 +232,25 @@ export default function Layout({ children, currentPageName }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-8 page-transition pb-24 lg:pb-8" style={{ overscrollBehavior: "none" }}>
+        <main
+          ref={mainRef}
+          className="flex-1 p-4 lg:p-8 page-transition pb-24 lg:pb-8 overflow-y-auto"
+          style={{ overscrollBehavior: "none" }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Pull-to-refresh indicator */}
+          {(pullY > 0 || pulling) && (
+            <div
+              className="flex items-center justify-center transition-all duration-200"
+              style={{ height: pulling ? 48 : pullY * 0.6, marginTop: pulling ? 0 : -8 }}
+            >
+              <div className={`h-6 w-6 border-2 border-indigo-400 border-t-transparent rounded-full ${pulling ? "animate-spin" : ""}`}
+                style={{ transform: `rotate(${pullY * 3}deg)` }}
+              />
+            </div>
+          )}
           {children}
         </main>
 
