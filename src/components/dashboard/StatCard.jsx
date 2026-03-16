@@ -17,7 +17,12 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = "
         <div className="flex items-start justify-between">
           <div className="space-y-2">
             <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">{title}</p>
-            <p className="text-3xl font-bold text-slate-800">{value}</p>
+            <p className={`font-bold text-slate-800 ${
+              String(value).length > 14 ? "text-lg" :
+              String(value).length > 10 ? "text-xl" :
+              String(value).length > 7  ? "text-2xl" :
+              "text-3xl"
+            }`}>{value}</p>
             {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
             {trend && (
               <p className={`text-xs font-medium ${trend > 0 ? "text-emerald-600" : "text-rose-600"}`}>
