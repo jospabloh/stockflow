@@ -10,6 +10,11 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BusinessProvider } from '@/components/BusinessContext';
 import BusinessSetup from './pages/BusinessSetup';
 import HelpCenter from './pages/HelpCenter';
+import ProductNew from './pages/Products/ProductNew';
+import ProductEdit from './pages/Products/ProductEdit';
+import MovementNew from './pages/Movements/MovementNew';
+import QuotationNew from './pages/Quotations/QuotationNew';
+import QuotationEdit from './pages/Quotations/QuotationEdit';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -63,6 +68,11 @@ const AuthenticatedApp = () => {
       ))}
       <Route path="/BusinessSetup" element={<BusinessSetup />} />
       <Route path="/HelpCenter" element={<LayoutWrapper currentPageName="HelpCenter"><HelpCenter /></LayoutWrapper>} />
+      <Route path="/Products/new" element={<LayoutWrapper currentPageName="Products"><ProductNew /></LayoutWrapper>} />
+      <Route path="/Products/edit/:id" element={<LayoutWrapper currentPageName="Products"><ProductEdit /></LayoutWrapper>} />
+      <Route path="/Movements/new" element={<LayoutWrapper currentPageName="Movements"><MovementNew /></LayoutWrapper>} />
+      <Route path="/Quotations/new" element={<LayoutWrapper currentPageName="Quotations"><QuotationNew /></LayoutWrapper>} />
+      <Route path="/Quotations/edit/:id" element={<LayoutWrapper currentPageName="Quotations"><QuotationEdit /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
