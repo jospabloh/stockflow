@@ -190,6 +190,15 @@ export default function Layout({ children, currentPageName }) {
                 </Button>
               </Link>
             )}
+            {/* Theme toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : theme === "light" ? "system" : "dark")}
+              title={theme === "dark" ? "Oscuro" : theme === "light" ? "Claro" : "Sistema"}
+            >
+              {theme === "dark" ? <Moon className="h-5 w-5 text-slate-500" /> : theme === "light" ? <Sun className="h-5 w-5 text-slate-500" /> : <Monitor className="h-5 w-5 text-slate-500" />}
+            </Button>
           </div>
         </header>
 
