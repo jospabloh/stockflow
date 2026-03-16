@@ -58,8 +58,15 @@ export default function Layout({ children, currentPageName }) {
     base44.auth.logout();
   };
 
+  const bottomNavItems = [
+    { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
+    { name: "Productos", icon: Package, page: "Products" },
+    { name: "Movimientos", icon: ArrowLeftRight, page: "Movements" },
+    { name: "Cotizaciones", icon: FileText, page: "Quotations" },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50/50 flex">
+    <div className="min-h-screen bg-slate-50/50 flex" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
