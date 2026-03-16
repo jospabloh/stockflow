@@ -4,8 +4,6 @@
 
 html, body {
   overscroll-behavior: none;
-  -webkit-user-select: none;
-  user-select: none;
 }
 
 @layer base {

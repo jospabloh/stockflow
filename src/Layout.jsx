@@ -283,7 +283,13 @@ export default function Layout({ children, currentPageName }) {
           return (
             <button
               key={item.page}
-              onClick={() => navigate(targetUrl, { replace: isActive })}
+              onClick={() => {
+                if (isActive) {
+                  navigate(createPageUrl(item.page), { replace: true });
+                } else {
+                  navigate(targetUrl, { replace: false });
+                }
+              }}
               className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[12px] font-medium transition-colors min-h-[44px] relative
                 ${isActive ? "text-indigo-500" : "text-muted-foreground"}`}
             >
