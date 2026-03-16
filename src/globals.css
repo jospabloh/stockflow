@@ -32,6 +32,8 @@
   }
 }
 
+/* Dark mode — applied via .dark class (next-themes) OR system preference */
+.dark,
 @media (prefers-color-scheme: dark) {
   :root {
     --background: 222 47% 6%;
