@@ -234,7 +234,7 @@ export default function Layout({ children, currentPageName }) {
               key={item.page}
               to={createPageUrl(item.page)}
               className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[10px] font-medium transition-colors
-                ${isActive ? "text-indigo-600" : "text-slate-400"}`}
+                ${isActive ? "text-indigo-500" : "text-muted-foreground"}`}
             >
               <item.icon className={`h-5 w-5 ${isActive ? "text-indigo-600" : "text-slate-400"}`} />
               <span>{item.name}</span>
