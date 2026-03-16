@@ -190,12 +190,12 @@ export default function Layout({ children, currentPageName }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-8 page-transition">
+        <main className="flex-1 p-4 lg:p-8 page-transition pb-24 lg:pb-8" style={{ overscrollBehavior: "none" }}>
           {children}
         </main>
 
-        {/* Footer */}
-        <footer className="border-t border-slate-100 bg-white/60 px-4 lg:px-8 py-3 text-center space-y-1">
+        {/* Footer — hidden on mobile */}
+        <footer className="hidden lg:block border-t border-slate-100 bg-white/60 px-4 lg:px-8 py-3 text-center space-y-1">
           <p className="text-xs text-slate-500">
             © {new Date().getFullYear()} <span className="font-medium text-slate-600">ACACIA Consultoría en Informática y Cómputo</span> — Todos los derechos reservados.
           </p>
