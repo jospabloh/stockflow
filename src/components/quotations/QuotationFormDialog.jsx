@@ -8,9 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, Save, ScanLine, AlertTriangle } from "lucide-react";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { MobileSelect } from "@/components/ui/MobileSelect";
 import { useBusinessContext } from "@/components/BusinessContext";
 
 const PAYMENT_METHODS = [
@@ -270,14 +268,12 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                 <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-slate-50 rounded-xl p-3">
                   <div className="col-span-12 md:col-span-4">
                     <Label className="text-xs">Producto</Label>
-                    <Select value={item.product_id} onValueChange={(v) => updateItem(idx, "product_id", v)}>
-                      <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-                      <SelectContent>
-                        {products.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <MobileSelect
+                      value={item.product_id}
+                      onValueChange={(v) => updateItem(idx, "product_id", v)}
+                      placeholder="Seleccionar"
+                      options={products.map((p) => ({ value: p.id, label: p.name }))}
+                    />
                   </div>
                   <div className="col-span-4 md:col-span-2">
                     <Label className="text-xs">Cantidad</Label>
@@ -350,12 +346,12 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label>Forma de pago</Label>
-              <Select value={form.payment_method} onValueChange={(v) => setForm({ ...form, payment_method: v })}>
-                <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-                <SelectContent>
-                  {PAYMENT_METHODS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MobileSelect
+                value={form.payment_method}
+                onValueChange={(v) => setForm({ ...form, payment_method: v })}
+                placeholder="Seleccionar"
+                options={PAYMENT_METHODS.map(m => ({ value: m, label: m }))}
+              />
             </div>
             <div>
               <Label>Vigencia</Label>
