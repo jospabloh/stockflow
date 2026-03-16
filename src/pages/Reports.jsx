@@ -223,23 +223,11 @@ export default function Reports() {
             <div className="flex flex-wrap gap-4 items-end">
               <div className="min-w-[180px]">
                 <label className="text-xs text-slate-500 mb-1 block">Cliente</label>
-                <Select value={qClientFilter} onValueChange={setQClientFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los clientes</SelectItem>
-                    {uniqueClients.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <MobileSelect value={qClientFilter} onChange={setQClientFilter} options={[{ value: "all", label: "Todos los clientes" }, ...uniqueClients.map(c => ({ value: c, label: c }))]} />
               </div>
               <div className="min-w-[180px]">
                 <label className="text-xs text-slate-500 mb-1 block">Forma de pago</label>
-                <Select value={qPaymentFilter} onValueChange={setQPaymentFilter}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas las formas</SelectItem>
-                    {uniquePaymentMethods.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <MobileSelect value={qPaymentFilter} onChange={setQPaymentFilter} options={[{ value: "all", label: "Todas las formas" }, ...uniquePaymentMethods.map(p => ({ value: p, label: p }))]} />
               </div>
               <Button variant="outline" size="sm" onClick={() => { setQClientFilter("all"); setQPaymentFilter("all"); }}>
                 Limpiar filtros
