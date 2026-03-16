@@ -41,7 +41,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
           <div className="flex flex-col items-end gap-0.5">
             <div className="flex items-center gap-1">
               {(isOutOfStock || isBelowMin || isAtMin) && <AlertTriangle className={`h-4 w-4 ${isOutOfStock ? "text-red-500" : "text-amber-500"}`} />}
-              <span className={`font-semibold ${isOutOfStock ? "text-red-600" : (isBelowMin || isAtMin) ? "text-amber-600" : "text-slate-700"}`}>
+              <span className={`font-semibold ${isOutOfStock ? "text-red-600" : (isBelowMin || isAtMin) ? "text-amber-600" : "text-foreground"}`}>
                 {product.stock} {product.unit}
               </span>
             </div>

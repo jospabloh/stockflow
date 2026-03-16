@@ -78,7 +78,7 @@ export default function HelpCenter() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] max-w-7xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden relative">
+    <div className="flex h-[calc(100vh-8rem)] max-w-7xl mx-auto bg-card rounded-2xl shadow-sm border border-border overflow-hidden relative">
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
@@ -91,12 +91,12 @@ export default function HelpCenter() {
       {/* Sidebar */}
       <aside className={`
         fixed lg:static top-0 left-0 h-full z-50 lg:z-auto
-        w-72 bg-white border-r border-slate-100 flex flex-col flex-shrink-0
+        w-72 bg-card border-r border-border flex flex-col flex-shrink-0
         transition-transform duration-300 lg:translate-x-0
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
         {/* Search bar inside sidebar */}
-        <div className="p-3 border-b border-slate-100">
+        <div className="p-3 border-b border-border">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
@@ -139,13 +139,13 @@ export default function HelpCenter() {
       {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Top bar (mobile) */}
-        <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-slate-100">
+        <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarOpen(true)}>
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-indigo-600" />
-            <span className="font-semibold text-slate-700 text-sm">Centro de Ayuda</span>
+            <span className="font-semibold text-foreground text-sm">Centro de Ayuda</span>
           </div>
         </div>
 
