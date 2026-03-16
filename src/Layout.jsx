@@ -207,13 +207,13 @@ export default function Layout({ children, currentPageName }) {
           {children}
         </main>
 
-        {/* Footer — hidden on mobile */}
-        <footer className="hidden lg:block border-t border-slate-100 bg-white/60 px-4 lg:px-8 py-3 text-center space-y-1">
-          <p className="text-xs text-slate-500">
-            © {new Date().getFullYear()} <span className="font-medium text-slate-600">ACACIA Consultoría en Informática y Cómputo</span> — Todos los derechos reservados.
+        {/* Footer */}
+        <footer className="border-t border-border bg-card/60 px-4 lg:px-8 py-3 text-center space-y-1">
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} <span className="font-medium text-foreground/70">ACACIA Consultoría en Informática y Cómputo</span> — Todos los derechos reservados.
           </p>
-          <p className="text-xs text-slate-400">
-            Licencia registrada a: <span className="font-medium text-slate-500">{user?.email || "—"}</span>
+          <p className="text-xs text-muted-foreground/80">
+            Licencia registrada a: <span className="font-medium text-foreground/60">{user?.email || "—"}</span>
             {" · "}Soporte:{" "}
             <a href="mailto:soporte@acaciaco.com.mx" className="text-indigo-500 hover:underline">soporte@acaciaco.com.mx</a>
             {" · "}WhatsApp:{" "}
