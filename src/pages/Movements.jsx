@@ -32,12 +32,12 @@ const typeConfig = {
 };
 
 export default function Movements() {
+  const navigate = useNavigate();
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [formOpen, setFormOpen] = useState(false);
 
   const loadData = () => {
     base44.entities.Movement.list("-created_date", 200).then((movs) => {
@@ -119,7 +119,7 @@ export default function Movements() {
             <Download className="h-4 w-4 mr-1" /> CSV
           </Button>
           {isAdmin && (
-            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => setFormOpen(true)}>
+            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Movements/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Movimiento
             </Button>
           )}
@@ -185,7 +185,7 @@ export default function Movements() {
         </div>
       </div>
 
-      <MovementFormDialog open={formOpen} onOpenChange={setFormOpen} onSaved={handleSaved} />
+
     </div>
   );
 }
