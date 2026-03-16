@@ -187,7 +187,7 @@ export default function Settings() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <Tabs defaultValue="business" className="space-y-6">
-        <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1">
+        <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1 select-none">
           <TabsTrigger value="business"><Building2 className="h-4 w-4 mr-1" /> Negocio</TabsTrigger>
           <TabsTrigger value="categories"><Palette className="h-4 w-4 mr-1" /> Categorías</TabsTrigger>
           <TabsTrigger value="suppliers"><Users className="h-4 w-4 mr-1" /> Proveedores</TabsTrigger>
@@ -195,6 +195,7 @@ export default function Settings() {
           <TabsTrigger value="clients"><Users className="h-4 w-4 mr-1" /> Clientes</TabsTrigger>
           <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>
           <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>
+          <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>
         </TabsList>
 
         {/* Business Settings */}
