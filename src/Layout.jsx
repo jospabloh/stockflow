@@ -42,6 +42,7 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isRoot = location.pathname === "/" || location.pathname === "/Dashboard";
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
