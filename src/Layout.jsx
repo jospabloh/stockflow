@@ -37,6 +37,8 @@ export default function Layout({ children, currentPageName }) {
   const [lowStockCount, setLowStockCount] = useState(0);
   const { businessId, isLoading: bizLoading } = useBusinessContext();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isRoot = location.pathname === "/" || location.pathname === "/Dashboard";
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
