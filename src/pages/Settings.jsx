@@ -582,6 +582,49 @@ export default function Settings() {
         </TabsContent>
       </Tabs>
 
+      {/* Delete Account Modal */}
+      {confirmDeleteAccount && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <UserX className="h-6 w-6 text-red-500" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-800">¿Eliminar tu cuenta?</p>
+                <p className="text-sm text-slate-500">Esta acción no se puede deshacer.</p>
+              </div>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700 space-y-1">
+              <p>• Se cerrará tu sesión de inmediato.</p>
+              <p>• No podrás volver a acceder con este usuario.</p>
+              <p>• Los datos del negocio permanecerán en el sistema.</p>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setConfirmDeleteAccount(false)} disabled={deletingAccount}>
+                Cancelar
+              </Button>
+              <Button
+                className="bg-red-600 hover:bg-red-700 select-none"
+                disabled={deletingAccount}
+                onClick={async () => {
+                  setDeletingAccount(true);
+                  try {
+                    const me = await base44.auth.me();
+                    await base44.entities.User.delete(me.id);
+                  } catch (_e) {
+                    // Silently proceed to logout even if deletion fails
+                  }
+                  base44.auth.logout();
+                }}
+              >
+                {deletingAccount ? "Eliminando..." : "Sí, eliminar cuenta"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Category Dialog */}
       <Dialog open={catFormOpen} onOpenChange={setCatFormOpen}>
         <DialogContent>
