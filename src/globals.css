@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 @layer base {
   :root {
     --background: 0 0% 98%;
@@ -29,6 +35,12 @@
     --chart-3: 45 93% 47%;
     --chart-4: 142 71% 45%;
     --chart-5: 0 84% 60%;
+  }
+}
+
+@layer components {
+  button, [role="button"] {
+    @apply select-none;
   }
 }
 
@@ -80,10 +92,7 @@
   background: #94a3b8;
 }
 
-/* Prevent elastic/rubber-band scrolling in WebView */
-main {
-  overscroll-behavior: none;
-}
+
 
 /* Smooth transitions — Android-style horizontal slide */
 .page-transition {
