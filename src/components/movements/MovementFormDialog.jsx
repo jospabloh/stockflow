@@ -156,16 +156,15 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           )}
           <div>
             <Label>Producto *</Label>
-            <Select value={form.product_id} onValueChange={handleProductSelect}>
-              <SelectTrigger><SelectValue placeholder="Seleccionar producto" /></SelectTrigger>
-              <SelectContent>
-                {products.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name} — Stock: {p.stock} {p.unit}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={form.product_id}
+              onValueChange={handleProductSelect}
+              placeholder="Seleccionar producto"
+              options={products.map((p) => ({
+                value: p.id,
+                label: `${p.name} — Stock: ${p.stock} ${p.unit}`,
+              }))}
+            />
           </div>
 
           {selectedProduct && (
@@ -177,19 +176,17 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
           <div>
             <Label>Tipo de movimiento *</Label>
-            <Select value={form.type} onValueChange={(v) => {
-              updateField("type", v);
-              if (selectedProduct) {
-                updateField("unit_price", v === "exit" ? selectedProduct.sale_price : selectedProduct.purchase_price);
-              }
-            }}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {TYPES.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={form.type}
+              onValueChange={(v) => {
+                updateField("type", v);
+                if (selectedProduct) {
+                  updateField("unit_price", v === "exit" ? selectedProduct.sale_price : selectedProduct.purchase_price);
+                }
+              }}
+              placeholder="Tipo"
+              options={TYPES.map((t) => ({ value: t.value, label: t.label }))}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
