@@ -26,6 +26,7 @@ const navItems = [
   { name: "Cotizaciones", icon: FileText, page: "Quotations" },
   { name: "Reportes", icon: BarChart3, page: "Reports" },
   { name: "Configuración", icon: Settings, page: "Settings" },
+  { name: "Centro de Ayuda", icon: HelpCircle, page: "HelpCenter" },
 ];
 
 export default function Layout({ children, currentPageName }) {
