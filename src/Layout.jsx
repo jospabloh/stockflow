@@ -32,6 +32,7 @@ const navItems = [
   { name: "Reportes", icon: BarChart3, page: "Reports" },
   { name: "Configuración", icon: Settings, page: "Settings" },
   { name: "Centro de Ayuda", icon: HelpCircle, page: "HelpCenter" },
+  { name: "Acerca de", icon: HelpCircle, page: "About" },
 ];
 
 export default function Layout({ children, currentPageName }) {
@@ -268,19 +269,7 @@ export default function Layout({ children, currentPageName }) {
           {children}
         </main>
 
-        {/* Footer */}
-        <footer className="border-t border-border bg-card/60 px-4 lg:px-8 py-3 text-center space-y-1">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} <span className="font-medium text-foreground/70">ACACIA Consultoría en Informática y Cómputo</span> — Todos los derechos reservados.
-          </p>
-          <p className="text-xs text-muted-foreground/80">
-            Licencia registrada a: <span className="font-medium text-foreground/60">{user?.email || "—"}</span>
-            {" · "}Soporte:{" "}
-            <a href="mailto:soporte@acaciaco.com.mx" className="text-indigo-500 hover:underline">soporte@acaciaco.com.mx</a>
-            {" · "}WhatsApp:{" "}
-            <a href="https://wa.me/524498958291" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:underline">+52 449 895 8291</a>
-          </p>
-        </footer>
+
       </div>
 
       {/* Bottom Tab Bar — mobile only */}

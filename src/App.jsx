@@ -10,6 +10,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BusinessProvider } from '@/components/BusinessContext';
 import BusinessSetup from './pages/BusinessSetup';
 import HelpCenter from './pages/HelpCenter';
+import About from './pages/About';
 import ProductNew from './pages/Products/ProductNew';
 import ProductEdit from './pages/Products/ProductEdit';
 import MovementNew from './pages/Movements/MovementNew';
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
       ))}
       <Route path="/BusinessSetup" element={<BusinessSetup />} />
       <Route path="/HelpCenter" element={<LayoutWrapper currentPageName="HelpCenter"><HelpCenter /></LayoutWrapper>} />
+      <Route path="/About" element={<LayoutWrapper currentPageName="About"><About /></LayoutWrapper>} />
       <Route path="/Products/new" element={<LayoutWrapper currentPageName="Products"><ProductNew /></LayoutWrapper>} />
       <Route path="/Products/edit/:id" element={<LayoutWrapper currentPageName="Products"><ProductEdit /></LayoutWrapper>} />
       <Route path="/Movements/new" element={<LayoutWrapper currentPageName="Movements"><MovementNew /></LayoutWrapper>} />
