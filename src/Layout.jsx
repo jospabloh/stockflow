@@ -127,14 +127,14 @@ export default function Layout({ children, currentPageName }) {
         </nav>
 
         {/* User section */}
-        <div className="p-4 border-t border-slate-100">
+        <div className="p-4 border-t border-border">
           <div className="flex items-center gap-3 px-3 py-2">
             <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-400 to-cyan-400 flex items-center justify-center text-white font-semibold text-sm">
               {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-700 truncate">{user?.full_name || "Usuario"}</p>
-              <p className="text-xs text-slate-400 truncate">{user?.email || ""}</p>
+              <p className="text-sm font-medium text-foreground truncate">{user?.full_name || "Usuario"}</p>
+              <p className="text-xs text-muted-foreground truncate">{user?.email || ""}</p>
             </div>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400" onClick={handleLogout}>
               <LogOut className="h-4 w-4" />
