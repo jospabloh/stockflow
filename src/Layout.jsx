@@ -276,21 +276,22 @@ export default function Layout({ children, currentPageName }) {
       >
         {bottomNavItems.map((item) => {
           const isActive = currentPageName === item.page;
+          const targetUrl = createPageUrl(item.page);
           return (
-            <Link
+            <button
               key={item.page}
-              to={createPageUrl(item.page)}
-              className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[10px] font-medium transition-colors
+              onClick={() => navigate(targetUrl, { replace: isActive })}
+              className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[12px] font-medium transition-colors min-h-[44px] relative
                 ${isActive ? "text-indigo-500" : "text-muted-foreground"}`}
             >
               <item.icon className={`h-5 w-5 ${isActive ? "text-indigo-500" : "text-muted-foreground"}`} />
               <span>{item.name}</span>
               {item.page === "Dashboard" && lowStockCount > 0 && (
-                <span className="absolute top-1 h-3 w-3 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center">
+                <span className="absolute top-1 right-[calc(50%-18px)] h-4 w-4 bg-red-500 rounded-full text-[9px] text-white flex items-center justify-center">
                   {lowStockCount}
                 </span>
               )}
-            </Link>
+            </button>
           );
         })}
       </nav>
