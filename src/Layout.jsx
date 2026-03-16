@@ -38,6 +38,10 @@ export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [lowStockCount, setLowStockCount] = useState(0);
+  const [pulling, setPulling] = useState(false);
+  const [pullY, setPullY] = useState(0);
+  const touchStartY = useRef(0);
+  const mainRef = useRef(null);
   const { businessId, isLoading: bizLoading } = useBusinessContext();
   const navigate = useNavigate();
   const location = useLocation();
