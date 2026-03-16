@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Download, TrendingUp, TrendingDown, Package, DollarSign, AlertCircle, CheckCircle2, FileText } from "lucide-react";
-import MobileSelect from "@/components/ui/MobileSelect";
+import { MobileSelect } from "@/components/ui/MobileSelect";
 import {
   BarChart,
   Bar,
