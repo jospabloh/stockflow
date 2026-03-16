@@ -156,7 +156,7 @@ export default function Movements() {
                       <TableCell className="text-slate-600 text-sm">
                         {moment.utc(m.created_date).local().format("DD/MM/YY HH:mm")}
                       </TableCell>
-                      <TableCell className="font-medium text-slate-800">{m.product_name}</TableCell>
+                      <TableCell className="font-medium text-foreground">{m.product_name}</TableCell>
                       <TableCell>
                         <Badge className={`${config.color} border-0 gap-1`}>
                           <IconComp className="h-3 w-3" />
