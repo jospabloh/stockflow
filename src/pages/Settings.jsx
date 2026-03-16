@@ -82,7 +82,16 @@ export default function Settings() {
     }
   }, []);
 
+  const validateRFC = (rfc) => {
+    if (!rfc) return true; // optional
+    return /^[A-Z&Ñ]{3,4}[0-9]{6}[A-Z0-9]{3}$/.test(rfc.trim().toUpperCase());
+  };
+
   const handleSaveSettings = async () => {
+    if (settings?.rfc && !validateRFC(settings.rfc)) {
+      toast.error("RFC inválido. Formato esperado: XAXX010101000 (12 o 13 caracteres).");
+      return;
+    }
     setSaving(true);
     if (settingsId) {
       await base44.entities.AppSettings.update(settingsId, settings);
@@ -385,9 +394,23 @@ export default function Settings() {
               </div>
               <p className="text-xs text-slate-400">Al registrarse, los usuarios seleccionan "Unirme a un equipo" e ingresan este código.</p>
             </div>
-            <div className="bg-slate-50 rounded-xl p-4">
-              <p className="text-sm font-medium text-slate-700 mb-1">ID del negocio</p>
-              <p className="font-mono text-xs text-slate-400 break-all">{businessId}</p>
+            <div className="bg-slate-50 rounded-xl p-4 space-y-2">
+              <p className="text-sm font-semibold text-slate-700">Guía de roles</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+                <div className="bg-white rounded-lg p-3 border border-slate-200">
+                  <span className="font-semibold text-indigo-700">admin</span> — Acceso total: configura, crea, edita, elimina todo.
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-slate-200">
+                  <span className="font-semibold text-cyan-700">vendedor</span> — Cotizaciones y clientes. Sin acceso a reportes financieros completos.
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-slate-200">
+                  <span className="font-semibold text-amber-700">almacenista</span> — Productos y movimientos de inventario.
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-slate-200">
+                  <span className="font-semibold text-slate-500">viewer</span> — Solo lectura. No puede crear ni modificar nada.
+                </div>
+              </div>
+              <p className="text-xs text-slate-400 pt-1">Para cambiar el rol de un usuario, ve al Panel de Administración de la plataforma (Base44 dashboard → Users).</p>
             </div>
           </Card>
         </TabsContent>
