@@ -423,6 +423,33 @@ export default function Settings() {
           <ImportProducts />
         </TabsContent>
 
+        {/* Account */}
+        <TabsContent value="account">
+          <Card className="border-0 shadow-sm p-6 space-y-6">
+            <h3 className="font-semibold text-slate-700 text-lg">Gestión de Cuenta</h3>
+            <div className="border border-red-200 rounded-xl p-5 space-y-3 bg-red-50/50">
+              <div className="flex items-start gap-3">
+                <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <UserX className="h-5 w-5 text-red-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-800">Eliminar mi cuenta</p>
+                  <p className="text-sm text-slate-500 mt-0.5">
+                    Esta acción es <strong>permanente e irreversible</strong>. Se cerrará tu sesión y perderás acceso a StockFlow. Los datos del negocio no se eliminan automáticamente.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-100 hover:border-red-400 select-none"
+                onClick={() => setConfirmDeleteAccount(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-1" /> Eliminar mi cuenta
+              </Button>
+            </div>
+          </Card>
+        </TabsContent>
+
         {/* Facturación */}
         <TabsContent value="sat">
           <Card className="border-0 shadow-sm overflow-hidden">
