@@ -109,8 +109,8 @@ export default function Layout({ children, currentPageName }) {
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
                   ${isActive 
-                    ? "bg-indigo-50 text-indigo-700 shadow-sm" 
-                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                    ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
               >
                 <item.icon className={`h-5 w-5 ${isActive ? "text-indigo-600" : ""}`} />
