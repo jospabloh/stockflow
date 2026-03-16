@@ -47,7 +47,7 @@ export default function BusinessSetup() {
       tax_rate: 16,
       currency: "MXN",
     });
-    await base44.auth.updateMe({ business_id: business.id });
+    await base44.auth.updateMe({ business_id: business.id, role: "admin" });
     await refreshBusiness();
     toast.success("¡Negocio creado! Bienvenido a StockFlow.");
     navigate("/Dashboard");
@@ -78,7 +78,7 @@ export default function BusinessSetup() {
       return;
     }
     const business = businesses[0];
-    await base44.auth.updateMe({ business_id: business.id });
+    await base44.auth.updateMe({ business_id: business.id, role: "almacenista" });
     await refreshBusiness();
     toast.success(`¡Bienvenido a ${business.name}!`);
     navigate("/Dashboard");
