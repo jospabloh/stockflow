@@ -66,6 +66,31 @@ export default function Layout({ children, currentPageName }) {
     base44.auth.logout();
   };
 
+  // Pull-to-refresh handlers
+  const handleTouchStart = useCallback((e) => {
+    if (mainRef.current?.scrollTop === 0) {
+      touchStartY.current = e.touches[0].clientY;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    if (touchStartY.current === 0) return;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (dy > 0 && mainRef.current?.scrollTop === 0) {
+      setPullY(Math.min(dy, 80));
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (pullY > 60) {
+      setPulling(true);
+      window.location.reload();
+    }
+    setPullY(0);
+    touchStartY.current = 0;
+    setTimeout(() => setPulling(false), 1000);
+  }, [pullY]);
+
   const bottomNavItems = [
     { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
     { name: "Productos", icon: Package, page: "Products" },
