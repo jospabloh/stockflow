@@ -32,7 +32,7 @@ import { Plus, Search, MoreHorizontal, Pencil, ShoppingCart, FileDown, Truck, Ch
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import moment from "moment";
-import QuotationFormDialog from "@/components/quotations/QuotationFormDialog";
+import { useNavigate } from "react-router-dom";
 import { generateQuotationPDF } from "@/components/quotations/QuotationPDF";
 import QuotationPreviewDialog from "@/components/quotations/QuotationPreviewDialog";
 
@@ -50,11 +50,10 @@ const isExpired = (q) => {
 };
 
 export default function Quotations() {
+  const navigate = useNavigate();
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [formOpen, setFormOpen] = useState(false);
-  const [editingQuotation, setEditingQuotation] = useState(null);
   const [convertQuotation, setConvertQuotation] = useState(null);
   const [convertPaymentMethod, setConvertPaymentMethod] = useState("");
   const [convertError, setConvertError] = useState("");
@@ -196,8 +195,7 @@ export default function Quotations() {
   };
 
   const handleEdit = (q) => {
-    setEditingQuotation(q);
-    setFormOpen(true);
+    navigate(`/Quotations/edit/${q.id}`);
   };
 
   if (loading) {
@@ -220,7 +218,7 @@ export default function Quotations() {
             className="pl-10"
           />
         </div>
-        <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingQuotation(null); setFormOpen(true); }}>
+        <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Quotations/new")}>
           <Plus className="h-4 w-4 mr-1" /> Nueva Cotización
         </Button>
       </div>
@@ -417,13 +415,6 @@ export default function Quotations() {
           </Table>
         </div>
       </div>
-
-      <QuotationFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        quotation={editingQuotation}
-        onSaved={loadData}
-      />
 
       <QuotationPreviewDialog
         quotation={previewQuotation}
