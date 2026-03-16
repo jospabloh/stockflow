@@ -92,8 +92,8 @@ export default function Layout({ children, currentPageName }) {
               <Package className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-slate-800 text-lg tracking-tight">Inventario</h1>
-              <p className="text-xs text-slate-400">Control de stock</p>
+              <h1 className="font-bold text-foreground text-lg tracking-tight">Inventario</h1>
+              <p className="text-xs text-muted-foreground">Control de stock</p>
             </div>
           </div>
         </div>
