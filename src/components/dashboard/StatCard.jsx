@@ -15,9 +15,9 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = "
     <Card className={`relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 ${href ? "cursor-pointer hover:-translate-y-0.5" : ""}`}>
       <div className="p-6">
         <div className="flex items-start justify-between">
-          <div className="space-y-2 min-w-0 flex-1 pr-3">
+          <div className="space-y-2">
             <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">{title}</p>
-            <p className="text-3xl font-bold text-slate-800 break-all leading-tight">{value}</p>
+            <p className="text-3xl font-bold text-slate-800">{value}</p>
             {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
             {trend && (
               <p className={`text-xs font-medium ${trend > 0 ? "text-emerald-600" : "text-rose-600"}`}>
