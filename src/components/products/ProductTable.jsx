@@ -20,21 +20,21 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
     const isBelowMin = !isOutOfStock && product.stock < minStock;
     const isAtMin = !isOutOfStock && product.stock === minStock;
     return (
-      <TableRow key={product.id} className="hover:bg-slate-50/50 transition-colors">
+      <TableRow key={product.id} className="hover:bg-muted/40 transition-colors">
         <TableCell>
           <div>
-            <p className="font-medium text-slate-800">{product.name}</p>
-            {product.barcode && <p className="text-xs text-slate-400">{product.barcode}</p>}
+            <p className="font-medium text-foreground">{product.name}</p>
+            {product.barcode && <p className="text-xs text-muted-foreground">{product.barcode}</p>}
           </div>
         </TableCell>
-        <TableCell className="text-slate-600">{product.sku || "—"}</TableCell>
-        <TableCell className="text-slate-600">{getCategoryName(product.category)}</TableCell>
+        <TableCell className="text-muted-foreground">{product.sku || "—"}</TableCell>
+        <TableCell className="text-muted-foreground">{getCategoryName(product.category)}</TableCell>
         {isAdmin && (
-          <TableCell className="text-right text-slate-500">
+          <TableCell className="text-right text-muted-foreground">
             ${product.purchase_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "—"}
           </TableCell>
         )}
-        <TableCell className="text-right font-semibold text-slate-700">
+        <TableCell className="text-right font-semibold text-foreground">
           ${product.sale_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
         </TableCell>
         <TableCell className="text-right">
