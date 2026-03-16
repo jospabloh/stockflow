@@ -176,7 +176,7 @@ export default function Layout({ children, currentPageName }) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h2 className="text-lg font-semibold text-slate-800">
+          <h2 className="text-lg font-semibold text-foreground">
             {navItems.find(n => n.page === currentPageName)?.name || currentPageName}
           </h2>
           <div className="ml-auto flex items-center gap-2">
