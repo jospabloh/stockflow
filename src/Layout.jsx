@@ -11,13 +11,16 @@ import {
   BarChart3,
   Settings,
   Menu,
-  X,
   LogOut,
   ChevronRight,
   ChevronLeft,
   Bell,
-  HelpCircle
+  HelpCircle,
+  Sun,
+  Moon,
+  Monitor
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
