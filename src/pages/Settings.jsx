@@ -165,7 +165,7 @@ export default function Settings() {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <div className="h-14 w-14 rounded-full bg-red-50 flex items-center justify-center">
-          <Save className="h-6 w-6 text-red-400" />
+          <Key className="h-6 w-6 text-red-400" />
         </div>
         <p className="text-slate-600 font-medium">Acceso restringido</p>
         <p className="text-sm text-slate-400">Solo los administradores pueden acceder a la configuración.</p>
