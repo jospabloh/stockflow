@@ -70,7 +70,7 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50/50 flex" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+    <div className="min-h-screen bg-background flex" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
