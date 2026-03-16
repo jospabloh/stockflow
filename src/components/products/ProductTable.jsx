@@ -79,11 +79,11 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
     const isBelowMin = !isOutOfStock && product.stock < minStock;
     const isAtMin = !isOutOfStock && product.stock === minStock;
     return (
-      <div className="bg-white rounded-xl border border-slate-100 p-4 space-y-3 shadow-sm">
+      <div className="bg-card rounded-xl border border-border p-4 space-y-3 shadow-sm">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-slate-800 truncate">{product.name}</p>
-            <p className="text-xs text-slate-400">{product.sku || getCategoryName(product.category)}</p>
+            <p className="font-semibold text-foreground truncate">{product.name}</p>
+            <p className="text-xs text-muted-foreground">{product.sku || getCategoryName(product.category)}</p>
           </div>
           <Badge variant={product.status === "active" ? "default" : "secondary"} className={`shrink-0 ${product.status === "active" ? "bg-emerald-100 text-emerald-700 border-0" : ""}`}>
             {product.status === "active" ? "Activo" : "Inactivo"}
@@ -92,21 +92,21 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
             {(isOutOfStock || isBelowMin || isAtMin) && <AlertTriangle className={`h-4 w-4 ${isOutOfStock ? "text-red-500" : "text-amber-500"}`} />}
-            <span className={`font-semibold text-sm ${isOutOfStock ? "text-red-600" : (isBelowMin || isAtMin) ? "text-amber-600" : "text-slate-700"}`}>
+            <span className={`font-semibold text-sm ${isOutOfStock ? "text-red-600" : (isBelowMin || isAtMin) ? "text-amber-600" : "text-foreground"}`}>
               {product.stock} {product.unit}
             </span>
             {isOutOfStock && <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1 rounded">AGOTADO</span>}
             {isBelowMin && <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1 rounded">STOCK CRÍTICO</span>}
             {isAtMin && <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-1 rounded">STOCK MÍNIMO</span>}
           </div>
-          <span className="font-bold text-slate-700">${product.sale_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+          <span className="font-bold text-foreground">${product.sale_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
         </div>
         {isAdmin && (
-          <div className="flex items-center justify-end gap-1 border-t border-slate-50 pt-2">
-            <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => onEdit(product)}>
-              <Pencil className="h-4 w-4 text-slate-400 mr-1" /> Editar
+          <div className="flex items-center justify-end gap-1 border-t border-border pt-2">
+            <Button variant="ghost" size="sm" className="h-11 px-3" onClick={() => onEdit(product)}>
+              <Pencil className="h-4 w-4 text-muted-foreground mr-1" /> Editar
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 px-2 text-red-400 hover:text-red-600" onClick={() => onDelete(product)}>
+            <Button variant="ghost" size="sm" className="h-11 px-3 text-red-400 hover:text-red-600" onClick={() => onDelete(product)}>
               <Trash2 className="h-4 w-4 mr-1" /> Eliminar
             </Button>
           </div>
@@ -117,7 +117,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
 
   if (products.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-12 text-center text-slate-400">
+      <div className="bg-card rounded-2xl shadow-sm border border-border p-12 text-center text-muted-foreground">
         No hay productos registrados
       </div>
     );
@@ -126,19 +126,19 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
   return (
     <>
       {/* Desktop: table */}
-      <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="hidden md:block bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-slate-50/50">
-                <TableHead className="font-semibold text-slate-600">Producto</TableHead>
-                <TableHead className="font-semibold text-slate-600">SKU</TableHead>
-                <TableHead className="font-semibold text-slate-600">Categoría</TableHead>
-                {isAdmin && <TableHead className="font-semibold text-slate-600 text-right">Precio Compra</TableHead>}
-                <TableHead className="font-semibold text-slate-600 text-right">Precio Venta</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-right">Stock</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-center">Estado</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-center">Acciones</TableHead>
+              <TableRow className="bg-muted/40">
+                <TableHead className="font-semibold text-muted-foreground">Producto</TableHead>
+                <TableHead className="font-semibold text-muted-foreground">SKU</TableHead>
+                <TableHead className="font-semibold text-muted-foreground">Categoría</TableHead>
+                {isAdmin && <TableHead className="font-semibold text-muted-foreground text-right">Precio Compra</TableHead>}
+                <TableHead className="font-semibold text-muted-foreground text-right">Precio Venta</TableHead>
+                <TableHead className="font-semibold text-muted-foreground text-right">Stock</TableHead>
+                <TableHead className="font-semibold text-muted-foreground text-center">Estado</TableHead>
+                <TableHead className="font-semibold text-muted-foreground text-center">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
