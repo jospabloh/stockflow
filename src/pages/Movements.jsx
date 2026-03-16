@@ -96,18 +96,19 @@ export default function Movements() {
           />
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="entry">Entradas</SelectItem>
-              <SelectItem value="exit">Salidas</SelectItem>
-              <SelectItem value="return">Devoluciones</SelectItem>
-              <SelectItem value="adjustment">Ajustes</SelectItem>
-            </SelectContent>
-          </Select>
+          <MobileSelect
+            value={typeFilter}
+            onValueChange={setTypeFilter}
+            placeholder="Tipo"
+            triggerClassName="w-40"
+            options={[
+              { value: "all", label: "Todos" },
+              { value: "entry", label: "Entradas" },
+              { value: "exit", label: "Salidas" },
+              { value: "return", label: "Devoluciones" },
+              { value: "adjustment", label: "Ajustes" },
+            ]}
+          />
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1" /> CSV
           </Button>

@@ -38,7 +38,6 @@ export default function Products() {
   }, []);
 
   const loadData = () => {
-    setLoading(true);
     Promise.all([
       base44.entities.Product.list("-created_date", 500),
       base44.entities.Category.list(),
@@ -47,6 +46,25 @@ export default function Products() {
       setCategories(cats);
       setLoading(false);
     });
+  };
+
+  const handleSaved = (payload) => {
+    if (!payload || payload._reconcile) {
+      // Network settled — do a silent background refresh
+      loadData();
+      return;
+    }
+    if (payload._optimistic) {
+      // Optimistic update: patch local list immediately
+      if (payload.id) {
+        setProducts((prev) =>
+          prev.map((p) => (p.id === payload.id ? { ...p, ...payload } : p))
+        );
+      } else {
+        // New product: prepend a temporary record
+        setProducts((prev) => [{ ...payload, id: `_tmp_${Date.now()}` }, ...prev]);
+      }
+    }
   };
 
   useEffect(() => {
@@ -120,27 +138,27 @@ export default function Products() {
           />
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Categoría" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              {categories.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={stockFilter} onValueChange={setStockFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Stock" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todo</SelectItem>
-              <SelectItem value="low">Stock Bajo</SelectItem>
-              <SelectItem value="out">Agotado</SelectItem>
-            </SelectContent>
-          </Select>
+          <MobileSelect
+            value={categoryFilter}
+            onValueChange={setCategoryFilter}
+            placeholder="Categoría"
+            triggerClassName="w-40"
+            options={[
+              { value: "all", label: "Todas" },
+              ...categories.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
+          <MobileSelect
+            value={stockFilter}
+            onValueChange={setStockFilter}
+            placeholder="Stock"
+            triggerClassName="w-40"
+            options={[
+              { value: "all", label: "Todo" },
+              { value: "low", label: "Stock Bajo" },
+              { value: "out", label: "Agotado" },
+            ]}
+          />
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1" /> CSV
           </Button>
@@ -166,7 +184,7 @@ export default function Products() {
         open={formOpen}
         onOpenChange={setFormOpen}
         product={editingProduct}
-        onSaved={loadData}
+        onSaved={handleSaved}
       />
 
       {/* Delete confirmation */}
