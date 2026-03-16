@@ -627,7 +627,7 @@ export default function Settings() {
 
       {/* Category Dialog */}
       <Dialog open={catFormOpen} onOpenChange={setCatFormOpen}>
-        <DialogContent>
+        <DialogContent className="pb-safe">
           <DialogHeader>
             <DialogTitle>{editingCat ? "Editar Categoría" : "Nueva Categoría"}</DialogTitle>
           </DialogHeader>
@@ -657,7 +657,7 @@ export default function Settings() {
 
       {/* Supplier Dialog */}
       <Dialog open={supFormOpen} onOpenChange={setSupFormOpen}>
-        <DialogContent>
+        <DialogContent className="pb-safe">
           <DialogHeader>
             <DialogTitle>{editingSup ? "Editar Proveedor" : "Nuevo Proveedor"}</DialogTitle>
           </DialogHeader>
