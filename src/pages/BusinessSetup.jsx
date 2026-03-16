@@ -23,6 +23,14 @@ export default function BusinessSetup() {
   const [loading, setLoading] = useState(false);
   const [createForm, setCreateForm] = useState({ name: "", phone: "", address: "" });
   const [inviteCode, setInviteCode] = useState("");
+  const [joinAttempts, setJoinAttempts] = useState(0);
+  const [joinCooldown, setJoinCooldown] = useState(0);
+
+  useEffect(() => {
+    if (joinCooldown <= 0) return;
+    const timer = setTimeout(() => setJoinCooldown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [joinCooldown]);
 
   useEffect(() => {
     if (businessId) navigate("/Dashboard");
@@ -49,10 +57,23 @@ export default function BusinessSetup() {
   const handleJoin = async () => {
     const code = inviteCode.trim().toUpperCase();
     if (!code) return;
+    if (joinCooldown > 0) return;
+    if (joinAttempts >= 5) {
+      toast.error("Demasiados intentos fallidos. Espera antes de intentar de nuevo.");
+      setJoinCooldown(60);
+      return;
+    }
     setLoading(true);
     const businesses = await base44.entities.Business.filter({ invite_code: code });
     if (businesses.length === 0) {
-      toast.error("Código de invitación no válido. Verifica con tu administrador.");
+      const attempts = joinAttempts + 1;
+      setJoinAttempts(attempts);
+      if (attempts >= 5) {
+        setJoinCooldown(60);
+        toast.error("5 intentos fallidos. Bloqueado por 60 segundos.");
+      } else {
+        toast.error(`Código no válido. ${5 - attempts} intento(s) restantes.`);
+      }
       setLoading(false);
       return;
     }
@@ -180,12 +201,17 @@ export default function BusinessSetup() {
                 autoFocus
               />
             </div>
+            {joinCooldown > 0 && (
+              <p className="text-sm text-center text-red-500 font-medium">
+                Bloqueado por {joinCooldown}s por múltiples intentos fallidos
+              </p>
+            )}
             <Button
               onClick={handleJoin}
-              disabled={inviteCode.length < 6 || loading}
+              disabled={inviteCode.length < 6 || loading || joinCooldown > 0}
               className="w-full bg-cyan-600 hover:bg-cyan-700"
             >
-              {loading ? "Verificando..." : "Verificar y Unirse →"}
+              {loading ? "Verificando..." : joinCooldown > 0 ? `Espera ${joinCooldown}s` : "Verificar y Unirse →"}
             </Button>
           </Card>
         )}
