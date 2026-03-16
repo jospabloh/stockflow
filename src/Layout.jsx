@@ -91,6 +91,19 @@ export default function Layout({ children, currentPageName }) {
     setTimeout(() => setPulling(false), 1000);
   }, [pullY]);
 
+  // Preserve scroll position per page across tab switches
+  useEffect(() => {
+    const saved = parseInt(sessionStorage.getItem(`scroll_${currentPageName}`) || "0", 10);
+    requestAnimationFrame(() => {
+      if (mainRef.current && saved) mainRef.current.scrollTop = saved;
+    });
+    return () => {
+      if (mainRef.current) {
+        sessionStorage.setItem(`scroll_${currentPageName}`, String(mainRef.current.scrollTop));
+      }
+    };
+  }, [currentPageName]);
+
   const bottomNavItems = [
     { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
     { name: "Productos", icon: Package, page: "Products" },

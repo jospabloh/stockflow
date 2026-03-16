@@ -85,14 +85,14 @@ main {
   overscroll-behavior: none;
 }
 
-/* Smooth transitions */
+/* Smooth transitions — Android-style horizontal slide */
 .page-transition {
-  animation: fadeIn 0.3s ease-out;
+  animation: slideInRight 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
 /* Print styles */
