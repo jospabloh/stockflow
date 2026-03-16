@@ -17,8 +17,10 @@ import {
 import ProductTable from "@/components/products/ProductTable";
 import ProductFormDialog from "@/components/products/ProductFormDialog";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export default function Products() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,8 +28,6 @@ export default function Products() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [stockFilter, setStockFilter] = useState("all");
-  const [formOpen, setFormOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
   const [deleteProduct, setDeleteProduct] = useState(null);
 
   useEffect(() => {
@@ -84,8 +84,7 @@ export default function Products() {
   });
 
   const handleEdit = (product) => {
-    setEditingProduct(product);
-    setFormOpen(true);
+    navigate(`/Products/edit/${product.id}`);
   };
 
   const handleDelete = async () => {
@@ -163,7 +162,7 @@ export default function Products() {
             <Download className="h-4 w-4 mr-1" /> CSV
           </Button>
           {isAdmin && (
-            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingProduct(null); setFormOpen(true); }}>
+            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Products/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Producto
             </Button>
           )}
@@ -177,14 +176,6 @@ export default function Products() {
         onEdit={handleEdit}
         onDelete={setDeleteProduct}
         isAdmin={isAdmin}
-      />
-
-      {/* Form dialog */}
-      <ProductFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        product={editingProduct}
-        onSaved={handleSaved}
       />
 
       {/* Delete confirmation */}
