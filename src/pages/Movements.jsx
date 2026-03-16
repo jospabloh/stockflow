@@ -40,11 +40,17 @@ export default function Movements() {
   const [formOpen, setFormOpen] = useState(false);
 
   const loadData = () => {
-    setLoading(true);
     base44.entities.Movement.list("-created_date", 200).then((movs) => {
       setMovements(movs);
       setLoading(false);
     });
+  };
+
+  const handleSaved = (payload) => {
+    if (!payload || payload._reconcile) {
+      loadData();
+    }
+    // optimistic: movement list will reflect after reconcile
   };
 
   useEffect(() => {
@@ -120,18 +126,18 @@ export default function Movements() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-slate-50/50">
-                <TableHead className="font-semibold text-slate-600">Fecha</TableHead>
-                <TableHead className="font-semibold text-slate-600">Producto</TableHead>
-                <TableHead className="font-semibold text-slate-600">Tipo</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-right">Cantidad</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-right">Total</TableHead>
-                <TableHead className="font-semibold text-slate-600">Referencia / Motivo</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-right">Stock Después</TableHead>
+              <TableRow className="bg-muted/40">
+              <TableHead className="font-semibold text-muted-foreground">Fecha</TableHead>
+              <TableHead className="font-semibold text-muted-foreground">Producto</TableHead>
+              <TableHead className="font-semibold text-muted-foreground">Tipo</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-right">Cantidad</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-right">Total</TableHead>
+              <TableHead className="font-semibold text-muted-foreground">Referencia / Motivo</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-right">Stock Después</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -179,7 +185,7 @@ export default function Movements() {
         </div>
       </div>
 
-      <MovementFormDialog open={formOpen} onOpenChange={setFormOpen} onSaved={loadData} />
+      <MovementFormDialog open={formOpen} onOpenChange={setFormOpen} onSaved={handleSaved} />
     </div>
   );
 }
