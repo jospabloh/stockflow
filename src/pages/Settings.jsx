@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, Palette, Users, FileText, Plus, Trash2, Pencil, Upload, AlertTriangle, RefreshCw, Copy, Key } from "lucide-react";
+import { Save, Building2, Palette, Users, FileText, Plus, Trash2, Pencil, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX } from "lucide-react";
 import ImportProducts from "@/components/settings/ImportProducts";
 import ClientsManager from "@/components/settings/ClientsManager";
 import { useBusinessContext } from "@/components/BusinessContext";
@@ -40,6 +40,8 @@ export default function Settings() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [rfcSaved, setRfcSaved] = useState(false);
   const [confirmDeleteRfc, setConfirmDeleteRfc] = useState(false);
+  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   // Category/Supplier form
   const [catFormOpen, setCatFormOpen] = useState(false);
