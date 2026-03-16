@@ -146,7 +146,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 lg:px-8 h-16 flex items-center gap-4 select-none">
+        <header className="sticky top-0 z-30 bg-card/80 backdrop-blur-md border-b border-border px-4 lg:px-8 h-16 flex items-center gap-4 select-none">
           {/* Back button — mobile only, hidden on root pages */}
           {!isRoot && (
             <Button
