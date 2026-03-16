@@ -56,10 +56,8 @@ export default function Reports() {
       setProducts(prods);
       setMovements(movs);
       setCategories(cats);
-      if (admin) {
-        const quots = await base44.entities.Quotation.list("-created_date", 500).catch(() => []);
-        setQuotations(quots);
-      }
+      const quots = await base44.entities.Quotation.list("-created_date", 500).catch(() => []);
+      setQuotations(quots);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
