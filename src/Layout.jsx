@@ -86,7 +86,7 @@ export default function Layout({ children, currentPageName }) {
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         {/* Logo area */}
-        <div className="p-6 border-b border-slate-100">
+        <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-200">
               <Package className="h-5 w-5 text-white" />
