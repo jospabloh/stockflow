@@ -197,25 +197,21 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
           <div>
             <Label>Categoría</Label>
-            <Select value={form.category} onValueChange={(v) => updateField("category", v)}>
-              <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-              <SelectContent>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={form.category}
+              onValueChange={(v) => updateField("category", v)}
+              placeholder="Seleccionar categoría"
+              options={categories.map((c) => ({ value: c.id, label: c.name }))}
+            />
           </div>
           <div>
             <Label>Proveedor</Label>
-            <Select value={form.supplier} onValueChange={(v) => updateField("supplier", v)}>
-              <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-              <SelectContent>
-                {suppliers.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={form.supplier}
+              onValueChange={(v) => updateField("supplier", v)}
+              placeholder="Seleccionar proveedor"
+              options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
+            />
           </div>
           <div>
             <Label>Precio de compra</Label>
@@ -238,34 +234,36 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
           <div>
             <Label>Unidad</Label>
-            <Select value={form.unit} onValueChange={(v) => updateField("unit", v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {UNITS.map((u) => (
-                  <SelectItem key={u} value={u}>{u}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={form.unit}
+              onValueChange={(v) => updateField("unit", v)}
+              placeholder="Unidad"
+              options={UNITS.map((u) => ({ value: u, label: u }))}
+            />
           </div>
           <div>
             <Label>IVA del producto</Label>
-            <Select value={String(form.tax_rate ?? 16)} onValueChange={(v) => updateField("tax_rate", Number(v))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="16">16% (con IVA)</SelectItem>
-                <SelectItem value="0">0% (sin IVA / exento)</SelectItem>
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={String(form.tax_rate ?? 16)}
+              onValueChange={(v) => updateField("tax_rate", Number(v))}
+              placeholder="IVA"
+              options={[
+                { value: "16", label: "16% (con IVA)" },
+                { value: "0", label: "0% (sin IVA / exento)" },
+              ]}
+            />
           </div>
           <div>
             <Label>Estado</Label>
-            <Select value={form.status} onValueChange={(v) => updateField("status", v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Activo</SelectItem>
-                <SelectItem value="inactive">Inactivo</SelectItem>
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={form.status}
+              onValueChange={(v) => updateField("status", v)}
+              placeholder="Estado"
+              options={[
+                { value: "active", label: "Activo" },
+                { value: "inactive", label: "Inactivo" },
+              ]}
+            />
           </div>
           <div className="md:col-span-2">
             <Label>Descripción</Label>
