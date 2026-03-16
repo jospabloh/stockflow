@@ -46,6 +46,7 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isRoot = location.pathname === "/" || location.pathname === "/Dashboard";
+  const isChildRoute = /\/(Products|Movements|Quotations)\/(new|edit)/.test(location.pathname);
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -189,12 +190,12 @@ export default function Layout({ children, currentPageName }) {
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-card/80 backdrop-blur-md border-b border-border px-4 lg:px-8 h-16 flex items-center gap-4 select-none">
-          {/* Back button — mobile only, hidden on root pages */}
-          {!isRoot && (
+          {/* Back button — mobile only, visible on child routes and non-root pages */}
+          {(!isRoot || isChildRoute) && (
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
+              className={isRoot && !isChildRoute ? "hidden" : ""}
               onClick={() => navigate(-1)}
             >
               <ChevronLeft className="h-5 w-5" />
