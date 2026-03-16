@@ -97,8 +97,12 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
     } else if (form.type === "exit") {
       newStock -= form.quantity;
     } else if (form.type === "adjustment") {
-      newStock = form.quantity; // Ajuste establece valor absoluto
+      newStock = form.quantity;
     }
+
+    // Optimistic: close immediately and notify parent with projected stock
+    onSaved({ productId: product.id, newStock, _optimistic: true });
+    onOpenChange(false);
 
     await base44.entities.Movement.create({
       ...form,
@@ -111,8 +115,8 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
     await base44.entities.Product.update(product.id, { stock: newStock });
 
     setSaving(false);
-    onSaved();
-    onOpenChange(false);
+    // Final reconcile after network
+    onSaved({ _reconcile: true });
   };
 
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));

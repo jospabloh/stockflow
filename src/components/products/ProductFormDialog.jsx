@@ -113,6 +113,10 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
 
   const handleSave = async () => {
     setSaving(true);
+    // Optimistic: close immediately & notify parent so the list re-renders without waiting
+    onSaved({ ...form, id: product?.id, _optimistic: true });
+    onOpenChange(false);
+
     if (product) {
       await base44.entities.Product.update(product.id, form);
     } else {
@@ -134,8 +138,8 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
       }
     }
     setSaving(false);
-    onSaved();
-    onOpenChange(false);
+    // Final reconcile: refresh parent once network is settled
+    onSaved({ _reconcile: true });
   };
 
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
