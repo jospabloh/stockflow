@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, Palette, Users, FileText, Plus, Trash2, Pencil, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX } from "lucide-react";
+import { Save, Building2, Palette, Users, FileText, Plus, Trash2, Pencil, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import ImportProducts from "@/components/settings/ImportProducts";
 import ClientsManager from "@/components/settings/ClientsManager";
 import { useBusinessContext } from "@/components/BusinessContext";
@@ -153,6 +154,23 @@ export default function Settings() {
   };
 
   const updateSettings = (field, value) => setSettings((prev) => ({ ...prev, [field]: value }));
+
+  const handleToggleInviteCode = async (active) => {
+    if (!business) return;
+    await base44.entities.Business.update(business.id, { invite_code_active: active });
+    setBusiness({ ...business, invite_code_active: active });
+    toast.success(active ? "Código de invitación activado" : "Código desactivado — nadie nuevo podrá unirse");
+  };
+
+  const handleRotateInviteCode = async () => {
+    if (!business) return;
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "BSNS-";
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    await base44.entities.Business.update(business.id, { invite_code: code });
+    setBusiness({ ...business, invite_code: code });
+    toast.success("Código renovado. El código anterior ya no funciona.");
+  };
 
   const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
