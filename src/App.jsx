@@ -1,3 +1,4 @@
+import React, { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "next-themes"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -9,13 +10,20 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BusinessProvider } from '@/components/BusinessContext';
 import BusinessSetup from './pages/BusinessSetup';
-import HelpCenter from './pages/HelpCenter';
-import About from './pages/About';
-import ProductNew from './pages/Products/ProductNew';
-import ProductEdit from './pages/Products/ProductEdit';
-import MovementNew from './pages/Movements/MovementNew';
-import QuotationNew from './pages/Quotations/QuotationNew';
-import QuotationEdit from './pages/Quotations/QuotationEdit';
+
+const HelpCenter = lazy(() => import('./pages/HelpCenter'));
+const About = lazy(() => import('./pages/About'));
+const ProductNew = lazy(() => import('./pages/Products/ProductNew'));
+const ProductEdit = lazy(() => import('./pages/Products/ProductEdit'));
+const MovementNew = lazy(() => import('./pages/Movements/MovementNew'));
+const QuotationNew = lazy(() => import('./pages/Quotations/QuotationNew'));
+const QuotationEdit = lazy(() => import('./pages/Quotations/QuotationEdit'));
+
+const PageLoader = () => (
+  <div className="fixed inset-0 flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-slate-200 border-t-indigo-500 rounded-full animate-spin" />
+  </div>
+);
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
