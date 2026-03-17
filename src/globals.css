@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile: prevent rubber-band / overscroll bounce but allow normal scrolling */
+body {
+  overscroll-behavior: none;
+}
+
+/* Hide scrollbars on mobile for a cleaner native look */
+@media (max-width: 1023px) {
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+}
+
+/* user-select: none for UI chrome (headers, navbars, icons) */
+header, nav, aside {
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* Allow text selection inside content areas */
+header p, nav p, aside p { user-select: text; -webkit-user-select: text; }
+
 @layer base {
   :root {
     --background: 0 0% 98%;
