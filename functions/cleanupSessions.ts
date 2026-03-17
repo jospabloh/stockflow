@@ -2,10 +2,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
-    // Validar clave secreta para automations (no requiere usuario autenticado)
+    const body = await req.json().catch(() => ({}));
+
+    // Validar clave secreta enviada por la automatización en function_args
     const cronSecret = Deno.env.get('CRON_SECRET');
-    const authHeader = req.headers.get('x-cron-secret');
-    if (!cronSecret || authHeader !== cronSecret) {
+    if (!cronSecret || body['x-cron-secret'] !== cronSecret) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
