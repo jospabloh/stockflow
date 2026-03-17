@@ -76,13 +76,13 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/BusinessSetup" element={<BusinessSetup />} />
-      <Route path="/HelpCenter" element={<LayoutWrapper currentPageName="HelpCenter"><HelpCenter /></LayoutWrapper>} />
-      <Route path="/About" element={<LayoutWrapper currentPageName="About"><About /></LayoutWrapper>} />
-      <Route path="/Products/new" element={<LayoutWrapper currentPageName="Products"><ProductNew /></LayoutWrapper>} />
-      <Route path="/Products/edit/:id" element={<LayoutWrapper currentPageName="Products"><ProductEdit /></LayoutWrapper>} />
-      <Route path="/Movements/new" element={<LayoutWrapper currentPageName="Movements"><MovementNew /></LayoutWrapper>} />
-      <Route path="/Quotations/new" element={<LayoutWrapper currentPageName="Quotations"><QuotationNew /></LayoutWrapper>} />
-      <Route path="/Quotations/edit/:id" element={<LayoutWrapper currentPageName="Quotations"><QuotationEdit /></LayoutWrapper>} />
+      <Route path="/HelpCenter" element={<LayoutWrapper currentPageName="HelpCenter"><Suspense fallback={<PageLoader />}><HelpCenter /></Suspense></LayoutWrapper>} />
+      <Route path="/About" element={<LayoutWrapper currentPageName="About"><Suspense fallback={<PageLoader />}><About /></Suspense></LayoutWrapper>} />
+      <Route path="/Products/new" element={<LayoutWrapper currentPageName="Products"><Suspense fallback={<PageLoader />}><ProductNew /></Suspense></LayoutWrapper>} />
+      <Route path="/Products/edit/:id" element={<LayoutWrapper currentPageName="Products"><Suspense fallback={<PageLoader />}><ProductEdit /></Suspense></LayoutWrapper>} />
+      <Route path="/Movements/new" element={<LayoutWrapper currentPageName="Movements"><Suspense fallback={<PageLoader />}><MovementNew /></Suspense></LayoutWrapper>} />
+      <Route path="/Quotations/new" element={<LayoutWrapper currentPageName="Quotations"><Suspense fallback={<PageLoader />}><QuotationNew /></Suspense></LayoutWrapper>} />
+      <Route path="/Quotations/edit/:id" element={<LayoutWrapper currentPageName="Quotations"><Suspense fallback={<PageLoader />}><QuotationEdit /></Suspense></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
