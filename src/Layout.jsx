@@ -266,7 +266,22 @@ export default function Layout({ children, currentPageName }) {
         <main
           ref={mainRef}
           className="flex-1 p-4 lg:p-8 page-transition pb-24 lg:pb-8 overflow-y-auto"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
+          {/* Pull-to-refresh indicator — only shown in native/standalone mode */}
+          {IS_NATIVE_APP && (pullY > 10 || refreshing) && (
+            <div
+              className="flex items-center justify-center transition-all duration-150"
+              style={{ height: refreshing ? 44 : pullY * 0.5 }}
+            >
+              <div
+                className={`h-6 w-6 border-2 border-indigo-400 border-t-transparent rounded-full ${refreshing ? "animate-spin" : ""}`}
+                style={{ transform: refreshing ? undefined : `rotate(${pullY * 4}deg)` }}
+              />
+            </div>
+          )}
           {children}
         </main>
 
@@ -275,7 +290,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Bottom Tab Bar — mobile only */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border flex lg:hidden select-none"
+        className="fixed bottom-0 left-0 right-0 z-[60] bg-card border-t border-border flex lg:hidden select-none"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {bottomNavItems.map((item) => {
