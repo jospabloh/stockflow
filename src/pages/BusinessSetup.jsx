@@ -78,6 +78,11 @@ export default function BusinessSetup() {
       return;
     }
     const business = businesses[0];
+    if (business.invite_code_active === false) {
+      toast.error("Este código de invitación está desactivado. Contacta al administrador.");
+      setLoading(false);
+      return;
+    }
     await base44.auth.updateMe({ business_id: business.id, role: "almacenista" });
     await refreshBusiness();
     toast.success(`¡Bienvenido a ${business.name}!`);
