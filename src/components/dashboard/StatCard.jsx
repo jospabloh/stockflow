@@ -12,12 +12,12 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = "
   };
 
   const content = (
-    <Card className={`relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 ${href ? "cursor-pointer hover:-translate-y-0.5" : ""}`}>
+    <Card className={`relative overflow-hidden shadow-sm hover:shadow-md hover:border-indigo-500/30 dark:hover:border-indigo-500/40 transition-all duration-300 ${href ? "cursor-pointer hover:-translate-y-0.5" : ""}`}>
       <div className="p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-2">
-            <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">{title}</p>
-            <p className={`font-bold text-slate-800 ${
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{title}</p>
+            <p className={`font-bold text-foreground ${
               String(value).length > 14 ? "text-lg" :
               String(value).length > 10 ? "text-xl" :
               String(value).length > 7  ? "text-2xl" :
