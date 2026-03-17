@@ -68,42 +68,7 @@ export default function Layout({ children, currentPageName }) {
     base44.auth.logout();
   };
 
-  // Pull-to-refresh handlers
-  const handleTouchStart = useCallback((e) => {
-    touchStartY.current = e.touches[0].clientY;
-    touchStartX.current = e.touches[0].clientX;
-    isHorizontalGesture.current = false;
-  }, []);
 
-  const handleTouchMove = useCallback((e) => {
-    const dy = e.touches[0].clientY - touchStartY.current;
-    const dx = Math.abs(e.touches[0].clientX - touchStartX.current);
-
-    // Si el gesto es principalmente horizontal, no interferir
-    if (dx > Math.abs(dy) + 5) {
-      isHorizontalGesture.current = true;
-      return;
-    }
-
-    if (isHorizontalGesture.current) return;
-
-    // Solo activar pull-to-refresh si estamos en la parte superior Y es un gesto largo vertical
-    if (dy > 0 && mainRef.current?.scrollTop === 0) {
-      setPullY(Math.min(dy, 100));
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    if (!isHorizontalGesture.current && pullY > 120) {
-      setPulling(true);
-      window.location.reload();
-    }
-    setPullY(0);
-    touchStartY.current = 0;
-    touchStartX.current = 0;
-    isHorizontalGesture.current = false;
-    setTimeout(() => setPulling(false), 1000);
-  }, [pullY]);
 
   // Preserve scroll position per page across tab switches
   useEffect(() => {
