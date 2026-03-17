@@ -404,13 +404,7 @@ export default function Settings() {
                   <span className="font-semibold text-indigo-700">admin</span> — Acceso total: configura, crea, edita, elimina todo.
                 </div>
                 <div className="bg-white rounded-lg p-3 border border-slate-200">
-                  <span className="font-semibold text-cyan-700">vendedor</span> — Cotizaciones y clientes. Sin acceso a reportes financieros completos.
-                </div>
-                <div className="bg-white rounded-lg p-3 border border-slate-200">
-                  <span className="font-semibold text-amber-700">almacenista</span> — Productos y movimientos de inventario.
-                </div>
-                <div className="bg-white rounded-lg p-3 border border-slate-200">
-                  <span className="font-semibold text-slate-500">viewer</span> — Solo lectura. No puede crear ni modificar nada.
+                  <span className="font-semibold text-amber-700">almacenista</span> — Productos, movimientos de inventario y cotizaciones (rol de vendedor incluido).
                 </div>
               </div>
               <p className="text-xs text-slate-400 pt-1">Para cambiar el rol de un usuario, ve al Panel de Administración de la plataforma (Base44 dashboard → Users).</p>
