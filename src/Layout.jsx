@@ -47,6 +47,9 @@ export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [lowStockCount, setLowStockCount] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const [pullY, setPullY] = useState(0);
+  const touchStartY = useRef(0);
   const mainRef = useRef(null);
   const { businessId, isLoading: bizLoading } = useBusinessContext();
   const { sessionStatus, reactivate } = useSessionManager(!!businessId);
@@ -73,6 +76,31 @@ export default function Layout({ children, currentPageName }) {
   const handleLogout = () => {
     base44.auth.logout();
   };
+
+  // Pull-to-refresh — only active when running as installed app (standalone/native mode)
+  const handleTouchStart = useCallback((e) => {
+    if (!IS_NATIVE_APP) return;
+    if (mainRef.current?.scrollTop === 0) {
+      touchStartY.current = e.touches[0].clientY;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    if (!IS_NATIVE_APP || touchStartY.current === 0) return;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (dy > 0) setPullY(Math.min(dy, 90));
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!IS_NATIVE_APP) return;
+    if (pullY > 70) {
+      setRefreshing(true);
+      window.location.reload();
+    }
+    setPullY(0);
+    touchStartY.current = 0;
+    setTimeout(() => setRefreshing(false), 1500);
+  }, [pullY]);
 
 
 
