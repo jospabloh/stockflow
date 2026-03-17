@@ -46,9 +46,9 @@ html, body {
 .dark {
   --background: 222 47% 6%;
   --foreground: 215 25% 88%;          /* gris claro en vez de blanco puro */
-  --card: 222 47% 8%;
+  --card: 222 47% 11%;
   --card-foreground: 215 25% 88%;
-  --popover: 222 47% 9%;
+  --popover: 222 47% 11%;
   --popover-foreground: 215 25% 88%;
   --primary: 239 60% 65%;             /* desaturado para no "vibrar" */
   --primary-foreground: 215 25% 92%;
