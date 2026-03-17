@@ -23,7 +23,7 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = "
               String(value).length > 7  ? "text-2xl" :
               "text-3xl"
             }`}>{value}</p>
-            {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
+            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
             {trend && (
               <p className={`text-xs font-medium ${trend > 0 ? "text-emerald-600" : "text-rose-600"}`}>
                 {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}% vs periodo anterior
