@@ -51,25 +51,25 @@ const markdownComponents = {
       </pre>
     ),
   table: ({ children }) => (
-    <div className="my-4 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-      <table className="w-full text-sm">{children}</table>
+    <div className="my-4 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+      <table className="w-full border-collapse" style={{ minWidth: "100%" }}>{children}</table>
     </div>
   ),
   thead: ({ children }) => (
-    <thead className="bg-slate-50 dark:bg-slate-800">{children}</thead>
+    <thead className="bg-slate-50 dark:bg-slate-800 border-b-2 border-slate-200 dark:border-slate-700">{children}</thead>
   ),
   th: ({ children }) => (
-    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+    <th className="px-3 py-2.5 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider whitespace-nowrap border-r border-slate-200 dark:border-slate-700 last:border-r-0">
       {children}
     </th>
   ),
   td: ({ children }) => (
-    <td className="px-4 py-2.5 text-slate-600 dark:text-slate-300 border-b border-slate-100 dark:border-slate-800 last:border-0 text-sm">
+    <td className="px-3 py-2.5 text-slate-600 dark:text-slate-300 text-sm border-r border-b border-slate-100 dark:border-slate-800 last:border-r-0 align-top leading-relaxed">
       {children}
     </td>
   ),
   tr: ({ children }) => (
-    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">{children}</tr>
+    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors even:bg-slate-50/50 dark:even:bg-slate-800/20">{children}</tr>
   ),
   hr: () => <hr className="my-6 border-slate-200 dark:border-slate-700" />,
 };
