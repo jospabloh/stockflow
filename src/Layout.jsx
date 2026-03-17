@@ -46,6 +46,7 @@ export default function Layout({ children, currentPageName }) {
   const touchStartY = useRef(0);
   const mainRef = useRef(null);
   const { businessId, isLoading: bizLoading } = useBusinessContext();
+  const { sessionStatus, reactivate } = useSessionManager(!!businessId);
   const navigate = useNavigate();
   const location = useLocation();
   const isRoot = location.pathname === "/" || location.pathname === "/Dashboard";
