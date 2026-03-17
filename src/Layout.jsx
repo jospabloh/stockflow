@@ -249,6 +249,11 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </header>
 
+        {/* Session passive banner */}
+        {sessionStatus === 'passive' && (
+          <SessionBanner onReactivate={reactivate} />
+        )}
+
         {/* Page content */}
         <main
           ref={mainRef}
