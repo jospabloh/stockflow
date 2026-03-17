@@ -2,6 +2,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
+    // Validar clave secreta para automations (no requiere usuario autenticado)
+    const cronSecret = Deno.env.get('CRON_SECRET');
+    const authHeader = req.headers.get('x-cron-secret');
+    if (!cronSecret || authHeader !== cronSecret) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const base44 = createClientFromRequest(req);
 
     // Sesiones con last_seen hace más de 30 días
