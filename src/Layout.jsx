@@ -41,11 +41,6 @@ export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [lowStockCount, setLowStockCount] = useState(0);
-  const [pulling, setPulling] = useState(false);
-  const [pullY, setPullY] = useState(0);
-  const touchStartY = useRef(0);
-  const touchStartX = useRef(0);
-  const isHorizontalGesture = useRef(false);
   const mainRef = useRef(null);
   const { businessId, isLoading: bizLoading } = useBusinessContext();
   const { sessionStatus, reactivate } = useSessionManager(!!businessId);
