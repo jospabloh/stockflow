@@ -146,7 +146,7 @@ El Almacenista puede realizar todas las **operaciones del día a día** sin acce
 | Acceder a Configuración | ✅ | ❌ |
 | Invitar usuarios al equipo | ✅ | ❌ |
 
-> 💡 Para **cambiar el rol** de un usuario, ve al Panel de Administración de Base44 → Users.`
+> 💡 Para **cambiar el rol** de un usuario, contacta al administrador del sistema.`
     },
     {
       id: "welcome-admin",
@@ -1377,12 +1377,6 @@ También puedes **regenerar el código** para invalidar el anterior y generar un
 |---|---|
 | **admin** | Control total del negocio, incluidos datos financieros y configuración |
 | **almacenista** | Operaciones de inventario y ventas, sin acceso a datos de costos |
-
----
-
-### 🔄 Cambiar el Rol de un Usuario
-
-> Para **cambiar el rol** de un usuario existente, ve al **Panel de Administración de Base44** (tu cuenta de Base44 → Users).
 
 ---
 
