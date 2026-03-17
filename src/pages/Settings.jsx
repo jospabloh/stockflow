@@ -414,6 +414,26 @@ export default function Settings() {
                 </button>
               </div>
               <p className="text-xs text-slate-400">Al registrarse, los usuarios seleccionan "Unirme a un equipo" e ingresan este código.</p>
+              {/* Toggle activo + renovar código */}
+              <div className="flex items-center justify-between pt-2 border-t border-indigo-100">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={business?.invite_code_active !== false}
+                    onCheckedChange={handleToggleInviteCode}
+                  />
+                  <span className="text-sm text-slate-600">
+                    {business?.invite_code_active !== false ? "Código activo — acepta nuevos miembros" : "Código desactivado"}
+                  </span>
+                </div>
+                <button
+                  onClick={handleRotateInviteCode}
+                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                  title="Generar nuevo código (invalida el anterior)"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Renovar
+                </button>
+              </div>
             </div>
             <div className="bg-slate-50 rounded-xl p-4 space-y-2">
               <p className="text-sm font-semibold text-slate-700">Guía de roles</p>
