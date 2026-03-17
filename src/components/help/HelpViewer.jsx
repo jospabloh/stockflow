@@ -1,12 +1,77 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import { Shield, Package, Users, ArrowRight } from "lucide-react";
+import { Shield, Package, Users, ArrowRight, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ROLE_CONFIG = {
-  admin: { label: "Solo Administradores", icon: Shield, cls: "bg-indigo-50 text-indigo-700 border-indigo-200" },
-  almacenista: { label: "Almacenistas", icon: Package, cls: "bg-cyan-50 text-cyan-700 border-cyan-200" },
-  all: { label: "Todos los roles", icon: Users, cls: "bg-slate-50 text-slate-600 border-slate-200" },
+  admin: { label: "Solo Administradores", icon: Shield, cls: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800" },
+  almacenista: { label: "Almacenistas", icon: Package, cls: "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950 dark:text-cyan-300 dark:border-cyan-800" },
+  all: { label: "Todos los roles", icon: Users, cls: "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" },
+};
+
+const markdownComponents = {
+  h2: ({ children }) => (
+    <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mt-8 mb-3 pb-2 border-b border-slate-100 dark:border-slate-700 first:mt-0">
+      {children}
+    </h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="text-base font-semibold text-slate-700 dark:text-slate-200 mt-5 mb-2">
+      {children}
+    </h3>
+  ),
+  p: ({ children }) => (
+    <p className="text-slate-600 dark:text-slate-300 leading-relaxed my-2 text-sm">{children}</p>
+  ),
+  ul: ({ children }) => (
+    <ul className="my-2 space-y-1 pl-4">{children}</ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="my-2 space-y-2 pl-4 list-decimal">{children}</ol>
+  ),
+  li: ({ children }) => (
+    <li className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm list-disc ml-2">{children}</li>
+  ),
+  strong: ({ children }) => (
+    <strong className="font-semibold text-slate-800 dark:text-slate-100">{children}</strong>
+  ),
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-4 border-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 dark:border-indigo-600 rounded-r-xl py-2 px-4 my-3 not-italic text-slate-700 dark:text-slate-300 text-sm">
+      {children}
+    </blockquote>
+  ),
+  code: ({ inline, children }) =>
+    inline ? (
+      <code className="bg-slate-100 dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded text-xs font-mono">
+        {children}
+      </code>
+    ) : (
+      <pre className="bg-slate-900 dark:bg-slate-950 text-slate-100 rounded-xl p-4 my-3 overflow-x-auto text-xs font-mono leading-relaxed">
+        <code>{children}</code>
+      </pre>
+    ),
+  table: ({ children }) => (
+    <div className="my-4 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+      <table className="w-full text-sm">{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => (
+    <thead className="bg-slate-50 dark:bg-slate-800">{children}</thead>
+  ),
+  th: ({ children }) => (
+    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="px-4 py-2.5 text-slate-600 dark:text-slate-300 border-b border-slate-100 dark:border-slate-800 last:border-0 text-sm">
+      {children}
+    </td>
+  ),
+  tr: ({ children }) => (
+    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">{children}</tr>
+  ),
+  hr: () => <hr className="my-6 border-slate-200 dark:border-slate-700" />,
 };
 
 export default function HelpViewer({ article, allArticles, onNavigate }) {
@@ -14,8 +79,8 @@ export default function HelpViewer({ article, allArticles, onNavigate }) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center space-y-3">
-          <div className="h-16 w-16 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto">
-            <span className="text-3xl">📖</span>
+          <div className="h-16 w-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950 flex items-center justify-center mx-auto">
+            <BookOpen className="h-8 w-8 text-indigo-400" />
           </div>
           <p className="text-slate-500 text-sm">Selecciona un tema del menú lateral</p>
         </div>
@@ -40,49 +105,42 @@ export default function HelpViewer({ article, allArticles, onNavigate }) {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-slate-800 mb-6 leading-tight">{article.title}</h1>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6 leading-tight">{article.title}</h1>
 
-        {/* Content — Markdown */}
-        <div className="prose prose-slate prose-sm max-w-none
-          prose-h2:text-lg prose-h2:font-bold prose-h2:text-slate-800 prose-h2:mt-6 prose-h2:mb-3
-          prose-h3:text-base prose-h3:font-semibold prose-h3:text-slate-700 prose-h3:mt-4 prose-h3:mb-2
-          prose-p:text-slate-600 prose-p:leading-relaxed prose-p:my-2
-          prose-ul:my-2 prose-ul:space-y-1
-          prose-li:text-slate-600 prose-li:leading-relaxed
-          prose-strong:text-slate-800 prose-strong:font-semibold
-          prose-blockquote:border-l-indigo-400 prose-blockquote:bg-indigo-50 prose-blockquote:rounded-r-lg prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:not-italic
-          prose-blockquote:text-slate-700
-          prose-code:bg-slate-100 prose-code:text-indigo-700 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
-          prose-table:text-sm prose-th:text-slate-700 prose-th:font-semibold prose-td:text-slate-600
-          prose-a:text-indigo-600 prose-a:no-underline hover:prose-a:underline
-        ">
-          <ReactMarkdown>{article.content}</ReactMarkdown>
+        {/* Content — Markdown with custom components */}
+        <div>
+          <ReactMarkdown components={markdownComponents}>{article.content}</ReactMarkdown>
         </div>
 
         {/* Related articles */}
         {relatedArticles.length > 0 && (
-          <div className="mt-10 pt-6 border-t border-slate-100">
+          <div className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Temas Relacionados</p>
-            <div className="space-y-2">
+            <div className="grid gap-2">
               {relatedArticles.map(rel => (
                 <button
                   key={rel.id}
                   onClick={() => onNavigate(rel.id)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50 transition-all group text-left"
+                  className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-all group text-left"
                 >
-                  <span className="text-sm text-slate-700 group-hover:text-indigo-700 font-medium">{rel.title}</span>
-                  <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-indigo-500 flex-shrink-0" />
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-base flex-shrink-0">{rel.title.split(' ')[0]}</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-300 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 font-medium truncate">
+                      {rel.title.replace(/^[^\s]+\s/, '')}
+                    </span>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 flex-shrink-0 ml-2" />
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Keywords (hidden visually, for SEO/search context) */}
-        <div className="mt-8 pt-4 border-t border-slate-100">
+        {/* Keywords */}
+        <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800">
           <div className="flex flex-wrap gap-1.5">
             {article.keywords.map(kw => (
-              <span key={kw} className="text-xs bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">
+              <span key={kw} className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 px-2 py-0.5 rounded-full">
                 {kw}
               </span>
             ))}

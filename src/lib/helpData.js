@@ -1,660 +1,1581 @@
 export const localHelpData = {
-  version: "1.0",
-  last_updated: "2026-03-16",
+  version: "2.0",
+  last_updated: "2026-03-17",
   articles: [
-    // ─── PRIMEROS PASOS ───
+
+    // ═══════════════════════════════════════════════
+    // PRIMEROS PASOS
+    // ═══════════════════════════════════════════════
+    {
+      id: "glossary",
+      category: "Primeros Pasos",
+      role: "all",
+      title: "📚 Glosario de Términos y Acrónimos",
+      keywords: ["glosario", "términos", "acrónimos", "sku", "rfc", "iva", "csv", "pdf", "folio", "kpi", "stock", "margen", "definición", "significado"],
+      related_ids: ["roles-overview", "welcome-admin", "welcome-almacenista"],
+      content: `## 📚 Glosario de Términos Técnicos
+
+Este glosario explica todos los términos, acrónimos y conceptos usados en StockFlow.
+
+---
+
+### 🔤 Acrónimos
+
+| Acrónimo | Significado | Descripción breve |
+|---|---|---|
+| **SKU** | *Stock Keeping Unit* — Unidad de control de inventario | Código interno único que identifica cada producto en tu catálogo |
+| **RFC** | *Registro Federal de Contribuyentes* | Clave fiscal mexicana obligatoria para documentos fiscales |
+| **IVA** | *Impuesto al Valor Agregado* | Impuesto aplicado sobre ventas; en México es del 16% o 0% (exento) |
+| **CSV** | *Comma-Separated Values* — Valores separados por comas | Formato de archivo de hoja de cálculo, aceptado por Excel |
+| **PDF** | *Portable Document Format* | Formato de documento que se puede imprimir y compartir |
+| **KPI** | *Key Performance Indicator* — Indicador clave de rendimiento | Métricas que miden el desempeño del negocio |
+| **COT** | Cotización | Prefijo del folio de cotizaciones (ej: COT-260316-001) |
+
+---
+
+### 📦 Términos de Inventario
+
+| Término | Definición |
+|---|---|
+| **Stock** | Cantidad de unidades disponibles de un producto en el almacén |
+| **Stock mínimo** | Umbral de alerta: cuando el stock baja de este número, se activa una alerta de reabastecimiento |
+| **Stock bajo** | Estado de un producto cuyo stock actual ≤ stock mínimo definido |
+| **Movimiento** | Registro de cualquier cambio en el stock: entrada, salida, devolución o ajuste |
+| **Entrada** | Movimiento que **aumenta** el stock (compra a proveedor, devolución de cliente) |
+| **Salida** | Movimiento que **disminuye** el stock (venta, consumo interno) |
+| **Devolución** | Reingreso de mercancía al inventario por devolución de cliente |
+| **Ajuste** | Corrección manual del stock por diferencia en conteo físico |
+| **Rotación** | Frecuencia con la que un producto se vende o reemplaza en un período |
+
+---
+
+### 💰 Términos Financieros
+
+| Término | Definición |
+|---|---|
+| **Precio de compra** | Costo al que el negocio adquiere el producto del proveedor *(solo visible para Admin)* |
+| **Precio de venta** | Precio al que se ofrece el producto al cliente final |
+| **Margen de ganancia** | Diferencia entre precio de venta y precio de compra, expresada en % |
+| **Subtotal** | Suma de productos sin incluir IVA |
+| **Total** | Subtotal + IVA |
+| **Ganancia bruta** | Ingresos totales de ventas menos el costo total de los productos vendidos |
+
+---
+
+### 📄 Términos de Cotizaciones
+
+| Término | Definición |
+|---|---|
+| **Cotización** | Propuesta comercial formal que lista productos, precios y condiciones para un cliente |
+| **Folio** | Número de identificación único de una cotización (formato: COT-AAAMMDD-NNN) |
+| **Concretar** | Convertir una cotización aprobada en una venta real (descuenta el stock automáticamente) |
+| **Vigencia** | Fecha límite hasta la cual la cotización es válida |
+| **En ruta** | Estado de un pedido que ya salió del almacén hacia el cliente |
+| **Factura** | Documento fiscal que certifica una transacción comercial |
+
+---
+
+### 👥 Términos del Sistema
+
+| Término | Definición |
+|---|---|
+| **Rol** | Nivel de acceso de un usuario: *admin* (administrador) o *almacenista* |
+| **Código de invitación** | Clave única del negocio para que nuevos usuarios se unan al equipo |
+| **Sesión activa** | El dispositivo desde el que se está usando actualmente la app |
+| **Sesión pasiva** | Dispositivo registrado pero sin actividad reciente (desplazado por otro login) |`
+    },
     {
       id: "roles-overview",
       category: "Primeros Pasos",
       role: "all",
-      title: "Entendiendo los Roles del Sistema",
-      keywords: ["roles", "permisos", "administrador", "almacenista", "acceso", "usuario", "rol"],
-      related_ids: ["welcome-admin", "welcome-almacenista"],
-      content: `## Roles en StockFlow
+      title: "👥 Roles del Sistema: Admin vs Almacenista",
+      keywords: ["roles", "permisos", "administrador", "almacenista", "acceso", "usuario", "rol", "diferencia"],
+      related_ids: ["welcome-admin", "welcome-almacenista", "settings-team"],
+      content: `## 👥 Roles en StockFlow
 
-StockFlow maneja **dos roles** principales que determinan qué puede ver y hacer cada usuario:
+StockFlow tiene **dos roles** que determinan qué puede ver y hacer cada persona.
 
-### 👑 Administrador
-Acceso **total y sin restricciones**. Ve y controla todo: productos, movimientos, cotizaciones, reportes financieros (costos, ganancias, márgenes) y la configuración completa del negocio.
+---
 
-### 📦 Almacenista
-Acceso **operativo completo**. Puede gestionar inventario, productos, cotizaciones y clientes. La única restricción es que **no ve información de ganancias ni precios de compra** — pero sí puede ver las ventas para dar seguimiento a los pedidos.
+### 👑 Administrador — Acceso Total
 
-> 💡 **¿Cómo cambiar el rol de un usuario?** Desde el Panel de Administración de Base44 → Users. El código de invitación del negocio se encuentra en Configuración → Equipo.`
+El Administrador tiene **control completo** sobre el negocio, incluyendo datos financieros sensibles.
+
+**Puede hacer TODO lo del Almacenista, más:**
+- Ver **precios de compra** y **márgenes de ganancia**
+- Acceder a reportes financieros: *Mejor Margen* y *Valor por Categoría*
+- Ver el **Valor Total del Inventario** (calculado al precio de compra)
+- **Eliminar** productos, movimientos, categorías, proveedores y clientes
+- Gestionar toda la **Configuración** del negocio
+- **Importar productos** masivamente por CSV/Excel
+- Activar/desactivar el código de invitación del equipo
+
+---
+
+### 📦 Almacenista — Acceso Operativo
+
+El Almacenista puede realizar todas las **operaciones del día a día** sin acceso a datos de costos ni configuración.
+
+**Puede:**
+- Crear, editar y consultar **productos**
+- Registrar **movimientos** de inventario (entradas, salidas, devoluciones, ajustes)
+- Crear, editar y dar seguimiento a **cotizaciones**
+- Gestionar el directorio de **clientes**
+- Ver **reportes** operativos: ventas, más vendidos, baja rotación, tendencia
+
+**No puede:**
+- Ver precios de compra ni ganancias
+- Acceder a la sección de Configuración
+- Eliminar registros con historial asociado
+
+---
+
+### 📊 Tabla Comparativa de Permisos
+
+| Función | Admin | Almacenista |
+|---|:---:|:---:|
+| Ver catálogo de productos | ✅ | ✅ |
+| Crear y editar productos | ✅ | ✅ |
+| Ver precio de compra | ✅ | ❌ |
+| Eliminar productos | ✅ | ❌ |
+| Registrar movimientos | ✅ | ✅ |
+| Crear cotizaciones | ✅ | ✅ |
+| Convertir cotización en venta | ✅ | ✅ |
+| Ver reportes de ventas | ✅ | ✅ |
+| Ver margen de ganancia | ✅ | ❌ |
+| Acceder a Configuración | ✅ | ❌ |
+| Invitar usuarios al equipo | ✅ | ❌ |
+
+> 💡 Para **cambiar el rol** de un usuario, ve al Panel de Administración de Base44 → Users.`
     },
     {
       id: "welcome-admin",
       category: "Primeros Pasos",
       role: "admin",
-      title: "Bienvenido, Administrador",
-      keywords: ["bienvenida", "inicio", "admin", "administrador", "comenzar", "empezar"],
-      related_ids: ["dashboard-admin", "roles-overview", "settings-business"],
-      content: `## Guía de Inicio para Administradores
+      title: "🚀 Guía de Inicio — Administrador",
+      keywords: ["bienvenida", "inicio", "admin", "administrador", "comenzar", "empezar", "setup", "configurar"],
+      related_ids: ["roles-overview", "settings-business", "settings-team", "glossary"],
+      content: `## 🚀 Guía de Inicio para Administradores
 
-Como **Administrador** en StockFlow tienes **control total** sobre el negocio. Aquí está tu flujo de trabajo recomendado al iniciar:
+Bienvenido a StockFlow. Sigue esta guía para configurar tu negocio correctamente desde el primer día.
 
-### ✅ Lista de verificación inicial
+---
 
-1. **Configura tu negocio** → Ve a *Configuración → Mi Negocio* y completa: nombre, RFC, logo y tasa de IVA.
-2. **Crea categorías** → *Configuración → Categorías* para organizar tu catálogo.
-3. **Agrega proveedores** → *Configuración → Proveedores* para vincularlos a productos.
-4. **Importa o crea productos** → *Productos → + Nuevo Producto* o usa *Configuración → Importar*.
-5. **Invita a tu equipo** → Comparte el código en *Configuración → Equipo*.
+### ✅ Lista de Configuración Inicial
+
+Completa estos pasos **en orden** para tener el sistema listo:
+
+#### Paso 1 — Configura tu negocio
+> 📍 *Configuración → Mi Negocio*
+
+- ☐ Nombre del negocio
+- ☐ RFC (necesario para cotizaciones fiscales)
+- ☐ Teléfono y dirección
+- ☐ Logo (imagen que aparece en los PDFs)
+- ☐ Tasa de IVA predeterminada (generalmente 16%)
+- ☐ Moneda (MXN por defecto)
+- ☐ Email para alertas de stock bajo
+- ☐ Pie de página de cotizaciones (condiciones, políticas)
+
+#### Paso 2 — Crea categorías
+> 📍 *Configuración → Categorías*
+
+Agrupa tus productos en categorías lógicas.
+Ejemplos: "Electrónica", "Herramientas", "Consumibles", "Papelería"
+
+#### Paso 3 — Registra proveedores
+> 📍 *Configuración → Proveedores*
+
+Carga los datos de tus proveedores para vincularlos a productos y saber a quién contactar al reabastecer.
+
+#### Paso 4 — Carga tu catálogo de productos
+> 📍 *Productos → + Nuevo Producto* o *Configuración → Importar Productos*
+
+- Para **pocos productos**: créalos uno a uno con el formulario
+- Para **muchos productos**: usa la importación masiva por CSV/Excel
+
+#### Paso 5 — Invita a tu equipo
+> 📍 *Configuración → Equipo*
+
+Comparte el código de invitación con tus almacenistas.
+
+---
 
 ### 🔑 Lo que solo tú puedes hacer
-- Ver **precios de compra** y **márgenes de ganancia**
-- Acceder a reportes de **Mejor Margen** y **Valor por Categoría**
-- Gestionar la **configuración** completa del negocio
-- **Eliminar** productos, movimientos y categorías`
+
+- Ver **precios de compra** y calcular **márgenes de ganancia**
+- Acceder a reportes financieros avanzados
+- Gestionar la **configuración completa** del negocio
+- **Eliminar** cualquier registro del sistema
+- **Importar** productos de forma masiva`
     },
     {
       id: "welcome-almacenista",
       category: "Primeros Pasos",
       role: "almacenista",
-      title: "Bienvenido, Almacenista",
-      keywords: ["bienvenida", "inicio", "almacenista", "comenzar", "empezar", "vendedor"],
-      related_ids: ["dashboard-almacenista", "roles-overview", "movements-register"],
-      content: `## Guía de Inicio para Almacenistas
+      title: "🚀 Guía de Inicio — Almacenista",
+      keywords: ["bienvenida", "inicio", "almacenista", "comenzar", "empezar", "vendedor", "operaciones"],
+      related_ids: ["roles-overview", "daily-workflow-almacenista", "movements-register", "glossary"],
+      content: `## 🚀 Guía de Inicio para Almacenistas
 
-Como **Almacenista** en StockFlow, eres responsable de las operaciones diarias: inventario, ventas y atención al cliente. Tu flujo de trabajo habitual será:
+Bienvenido a StockFlow. Este es tu centro de control para el inventario y las ventas del día a día.
 
-### 📋 Operaciones del Día a Día
+---
 
-1. **Revisar el Dashboard** → Verifica alertas de stock bajo y movimientos recientes.
-2. **Registrar entradas** → Cuando llegue mercancía, crea un movimiento de tipo *Entrada*.
-3. **Gestionar cotizaciones** → Crea cotizaciones para clientes, conviértelas en venta y da seguimiento.
-4. **Actualizar clientes** → Mantén el directorio actualizado con datos correctos.
-5. **Revisar reportes** → Consulta los reportes de ventas y productos más vendidos.
+### 📱 ¿Qué puedes hacer en StockFlow?
 
-### ✅ Lo que puedes hacer
-- **Crear y editar** productos, cotizaciones y clientes
-- **Registrar** entradas, salidas, devoluciones y ajustes de inventario
-- **Convertir** cotizaciones en ventas y hacer seguimiento de entrega/pago
-- **Cancelar** cotizaciones (requiere justificación escrita)
-- **Ver reportes** operativos de ventas y movimientos
+Como Almacenista tienes acceso completo a las **operaciones del negocio**:
 
-### ❌ Lo que NO verás
-- Precios de compra ni márgenes de ganancia
-- Reportes de *Mejor Margen* y *Valor por Categoría*
-- La sección de *Configuración* (es exclusiva del Administrador)`
+| Sección | Para qué sirve |
+|---|---|
+| **Dashboard** | Ver el estado del inventario y alertas del día |
+| **Productos** | Consultar, crear y editar el catálogo |
+| **Movimientos** | Registrar entradas, salidas y ajustes de stock |
+| **Cotizaciones** | Crear propuestas, convertirlas en ventas y hacer seguimiento |
+| **Reportes** | Consultar ventas, productos más vendidos y tendencias |
+
+> 🔒 La sección de **Configuración** es exclusiva del Administrador.
+
+---
+
+### 📋 Tu Flujo de Trabajo Diario
+
+**Al iniciar el día:**
+1. Abre el **Dashboard** — revisa alertas de stock bajo y movimientos recientes
+2. Si hay alertas de stock bajo, notifica al Administrador para que gestione una recompra
+
+**Durante el día:**
+3. **Registra entradas** cuando llegue mercancía al almacén
+4. **Crea cotizaciones** para clientes que soliciten propuestas
+5. **Convierte en venta** las cotizaciones que se aprueben
+6. **Actualiza el seguimiento** de pedidos: En Ruta → Entregado → Pagado
+
+**Al cerrar:**
+7. Revisa la lista de cotizaciones activas con seguimiento pendiente
+
+---
+
+### ❌ Lo que NO verás en tu cuenta
+
+Esto no es un error — es por diseño para proteger información financiera sensible:
+- ❌ Precio de compra de los productos
+- ❌ Márgenes de ganancia
+- ❌ Valor total del inventario (calculado a precio de compra)
+- ❌ Reportes de "Mejor Margen" y "Valor por Categoría"
+- ❌ Sección de Configuración del negocio
+
+> 💡 ¿Necesitas cambiar algo de configuración? Pídelo al Administrador.`
+    },
+    {
+      id: "daily-workflow-almacenista",
+      category: "Primeros Pasos",
+      role: "almacenista",
+      title: "📋 Flujo de Trabajo Diario del Almacenista",
+      keywords: ["flujo", "diario", "rutina", "proceso", "día", "actividades", "checklist", "tareas"],
+      related_ids: ["movements-register", "quotations-create", "quotations-convert", "products-inventory"],
+      content: `## 📋 Flujo de Trabajo Diario
+
+Una guía práctica para organizar tu jornada laboral con StockFlow.
+
+---
+
+### 🌅 Al Iniciar el Día
+
+**1. Revisar el Dashboard**
+- Identifica cuántos productos tienen **stock bajo** (tarjeta roja)
+- Ve los **movimientos de ayer** para contexto
+- Revisa las cotizaciones activas en el semáforo
+
+**2. Atender alertas de stock bajo**
+- Ve a *Productos → Filtro: Stock bajo*
+- Anota los productos críticos
+- Comunica al Administrador para gestionar recompras
+
+---
+
+### ☀️ Durante el Día
+
+**3. Registrar entradas de mercancía**
+Cuando llegue una entrega del proveedor:
+1. Ve a *Movimientos → + Nuevo Movimiento*
+2. Tipo: **Entrada**
+3. Selecciona el producto (por nombre, SKU o código de barras)
+4. Ingresa la cantidad recibida
+5. Agrega el número de factura o referencia del proveedor
+6. Guarda — el stock se actualiza inmediatamente
+
+**4. Crear cotizaciones para clientes**
+Cuando un cliente solicita una propuesta:
+1. Ve a *Cotizaciones → + Nueva Cotización*
+2. Selecciona o escribe el nombre del cliente
+3. Agrega los productos solicitados
+4. Ajusta cantidades y precios si es necesario
+5. Establece la fecha de vigencia
+6. Guarda como *Borrador* o *Enviada* según el estado
+
+**5. Convertir cotizaciones en ventas**
+Cuando el cliente apruebe:
+1. Busca la cotización en la lista
+2. Menú ⋯ → *Convertir en Venta*
+3. Confirma la forma de pago
+4. El stock se descuenta automáticamente
+
+---
+
+### 🌙 Al Cerrar el Día
+
+**6. Actualizar seguimiento de pedidos**
+Revisa las cotizaciones en estado *Concretada*:
+- Marca **En Ruta** los pedidos que salieron hoy
+- Marca **Entregado** los pedidos que llegaron al cliente
+- Registra el **Pago** cuando el cliente haya pagado
+
+**7. Revisar movimientos del día**
+Ve a *Movimientos* y confirma que todas las entradas y salidas del día estén registradas.`
     },
 
-    // ─── DASHBOARD ───
+    // ═══════════════════════════════════════════════
+    // DASHBOARD
+    // ═══════════════════════════════════════════════
     {
       id: "dashboard-admin",
       category: "Dashboard",
       role: "admin",
-      title: "Dashboard — Vista del Administrador",
-      keywords: ["dashboard", "panel", "inicio", "métricas", "ventas", "ganancia", "estadísticas", "kpi"],
+      title: "📊 Dashboard — Vista del Administrador",
+      keywords: ["dashboard", "panel", "inicio", "métricas", "ventas", "ganancia", "estadísticas", "kpi", "valor inventario"],
       related_ids: ["reports-admin", "products-inventory", "dashboard-almacenista"],
-      content: `## Dashboard para Administradores
+      content: `## 📊 Dashboard para Administradores
 
-El Dashboard te da una visión **financiera y operativa completa** del negocio.
+El Dashboard te da una visión **financiera y operativa completa** del negocio en tiempo real.
 
-### 📊 Tarjetas de Métricas (fila superior)
+---
 
-| Tarjeta | Qué muestra |
-|---|---|
-| **Productos Activos** | Conteo de productos + total de unidades en stock |
-| **Valor Total** | Valor del inventario calculado al **precio de compra** |
-| **Movimientos Hoy** | Número de entradas y salidas registradas hoy |
-| **Stock Bajo** | Productos por debajo de su stock mínimo |
+### 🗂️ Tarjetas de Métricas (fila superior)
 
-### 💰 Ventas del Día
-Muestra el desglose completo de las salidas de inventario del día:
-- **Monto vendido** — suma de precios de venta
+| Tarjeta | Qué muestra | Cómo interpretarla |
+|---|---|---|
+| **Productos Activos** | Conteo de productos + unidades totales en stock | Número de referencias que manejas |
+| **Valor Total** | Stock × precio de compra de todos los productos | Capital invertido en inventario *(solo Admin)* |
+| **Movimientos Hoy** | Entradas + salidas registradas en el día | Nivel de actividad del almacén hoy |
+| **Stock Bajo** | Productos con stock ≤ stock mínimo | Cuántos productos necesitan reabastecimiento |
+
+> 💡 Haz clic en la tarjeta de **Stock Bajo** para ir directamente a la lista de productos críticos.
+
+---
+
+### 💰 Ventas del Día *(exclusivo Admin)*
+
+Desglose completo de las salidas del inventario del día actual:
+
+- **Monto vendido** — suma de precios de venta de todas las salidas
 - **Costo de lo vendido** — suma de precios de compra *(solo Admin)*
-- **Ganancia bruta** — diferencia + porcentaje de margen *(solo Admin)*
+- **Ganancia bruta** — diferencia entre ventas y costos + porcentaje de margen *(solo Admin)*
+
+---
 
 ### 🚦 Semáforo de Cotizaciones
-Resumen visual del estado de todas las cotizaciones: concretadas (verde), activas (ámbar) y canceladas (rojo). Haz clic en cualquier indicador para ir al módulo de Cotizaciones.
 
-### 📈 Gráfica de Movimientos
-Barras comparativas de entradas vs salidas por día en los últimos 7 días.`
+Resumen visual del estado de **todas las cotizaciones**:
+
+| Color | Estado | Significado |
+|---|---|---|
+| 🟢 Verde | Concretadas | Ventas completadas |
+| 🟡 Ámbar | Activas | En proceso (borrador, enviadas, aceptadas) |
+| 🔴 Rojo | Canceladas | Anuladas o vencidas |
+
+Haz clic en cualquier indicador para ir al módulo de Cotizaciones filtrado.
+
+---
+
+### 📈 Gráfica de Movimientos (7 días)
+
+Barras comparativas de **entradas vs salidas** por día en la última semana. Te permite identificar:
+- Días de mayor actividad
+- Si las salidas superan a las entradas (posible desabasto próximo)
+- Tendencias semanales de operación
+
+---
+
+### 🔔 Alertas de Stock Bajo
+
+Lista de productos con stock crítico ordenados por urgencia. Cada alerta muestra:
+- Nombre del producto y SKU
+- Stock actual vs stock mínimo definido`
     },
     {
       id: "dashboard-almacenista",
       category: "Dashboard",
       role: "almacenista",
-      title: "Dashboard — Vista del Almacenista",
-      keywords: ["dashboard", "panel", "inicio", "métricas", "movimientos", "stock", "alertas"],
-      related_ids: ["movements-overview", "products-inventory", "dashboard-admin"],
-      content: `## Dashboard para Almacenistas
+      title: "📊 Dashboard — Vista del Almacenista",
+      keywords: ["dashboard", "panel", "inicio", "métricas", "movimientos", "stock", "alertas", "semáforo"],
+      related_ids: ["movements-overview", "products-inventory", "quotations-states"],
+      content: `## 📊 Dashboard para Almacenistas
 
-El Dashboard te muestra el **estado operativo** del inventario y las ventas activas.
+El Dashboard es tu **centro de control operativo** — ábrelo al iniciar el día para saber el estado del almacén.
 
-### 📊 Tarjetas de Métricas que verás
+---
+
+### 🗂️ Tarjetas de Métricas que verás
 
 | Tarjeta | Qué muestra |
 |---|---|
-| **Productos Activos** | Conteo de productos + total de unidades en stock |
-| **Movimientos Hoy** | Número de entradas y salidas registradas hoy |
-| **Stock Bajo** | Productos por debajo de su stock mínimo |
+| **Productos Activos** | Cuántos productos tiene el catálogo y cuántas unidades en total |
+| **Movimientos Hoy** | Cuántas entradas y salidas se registraron hoy |
+| **Stock Bajo** | Cuántos productos están por debajo de su nivel mínimo |
 
-> 🔒 La tarjeta de **Valor Total del Inventario** no está disponible para tu rol, ya que requiere datos de precios de compra.
+> 🔒 La tarjeta de **Valor Total del Inventario** no está disponible para Almacenistas (requiere datos de costos).
+
+---
 
 ### 💼 Ventas del Día
-Verás el **Monto vendido** del día (suma de precios de venta de las salidas). No verás el costo ni la ganancia — esos son datos financieros del Administrador.
+
+Verás el **monto vendido** del día (suma de precios de venta de las salidas). 
+No verás el costo ni la ganancia — son datos financieros del Administrador.
+
+---
 
 ### 🚦 Semáforo de Cotizaciones
-Muestra cuántas cotizaciones están concretadas, activas o canceladas. Muy útil para saber cuántos pedidos tienes en proceso.
 
-### 🔔 Alertas de Stock Bajo
-Revisa esta sección diariamente — te indica qué productos necesitan reabastecerse. Haz clic en "Ver todos" para ir directamente a la lista filtrada.`
+Muestra el estado de las cotizaciones de forma visual:
+
+| Indicador | Qué significa |
+|---|---|
+| 🟢 Verde | Cotizaciones **concretadas** (ventas completadas) |
+| 🟡 Ámbar | Cotizaciones **activas** (pendientes de cerrar) |
+| 🔴 Rojo | Cotizaciones **canceladas** |
+
+Haz clic en cualquier indicador para ir a la lista de cotizaciones.
+
+---
+
+### 🔔 Alertas de Stock Bajo — ¡Prioridad!
+
+Esta es la sección más importante de tu día. Si hay alertas, significa que **se acabará el producto pronto**.
+
+**Qué hacer cuando hay alertas:**
+1. Anota los productos con stock crítico
+2. Comunica al Administrador para que gestione una compra al proveedor
+3. Si puedes registrar la entrada cuando llegue la mercancía, hazlo de inmediato
+
+Haz clic en **"Ver todos"** para ir a la lista completa de productos con stock bajo.`
     },
 
-    // ─── PRODUCTOS ───
+    // ═══════════════════════════════════════════════
+    // PRODUCTOS
+    // ═══════════════════════════════════════════════
     {
       id: "products-create",
       category: "Productos",
       role: "all",
-      title: "Cómo Crear y Editar Productos",
-      keywords: ["producto", "crear", "nuevo", "editar", "sku", "barcode", "código de barras", "precio", "categoría"],
-      related_ids: ["products-admin-exclusive", "products-inventory", "movements-register"],
-      content: `## Crear y Editar Productos
+      title: "➕ Crear y Editar Productos",
+      keywords: ["producto", "crear", "nuevo", "editar", "sku", "barcode", "código de barras", "precio", "categoría", "formulario"],
+      related_ids: ["barcode-scanner", "products-inventory", "products-admin-exclusive"],
+      content: `## ➕ Crear y Editar Productos
 
-Ambos roles pueden crear y editar productos. Para crear uno nuevo, ve a **Productos → + Nuevo Producto**.
+Ve a **Productos → + Nuevo Producto** para agregar un nuevo artículo al catálogo.
 
-### 📝 Campos del Formulario
+---
 
-**Datos Generales:**
-- **Nombre** *(requerido)* — nombre comercial del producto
-- **SKU** — código interno; puedes generarlo automáticamente o escribir uno manualmente
-- **Código de barras** — escanea con la cámara del dispositivo o escríbelo manualmente
-- **Descripción** — información adicional del producto
-- **Categoría** — selecciona de las categorías creadas en Configuración
-- **Proveedor** — proveedor vinculado al producto
+### 📋 Campos del Formulario
 
-**Precios e Inventario:**
-- **Precio de Venta** *(requerido)* — lo que paga el cliente
-- **Tasa de IVA** — 0% o 16%
-- **Stock inicial** — existencias al momento de creación
-- **Stock mínimo** — umbral para activar alertas de stock bajo
-- **Unidad de medida** — pieza, kg, litro, metro, caja, paquete
+#### 📦 Datos Generales
 
-> 💡 Al guardar un producto con stock inicial mayor a cero, el sistema crea automáticamente un movimiento de tipo **Entrada** en el historial.
+| Campo | Obligatorio | Descripción |
+|---|:---:|---|
+| **Nombre** | ✅ | Nombre comercial del producto |
+| **SKU** | — | Código interno único; puedes generarlo automáticamente con el botón ⚡ |
+| **Código de barras** | — | Escanea con la cámara o escribe el código manualmente |
+| **Descripción** | — | Información adicional del producto |
+| **Categoría** | — | Grupo al que pertenece (creadas en Configuración) |
+| **Proveedor** | — | Proveedor que suministra este producto |
 
-### ✏️ Editar un Producto
-Haz clic en el ícono de lápiz en la tabla de productos. Todos los campos son modificables.`
+#### 💰 Precios e Inventario
+
+| Campo | Obligatorio | Descripción |
+|---|:---:|---|
+| **Precio de venta** | ✅ | Precio al cliente final |
+| **Precio de compra** | — | Costo del proveedor *(solo visible para Admin)* |
+| **Tasa de IVA** | — | 0% (exento) o 16% |
+| **Stock inicial** | — | Existencias al momento de crear el producto |
+| **Stock mínimo** | — | Umbral para activar alertas de stock bajo |
+| **Unidad de medida** | — | Pieza, kg, litro, metro, caja o paquete |
+
+> 💡 Si ingresas un **stock inicial** mayor a cero, el sistema crea automáticamente un movimiento de tipo **Entrada** en el historial.
+
+---
+
+### ✏️ Editar un Producto Existente
+
+1. Ve a la tabla de **Productos**
+2. Haz clic en el ícono de **lápiz** ✏️ del producto
+3. Modifica los campos necesarios
+4. Guarda los cambios
+
+> ⚠️ Cambiar el precio de venta no afecta cotizaciones ya creadas — solo aplica a las nuevas.
+
+---
+
+### 🔍 Buscar y Filtrar Productos
+
+En la página de Productos puedes:
+- **Buscar** por nombre, SKU o código de barras
+- **Filtrar** por categoría
+- **Filtrar** por stock bajo (solo productos con alertas activas)
+- **Exportar a CSV** la lista completa`
     },
     {
       id: "products-admin-exclusive",
       category: "Productos",
       role: "admin",
-      title: "Funciones Exclusivas de Productos (Admin)",
-      keywords: ["precio compra", "costo", "eliminar producto", "margen", "admin", "exclusivo"],
-      related_ids: ["products-create", "reports-admin"],
-      content: `## Funciones de Productos Exclusivas para Administradores
+      title: "🔐 Funciones Exclusivas de Productos (Admin)",
+      keywords: ["precio compra", "costo", "eliminar producto", "margen", "admin", "exclusivo", "importar", "csv", "masivo"],
+      related_ids: ["products-create", "reports-admin", "products-inventory"],
+      content: `## 🔐 Funciones de Productos Exclusivas para Administradores
+
+---
 
 ### 💰 Precio de Compra
-Como Administrador, verás el campo **Precio de Compra** en el formulario de productos. Este campo es fundamental para:
-- Calcular la **ganancia bruta** en el Dashboard
-- Generar el reporte de **Mejor Margen**
-- Calcular el **Valor Total del Inventario**
 
-> ⚠️ El Almacenista no puede ver ni editar el precio de compra. Asegúrate de configurarlo correctamente al crear cada producto.
+Como Administrador, el campo **Precio de Compra** es visible en el formulario de creación/edición de productos. Es fundamental para:
+
+| Usa el precio de compra para... | Dónde se calcula |
+|---|---|
+| Calcular la **ganancia bruta diaria** | Dashboard |
+| Reporte de **Mejor Margen** | Reportes |
+| Calcular el **Valor Total del Inventario** | Dashboard |
+| Analizar **Valor por Categoría** | Reportes |
+
+> ⚠️ El Almacenista **no puede ver ni editar** el precio de compra. Configúralo correctamente al crear cada producto.
+
+**Fórmula del margen:**
+\`\`\`
+Margen (%) = ((Precio Venta − Precio Compra) / Precio Compra) × 100
+\`\`\`
+
+---
 
 ### 🗑️ Eliminar Productos
+
 Solo el Administrador puede eliminar productos. Para hacerlo:
-1. Busca el producto en la tabla
-2. Haz clic en el ícono de eliminar
-3. Confirma la acción
+1. Haz clic en el ícono de **basura** 🗑️ del producto en la tabla
+2. Confirma la acción en el diálogo
 
-**Protección importante:** Si el producto tiene movimientos de inventario registrados (entradas, salidas, etc.), el sistema **bloqueará la eliminación** para proteger la integridad del historial. En ese caso, se recomienda marcar el producto como *Inactivo* en lugar de eliminarlo.
+**Protección de integridad:** Si el producto tiene **movimientos de inventario** registrados, el sistema **bloqueará la eliminación** para proteger el historial.
 
-### 📥 Importación Masiva
-Ve a **Configuración → Importar Productos** para cargar un CSV o Excel con múltiples productos al mismo tiempo.`
+> 💡 En lugar de eliminar, marca el producto como **Inactivo** — dejará de aparecer en listas pero conservará su historial.
+
+---
+
+### 📥 Importación Masiva de Productos
+
+Ve a **Configuración → Importar Productos** para cargar múltiples productos al mismo tiempo.
+
+**Proceso:**
+1. Descarga la **plantilla CSV** con el botón de descarga
+2. Rellena la plantilla con tus productos en Excel o Google Sheets
+3. Guarda como CSV y sube el archivo
+4. Revisa la vista previa con los productos detectados
+5. Confirma la importación
+
+**Columnas de la plantilla:**
+
+| Columna | Obligatorio |
+|---|:---:|
+| nombre | ✅ |
+| precio_venta | ✅ |
+| precio_compra | — |
+| sku | — |
+| descripcion | — |
+| stock_inicial | — |
+| stock_minimo | — |
+| unidad | — |`
     },
     {
       id: "products-inventory",
       category: "Productos",
       role: "all",
-      title: "Control de Stock y Alertas de Inventario",
-      keywords: ["stock", "inventario", "alerta", "mínimo", "bajo", "existencias", "agotado"],
-      related_ids: ["movements-register", "products-create", "dashboard-admin"],
-      content: `## Control de Stock y Alertas
+      title: "📦 Control de Stock y Alertas de Inventario",
+      keywords: ["stock", "inventario", "alerta", "mínimo", "bajo", "existencias", "agotado", "reabastecimiento", "cantidad"],
+      related_ids: ["movements-register", "products-create", "barcode-scanner"],
+      content: `## 📦 Control de Stock y Alertas
 
-### 📦 Cómo Funciona el Stock
-El stock de cada producto se actualiza automáticamente con cada movimiento registrado:
-- **Entrada** → suma al stock
-- **Salida** → resta del stock
-- **Devolución** → suma al stock
-- **Ajuste** → puede sumar o restar según la diferencia
+---
 
-### 🔴 Alerta de Stock Bajo
-Cuando el stock de un producto cae **por debajo o igual al stock mínimo** definido, aparece:
-- Una alerta en el **Dashboard** (tarjeta "Stock Bajo" y sección de alertas)
-- Un indicador en el **menú lateral** del sistema
+### ⚙️ Cómo Funciona el Stock Automático
+
+El stock de cada producto se **actualiza automáticamente** con cada acción:
+
+| Acción | Efecto en el stock |
+|---|---|
+| Registrar **Entrada** | ➕ Aumenta |
+| Registrar **Salida** | ➖ Disminuye |
+| Registrar **Devolución** | ➕ Aumenta |
+| Registrar **Ajuste** | ➕ o ➖ según diferencia |
+| **Convertir** cotización en venta | ➖ Disminuye automáticamente |
+| **Anular** una venta concretada | ➕ Se revierte automáticamente |
+
+> 💡 **Nunca** necesitas actualizar el stock manualmente — las acciones anteriores lo hacen por ti.
+
+---
+
+### 🔴 ¿Cuándo se activa una Alerta de Stock Bajo?
+
+Cuando el stock de un producto cae **por debajo o igual al stock mínimo** definido.
+
+**Ejemplo:**
+- Producto: "Cable USB-C"
+- Stock mínimo configurado: 10 unidades
+- Stock actual: 8 unidades → **Alerta activa** 🔴
+
+**Dónde aparece la alerta:**
+- Tarjeta "Stock Bajo" en el **Dashboard**
+- Indicador en el **menú lateral**
 - El producto se resalta en la tabla de **Productos**
+- Sección de alertas en la parte inferior del **Dashboard**
+
+---
+
+### 📏 ¿Cómo definir el Stock Mínimo correcto?
+
+Usa esta fórmula como guía:
+
+\`\`\`
+Stock mínimo = Días de reabastecimiento × Ventas diarias promedio
+\`\`\`
+
+**Ejemplo:** Si el proveedor tarda 3 días en entregar y vendes 5 unidades/día:
+\`\`\`
+Stock mínimo = 3 × 5 = 15 unidades
+\`\`\`
+
+Esto garantiza que nunca te quedes sin stock mientras esperas la entrega.
+
+---
 
 ### 🔍 Filtrar Productos con Stock Bajo
-En la página de Productos, usa el filtro **"Stock bajo"** para ver únicamente los productos que necesitan reabastecimiento.
 
-> 💡 **Recomendación:** Define un stock mínimo realista para cada producto. Por ejemplo, si tarda 3 días en llegar del proveedor y vendes 5 unidades por día, configura el mínimo en **15 unidades**.`
+En la página de **Productos**, activa el filtro **"Stock bajo"** para ver únicamente los productos que necesitan reabastecimiento urgente.`
+    },
+    {
+      id: "barcode-scanner",
+      category: "Productos",
+      role: "all",
+      title: "📷 Uso del Escáner de Código de Barras",
+      keywords: ["escáner", "código de barras", "barcode", "cámara", "escanear", "pistola", "lector"],
+      related_ids: ["products-create", "movements-register", "quotations-create"],
+      content: `## 📷 Escáner de Código de Barras
+
+StockFlow soporta dos métodos para leer códigos de barras:
+
+---
+
+### 🔌 Escáner Físico (Pistola de Codes)
+
+Compatible automáticamente. La mayoría de los escáneres USB y Bluetooth funcionan como teclado:
+
+1. Coloca el cursor en el campo de búsqueda de producto
+2. Escanea el código — el sistema lo detecta y busca el producto automáticamente
+3. Si el producto existe en el catálogo, se selecciona al instante
+
+> ✅ **Recomendado** para uso intensivo en mostrador o bodega.
+
+---
+
+### 📱 Escáner por Cámara (Dispositivo Móvil)
+
+Disponible en el formulario de **Productos**, **Movimientos** y **Cotizaciones**:
+
+1. Busca el botón **📷 Cámara** en el formulario
+2. Toca el botón para activar la cámara
+3. Apunta al código de barras del producto
+4. El sistema lo detecta y completa el campo automáticamente
+
+> 💡 Funciona mejor con buena iluminación y sin movimiento brusco.
+
+---
+
+### 🔢 Ingresar el Código Manualmente
+
+Si el escáner no funciona o el código está dañado:
+1. Escribe el código numérico directamente en el campo de búsqueda
+2. El sistema buscará el producto por código de barras
+
+---
+
+### ⚠️ ¿Qué pasa si el código no existe en el catálogo?
+
+- Al escanear en **Productos**: el campo se llena con el código para que lo registres en un nuevo producto
+- Al escanear en **Movimientos** o **Cotizaciones**: el sistema mostrará un mensaje indicando que no se encontró el producto`
     },
 
-    // ─── MOVIMIENTOS ───
+    // ═══════════════════════════════════════════════
+    // MOVIMIENTOS
+    // ═══════════════════════════════════════════════
     {
       id: "movements-overview",
       category: "Movimientos",
       role: "all",
-      title: "Tipos de Movimientos de Inventario",
-      keywords: ["movimiento", "entrada", "salida", "devolución", "ajuste", "inventario", "historial"],
+      title: "↕️ Tipos de Movimientos de Inventario",
+      keywords: ["movimiento", "entrada", "salida", "devolución", "ajuste", "inventario", "historial", "tipos"],
       related_ids: ["movements-register", "products-inventory"],
-      content: `## Tipos de Movimientos en StockFlow
+      content: `## ↕️ Tipos de Movimientos de Inventario
 
 Los movimientos son el **registro histórico** de cada cambio en tu inventario. Hay 4 tipos:
 
-### ⬇️ Entrada (Verde)
-Registra la **recepción de mercancía** de un proveedor u otra fuente.
-- Aumenta el stock del producto
-- Usa el **precio de compra** como referencia
-- Ejemplo: "Compra a proveedor XYZ — Factura #1234"
+---
 
-### ⬆️ Salida (Rojo)
-Registra el **despacho de productos** (ventas directas sin cotización, consumo interno, etc.).
-- Reduce el stock del producto
-- Usa el **precio de venta** como referencia
-- Ejemplo: "Venta directa en mostrador"
+### 🟢 Entrada — Mercancía que entra al almacén
 
-> ⚠️ Las salidas por cotizaciones convertidas se registran **automáticamente** — no necesitas crearlas manualmente.
+**Cuándo usar:** Cuando recibes mercancía de un proveedor u otra fuente.
 
-### 🔄 Devolución (Azul)
-Registra el **reingreso de productos** al inventario.
-- Aumenta el stock
-- Ejemplo: "Devolución del cliente — mal estado"
+- ➕ **Aumenta** el stock del producto
+- Precio de referencia: **precio de compra**
+- Ejemplos de uso:
+  - Compra a proveedor con factura
+  - Reposición de bodega central
+  - Mercancía recuperada de otro almacén
 
-### ⚡ Ajuste (Naranja)
-Correcciones manuales de stock por conteo físico o errores.
-- Puede aumentar o reducir el stock
-- Siempre requiere un motivo documentado`
+---
+
+### 🔴 Salida — Mercancía que sale del almacén
+
+**Cuándo usar:** Ventas directas en mostrador o salidas sin cotización previa.
+
+- ➖ **Disminuye** el stock del producto
+- Precio de referencia: **precio de venta**
+- Ejemplos de uso:
+  - Venta de mostrador sin cotización
+  - Consumo interno del negocio
+  - Muestras o cortesías
+
+> ⚠️ Las salidas por **cotizaciones convertidas** se registran automáticamente — no necesitas crearlas manualmente.
+
+---
+
+### 🔵 Devolución — Mercancía que regresa al almacén
+
+**Cuándo usar:** Cuando un cliente regresa un producto.
+
+- ➕ **Aumenta** el stock del producto
+- Ejemplos de uso:
+  - Devolución por producto en mal estado
+  - Devolución por pedido incorrecto
+  - Devolución parcial de un pedido
+
+---
+
+### 🟠 Ajuste — Corrección manual de stock
+
+**Cuándo usar:** Cuando el stock del sistema no coincide con el conteo físico real.
+
+- Puede ➕ aumentar o ➖ disminuir el stock
+- **Siempre requiere un motivo documentado**
+- Ejemplos de uso:
+  - Corrección tras inventario físico
+  - Pérdida, robo o merma detectada
+  - Error en registro previo`
     },
     {
       id: "movements-register",
       category: "Movimientos",
       role: "all",
-      title: "Cómo Registrar un Movimiento",
-      keywords: ["registrar", "crear movimiento", "entrada", "salida", "escanear", "código de barras", "cantidad"],
-      related_ids: ["movements-overview", "products-inventory", "quotations-convert"],
-      content: `## Registrar un Nuevo Movimiento
+      title: "✍️ Cómo Registrar un Movimiento",
+      keywords: ["registrar", "crear movimiento", "entrada", "salida", "escanear", "código de barras", "cantidad", "referencia", "factura"],
+      related_ids: ["movements-overview", "products-inventory", "barcode-scanner", "quotations-convert"],
+      content: `## ✍️ Registrar un Nuevo Movimiento
 
 Ve a **Movimientos → + Nuevo Movimiento** para abrir el formulario.
 
-### 📋 Pasos para Registrar
+---
 
-1. **Selecciona el producto:**
-   - Escanea el código de barras con un escáner físico (detección automática) o con la cámara
-   - O busca el producto escribiendo su nombre o SKU
+### 📋 Paso a Paso
 
-2. **Elige el tipo de movimiento:** Entrada, Salida, Devolución o Ajuste
+**Paso 1 — Selecciona el producto**
+- 📷 Escanea el código de barras con escáner físico o cámara
+- 🔍 O busca por nombre del producto o SKU
 
-3. **Ingresa la cantidad:**
-   - Para **salidas**, el sistema verifica que haya stock suficiente
-   - Si la cantidad supera el stock disponible, recibirás una **advertencia**
+**Paso 2 — Elige el tipo de movimiento**
 
-4. **Precio unitario:** Se autocompleta según el tipo (compra para entradas, venta para salidas). Puedes modificarlo si es necesario.
+| Tipo | Icono | Cuándo usarlo |
+|---|---|---|
+| Entrada | 🟢 | Llegó mercancía al almacén |
+| Salida | 🔴 | Sale mercancía (venta sin cotización) |
+| Devolución | 🔵 | Cliente devuelve un producto |
+| Ajuste | 🟠 | Corrección tras conteo físico |
 
-5. **Motivo y Referencia:** Describe el motivo y agrega un número de referencia (factura, orden, etc.)
+**Paso 3 — Ingresa la cantidad**
+- Para **Salidas**: el sistema verifica que haya stock suficiente y te avisa si la cantidad supera el disponible
 
-6. **Guardar:** El stock del producto se actualiza **instantáneamente**.
+**Paso 4 — Precio unitario**
+- Se autocompleta automáticamente según el tipo:
+  - Entradas → precio de compra
+  - Salidas → precio de venta
+- Puedes modificarlo si es necesario para el caso específico
 
-### 📅 Filtrar el Historial
-Usa los filtros de **fecha** (Desde / Hasta) en la página de Movimientos para ver el historial de un período específico. También puedes **exportar a CSV**.`
+**Paso 5 — Motivo y Referencia**
+- **Motivo**: describe brevemente el movimiento
+- **Referencia**: número de factura, orden de compra, número de pedido, etc.
+
+**Paso 6 — Guardar**
+- El stock del producto se actualiza **instantáneamente**
+- El movimiento queda registrado en el historial con fecha y hora
+
+---
+
+### 📅 Consultar el Historial
+
+En la página de **Movimientos**:
+- Usa los filtros **Desde / Hasta** para ver un período específico
+- Filtra por **tipo** de movimiento
+- **Exporta a CSV** para análisis en Excel`
     },
 
-    // ─── COTIZACIONES ───
+    // ═══════════════════════════════════════════════
+    // COTIZACIONES
+    // ═══════════════════════════════════════════════
     {
       id: "quotations-create",
       category: "Cotizaciones",
       role: "all",
-      title: "Crear y Editar Cotizaciones",
-      keywords: ["cotización", "crear", "nueva cotización", "cliente", "productos", "precio", "folio", "iva", "total"],
-      related_ids: ["quotations-states", "quotations-convert", "quotations-cancel"],
-      content: `## Crear y Editar Cotizaciones
+      title: "📝 Crear y Editar Cotizaciones",
+      keywords: ["cotización", "crear", "nueva cotización", "cliente", "productos", "precio", "folio", "iva", "total", "pdf"],
+      related_ids: ["quotations-states", "quotations-convert", "barcode-scanner"],
+      content: `## 📝 Crear y Editar Cotizaciones
 
 Ve a **Cotizaciones → + Nueva Cotización** para iniciar una nueva propuesta comercial.
 
-### 👤 Información del Cliente
-- Selecciona un cliente del directorio o escribe el nombre directamente
-- Si el cliente existe, sus datos de contacto se autocompletan
-- Puedes añadir email y teléfono manualmente si es necesario
+---
 
-### 🛒 Agregar Productos
-- **Por código de barras:** Usa un escáner físico o escribe el código manualmente
-- **Por búsqueda:** Escribe el nombre o SKU del producto
-- El sistema valida el **stock disponible** en tiempo real
+### 👤 Paso 1 — Información del Cliente
 
-Para cada producto puedes ajustar:
-- **Cantidad** — el sistema alerta si supera el stock disponible
-- **Precio unitario** — se toma del catálogo pero es editable
+- **Busca** el cliente en el directorio escribiendo su nombre
+- Si el cliente existe, sus datos (**email**, **teléfono**) se autocompletan
+- Si es un cliente nuevo, escribe el nombre directamente — puedes añadir sus datos de contacto
+
+---
+
+### 🛒 Paso 2 — Agregar Productos
+
+Tienes dos métodos para añadir productos a la cotización:
+
+| Método | Cómo hacerlo |
+|---|---|
+| **Código de barras** | Usa un escáner físico o escribe el código |
+| **Búsqueda** | Escribe el nombre del producto o SKU |
+
+Por cada producto puedes ajustar:
+- **Cantidad** — el sistema muestra el stock disponible y alerta si se supera
+- **Precio unitario** — se toma del catálogo, pero es editable
+- **IVA** — puedes activar/desactivar el IVA por producto individualmente
+
+---
 
 ### 💰 Cálculo Automático
-- **Subtotal** — suma sin IVA
-- **IVA** — calculado según la tasa de cada producto (0% o 16%)
-- **Total** — subtotal + IVA
 
-### 📝 Otros Campos
-- **Notas** — condiciones especiales, observaciones para el cliente
-- **Vigencia** — fecha límite de validez de la cotización
-- **Forma de pago** — efectivo, transferencia, tarjeta, etc.
+| Concepto | Cómo se calcula |
+|---|---|
+| **Subtotal** | Suma de (cantidad × precio) de todos los productos |
+| **IVA** | Calculado según la tasa de IVA de cada producto (0% o 16%) |
+| **Total** | Subtotal + IVA |
+
+---
+
+### 📋 Paso 3 — Datos Adicionales
+
+| Campo | Para qué sirve |
+|---|---|
+| **Notas** | Condiciones especiales, observaciones para el cliente |
+| **Vigencia** | Fecha límite de validez de la cotización |
+| **Forma de pago** | Efectivo, transferencia, tarjeta, crédito, etc. |
+
+---
 
 ### 📄 Folio Automático
-El sistema genera un folio único con formato **COT-AAAMMDD-NNN** (ej: COT-260316-001).`
+
+El sistema genera un folio único con formato **COT-AAAMMDD-NNN**
+
+> Ejemplo: *COT-260316-001* = Cotización #1 del 16 de marzo de 2026
+
+---
+
+### 📎 Descargar PDF
+
+Desde cualquier cotización, haz clic en el botón **PDF** para descargar un documento profesional con el logo y datos de tu negocio.`
     },
     {
       id: "quotations-states",
       category: "Cotizaciones",
       role: "all",
-      title: "Estados de una Cotización",
-      keywords: ["estado", "borrador", "enviada", "aceptada", "concretada", "cancelada", "vencida", "status"],
+      title: "🚦 Estados de una Cotización",
+      keywords: ["estado", "borrador", "enviada", "aceptada", "concretada", "cancelada", "vencida", "status", "flujo"],
       related_ids: ["quotations-create", "quotations-convert", "quotations-cancel"],
-      content: `## Estados de una Cotización
+      content: `## 🚦 Estados de una Cotización
 
-Cada cotización pasa por diferentes etapas a lo largo de su ciclo de vida:
+Cada cotización avanza por etapas a lo largo de su ciclo de vida.
+
+---
+
+### Ciclo de Vida Normal
+
+\`\`\`
+Borrador → Enviada → Aceptada → Concretada → Entregada → Pagada
+\`\`\`
+
+---
 
 ### 🟡 Borrador
-La cotización está en elaboración y aún no ha sido enviada al cliente. Puedes editarla libremente.
+La cotización está en elaboración. Puedes **editarla libremente**.
+
+- **Quién puede crearla:** Todos los roles
+- **Siguiente paso:** Cambiar a *Enviada* cuando esté lista para el cliente
+
+---
 
 ### 🟡 Enviada
-La cotización fue compartida con el cliente, quien está evaluándola.
+La cotización fue compartida con el cliente, quien la está evaluando.
+
+- El cliente puede aprobarla o rechazarla
+- **Siguiente paso:** *Aceptada* (aprobó) o *Cancelada* (rechazó)
+
+---
 
 ### 🟡 Aceptada
-El cliente confirmó su interés. Puedes proceder a convertirla en venta.
+El cliente confirmó su interés. Lista para convertirse en venta.
 
-### 🟢 Concretada (Venta)
-La cotización fue convertida en una venta real. El stock de los productos fue **descontado automáticamente**. Desde aquí puedes gestionar la entrega y el pago.
+- **Siguiente paso:** Convertir en Venta
+
+---
+
+### 🟢 Concretada — ¡Venta realizada!
+La cotización se convirtió en una venta real.
+- El stock se **descontó automáticamente**
+- Ahora puedes gestionar la entrega y el pago con los botones de seguimiento
+
+---
 
 ### 🔴 Cancelada
-La cotización fue anulada. Siempre requiere una **razón de cancelación** por escrito. Si la cotización ya estaba concretada y se anula, el stock **se revierte automáticamente**.
+La cotización fue anulada.
+- Si ya estaba **concretada** y se anula → el stock **se revierte automáticamente**
+- Siempre requiere una **razón de cancelación** escrita
 
-### 🔴 Vencida *(detección automática)*
-La fecha de vigencia ha pasado sin que la cotización se haya concretado. **No puede convertirse en venta** en este estado.
+---
 
-> 💡 El flujo normal es: Borrador → Enviada → Aceptada → Concretada → Entregada → Pagada`
+### ⏰ Vencida *(detección automática)*
+La fecha de vigencia pasó sin que la cotización se concretara.
+- **No puede** convertirse en venta
+- Para reactivarla: edítala y actualiza la fecha de vigencia
+
+---
+
+### 📊 Semáforo del Dashboard
+
+| Color | Estados incluidos |
+|---|---|
+| 🟢 Verde | Concretadas, Entregadas, Pagadas |
+| 🟡 Ámbar | Borrador, Enviada, Aceptada |
+| 🔴 Rojo | Canceladas, Vencidas |`
     },
     {
       id: "quotations-convert",
       category: "Cotizaciones",
       role: "all",
-      title: "Convertir en Venta y Seguimiento de Pedido",
-      keywords: ["convertir", "venta", "pago", "entrega", "ruta", "cobrar", "seguimiento", "factura"],
+      title: "✅ Convertir en Venta y Seguimiento de Pedido",
+      keywords: ["convertir", "venta", "pago", "entrega", "ruta", "cobrar", "seguimiento", "factura", "concretar"],
       related_ids: ["quotations-states", "quotations-cancel", "quotations-create"],
-      content: `## Convertir una Cotización en Venta
+      content: `## ✅ Convertir una Cotización en Venta
+
+---
 
 ### ▶️ Proceso de Conversión
-1. Abre el menú de acciones (⋯) de la cotización
+
+1. Abre el **menú de acciones** (⋯) de la cotización
 2. Selecciona **"Convertir en Venta"**
 3. Elige o escribe la **forma de pago** (Efectivo, Transferencia, Tarjeta, etc.)
 4. Confirma — el stock se descuenta automáticamente
 
-> ⚠️ Si una cotización está **vencida**, no podrás convertirla. Edítala y actualiza la fecha de vigencia primero.
+> ⚠️ Si la cotización está **vencida**, no podrás convertirla. Edítala primero y actualiza la fecha de vigencia.
+
+---
 
 ### 📦 Seguimiento del Pedido
-Una vez concretada, aparece una columna de **Seguimiento** con tres botones:
 
-- **🚚 En Ruta** — el pedido salió para entrega al cliente
-- **✅ Entregado** — el cliente recibió el pedido *(al marcar, se te pide confirmar el pago)*
-- **💲 Pago** — confirma que el pago fue recibido con el método definitivo
+Una vez concretada, aparece una sección de **Seguimiento** con tres acciones en orden:
+
+| Acción | Cuándo usarla |
+|---|---|
+| **🚚 En Ruta** | El pedido salió del almacén hacia el cliente |
+| **✅ Entregado** | El cliente recibió físicamente el pedido |
+| **💲 Pago recibido** | El cliente pagó (registra el método de pago definitivo) |
+
+> 💡 Al marcar como **Entregado**, el sistema te preguntará si el pago ya fue recibido para simplificar el proceso.
+
+---
 
 ### 🧾 Estado de Factura
-Para cada cotización puedes registrar el estado de facturación:
-- **Pendiente** — aún no se emite factura
-- **Emitida** — factura generada y entregada al cliente
-- **No Requerida** — el cliente no necesita factura
 
-### 📄 Descargar PDF
-Disponible en cualquier estado. Genera un documento profesional con el logo de tu negocio.`
+Para cada cotización concretada puedes registrar el estado de facturación:
+
+| Estado | Descripción |
+|---|---|
+| **Pendiente** | Aún no se ha emitido factura |
+| **Emitida** | Factura generada y entregada al cliente |
+| **No Requerida** | El cliente no necesita factura |
+
+---
+
+### 📄 Descargar PDF de Cotización
+
+Disponible en **cualquier estado** de la cotización. Genera un documento con:
+- Logo y datos de tu negocio (RFC, teléfono, dirección)
+- Datos del cliente
+- Lista detallada de productos con precios e IVA
+- Totales (subtotal, IVA, total)
+- Pie de página personalizado (condiciones, vigencia)`
     },
     {
       id: "quotations-cancel",
       category: "Cotizaciones",
       role: "all",
-      title: "Cancelar o Anular una Cotización",
-      keywords: ["cancelar", "anular", "cancelación", "razón", "motivo", "revertir", "stock", "devolución"],
+      title: "❌ Cancelar o Anular una Cotización",
+      keywords: ["cancelar", "anular", "cancelación", "razón", "motivo", "revertir", "stock", "devolución", "anulación"],
       related_ids: ["quotations-states", "quotations-convert"],
-      content: `## Cancelar o Anular una Cotización
+      content: `## ❌ Cancelar o Anular una Cotización
+
+---
+
+### Diferencia entre Cancelar y Anular
+
+| Acción | Cuándo usar | Efecto en el stock |
+|---|---|---|
+| **Cancelar** | La cotización NO se convirtió en venta | Sin efecto (el stock no se había descontado) |
+| **Anular Venta** | La cotización SÍ fue convertida en venta | El stock **se revierte automáticamente** |
+
+---
 
 ### ❌ Cancelar una Cotización (no concretada)
-Si la cotización aún no ha sido convertida en venta:
+
+Si la cotización está en estado Borrador, Enviada o Aceptada:
+
 1. Menú de acciones (⋯) → **"Cancelar Cotización"**
 2. Escribe el **motivo de cancelación** (campo obligatorio)
-3. Confirma — la cotización queda en estado *Cancelada*
+3. Confirma → la cotización queda en estado *Cancelada*
+
+---
 
 ### 🔴 Anular una Venta (ya concretada)
+
 Si la cotización ya fue convertida en venta:
+
 1. Menú de acciones (⋯) → **"Anular Venta"**
 2. Escribe la **razón de anulación** (campo obligatorio)
-3. Confirma — StockFlow **revierte automáticamente el stock** de todos los productos
+3. Confirma
 
-> ⚠️ **Importante:** La anulación de ventas es una operación seria. Al anular:
-> - Se registran movimientos de **Devolución** por cada producto
-> - El stock regresa a los niveles previos a la venta
-> - La cotización queda marcada como *Cancelada* con la razón registrada
+**Lo que ocurre automáticamente al anular:**
+- Se registran movimientos de **Devolución** por cada producto de la cotización
+- El stock regresa a los niveles previos a la venta
+- La cotización queda en estado *Cancelada* con la razón registrada
+
+---
 
 ### 💡 Cuándo usar cada opción
-- **Cancelar** → El cliente no quiere el pedido, hubo un error en la cotización
-- **Anular venta** → La entrega no se realizó, hubo un error en la conversión`
+
+| Situación | Acción recomendada |
+|---|---|
+| El cliente no quiere el pedido antes de concretar | Cancelar |
+| Hubo un error en la cotización (productos, precios) | Cancelar y crear nueva |
+| La entrega no se realizó (ya estaba concretada) | Anular Venta |
+| Error en la conversión a venta | Anular Venta |
+
+> ⚠️ La anulación de ventas es una operación seria. Úsala solo cuando sea estrictamente necesario y siempre documenta el motivo correctamente.`
     },
 
-    // ─── REPORTES ───
+    // ═══════════════════════════════════════════════
+    // REPORTES
+    // ═══════════════════════════════════════════════
     {
       id: "reports-all",
       category: "Reportes",
       role: "all",
-      title: "Reportes Disponibles para Todos",
-      keywords: ["reporte", "informe", "análisis", "ventas", "movimientos", "tendencia", "rotación", "csv", "exportar"],
-      related_ids: ["reports-admin", "quotations-states"],
-      content: `## Reportes Disponibles para Todos los Roles
+      title: "📈 Reportes Disponibles para Todos",
+      keywords: ["reporte", "informe", "análisis", "ventas", "movimientos", "tendencia", "rotación", "csv", "exportar", "más vendidos"],
+      related_ids: ["reports-admin", "quotations-states", "movements-overview"],
+      content: `## 📈 Reportes para Todos los Roles
 
-La sección de **Reportes** cuenta con un filtro de fechas global (Desde / Hasta) que aplica a todos los gráficos y tablas.
+La sección de **Reportes** te ayuda a entender el comportamiento del negocio. Hay un **filtro de fechas global** (Desde / Hasta) que aplica a todos los reportes.
 
-### 📑 Cotizaciones/Ventas
-Análisis de las cotizaciones **convertidas en venta** en el período.
-- **Filtros adicionales:** por cliente y forma de pago
-- **Tarjetas resumen:** Total Ventas, Monto Cobrado, Pendiente de Pago
-- **Tabla detallada** con folio, cliente, fecha, total, estado de entrega y pago
-- Exportar a **CSV**
+---
 
-### 🏆 Más Vendidos
+### 🗂️ Pestaña: Cotizaciones / Ventas
+
+Análisis de las cotizaciones **convertidas en venta** en el período seleccionado.
+
+**Tarjetas resumen:**
+
+| Tarjeta | Qué muestra |
+|---|---|
+| **Total Ventas** | Suma de todos los totales de ventas concretadas |
+| **Monto Cobrado** | Ventas marcadas como pagadas |
+| **Pendiente de Pago** | Ventas concretadas pero aún no cobradas |
+
+**Tabla detallada** con: folio, cliente, fecha, total, estado de entrega y pago
+
+> 💾 Exportar a **CSV** disponible
+
+---
+
+### 🏆 Pestaña: Más Vendidos
+
 Gráfico de barras horizontal con los **10 productos con más salidas** en el período.
-- Muestra la cantidad vendida por producto
-- Útil para identificar qué productos impulsar o reponer con prioridad
-- Exportar a **CSV**
 
-### 🐢 Baja Rotación
+- Muestra la cantidad de unidades vendidas por producto
+- Útil para: identificar qué productos impulsar, priorizar reposición de stock
+
+> 💾 Exportar a **CSV** disponible
+
+---
+
+### 🐢 Pestaña: Baja Rotación
+
 Los **10 productos con menos salidas** en el período, con su stock actual.
-- Detecta productos obsoletos o de lenta rotación
-- Exportar a **CSV**
 
-### 📈 Tendencia
-Gráfico de líneas con la evolución diaria de **entradas y salidas** de inventario.
-- Identifica picos de actividad y tendencias semanales`
+- Detecta productos obsoletos o de lenta rotación
+- Útil para: decisiones de liquidación, reducción de compras de ese producto
+
+> 💾 Exportar a **CSV** disponible
+
+---
+
+### 📊 Pestaña: Tendencia
+
+Gráfico de líneas con la evolución diaria de **entradas y salidas** en el período.
+
+- Identifica picos de actividad
+- Compara volumen de compras vs ventas
+- Detecta tendencias semanales o estacionales`
     },
     {
       id: "reports-admin",
       category: "Reportes",
       role: "admin",
-      title: "Reportes Exclusivos para Administradores",
-      keywords: ["margen", "ganancia", "costo", "categoría", "valor inventario", "rentabilidad", "reporte admin"],
+      title: "💰 Reportes Financieros Exclusivos (Admin)",
+      keywords: ["margen", "ganancia", "costo", "categoría", "valor inventario", "rentabilidad", "reporte admin", "mejor margen", "donut"],
       related_ids: ["reports-all", "products-admin-exclusive"],
-      content: `## Reportes Exclusivos para Administradores
+      content: `## 💰 Reportes Financieros para Administradores
 
-Además de los reportes disponibles para todos, tienes acceso a dos análisis financieros avanzados:
-
-### 💰 Mejor Margen
-Los **10 productos con mayor porcentaje de margen de ganancia** en tu catálogo.
-
-**Cálculo:** \`((Precio Venta − Precio Compra) / Precio Compra) × 100\`
-
-> Ejemplo: Producto A con costo $50 y precio de venta $95 → margen del **90%**
-
-Útil para:
-- Decidir qué productos promover prioritariamente
-- Comparar rentabilidad entre categorías
-- Identificar productos con margen insuficiente
-
-Exportar a **CSV**
+Además de los reportes estándar, tienes acceso a dos análisis financieros avanzados:
 
 ---
 
-### 🥧 Por Categoría (Valor del Stock)
+### 📊 Pestaña: Mejor Margen
+
+Los **10 productos con mayor porcentaje de margen de ganancia** de tu catálogo.
+
+**Fórmula:**
+\`\`\`
+Margen (%) = ((Precio Venta − Precio Compra) / Precio Compra) × 100
+\`\`\`
+
+**Ejemplo práctico:**
+- Producto: Cable HDMI
+- Precio de compra: $50
+- Precio de venta: $120
+- Margen: ((120 − 50) / 50) × 100 = **140%**
+
+**Útil para:**
+- Decidir qué productos **promover prioritariamente** en ventas
+- Comparar rentabilidad entre líneas de productos
+- Identificar productos con margen insuficiente que necesiten ajuste de precio
+
+> 💾 Exportar a **CSV** disponible
+
+---
+
+### 🥧 Pestaña: Por Categoría (Valor del Stock)
+
 Gráfico circular *(donut)* que muestra cómo está distribuido el **valor de tu inventario** por categoría.
 
-**Cálculo:** \`Stock × Precio de Compra\` agrupado por categoría
+**Fórmula por categoría:**
+\`\`\`
+Valor categoría = Suma de (Stock × Precio de Compra) de todos sus productos
+\`\`\`
 
-> Ejemplo: "Electrónica" = $45,000 en inventario | "Herramientas" = $12,000
+**Ejemplo:**
+| Categoría | Valor en inventario |
+|---|---|
+| Electrónica | $45,000 |
+| Herramientas | $12,000 |
+| Consumibles | $8,500 |
 
-Útil para:
-- Saber dónde está concentrado tu capital
-- Tomar decisiones de compra basadas en inversión real
+**Útil para:**
+- Saber dónde está concentrado tu **capital invertido**
+- Tomar decisiones de compra basadas en la inversión real
 - Identificar categorías sobreinventariadas
 
 ---
 
-### 📊 Resumen Financiero (barra superior de Reportes)
-En la barra de filtros de fechas también verás:
-- **Ventas totales** del período (precio de venta)
-- **Compras totales** del período (precio de compra)`
+### 📊 Barra de Resumen Financiero
+
+En la barra de filtros de fechas de Reportes también verás:
+- **Ventas totales** del período (suma de precios de venta)
+- **Compras totales** del período (suma de precios de compra de entradas)`
     },
 
-    // ─── CONFIGURACIÓN ───
+    // ═══════════════════════════════════════════════
+    // CONFIGURACIÓN
+    // ═══════════════════════════════════════════════
     {
       id: "settings-business",
       category: "Configuración",
       role: "admin",
-      title: "Configuración del Negocio",
-      keywords: ["configuración", "negocio", "rfc", "logo", "iva", "moneda", "dirección", "teléfono", "pie de página"],
-      related_ids: ["settings-clients", "settings-team", "settings-categories"],
-      content: `## Configuración del Negocio
+      title: "⚙️ Configuración del Negocio",
+      keywords: ["configuración", "negocio", "rfc", "logo", "iva", "moneda", "dirección", "teléfono", "pie de página", "color", "email alertas"],
+      related_ids: ["settings-team", "settings-categories", "settings-clients"],
+      content: `## ⚙️ Configuración del Negocio
 
 > 🔒 Esta sección es **exclusiva para Administradores**.
 
 Ve a **Configuración → Mi Negocio** para personalizar los datos de tu empresa.
 
+---
+
 ### 🏢 Información General
-- **Nombre del negocio** — aparece en cotizaciones PDF
-- **RFC** — requerido para documentos fiscalmente válidos
-- **Teléfono y Dirección** — datos de contacto del negocio
-- **Logo** — se muestra en los PDFs de cotizaciones (sube una imagen)
+
+| Campo | Para qué sirve |
+|---|---|
+| **Nombre del negocio** | Aparece en los encabezados de cotizaciones PDF |
+| **RFC** | Requerido para documentos fiscalmente válidos |
+| **Teléfono** | Datos de contacto del negocio en cotizaciones |
+| **Dirección** | Dirección del negocio en cotizaciones |
+| **Logo** | Imagen que aparece en el encabezado de PDFs (sube una imagen) |
+
+> ⚠️ Si el RFC no está configurado, verás una advertencia en amarillo en el Dashboard.
+
+---
 
 ### 💰 Configuración Financiera
-- **Tasa de IVA** — porcentaje predeterminado (ej: 16%)
-- **Moneda** — MXN por defecto, personalizable
+
+| Campo | Descripción |
+|---|---|
+| **Tasa de IVA** | Porcentaje predeterminado para nuevos productos (16% en México) |
+| **Moneda** | MXN por defecto; puedes cambiarla para negocios en otra moneda |
+
+---
 
 ### 📧 Comunicaciones
-- **Email para alertas de stock** — recibe notificaciones cuando un producto cae por debajo del mínimo
-- **Pie de cotizaciones** — texto de condiciones que aparece al final de cada PDF (vigencia, políticas, etc.)
+
+| Campo | Descripción |
+|---|---|
+| **Email para alertas de stock** | Recibirás un correo cuando un producto baje del stock mínimo |
+| **Pie de cotizaciones** | Texto de condiciones que aparece al final de cada PDF (políticas de devolución, vigencia de precios, etc.) |
+
+---
 
 ### 🎨 Identidad Visual
-- **Color primario** — personaliza el color principal de la aplicación
 
-> 💡 **Importante:** Completa el RFC para que tus cotizaciones sean fiscalmente correctas. Si no está configurado, verás una advertencia en amarillo en el Dashboard.`
+| Campo | Descripción |
+|---|---|
+| **Color primario** | Personaliza el color principal de la aplicación para toda tu marca |
+
+---
+
+### 💡 Recomendaciones
+
+1. **Configura el RFC primero** — es necesario para que las cotizaciones sean fiscalmente correctas
+2. **Sube tu logo** — hace que los PDFs de cotizaciones se vean profesionales
+3. **Define un pie de página** — incluye condiciones de pago, vigencia de precios y política de devoluciones`
     },
     {
       id: "settings-clients",
       category: "Configuración",
       role: "admin",
-      title: "Gestión de Clientes",
-      keywords: ["clientes", "cliente", "rfc cliente", "directorio", "eliminar cliente", "editar cliente"],
+      title: "👥 Gestión de Clientes",
+      keywords: ["clientes", "cliente", "rfc cliente", "directorio", "eliminar cliente", "editar cliente", "inactivo"],
       related_ids: ["settings-business", "quotations-create"],
-      content: `## Gestión de Clientes
+      content: `## 👥 Gestión de Clientes
 
-Ve a **Configuración → Clientes** para administrar el directorio de clientes.
+Ve a **Configuración → Clientes** para administrar el directorio de clientes del negocio.
+
+---
 
 ### ➕ Crear un Cliente
-Campos disponibles:
-- **Nombre** *(requerido)*
-- **Email** y **Teléfono**
-- **Dirección**
-- **RFC** — para facturación del cliente
-- **Notas** — observaciones internas
-- **Estado** — Activo o Inactivo
 
-### ✏️ Editar
-Haz clic en el ícono de lápiz para modificar los datos de cualquier cliente.
+| Campo | Obligatorio | Descripción |
+|---|:---:|---|
+| **Nombre** | ✅ | Nombre completo o razón social |
+| **Email** | — | Correo electrónico de contacto |
+| **Teléfono** | — | Número telefónico |
+| **Dirección** | — | Dirección física del cliente |
+| **RFC** | — | Para facturación (RFC del cliente) |
+| **Notas** | — | Observaciones internas del equipo |
+| **Estado** | — | Activo o Inactivo |
 
-### 🗑️ Eliminar
+---
+
+### ✏️ Editar un Cliente
+
+Haz clic en el ícono de **lápiz** ✏️ para modificar los datos de cualquier cliente.
+
+---
+
+### 🗑️ Eliminar un Cliente
+
 Solo puedes eliminar un cliente si **no tiene cotizaciones asociadas**. Si tiene historial de ventas, el sistema bloqueará la eliminación para proteger la integridad de los registros.
 
-> 💡 En lugar de eliminar un cliente con historial, cambia su estado a **Inactivo**. Así no aparecerá en las listas de selección pero conservará su historial.
+> 💡 En lugar de eliminar, cambia el estado del cliente a **Inactivo**. Así:
+> - No aparecerá en las listas de selección al crear cotizaciones
+> - Conservará su historial de transacciones
+
+---
 
 ### 🔍 Búsqueda Rápida
-La barra de búsqueda filtra el listado en tiempo real por nombre o correo electrónico.`
+
+La barra de búsqueda filtra el listado en tiempo real por **nombre** o **correo electrónico**.`
     },
     {
       id: "settings-team",
       category: "Configuración",
       role: "admin",
-      title: "Equipo y Acceso — Invitar Usuarios",
-      keywords: ["equipo", "invitar", "usuario", "código", "acceso", "rol", "almacenista", "administrador"],
+      title: "🔑 Equipo y Acceso — Invitar Usuarios",
+      keywords: ["equipo", "invitar", "usuario", "código", "acceso", "rol", "almacenista", "administrador", "código de invitación"],
       related_ids: ["roles-overview", "settings-business"],
-      content: `## Equipo y Acceso
+      content: `## 🔑 Equipo y Acceso
 
 Ve a **Configuración → Equipo** para gestionar el acceso de tu personal.
 
-### 🔑 Código de Invitación
-Tu negocio tiene un **código único** (ej: \`AB12CD\`) que debes compartir con cada nuevo usuario que se una a tu equipo.
+---
 
-**Cómo funciona:**
-1. El nuevo usuario descarga la app y se registra
-2. Selecciona la opción **"Unirme a un equipo"**
-3. Ingresa el código de invitación
-4. Queda vinculado a tu negocio
+### 📋 Código de Invitación
 
-Haz clic en el botón 📋 para copiar el código al portapapeles.
+Tu negocio tiene un **código único** (ej: \`AB12CD\`) para que nuevos usuarios se unan a tu equipo.
 
-### 👥 Asignación de Roles
-Los roles disponibles son:
-- **admin** — Administrador con acceso total
-- **almacenista** — Operaciones de inventario y ventas
+**Cómo funciona el proceso de invitación:**
 
-> 💡 Para **cambiar el rol** de un usuario existente, ve al **Panel de Administración de Base44** (dashboard → Users). Desde la app solo puedes ver los roles, no modificarlos directamente.
+1. El nuevo colaborador se registra en la app
+2. Selecciona **"Unirme a un equipo existente"**
+3. Ingresa el **código de invitación** que le compartes
+4. Queda vinculado a tu negocio automáticamente
 
-### 🔐 Buenas Prácticas
-- Asigna **admin** solo a personas de confianza con acceso a información financiera
-- Los almacenistas pueden gestionar todo lo operativo sin ver datos de costo/ganancia`
+Haz clic en el botón **📋 Copiar** para copiar el código al portapapeles.
+
+---
+
+### 🔐 Activar / Desactivar el Código
+
+Puedes **activar o desactivar** el código de invitación:
+- **Activo** ✅ — Cualquier persona con el código puede unirse
+- **Inactivo** ❌ — Nadie nuevo puede unirse aunque tenga el código
+
+> 💡 Desactiva el código cuando hayas terminado de incorporar a tu equipo para evitar accesos no autorizados.
+
+También puedes **regenerar el código** para invalidar el anterior y generar uno nuevo.
+
+---
+
+### 👥 Roles Disponibles
+
+| Rol | Acceso |
+|---|---|
+| **admin** | Control total del negocio, incluidos datos financieros y configuración |
+| **almacenista** | Operaciones de inventario y ventas, sin acceso a datos de costos |
+
+---
+
+### 🔄 Cambiar el Rol de un Usuario
+
+> Para **cambiar el rol** de un usuario existente, ve al **Panel de Administración de Base44** (tu cuenta de Base44 → Users).
+
+---
+
+### 🔐 Buenas Prácticas de Seguridad
+
+- Asigna **admin** solo a personas de confianza que necesiten ver datos financieros
+- Usa el rol **almacenista** para personal operativo
+- Desactiva el código de invitación cuando no estés incorporando a nadie nuevo
+- Cambia el código si sospechas que fue compartido sin autorización`
     },
     {
       id: "settings-categories",
       category: "Configuración",
       role: "admin",
-      title: "Categorías y Proveedores",
-      keywords: ["categoría", "proveedor", "clasificar", "organizar", "color", "catálogo"],
+      title: "🏷️ Categorías y Proveedores",
+      keywords: ["categoría", "proveedor", "clasificar", "organizar", "color", "catálogo", "crear categoría"],
       related_ids: ["products-create", "settings-business"],
-      content: `## Categorías y Proveedores
+      content: `## 🏷️ Categorías y Proveedores
 
-### 🎨 Categorías (Configuración → Categorías)
-Organiza tu catálogo agrupando productos por tipo.
+---
 
-**Crear una categoría:**
-- **Nombre** *(requerido)*
-- **Descripción** — explicación breve
-- **Color** — color visual representativo (hex) que se muestra en la app
+### 🎨 Categorías
+> 📍 *Configuración → Categorías*
+
+Organiza tu catálogo agrupando productos por tipo o línea de negocio.
+
+**Campos para crear una categoría:**
+
+| Campo | Obligatorio | Descripción |
+|---|:---:|---|
+| **Nombre** | ✅ | Nombre de la categoría (ej: "Electrónica") |
+| **Descripción** | — | Explicación breve de qué incluye |
+| **Color** | — | Color visual en formato hex (ej: #4F46E5) para identificación rápida |
 
 **Eliminar categorías:**
 Solo puedes eliminar una categoría si **no hay productos asignados** a ella.
 
-> 💡 Ejemplos de categorías útiles: "Electrónica", "Herramientas", "Papelería", "Consumibles"
+**Ejemplos de categorías útiles:**
+
+| Negocio | Categorías sugeridas |
+|---|---|
+| Ferretería | Herramientas, Construcción, Electricidad, Plomería |
+| Papelería | Oficina, Escolares, Impresión, Tecnología |
+| Distribuidora | Bebidas, Alimentos, Limpieza, Higiene |
 
 ---
 
-### 🚛 Proveedores (Configuración → Proveedores)
+### 🚛 Proveedores
+> 📍 *Configuración → Proveedores*
+
 Mantén un directorio de tus proveedores para vincularlos a los productos.
 
-**Campos:**
-- Nombre, persona de contacto, email, teléfono
+**Campos disponibles:**
+- Nombre, persona de contacto, email, teléfono, dirección, RFC, notas
+
+**Beneficio de registrar proveedores:**
+- Al ver un producto con stock bajo, sabes **inmediatamente a quién llamar** para reabastecerlo
+- Puedes filtrar productos por proveedor para gestionar compras
 
 **Eliminar proveedores:**
-Solo puedes eliminar un proveedor si **no hay productos** vinculados a él.
+Solo puedes eliminar un proveedor si **no hay productos vinculados** a él.`
+    },
 
-> 💡 Vincular un proveedor a cada producto te permite saber a quién contactar cuando necesitas reabastecerte.`
+    // ═══════════════════════════════════════════════
+    // REFERENCIA RÁPIDA
+    // ═══════════════════════════════════════════════
+    {
+      id: "quick-reference-admin",
+      category: "Referencia Rápida",
+      role: "admin",
+      title: "⚡ Referencia Rápida — Administrador",
+      keywords: ["referencia", "rápida", "atajos", "resumen", "guía rápida", "admin", "cheatsheet"],
+      related_ids: ["welcome-admin", "glossary", "reports-admin"],
+      content: `## ⚡ Referencia Rápida para Administradores
+
+Una guía de bolsillo con las acciones más frecuentes.
+
+---
+
+### 🏃 Acciones Rápidas
+
+| Quiero... | Voy a... |
+|---|---|
+| Crear un producto | Productos → + Nuevo Producto |
+| Registrar entrada de mercancía | Movimientos → + Nuevo Movimiento → Entrada |
+| Crear una cotización | Cotizaciones → + Nueva Cotización |
+| Ver qué productos se venden más | Reportes → Más Vendidos |
+| Ver mis productos más rentables | Reportes → Mejor Margen |
+| Ver cuánto vale mi inventario | Dashboard → Tarjeta "Valor Total" |
+| Invitar a un nuevo empleado | Configuración → Equipo |
+| Importar productos en cantidad | Configuración → Importar Productos |
+| Cambiar datos del negocio | Configuración → Mi Negocio |
+| Agregar una categoría | Configuración → Categorías |
+
+---
+
+### 🚨 Situaciones Frecuentes
+
+**"Un producto llegó al almacén"**
+→ Movimientos → + Nuevo → **Entrada** → selecciona producto → ingresa cantidad → agrega número de factura → Guardar
+
+**"Un cliente quiere una cotización"**
+→ Cotizaciones → + Nueva → selecciona cliente → agrega productos → establece vigencia → Guardar
+
+**"El cliente aprobó la cotización"**
+→ Cotizaciones → Menú ⋯ → **Convertir en Venta** → selecciona forma de pago → Confirmar
+
+**"El pedido salió al cliente"**
+→ Cotizaciones → busca la venta → botón **En Ruta** ✅
+
+**"Hay un error en el stock de un producto"**
+→ Movimientos → + Nuevo → **Ajuste** → selecciona producto → ingresa cantidad correcta → documenta el motivo
+
+---
+
+### 📊 Fórmulas Útiles
+
+| Cálculo | Fórmula |
+|---|---|
+| Margen de ganancia | ((Venta − Compra) / Compra) × 100 |
+| Valor de inventario | Stock × Precio de compra |
+| Stock mínimo sugerido | Días entrega × Ventas diarias promedio |`
+    },
+    {
+      id: "quick-reference-almacenista",
+      category: "Referencia Rápida",
+      role: "almacenista",
+      title: "⚡ Referencia Rápida — Almacenista",
+      keywords: ["referencia", "rápida", "atajos", "resumen", "guía rápida", "almacenista", "cheatsheet"],
+      related_ids: ["welcome-almacenista", "daily-workflow-almacenista", "glossary"],
+      content: `## ⚡ Referencia Rápida para Almacenistas
+
+Una guía de bolsillo con las acciones más frecuentes de tu día a día.
+
+---
+
+### 🏃 Acciones Rápidas
+
+| Quiero... | Voy a... |
+|---|---|
+| Ver el estado del almacén | Dashboard (inicio) |
+| Ver qué productos tienen stock bajo | Dashboard → sección "Alertas de Stock" |
+| Registrar mercancía que llegó | Movimientos → + Nuevo → Entrada |
+| Registrar una venta directa | Movimientos → + Nuevo → Salida |
+| Crear una cotización | Cotizaciones → + Nueva Cotización |
+| Convertir cotización en venta | Cotizaciones → Menú ⋯ → Convertir en Venta |
+| Marcar pedido como enviado | Cotizaciones → busca la venta → botón En Ruta |
+| Marcar pedido como entregado | Cotizaciones → busca la venta → botón Entregado |
+| Registrar pago del cliente | Cotizaciones → busca la venta → botón Pago |
+| Buscar un producto específico | Productos → escribe nombre o SKU en búsqueda |
+| Ver historial de movimientos | Movimientos → filtra por fecha |
+| Ver qué se vendió más este mes | Reportes → Más Vendidos |
+
+---
+
+### 🚨 Situaciones Frecuentes
+
+**"Llegó mercancía del proveedor"**
+→ Movimientos → + Nuevo → **Entrada** → selecciona producto → cantidad → número de factura del proveedor → Guardar
+
+**"Un cliente quiere una cotización"**
+→ Cotizaciones → + Nueva → escribe el nombre del cliente → agrega los productos → establece vigencia → Guardar como *Enviada*
+
+**"El cliente aprobó la cotización"**
+→ Cotizaciones → Menú ⋯ → **Convertir en Venta** → forma de pago → Confirmar
+
+**"No hay stock suficiente de un producto"**
+→ Anota el producto y avisa al Administrador para gestionar la compra
+
+**"Un cliente devolvió un producto"**
+→ Movimientos → + Nuevo → **Devolución** → selecciona producto → cantidad → motivo → Guardar
+
+**"El conteo físico no coincide con el sistema"**
+→ Movimientos → + Nuevo → **Ajuste** → selecciona producto → cantidad real → documenta el motivo → Guardar
+
+---
+
+### ❓ Preguntas Frecuentes
+
+**¿Por qué no veo el precio de compra?**
+→ Es información financiera restringida al Administrador. Esto es por diseño para proteger datos sensibles del negocio.
+
+**¿Por qué no puedo entrar a Configuración?**
+→ La sección de Configuración es exclusiva para Administradores. Si necesitas cambiar algo, pídelo al Admin.
+
+**¿Cómo sé si una cotización ya fue pagada?**
+→ En la lista de Cotizaciones, busca el ícono de pago en la columna de seguimiento. Verde = pagado, gris = pendiente.`
     },
   ]
 };
 
 /**
  * Carga los datos de ayuda — primero intenta desde URL remota, fallback al JSON local.
- * @param {string|null} remoteUrl - URL opcional para actualizaciones dinámicas
  */
 export async function loadHelpData(remoteUrl = null) {
   if (remoteUrl) {
