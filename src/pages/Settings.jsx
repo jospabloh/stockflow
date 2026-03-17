@@ -445,7 +445,7 @@ export default function Settings() {
                   <span className="font-semibold text-amber-700">almacenista</span> — Productos, movimientos de inventario y cotizaciones (rol de vendedor incluido).
                 </div>
               </div>
-              <p className="text-xs text-slate-400 pt-1">Para cambiar el rol de un usuario, ve al Panel de Administración de la plataforma (Base44 dashboard → Users).</p>
+
             </div>
           </Card>
         </TabsContent>
