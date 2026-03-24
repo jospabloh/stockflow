@@ -136,15 +136,19 @@ export default function Reports() {
     }));
   })();
 
-  // Quotation data
-  const convertedQuotations = quotations.filter((q) => q.status === "converted");
-  const filteredQuotations = convertedQuotations.filter((q) => {
+  // Quotation data with comprehensive filtering
+  const filteredQuotations = quotations.filter((q) => {
     const date = moment(q.created_date);
     const inRange = date.isSameOrAfter(dateFrom) && date.isSameOrBefore(moment(dateTo).endOf("day"));
+    const statusMatch = qStatusFilter === "all" || q.status === qStatusFilter;
     const clientMatch = qClientFilter === "all" || q.client_name === qClientFilter;
     const paymentMatch = qPaymentFilter === "all" || q.payment_method === qPaymentFilter;
-    return inRange && clientMatch && paymentMatch;
+    const paidMatch = qPaidFilter === "all" || (qPaidFilter === "paid" && q.paid) || (qPaidFilter === "pending" && !q.paid);
+    return inRange && statusMatch && clientMatch && paymentMatch && paidMatch;
   });
+  
+  // Filter for converted/sales data
+  const convertedQuotations = quotations.filter((q) => q.status === "converted");
 
   const PLACEHOLDER_METHODS = ["Pendiente de confirmar", "Por definir", ""];
   const isPaidConfirmed = (q) => q.paid && q.payment_method && !PLACEHOLDER_METHODS.includes(q.payment_method);
