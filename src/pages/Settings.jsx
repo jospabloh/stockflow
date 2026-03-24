@@ -55,6 +55,7 @@ export default function Settings() {
 
   useEffect(() => {
     base44.auth.me().then(u => {
+      setCurrentUser(u);
       setIsAdmin(u?.role === "admin");
       setCheckingAuth(false);
     }).catch(() => setCheckingAuth(false));
