@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Save, Building2, Palette, Users, FileText, Plus, Trash2, Pencil, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { createButtonProps, createTableProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
 import ClientsManager from "@/components/settings/ClientsManager";
 import { useBusinessContext } from "@/components/BusinessContext";
