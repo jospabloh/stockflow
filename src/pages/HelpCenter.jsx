@@ -117,7 +117,9 @@ export default function HelpCenter() {
         </div>
 
         <div className="flex-1 overflow-auto">
-          {articles.length > 0 && (
+          {articles.length === 0 ? (
+            <p className="p-4 text-slate-400">No hay artículos</p>
+          ) : (
             <HelpSidebar
               articles={displayArticles}
               activeId={activeId}
