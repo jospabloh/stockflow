@@ -369,11 +369,11 @@ export default function Quotations() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {q.status !== "converted" && q.status !== "cancelled" && (
-                              <DropdownMenuItem onClick={() => handleEdit(q)}>
-                                <Pencil className="h-4 w-4 mr-2" /> Editar
-                              </DropdownMenuItem>
-                            )}
+                            {(q.status === "draft" || q.status === "sent" || q.status === "accepted") && (
+                               <DropdownMenuItem onClick={() => handleEdit(q)}>
+                                 <Pencil className="h-4 w-4 mr-2" /> Editar
+                               </DropdownMenuItem>
+                             )}
                             <DropdownMenuItem onClick={() => generateQuotationPDF(q, settings)}>
                               <FileDown className="h-4 w-4 mr-2" /> Descargar PDF
                             </DropdownMenuItem>
