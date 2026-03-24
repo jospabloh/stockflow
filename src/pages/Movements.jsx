@@ -36,6 +36,7 @@ const typeConfig = {
 
 export default function Movements() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
