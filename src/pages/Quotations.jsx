@@ -93,13 +93,22 @@ export default function Quotations() {
 
   const filtered = quotations.filter((q) => {
     const s = search.toLowerCase();
-    return (
-      q.client_name?.toLowerCase().includes(s) ||
+    const matchSearch = q.client_name?.toLowerCase().includes(s) ||
       q.folio?.toLowerCase().includes(s) ||
       q.client_email?.toLowerCase().includes(s) ||
       q.client_phone?.toLowerCase().includes(s) ||
-      statusConfig[q.status]?.label?.toLowerCase().includes(s)
-    );
+      statusConfig[q.status]?.label?.toLowerCase().includes(s);
+    
+    let matchStatus = statusFilter === "all";
+    if (statusFilter === "converted") {
+      matchStatus = q.status === "converted";
+    } else if (statusFilter === "active") {
+      matchStatus = ["draft", "sent", "accepted"].includes(q.status);
+    } else if (statusFilter === "cancelled") {
+      matchStatus = q.status === "cancelled";
+    }
+    
+    return matchSearch && matchStatus;
   });
 
   const handleConvertToSale = async () => {
