@@ -55,9 +55,11 @@ const isExpired = (q) => {
 
 export default function Quotations() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [convertQuotation, setConvertQuotation] = useState(null);
   const [convertPaymentMethod, setConvertPaymentMethod] = useState("");
   const [convertError, setConvertError] = useState("");
