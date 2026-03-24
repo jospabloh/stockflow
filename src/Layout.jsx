@@ -208,7 +208,7 @@ export default function Layout({ children, currentPageName }) {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-svh">
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-card/80 backdrop-blur-md border-b border-border px-4 lg:px-8 h-16 flex items-center gap-4 select-none">
           {/* Back button — mobile only, visible on child routes and non-root pages */}
