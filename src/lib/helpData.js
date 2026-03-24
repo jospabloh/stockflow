@@ -1,6 +1,6 @@
 export const localHelpData = {
-  version: "2.0",
-  last_updated: "2026-03-17",
+  version: "2.1",
+  last_updated: "2026-03-24",
   articles: [
 
     // ═══════════════════════════════════════════════
@@ -109,6 +109,7 @@ El Administrador tiene **control completo** sobre el negocio, incluyendo datos f
 - Gestionar toda la **Configuración** del negocio
 - **Importar productos** masivamente por CSV/Excel
 - Activar/desactivar el código de invitación del equipo
+- Realizar **ajustes** en la Caja Chica
 
 ---
 
@@ -122,11 +123,13 @@ El Almacenista puede realizar todas las **operaciones del día a día** sin acce
 - Crear, editar y dar seguimiento a **cotizaciones**
 - Gestionar el directorio de **clientes**
 - Ver **reportes** operativos: ventas, más vendidos, baja rotación, tendencia
+- Registrar ingresos y egresos en **Caja Chica**
 
 **No puede:**
 - Ver precios de compra ni ganancias
 - Acceder a la sección de Configuración
 - Eliminar registros con historial asociado
+- Realizar ajustes en Caja Chica
 
 ---
 
@@ -143,6 +146,8 @@ El Almacenista puede realizar todas las **operaciones del día a día** sin acce
 | Convertir cotización en venta | ✅ | ✅ |
 | Ver reportes de ventas | ✅ | ✅ |
 | Ver margen de ganancia | ✅ | ❌ |
+| Caja Chica — ingresos y egresos | ✅ | ✅ |
+| Caja Chica — ajustes | ✅ | ❌ |
 | Acceder a Configuración | ✅ | ❌ |
 | Invitar usuarios al equipo | ✅ | ❌ |
 
@@ -199,6 +204,11 @@ Carga los datos de tus proveedores para vincularlos a productos y saber a quién
 
 Comparte el código de invitación con tus almacenistas.
 
+#### Paso 6 — Configura la Caja Chica
+> 📍 *Caja Chica → Fondo Inicial*
+
+Registra el fondo inicial de efectivo para comenzar a llevar el control de gastos menores del negocio.
+
 ---
 
 ### 🔑 Lo que solo tú puedes hacer
@@ -207,7 +217,8 @@ Comparte el código de invitación con tus almacenistas.
 - Acceder a reportes financieros avanzados
 - Gestionar la **configuración completa** del negocio
 - **Eliminar** cualquier registro del sistema
-- **Importar** productos de forma masiva`
+- **Importar** productos de forma masiva
+- Realizar **ajustes** en la Caja Chica`
     },
     {
       id: "welcome-almacenista",
@@ -232,6 +243,7 @@ Como Almacenista tienes acceso completo a las **operaciones del negocio**:
 | **Productos** | Consultar, crear y editar el catálogo |
 | **Movimientos** | Registrar entradas, salidas y ajustes de stock |
 | **Cotizaciones** | Crear propuestas, convertirlas en ventas y hacer seguimiento |
+| **Caja Chica** | Registrar ingresos y egresos del efectivo del negocio |
 | **Reportes** | Consultar ventas, productos más vendidos y tendencias |
 
 > 🔒 La sección de **Configuración** es exclusiva del Administrador.
@@ -263,6 +275,7 @@ Esto no es un error — es por diseño para proteger información financiera sen
 - ❌ Valor total del inventario (calculado a precio de compra)
 - ❌ Reportes de "Mejor Margen" y "Valor por Categoría"
 - ❌ Sección de Configuración del negocio
+- ❌ Ajustes en Caja Chica (solo puede ingresos y egresos)
 
 > 💡 ¿Necesitas cambiar algo de configuración? Pídelo al Administrador.`
     },
