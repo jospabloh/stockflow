@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, Save, ScanLine, AlertTriangle } from "lucide-react";
 import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import { useBusinessContext } from "@/components/BusinessContext";
-import { createButtonProps } from "@/lib/a11y";
+import { createButtonProps, createTableProps } from "@/lib/a11y";
 
 const PAYMENT_METHODS = [
   "Efectivo", "Transferencia", "Tarjeta de crédito", "Tarjeta de débito",
