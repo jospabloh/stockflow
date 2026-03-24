@@ -355,7 +355,7 @@ export default function Settings() {
                 <Plus className="h-4 w-4 mr-1" /> Nuevo
               </Button>
             </div>
-            <Table>
+            <Table {...createTableProps('suppliers-table')}>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
