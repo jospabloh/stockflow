@@ -216,7 +216,7 @@ export default function Layout({ children, currentPageName }) {
               variant="ghost"
               size="icon"
               className={isRoot && !isChildRoute ? "hidden" : ""}
-              onClick={() => navigate(-1)}
+              onClick={goBack}
               aria-label="Regresar"
             >
               <ChevronLeft className="h-5 w-5" aria-hidden="true" />
