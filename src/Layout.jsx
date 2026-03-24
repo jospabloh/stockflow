@@ -6,6 +6,7 @@ const IS_NATIVE_APP = typeof window !== "undefined" && (
   window.navigator.standalone === true
 );
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigation } from "@/lib/NavigationContext";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useBusinessContext } from "@/components/BusinessContext";
