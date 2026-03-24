@@ -144,8 +144,8 @@ export default function Settings() {
     if (editingSup) {
       await base44.entities.Supplier.update(editingSup.id, supForm);
     } else {
-      const me = await base44.auth.me();
-      const bid = me?.business_id || businessId;
+      const bid = currentUser?.business_id || businessId;
+      if (!bid) { toast.error("No se encontró el negocio. Recarga la página."); return; }
       await base44.entities.Supplier.create({ ...supForm, business_id: bid });
     }
     const sups = await base44.entities.Supplier.list();
