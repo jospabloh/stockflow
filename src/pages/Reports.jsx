@@ -62,7 +62,9 @@ export default function Reports() {
 
   const filteredMovements = movements.filter((m) => {
     const date = moment(m.created_date);
-    return date.isSameOrAfter(dateFrom) && date.isSameOrBefore(moment(dateTo).endOf("day"));
+    const inRange = date.isSameOrAfter(dateFrom) && date.isSameOrBefore(moment(dateTo).endOf("day"));
+    const typeMatch = movTypeFilter === "all" || m.type === movTypeFilter;
+    return inRange && typeMatch;
   });
 
   // Top selling products
