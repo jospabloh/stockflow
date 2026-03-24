@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { MobileSelect } from "@/components/ui/MobileSelect";
+import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import {
   Plus,
   Search,
@@ -25,6 +25,7 @@ import {
 import moment from "moment";
 import MovementFormDialog from "@/components/movements/MovementFormDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
+import { createButtonProps } from "@/lib/a11y";
 
 const typeConfig = {
   entry: { label: "Entrada", icon: ArrowDownLeft, color: "bg-emerald-100 text-emerald-700" },
@@ -97,14 +98,15 @@ export default function Movements() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
+            aria-label="Buscar movimientos por nombre de producto o referencia"
           />
         </div>
         <div className="flex gap-2 flex-wrap">
-          <MobileSelect
+          <SelectWrapper
             value={typeFilter}
             onValueChange={setTypeFilter}
             placeholder="Tipo"
-            triggerClassName="w-40"
+            ariaLabel="Filtrar por tipo de movimiento"
             options={[
               { value: "all", label: "Todos" },
               { value: "entry", label: "Entradas" },
@@ -126,16 +128,16 @@ export default function Movements() {
 
       <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
-          <Table>
+          <Table role="table" aria-label="Historial de movimientos de inventario">
             <TableHeader>
-              <TableRow className="bg-muted/40">
-              <TableHead className="font-semibold text-muted-foreground">Fecha</TableHead>
-              <TableHead className="font-semibold text-muted-foreground">Producto</TableHead>
-              <TableHead className="font-semibold text-muted-foreground">Tipo</TableHead>
-              <TableHead className="font-semibold text-muted-foreground text-right">Cantidad</TableHead>
-              <TableHead className="font-semibold text-muted-foreground text-right">Total</TableHead>
-              <TableHead className="font-semibold text-muted-foreground">Referencia / Motivo</TableHead>
-              <TableHead className="font-semibold text-muted-foreground text-right">Stock Después</TableHead>
+              <TableRow className="bg-muted/40" role="row">
+              <TableHead className="font-semibold text-muted-foreground" role="columnheader">Fecha</TableHead>
+              <TableHead className="font-semibold text-muted-foreground" role="columnheader">Producto</TableHead>
+              <TableHead className="font-semibold text-muted-foreground" role="columnheader">Tipo</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Cantidad</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Total</TableHead>
+              <TableHead className="font-semibold text-muted-foreground" role="columnheader">Referencia / Motivo</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Stock Después</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -147,10 +149,10 @@ export default function Movements() {
                 </TableRow>
               ) : (
                 filtered.map((m) => {
-                const config = typeConfig[m.type] || typeConfig.adjustment;
-                const IconComp = config.icon;
-                return (
-                  <TableRow key={m.id} className="hover:bg-slate-50/50 transition-colors" aria-label={`${config.label} de ${m.product_name}, cantidad ${m.quantity}`}>
+                 const config = typeConfig[m.type] || typeConfig.adjustment;
+                 const IconComp = config.icon;
+                 return (
+                   <TableRow key={m.id} className="hover:bg-slate-50/50 transition-colors" role="row" aria-label={`${config.label} de ${m.product_name}, cantidad ${m.quantity}`}>
                       <TableCell className="text-slate-600 text-sm">
                         {moment.utc(m.created_date).local().format("DD/MM/YY HH:mm")}
                       </TableCell>
