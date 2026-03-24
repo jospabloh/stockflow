@@ -1,26 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { localHelpData } from "@/lib/helpData";
+import HelpSidebar from "@/components/help/HelpSidebar";
 
-// Render inline markdown formatting (bold, italic, code)
+// Render inline markdown formatting
 const renderInline = (text) => {
-  const parts = [];
-  let lastIndex = 0;
-  
-  // Replace **bold** with <strong>
   const boldRegex = /\*\*(.+?)\*\*/g;
-  let match;
   const replacedBold = text.replace(boldRegex, '<strong>$1</strong>');
-  
-  // Replace *italic* with <em>
   const italicRegex = /\*(.+?)\*/g;
   const replacedItalic = replacedBold.replace(italicRegex, '<em>$1</em>');
-  
   return replacedItalic;
 };
 
-// Simple markdown-like parser for display
+// Markdown parser
 const MarkdownContent = ({ content }) => {
   const lines = content.split('\n');
   const elements = [];
@@ -30,13 +21,11 @@ const MarkdownContent = ({ content }) => {
     const line = lines[i];
     const trimmed = line.trim();
     
-    // Skip separator lines (---, ===, etc.)
     if (/^[\-|=\s]+$/.test(trimmed)) {
       i++;
       continue;
     }
     
-    // Headers
     if (line.startsWith('## ')) {
       elements.push(
         <h2 key={i} className="text-2xl font-bold mt-6 mb-3">{line.slice(3)}</h2>
@@ -45,9 +34,7 @@ const MarkdownContent = ({ content }) => {
       elements.push(
         <h1 key={i} className="text-3xl font-bold mt-8 mb-4">{line.slice(2)}</h1>
       );
-    }
-    // Code blocks
-    else if (line.startsWith('```')) {
+    } else if (line.startsWith('```')) {
       const codeLines = [];
       i++;
       while (i < lines.length && !lines[i].startsWith('```')) {
@@ -59,15 +46,13 @@ const MarkdownContent = ({ content }) => {
           <code>{codeLines.join('\n')}</code>
         </pre>
       );
-    }
-    // Tables (simple markdown table)
-    else if (line.includes('|') && !trimmed.startsWith('|') === false) {
+    } else if (line.includes('|') && !trimmed.startsWith('|') === false) {
       const tableLines = [];
       while (i < lines.length && lines[i].includes('|') && !/^[\-|=\s]+$/.test(lines[i].trim())) {
         tableLines.push(lines[i]);
         i++;
       }
-      i--; // Back up one
+      i--;
       
       const rows = tableLines.map(l => l.split('|').map(c => c.trim()).filter(c => c));
       if (rows.length > 0) {
@@ -85,24 +70,18 @@ const MarkdownContent = ({ content }) => {
           </table>
         );
       }
-    }
-    // Blockquote
-    else if (line.startsWith('> ')) {
+    } else if (line.startsWith('> ')) {
       elements.push(
         <blockquote key={i} className="border-l-4 border-indigo-400 pl-4 italic text-slate-600 my-3">
           {line.slice(2)}
         </blockquote>
       );
-    }
-    // Paragraph
-    else if (trimmed) {
+    } else if (trimmed) {
       const formatted = renderInline(trimmed);
       elements.push(
         <p key={i} className="my-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatted }} />
       );
-    }
-    // Empty line
-    else {
+    } else {
       elements.push(<div key={i} className="my-1" />);
     }
     
