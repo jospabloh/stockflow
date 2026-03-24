@@ -17,7 +17,6 @@ export default function HelpCenter() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const init = async () => {
@@ -35,7 +34,7 @@ export default function HelpCenter() {
         if (articleParam) {
           setActiveId(articleParam);
         } else if (categoryParam) {
-          const first = data.articles.find(a => a.category === categoryParam);
+          const first = data.articles?.find(a => a.category === categoryParam);
           if (first) setActiveId(first.id);
         } else {
           const role = user?.role;
@@ -45,8 +44,7 @@ export default function HelpCenter() {
         }
         setLoading(false);
       } catch (err) {
-        console.error("Help Center Error:", err);
-        setError("Error al cargar el Centro de Ayuda");
+        console.error("Help init error:", err);
         setLoading(false);
       }
     };
@@ -60,13 +58,8 @@ export default function HelpCenter() {
       setSearchResults(null);
       return;
     }
-    try {
-      const results = fuzzySearch(q, articles, 8);
-      setSearchResults(results);
-    } catch (err) {
-      console.error("Search error:", err);
-      setSearchResults([]);
-    }
+    const results = fuzzySearch(q, articles, 8);
+    setSearchResults(results);
   };
 
   const handleSelect = (id) => {
@@ -79,16 +72,6 @@ export default function HelpCenter() {
   const activeArticle = articles.find(a => a.id === activeId);
   const displayArticles = searchResults !== null ? searchResults : articles;
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-background">
-        <div className="text-center space-y-3">
-          <p className="text-lg font-semibold text-foreground">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -98,7 +81,7 @@ export default function HelpCenter() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] max-w-7xl mx-auto bg-card rounded-2xl shadow-sm border border-border overflow-hidden relative">
+    <div className="flex h-screen bg-background">
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/20 z-40 lg:hidden"
@@ -106,42 +89,40 @@ export default function HelpCenter() {
         />
       )}
 
-      <aside className={`
-        fixed lg:static top-0 left-0 h-full z-50 lg:z-auto
-        w-72 bg-card border-r border-border flex flex-col flex-shrink-0
-        transition-transform duration-300 lg:translate-x-0
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-      `}>
+      <aside
+        className={`fixed lg:static top-0 left-0 h-screen z-50 lg:z-auto w-72 bg-card border-r border-border flex flex-col transition-transform duration-300 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div className="p-3 border-b border-border">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="Buscar en la ayuda..."
+              placeholder="Buscar..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-9 pr-8 text-sm h-9"
             />
             {searchQuery && (
               <button
-                onClick={() => { setSearchQuery(""); setSearchResults(null); }}
+                onClick={() => {
+                  setSearchQuery("");
+                  setSearchResults(null);
+                }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 <X className="h-4 w-4" />
               </button>
             )}
           </div>
-
           {searchResults !== null && (
             <p className="text-xs text-slate-400 mt-1.5 px-1">
-              {searchResults.length === 0
-                ? "Sin resultados"
-                : `${searchResults.length} resultado${searchResults.length > 1 ? "s" : ""}`
-              }
+              {searchResults.length} resultado{searchResults.length !== 1 ? "s" : ""}
             </p>
           )}
         </div>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto">
           <HelpSidebar
             articles={displayArticles}
             activeId={activeId}
@@ -151,28 +132,33 @@ export default function HelpCenter() {
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col bg-background">
         <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarOpen(true)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setSidebarOpen(true)}
+          >
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-indigo-600" />
-            <span className="font-semibold text-foreground text-sm">Centro de Ayuda</span>
+            <span className="font-semibold text-foreground text-sm">Ayuda</span>
           </div>
         </div>
 
-        <div className="flex-1 overflow-hidden">
-          {articles.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-slate-400">No hay artículos disponibles</p>
-            </div>
-          ) : (
+        <div className="flex-1 overflow-auto">
+          {articles.length > 0 ? (
             <HelpViewer
               article={activeArticle}
               allArticles={articles}
               onNavigate={handleSelect}
             />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-slate-400">Cargando...</p>
+            </div>
           )}
         </div>
       </main>
