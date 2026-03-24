@@ -347,15 +347,17 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
 
           {/* Payment, validity, notes */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label>Forma de pago</Label>
-              <MobileSelect
-                value={form.payment_method}
-                onValueChange={(v) => setForm({ ...form, payment_method: v })}
-                placeholder="Seleccionar"
-                options={PAYMENT_METHODS.map(m => ({ value: m, label: m }))}
-              />
-            </div>
+           <div>
+             <Label htmlFor="payment-method">Forma de pago</Label>
+             <SelectWrapper
+               id="payment-method"
+               value={form.payment_method}
+               onValueChange={(v) => setForm({ ...form, payment_method: v })}
+               placeholder="Seleccionar"
+               options={PAYMENT_METHODS.map(m => ({ value: m, label: m }))}
+               aria-label="Método de pago"
+             />
+           </div>
             <div>
               <Label>Vigencia</Label>
               <Input type="date" value={form.valid_until} onChange={(e) => setForm({ ...form, valid_until: e.target.value })} />
