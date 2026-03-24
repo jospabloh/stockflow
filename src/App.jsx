@@ -86,6 +86,7 @@ const AuthenticatedApp = () => {
       <Route path="/Quotations/new" element={<LayoutWrapper currentPageName="Quotations"><Suspense fallback={<PageLoader />}><QuotationNew /></Suspense></LayoutWrapper>} />
       <Route path="/Quotations/edit/:id" element={<LayoutWrapper currentPageName="Quotations"><Suspense fallback={<PageLoader />}><QuotationEdit /></Suspense></LayoutWrapper>} />
       <Route path="/PettyCash" element={<LayoutWrapper currentPageName="PettyCash"><Suspense fallback={<PageLoader />}><PettyCash /></Suspense></LayoutWrapper>} />
+      <Route path="/SeedDemo" element={<LayoutWrapper currentPageName="SeedDemo"><Suspense fallback={<PageLoader />}><SeedDemo /></Suspense></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
