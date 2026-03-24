@@ -140,17 +140,18 @@ export default function Quotations() {
       if (product) {
         const newStock = (product.stock || 0) - item.quantity;
         await base44.entities.Movement.create({
-          product_id: item.product_id,
-          product_name: item.product_name,
-          type: "exit",
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          total: item.total,
-          stock_after: newStock,
-          reference: `Venta ${convertQuotation.folio}`,
-          reason: `Venta a ${convertQuotation.client_name}`,
-          quotation_id: convertQuotation.id,
-        });
+           product_id: item.product_id,
+           product_name: item.product_name,
+           type: "exit",
+           quantity: item.quantity,
+           unit_price: item.unit_price,
+           total: item.total,
+           stock_after: newStock,
+           reference: `Venta ${convertQuotation.folio}`,
+           reason: `Venta a ${convertQuotation.client_name}`,
+           quotation_id: convertQuotation.id,
+           business_id: convertQuotation.business_id,
+         });
         await base44.entities.Product.update(product.id, { stock: newStock });
       }
     }
