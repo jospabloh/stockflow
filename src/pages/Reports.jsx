@@ -35,8 +35,12 @@ export default function Reports() {
   const [dateFrom, setDateFrom] = useState(moment().subtract(30, "days").format("YYYY-MM-DD"));
   const [dateTo, setDateTo] = useState(moment().format("YYYY-MM-DD"));
   // Quotation filters
+  const [qStatusFilter, setQStatusFilter] = useState("converted");
   const [qClientFilter, setQClientFilter] = useState("all");
   const [qPaymentFilter, setQPaymentFilter] = useState("all");
+  const [qPaidFilter, setQPaidFilter] = useState("all");
+  // Movement filters
+  const [movTypeFilter, setMovTypeFilter] = useState("all");
 
   useEffect(() => {
     base44.auth.me().then(async (u) => {
