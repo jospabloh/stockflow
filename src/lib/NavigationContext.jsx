@@ -4,20 +4,24 @@ import { useLocation } from 'react-router-dom';
 const NavigationContext = createContext();
 
 // Detect Android hardware back button
-const setupAndroidBackButton = (goBackCallback) => {
+const setupAndroidBackButton = (navigationStack, goBackCallback) => {
   const handleBackButton = (event) => {
-    // Only intercept if on a nested route (not root)
+    // Respect navigation stack: only go back if there's history to go to
+    // and current path is not root
     const path = window.location.pathname;
-    if (path !== '/' && path !== '/Dashboard') {
+    const isRoot = path === '/' || path === '/Dashboard';
+    
+    // Strict validation: only proceed if there's actual navigation history
+    if (!isRoot && navigationStack.length > 1) {
       event.preventDefault();
       goBackCallback();
     }
   };
 
-  // Listen for both popstate and custom backbutton events
+  // Listen for popstate (browser back button)
   window.addEventListener('popstate', handleBackButton);
   
-  // For Android WebView support
+  // For Android WebView/Cordova support
   if (window.document && window.document.addEventListener) {
     window.document.addEventListener('backbutton', handleBackButton, false);
   }
