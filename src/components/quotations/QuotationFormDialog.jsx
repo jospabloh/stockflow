@@ -370,8 +370,8 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={!form.client_name || form.items.length === 0 || saving || form.items.some(i => i.available_stock !== undefined && i.quantity > i.available_stock)} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button variant="outline" onClick={() => onOpenChange(false)} {...createButtonProps('cancel')}>Cancelar</Button>
+          <Button onClick={handleSave} disabled={!form.client_name || form.items.length === 0 || saving || form.items.some(i => i.available_stock !== undefined && i.quantity > i.available_stock)} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
             <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Guardar"}
           </Button>
         </div>
