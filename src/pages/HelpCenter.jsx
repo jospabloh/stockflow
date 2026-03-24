@@ -1,9 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import helpData from "@/lib/helpDataWrapper.js";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
+
+// Minimal test articles to verify rendering
+const TEST_ARTICLES = [
+  {
+    id: "glossary",
+    category: "Primeros Pasos",
+    role: "all",
+    title: "📚 Glosario de Términos",
+    keywords: ["glosario"],
+    content: `## 📚 Glosario\n\nEste es un test.`
+  },
+  {
+    id: "roles",
+    category: "Primeros Pasos",
+    role: "all",
+    title: "👥 Roles del Sistema",
+    keywords: ["roles"],
+    content: `## 👥 Roles\n\nAdmin y Almacenista.`
+  }
+];
 
 export default function HelpCenter() {
   const [articles, setArticles] = useState([]);
@@ -12,20 +31,15 @@ export default function HelpCenter() {
 
   useEffect(() => {
     try {
-      // Initialize articles from local data
-      console.log("helpData:", helpData);
-      const arts = (helpData && helpData.articles) || [];
-      console.log("Loaded articles:", arts.length);
-      setArticles(arts);
-    
-    // Set first article as active
-    if (arts.length > 0) {
-      setActiveId(arts[0].id);
-    }
+      console.log("Initializing with test articles");
+      setArticles(TEST_ARTICLES);
+      if (TEST_ARTICLES.length > 0) {
+        setActiveId(TEST_ARTICLES[0].id);
+      }
     } catch (err) {
-    console.error("Error loading help data:", err);
+      console.error("Error loading help data:", err);
     }
-    }, []);
+  }, []);
 
   const activeArticle = articles.find(a => a.id === activeId);
 
