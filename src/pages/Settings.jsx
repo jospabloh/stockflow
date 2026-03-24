@@ -332,10 +332,10 @@ export default function Settings() {
                     <TableCell className="font-medium">{cat.name}</TableCell>
                     <TableCell className="text-slate-500">{cat.description || "—"}</TableCell>
                     <TableCell className="text-center">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCat(cat); setCatForm({ name: cat.name, description: cat.description || "", color: cat.color || "#6366f1" }); setCatFormOpen(true); }}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCat(cat); setCatForm({ name: cat.name, description: cat.description || "", color: cat.color || "#6366f1" }); setCatFormOpen(true); }} {...createButtonProps('edit')}>
                         <Pencil className="h-4 w-4 text-slate-400" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteCategory(cat.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteCategory(cat.id)} {...createButtonProps('delete')}>
                         <Trash2 className="h-4 w-4 text-slate-400" />
                       </Button>
                     </TableCell>
