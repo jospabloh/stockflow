@@ -1596,6 +1596,10 @@ Una guía de bolsillo con las acciones más frecuentes.
 | Ver qué productos se venden más | Reportes → Más Vendidos |
 | Ver mis productos más rentables | Reportes → Mejor Margen |
 | Ver cuánto vale mi inventario | Dashboard → Tarjeta "Valor Total" |
+| Registrar gasto de caja chica | Caja Chica → Egreso |
+| Reponer el fondo de caja chica | Caja Chica → Ingreso |
+| Ver saldo de caja chica | Caja Chica → Saldo Actual |
+| Ajustar saldo de caja chica | Caja Chica → Ajuste |
 | Invitar a un nuevo empleado | Configuración → Equipo |
 | Importar productos en cantidad | Configuración → Importar Productos |
 | Cambiar datos del negocio | Configuración → Mi Negocio |
@@ -1619,6 +1623,15 @@ Una guía de bolsillo con las acciones más frecuentes.
 
 **"Hay un error en el stock de un producto"**
 → Movimientos → + Nuevo → **Ajuste** → selecciona producto → ingresa cantidad correcta → documenta el motivo
+
+**"Hice un gasto menor con efectivo"**
+→ Caja Chica → **Egreso** → monto → descripción → categoría → Guardar
+
+**"Necesito reponer el fondo de caja chica"**
+→ Caja Chica → **Ingreso** → monto → descripción → Guardar
+
+**"El saldo físico no coincide con el sistema"**
+→ Caja Chica → **Ajuste** → monto de la diferencia → documenta el motivo → Guardar
 
 ---
 
@@ -1659,6 +1672,8 @@ Una guía de bolsillo con las acciones más frecuentes de tu día a día.
 | Buscar un producto específico | Productos → escribe nombre o SKU en búsqueda |
 | Ver historial de movimientos | Movimientos → filtra por fecha |
 | Ver qué se vendió más este mes | Reportes → Más Vendidos |
+| Registrar un gasto con efectivo | Caja Chica → Egreso |
+| Ver cuánto hay en caja chica | Caja Chica → Saldo Actual |
 
 ---
 
@@ -1681,6 +1696,12 @@ Una guía de bolsillo con las acciones más frecuentes de tu día a día.
 
 **"El conteo físico no coincide con el sistema"**
 → Movimientos → + Nuevo → **Ajuste** → selecciona producto → cantidad real → documenta el motivo → Guardar
+
+**"Hice un gasto menor con dinero de la caja"**
+→ Caja Chica → **Egreso** → monto → descripción → categoría (ej: Papelería, Transporte) → Guardar
+
+**"Entró dinero para reponer la caja chica"**
+→ Caja Chica → **Ingreso** → monto → descripción → Guardar
 
 ---
 
