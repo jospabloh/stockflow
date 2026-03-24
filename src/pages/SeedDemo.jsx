@@ -4,9 +4,46 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Loader2, AlertCircle, Database } from "lucide-react";
 
-const BUSINESS_ID = "69b85967f27f82e4be6b1323";
+const makeCategories = (bid) => [
+  { name: "Herramientas Manuales", description: "Desarmadores, llaves, martillos, pinzas", color: "#EF4444", business_id: bid },
+  { name: "Herramientas Eléctricas", description: "Taladros, esmeriles, sierras eléctricas", color: "#F97316", business_id: bid },
+  { name: "Tornillería y Fijaciones", description: "Tornillos, tuercas, pijas, taquetes", color: "#EAB308", business_id: bid },
+  { name: "Plomería", description: "Tubos, codos, llaves de paso, mangueras", color: "#3B82F6", business_id: bid },
+  { name: "Electricidad", description: "Cable, contactos, interruptores, focos", color: "#8B5CF6", business_id: bid },
+  { name: "Pinturas y Acabados", description: "Pintura vinílica, esmalte, brochas, rodillos", color: "#EC4899", business_id: bid },
+  { name: "Materiales de Construcción", description: "Cemento, varilla, block, arena", color: "#6B7280", business_id: bid },
+];
 
-const categories = [
+const makeSuppliers = (bid) => [
+  { name: "Distribuidora Nacobre", contact_name: "Ramón Gutiérrez", email: "ventas@nacobre.mx", phone: "449-200-1111", address: "Zona Industrial, Aguascalientes", rfc: "DNA900101XY1", notes: "Plomería y cobre", business_id: bid },
+  { name: "Truper Herramientas", contact_name: "Laura Pérez", email: "lperez@truper.com", phone: "55-5000-2222", address: "CDMX", rfc: "THE850601AB2", notes: "Herramientas manuales y eléctricas", business_id: bid },
+  { name: "DeWalt México", contact_name: "Carlos Mendoza", email: "cmendoza@dewalt.mx", phone: "55-4000-3333", address: "Monterrey, NL", rfc: "DWM010101CD3", notes: "Herramientas eléctricas profesionales", business_id: bid },
+  { name: "Pinturas Comex", contact_name: "Sofía Ramos", email: "sramos@comex.mx", phone: "449-300-4444", address: "Aguascalientes, Ags.", rfc: "PCO750301EF4", notes: "Pinturas, esmaltes y acabados", business_id: bid },
+  { name: "Aceros y Materiales del Centro", contact_name: "Miguel Torres", email: "mtorres@aceroscentro.mx", phone: "449-400-5555", address: "Col. Industrial, Aguascalientes", rfc: "AMC920501GH5", notes: "Varilla, perfiles y construcción", business_id: bid },
+];
+
+const makeClients = (bid) => [
+  { name: "Constructora Hernández e Hijos", email: "contacto@constructorahh.mx", phone: "449-555-1001", address: "Av. López Mateos 340, Aguascalientes", rfc: "CHH800101IJ6", notes: "Cliente frecuente, compra al mayoreo", status: "active", business_id: bid },
+  { name: "IMSS Delegación Ags", email: "mantenimiento@imss-ags.gob.mx", phone: "449-555-2002", address: "Av. Convención 100, Aguascalientes", rfc: "MSS421016000", notes: "Requiere factura siempre", status: "active", business_id: bid },
+  { name: "Arq. Patricia Velarde", email: "pvelarde.arq@gmail.com", phone: "449-555-3003", address: "Fracc. Villa Jardín, Aguascalientes", rfc: "VEPA850312KL7", notes: "Arquitecta independiente", status: "active", business_id: bid },
+  { name: "Hotel Boutique Casa Real", email: "compras@casareal.mx", phone: "449-555-4004", address: "Centro Histórico, Aguascalientes", rfc: "HCR991201MN8", notes: "Mantenimiento constante del hotel", status: "active", business_id: bid },
+  { name: "Juan Carlos Ríos (Plomero)", email: "jcrios.plomero@hotmail.com", phone: "449-555-5005", address: "Col. Morelos, Aguascalientes", rfc: "RICJ780901OP9", notes: "Plomero independiente, recurrente", status: "active", business_id: bid },
+  { name: "Municipio de Jesús María", email: "obras@jesusmaria.gob.mx", phone: "449-555-6006", address: "Prol. Mahatma Gandhi s/n, Jesús María", rfc: "MJM800101QR0", notes: "Requiere cotización formal", status: "active", business_id: bid },
+];
+
+const makePettyCash = (bid) => [
+  { business_id: bid, movement_type: "initial_fund", amount: 3000, description: "Fondo inicial de caja chica", movement_date: "2026-03-01", category: "Fondo" },
+  { business_id: bid, movement_type: "expense", amount: 85, description: "Papelería para facturas", category: "Papelería", movement_date: "2026-03-05", reference: "TKT-001" },
+  { business_id: bid, movement_type: "expense", amount: 220, description: "Gasolina reparto zona norte", category: "Transporte", movement_date: "2026-03-08", reference: "TKT-002" },
+  { business_id: bid, movement_type: "expense", amount: 150, description: "Limpieza y artículos de aseo", category: "Limpieza", movement_date: "2026-03-10", reference: "TKT-003" },
+  { business_id: bid, movement_type: "income", amount: 1500, description: "Reposición de fondo aprobada por gerencia", category: "Reposición", movement_date: "2026-03-12" },
+  { business_id: bid, movement_type: "expense", amount: 95, description: "Café y agua para empleados", category: "Víveres", movement_date: "2026-03-15", reference: "TKT-004" },
+  { business_id: bid, movement_type: "expense", amount: 340, description: "Flete express piezas urgentes", category: "Transporte", movement_date: "2026-03-18", reference: "TKT-005" },
+  { business_id: bid, movement_type: "expense", amount: 60, description: "Copia de llaves bodega nueva", category: "Servicios", movement_date: "2026-03-20", reference: "TKT-006" },
+];
+
+const categories_placeholder = [
+...
   { name: "Herramientas Manuales", description: "Desarmadores, llaves, martillos, pinzas", color: "#EF4444", business_id: BUSINESS_ID },
   { name: "Herramientas Eléctricas", description: "Taladros, esmeriles, sierras eléctricas", color: "#F97316", business_id: BUSINESS_ID },
   { name: "Tornillería y Fijaciones", description: "Tornillos, tuercas, pijas, taquetes", color: "#EAB308", business_id: BUSINESS_ID },
