@@ -154,7 +154,7 @@ export default function Layout({ children, currentPageName }) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Navegación principal">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
             return (
@@ -162,20 +162,22 @@ export default function Layout({ children, currentPageName }) {
                 key={item.page}
                 to={createPageUrl(item.page)}
                 onClick={() => setSidebarOpen(false)}
+                aria-label={item.name}
+                aria-current={isActive ? "page" : undefined}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
                   ${isActive 
                     ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm" 
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
               >
-                <item.icon className={`h-5 w-5 ${isActive ? "text-indigo-600" : ""}`} />
+                <item.icon className={`h-5 w-5 ${isActive ? "text-indigo-600" : ""}`} aria-hidden="true" />
                 <span>{item.name}</span>
                 {item.page === "Dashboard" && lowStockCount > 0 && (
-                  <Badge variant="destructive" className="ml-auto text-xs h-5 px-1.5">
+                  <Badge variant="destructive" className="ml-auto text-xs h-5 px-1.5" aria-label={`${lowStockCount} productos con stock bajo`}>
                     {lowStockCount}
                   </Badge>
                 )}
-                {isActive && <ChevronRight className="h-4 w-4 ml-auto text-indigo-400" />}
+                {isActive && <ChevronRight className="h-4 w-4 ml-auto text-indigo-400" aria-hidden="true" />}
               </Link>
             );
           })}
@@ -191,8 +193,8 @@ export default function Layout({ children, currentPageName }) {
               <p className="text-sm font-medium text-foreground truncate">{user?.full_name || "Usuario"}</p>
               <p className="text-xs text-muted-foreground truncate">{user?.email || ""}</p>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400" onClick={handleLogout}>
-              <LogOut className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400" onClick={handleLogout} aria-label="Cerrar sesión">
+              <LogOut className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -209,8 +211,9 @@ export default function Layout({ children, currentPageName }) {
               size="icon"
               className={isRoot && !isChildRoute ? "hidden" : ""}
               onClick={() => navigate(-1)}
+              aria-label="Regresar"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-5 w-5" aria-hidden="true" />
             </Button>
           )}
           <Button
@@ -218,8 +221,11 @@ export default function Layout({ children, currentPageName }) {
             size="icon"
             className={`lg:hidden ${!isRoot ? "hidden" : ""}`}
             onClick={() => setSidebarOpen(true)}
+            aria-label="Abrir menú"
+            aria-expanded={sidebarOpen}
+            aria-controls="sidebar-nav"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5" aria-hidden="true" />
           </Button>
           {/* Always show hamburger on desktop; on mobile only on root */}
           <Button
@@ -228,8 +234,9 @@ export default function Layout({ children, currentPageName }) {
             className="hidden lg:flex"
             onClick={() => setSidebarOpen(true)}
             style={{ display: "none" }}
+            aria-label="Abrir menú"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5" aria-hidden="true" />
           </Button>
           <h2 className="text-lg font-semibold text-foreground">
             {navItems.find(n => n.page === currentPageName)?.name || currentPageName}
@@ -237,9 +244,9 @@ export default function Layout({ children, currentPageName }) {
           <div className="ml-auto flex items-center gap-2">
             {lowStockCount > 0 && (
               <Link to={createPageUrl("Products") + "?filter=low_stock"}>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5 text-slate-500" />
-                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <Button variant="ghost" size="icon" className="relative" aria-label={`${lowStockCount} productos con stock bajo`}>
+                  <Bell className="h-5 w-5 text-slate-500" aria-hidden="true" />
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center" aria-hidden="true">
                     {lowStockCount}
                   </span>
                 </Button>
@@ -250,9 +257,10 @@ export default function Layout({ children, currentPageName }) {
               variant="ghost"
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : theme === "light" ? "system" : "dark")}
+              aria-label={`Tema: ${theme === "dark" ? "Oscuro" : theme === "light" ? "Claro" : "Sistema"}`}
               title={theme === "dark" ? "Oscuro" : theme === "light" ? "Claro" : "Sistema"}
             >
-              {theme === "dark" ? <Moon className="h-5 w-5 text-slate-500" /> : theme === "light" ? <Sun className="h-5 w-5 text-slate-500" /> : <Monitor className="h-5 w-5 text-slate-500" />}
+              {theme === "dark" ? <Moon className="h-5 w-5 text-slate-500" aria-hidden="true" /> : theme === "light" ? <Sun className="h-5 w-5 text-slate-500" aria-hidden="true" /> : <Monitor className="h-5 w-5 text-slate-500" aria-hidden="true" />}
             </Button>
           </div>
         </header>
@@ -292,6 +300,8 @@ export default function Layout({ children, currentPageName }) {
       <nav
         className="fixed bottom-0 left-0 right-0 z-[60] bg-card border-t border-border flex lg:hidden select-none"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        aria-label="Navegación principal"
+        role="tablist"
       >
         {bottomNavItems.map((item) => {
           const isActive = currentPageName === item.page;
@@ -299,9 +309,17 @@ export default function Layout({ children, currentPageName }) {
           return (
             <button
               key={item.page}
+              role="tab"
+              aria-selected={isActive}
+              aria-label={item.name}
               onClick={() => {
+                // Save current scroll before leaving
+                if (mainRef.current) {
+                  sessionStorage.setItem(`scroll_${currentPageName}`, String(mainRef.current.scrollTop));
+                }
                 if (isActive) {
-                  navigate(createPageUrl(item.page), { replace: true });
+                  // Re-tap active tab: scroll to top
+                  if (mainRef.current) mainRef.current.scrollTop = 0;
                 } else {
                   navigate(targetUrl, { replace: false });
                 }
@@ -309,10 +327,10 @@ export default function Layout({ children, currentPageName }) {
               className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[12px] font-medium transition-colors min-h-[44px] relative
                 ${isActive ? "text-indigo-500" : "text-muted-foreground"}`}
             >
-              <item.icon className={`h-5 w-5 ${isActive ? "text-indigo-500" : "text-muted-foreground"}`} />
+              <item.icon className={`h-5 w-5 ${isActive ? "text-indigo-500" : "text-muted-foreground"}`} aria-hidden="true" />
               <span>{item.name}</span>
               {item.page === "Dashboard" && lowStockCount > 0 && (
-                <span className="absolute top-1 right-[calc(50%-18px)] h-4 w-4 bg-red-500 rounded-full text-[9px] text-white flex items-center justify-center">
+                <span className="absolute top-1 right-[calc(50%-18px)] h-4 w-4 bg-red-500 rounded-full text-[9px] text-white flex items-center justify-center" aria-hidden="true">
                   {lowStockCount}
                 </span>
               )}
