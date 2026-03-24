@@ -16,7 +16,7 @@ export default function HelpCenter() {
   useEffect(() => {
     (async () => {
       try {
-        const arts = localHelpData.articles || [];
+        const arts = (HelpModule.localHelpData && HelpModule.localHelpData.articles) || [];
         setArticles(arts);
         
         const user = await base44.auth.me().catch(() => null);
