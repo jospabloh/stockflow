@@ -14,6 +14,7 @@ import { MobileSelect } from "@/components/ui/MobileSelect";
 import { Save, X, ScanBarcode, Wand2, Camera } from "lucide-react";
 import BarcodeCameraScanner from "./BarcodeCameraScanner";
 import { useBusinessContext } from "@/components/BusinessContext";
+import { createButtonProps } from "@/lib/a11y";
 
 const UNITS = ["pieza", "kg", "litro", "metro", "caja", "paquete"];
 
