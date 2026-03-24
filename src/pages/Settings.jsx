@@ -351,7 +351,7 @@ export default function Settings() {
           <Card className="border-0 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-700 text-lg">Proveedores</h3>
-              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingSup(null); setSupForm({ name: "", contact_name: "", email: "", phone: "" }); setSupFormOpen(true); }}>
+              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingSup(null); setSupForm({ name: "", contact_name: "", email: "", phone: "" }); setSupFormOpen(true); }} {...createButtonProps('add')}>
                 <Plus className="h-4 w-4 mr-1" /> Nuevo
               </Button>
             </div>
