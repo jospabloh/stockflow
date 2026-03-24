@@ -224,198 +224,44 @@ export default function Quotations() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table role="table" aria-label="Lista de cotizaciones">
-            <TableHeader>
-              <TableRow className="bg-slate-50/50" role="row">
-                <TableHead className="font-semibold text-slate-600" role="columnheader">Folio</TableHead>
-                <TableHead className="font-semibold text-slate-600" role="columnheader">Cliente</TableHead>
-                <TableHead className="font-semibold text-slate-600" role="columnheader">Fecha</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-right" role="columnheader">Total</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-center" role="columnheader">Estado</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-center" role="columnheader">Factura</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-center" role="columnheader">Seguimiento</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-center" role="columnheader">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-12 text-slate-400">Sin cotizaciones</TableCell>
-                </TableRow>
-              ) : (
-                filtered.map((q) => {
-                  const status = statusConfig[q.status] || statusConfig.draft;
-                  return (
-                    <TableRow key={q.id} className="hover:bg-slate-50/50 transition-colors" role="row">
-                      <TableCell className="font-mono text-sm text-indigo-600 cursor-pointer hover:underline" onClick={() => setPreviewQuotation(q)}>
-                        <span className="flex items-center gap-1.5">
-                          {q.folio}
-                          {q.delivered && !q.paid && (
-                            <span title="Entregado sin confirmar pago">
-                              <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
-                            </span>
-                          )}
-                        </span>
-                      </TableCell>
-                      <TableCell className="font-medium text-slate-800">{q.client_name}</TableCell>
-                      <TableCell className="text-slate-600">{moment(q.created_date).format("DD/MM/YY")}</TableCell>
-                      <TableCell className="text-right font-semibold text-slate-700">
-                        ${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex flex-col gap-1 items-center">
-                          {isExpired(q) ? (
-                            <Badge className="bg-red-100 text-red-700 border-0 flex items-center gap-1.5 w-fit">
-                              <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
-                              Vencida
-                            </Badge>
-                          ) : (
-                            <Badge className={`${status.color} border-0 flex items-center gap-1.5 w-fit`} title={status.desc}>
-                              <span className={`h-2 w-2 rounded-full ${status.dot} inline-block`} />
-                              {status.label}
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {(() => {
-                          const invoiceOptions = [
-                            { value: "pendiente", label: "Pendiente", cls: "bg-amber-100 text-amber-700 hover:bg-amber-200" },
-                            { value: "emitida", label: "Emitida", cls: "bg-emerald-100 text-emerald-700 hover:bg-emerald-200" },
-                            { value: "no_requerida", label: "No Requerida", cls: "bg-slate-100 text-slate-500 hover:bg-slate-200" },
-                          ];
-                          return (
-                            <div className="flex flex-col gap-1 items-center">
-                              {invoiceOptions.map((opt) => (
-                                <button
-                                  key={opt.value}
-                                  onClick={async () => {
-                                    const newVal = q.invoice_status === opt.value ? null : opt.value;
-                                    await base44.entities.Quotation.update(q.id, { invoice_status: newVal });
-                                    loadData();
-                                  }}
-                                  className={`text-xs font-medium px-2 py-0.5 rounded-full transition-colors border ${
-                                    q.invoice_status === opt.value
-                                      ? opt.cls + " border-transparent"
-                                      : "bg-transparent text-slate-300 border-slate-200 hover:border-slate-300 hover:text-slate-500"
-                                  }`}
-                                >
-                                  {opt.label}
-                                </button>
-                              ))}
-                            </div>
-                          );
-                        })()}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {q.status === "converted" && (
-                          <div className="flex items-center justify-center gap-3">
-                            <button
-                              title={q.in_route ? "En ruta (click para desmarcar)" : "Marcar en ruta"}
-                              onClick={async () => {
-                                // Toggle in_route; if activating, clear delivered. If deactivating, just clear.
-                                await base44.entities.Quotation.update(q.id, { in_route: !q.in_route, delivered: false });
-                                loadData();
-                              }}
-                              className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${q.in_route ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-400 hover:bg-blue-50 hover:text-blue-500"}`}
-                            >
-                              <Truck className="h-3.5 w-3.5" />
-                              {q.in_route ? "En ruta" : "Ruta"}
-                            </button>
-                            <button
-                              title={q.delivered ? "Entregado (click para desmarcar)" : "Marcar entregado"}
-                              onClick={() => {
-                                if (!q.delivered) {
-                                  // BUG-010: Requerir método de pago antes de marcar entregado
-                                  setPayQuotation(q);
-                                  setPaymentMethod(q.payment_method || "");
-                                  setPayMarkDelivered(true);
-                                } else {
-                                  base44.entities.Quotation.update(q.id, { delivered: false }).then(loadData);
-                                }
-                              }}
-                              className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${q.delivered ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-400 hover:bg-emerald-50 hover:text-emerald-500"}`}
-                            >
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                              {q.delivered ? "Entregado" : "Entrega"}
-                            </button>
-                            <button
-                              title={q.paid ? `Pagado: ${q.payment_method || "—"}` : "Confirmar pago"}
-                              onClick={() => {
-                                const needsConfirm = !q.paid || !q.payment_method || ["Por definir","Pendiente de confirmar",""].includes(q.payment_method);
-                                if (needsConfirm) { setPayQuotation(q); setPaymentMethod(""); }
-                              }}
-                              className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${
-                                q.paid && q.payment_method && !["Por definir","Pendiente de confirmar",""].includes(q.payment_method)
-                                  ? "bg-green-100 text-green-700 cursor-default"
-                                  : q.paid
-                                    ? "bg-orange-100 text-orange-700 hover:bg-orange-200 cursor-pointer"
-                                    : "bg-slate-100 text-slate-400 hover:bg-green-50 hover:text-green-500"
-                              }`}
-                            >
-                              <DollarSign className="h-3.5 w-3.5" />
-                              {q.paid && q.payment_method && !["Por definir","Pendiente de confirmar",""].includes(q.payment_method)
-                                ? (q.payment_method)
-                                : q.paid ? "Confirmar" : "Pago"}
-                            </button>
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {(q.status === "draft" || q.status === "sent" || q.status === "accepted") && (
-                               <DropdownMenuItem onClick={() => handleEdit(q)}>
-                                 <Pencil className="h-4 w-4 mr-2" /> Editar
-                               </DropdownMenuItem>
-                             )}
-                            <DropdownMenuItem onClick={() => generateQuotationPDF(q, settings)}>
-                              <FileDown className="h-4 w-4 mr-2" /> Descargar PDF
-                            </DropdownMenuItem>
-                            {(q.status === "sent" || q.status === "accepted") && (
-                               <DropdownMenuItem onClick={() => {
-                                 if (isExpired(q)) {
-                                   alert(`Cotización vencida el ${new Date(q.valid_until).toLocaleDateString("es-MX")}. No se puede convertir.`);
-                                   return;
-                                 }
-                                 setConvertQuotation(q);
-                                 setConvertPaymentMethod(q.payment_method || "");
-                                 setConvertError("");
-                               }}>
-                                 <ShoppingCart className="h-4 w-4 mr-2" /> Convertir en Venta
-                               </DropdownMenuItem>
-                             )}
-                            {q.status === "converted" && !q.paid && (
-                              <DropdownMenuItem onClick={() => { setPayQuotation(q); setPaymentMethod(q.payment_method || ""); }}>
-                                <DollarSign className="h-4 w-4 mr-2" /> Confirmar Pago
-                              </DropdownMenuItem>
-                            )}
-                            {q.status !== "cancelled" && (
-                              <DropdownMenuItem
-                                className="text-red-600 focus:text-red-600"
-                                onClick={() => { setCancelQuotation(q); setCancelReason(""); }}
-                              >
-                                <XCircle className="h-4 w-4 mr-2" /> {q.status === "converted" ? "Anular Venta" : "Cancelar Cotización"}
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+      <VirtualizedQuotationTable
+        quotations={filtered}
+        statusConfig={statusConfig}
+        onEdit={handleEdit}
+        onPreview={setPreviewQuotation}
+        onDownloadPDF={(q) => generateQuotationPDF(q, settings)}
+        onConvert={(q) => {
+          setConvertQuotation(q);
+          setConvertPaymentMethod(q.payment_method || "");
+          setConvertError("");
+        }}
+        onCancel={(q) => {
+          setCancelQuotation(q);
+          setCancelReason("");
+        }}
+        onPay={(q) => {
+          setPayQuotation(q);
+          setPaymentMethod(q.payment_method || "");
+        }}
+        onInvoiceStatusChange={async (q, val) => {
+          await base44.entities.Quotation.update(q.id, { invoice_status: val });
+          loadData();
+        }}
+        onInRouteChange={async (q) => {
+          await base44.entities.Quotation.update(q.id, { in_route: !q.in_route, delivered: false });
+          loadData();
+        }}
+        onDeliveredChange={(q) => {
+          if (!q.delivered) {
+            setPayQuotation(q);
+            setPaymentMethod(q.payment_method || "");
+            setPayMarkDelivered(true);
+          } else {
+            base44.entities.Quotation.update(q.id, { delivered: false }).then(loadData);
+          }
+        }}
+        isExpired={isExpired}
+      />
 
       <QuotationPreviewDialog
         quotation={previewQuotation}
