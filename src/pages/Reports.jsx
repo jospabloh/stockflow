@@ -356,6 +356,24 @@ export default function Reports() {
         </TabsContent>
 
         <TabsContent value="sales">
+          {/* Movement type filter */}
+          <Card className="border-0 shadow-sm p-4 mb-4">
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="min-w-[160px]">
+                <label className="text-xs text-slate-500 mb-1 block">Tipo de Movimiento</label>
+                <MobileSelect value={movTypeFilter} onValueChange={setMovTypeFilter} options={[
+                  { value: "all", label: "Todos" },
+                  { value: "entry", label: "Entradas" },
+                  { value: "exit", label: "Salidas" },
+                  { value: "return", label: "Devoluciones" },
+                  { value: "adjustment", label: "Ajustes" }
+                ]} />
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setMovTypeFilter("all")}>
+                Limpiar
+              </Button>
+            </div>
+          </Card>
           <Card className="border-0 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-700">Productos Más Vendidos</h3>
