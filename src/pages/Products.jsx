@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Upload, Download } from "lucide-react";
 import { MobileSelect } from "@/components/ui/MobileSelect";
+import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import {
   AlertDialog,
   AlertDialogAction,
