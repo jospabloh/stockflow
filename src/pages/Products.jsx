@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Upload, Download } from "lucide-react";
-import { MobileSelect } from "@/components/ui/MobileSelect";
+import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import {
   AlertDialog,
@@ -18,6 +18,7 @@ import {
 import ProductTable from "@/components/products/ProductTable";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { createTableProps } from "@/lib/a11y";
 
 export default function Products() {
   const navigate = useNavigate();
@@ -130,30 +131,31 @@ export default function Products() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
+            aria-label="Buscar productos por nombre, SKU o código de barras"
           />
         </div>
         <div className="flex gap-2 flex-wrap">
-          <MobileSelect
-            value={categoryFilter}
-            onValueChange={setCategoryFilter}
-            placeholder="Categoría"
-            triggerClassName="w-40"
-            options={[
-              { value: "all", label: "Todas" },
-              ...categories.map((c) => ({ value: c.id, label: c.name })),
-            ]}
-          />
-          <MobileSelect
-            value={stockFilter}
-            onValueChange={setStockFilter}
-            placeholder="Stock"
-            triggerClassName="w-40"
-            options={[
-              { value: "all", label: "Todo" },
-              { value: "low", label: "Stock Bajo" },
-              { value: "out", label: "Agotado" },
-            ]}
-          />
+           <SelectWrapper
+             value={categoryFilter}
+             onValueChange={setCategoryFilter}
+             placeholder="Categoría"
+             ariaLabel="Filtrar por categoría"
+             options={[
+               { value: "all", label: "Todas" },
+               ...categories.map((c) => ({ value: c.id, label: c.name })),
+             ]}
+           />
+           <SelectWrapper
+             value={stockFilter}
+             onValueChange={setStockFilter}
+             placeholder="Stock"
+             ariaLabel="Filtrar por estado de stock"
+             options={[
+               { value: "all", label: "Todo" },
+               { value: "low", label: "Stock Bajo" },
+               { value: "out", label: "Agotado" },
+             ]}
+           />
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1" /> CSV
           </Button>
@@ -176,10 +178,10 @@ export default function Products() {
 
       {/* Delete confirmation */}
       <AlertDialog open={!!deleteProduct} onOpenChange={() => setDeleteProduct(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-desc">
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar producto?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle id="delete-title">¿Eliminar producto?</AlertDialogTitle>
+            <AlertDialogDescription id="delete-desc">
               Se eliminará "{deleteProduct?.name}" permanentemente. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
