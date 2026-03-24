@@ -62,6 +62,14 @@ export default function Movements() {
     loadData();
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const type = params.get("type");
+    if (type && ["entry", "exit", "return", "adjustment"].includes(type)) {
+      setTypeFilter(type);
+    }
+  }, [location.search]);
+
   const filtered = movements.filter((m) => {
     const matchSearch = m.product_name?.toLowerCase().includes(search.toLowerCase()) ||
       m.reference?.toLowerCase().includes(search.toLowerCase());
