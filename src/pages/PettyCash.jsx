@@ -91,18 +91,18 @@ export default function PettyCash() {
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2">
           {!hasInitialFund && (
-            <Button onClick={() => openForm("initial_fund")} variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
+            <Button onClick={() => openForm("initial_fund")} variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50" {...createButtonProps('add')}>
               <Plus className="h-4 w-4 mr-1" /> Fondo Inicial
             </Button>
           )}
-          <Button onClick={() => openForm("income")} className="bg-emerald-600 hover:bg-emerald-700">
+          <Button onClick={() => openForm("income")} className="bg-emerald-600 hover:bg-emerald-700" {...createButtonProps('add')}>
             <Plus className="h-4 w-4 mr-1" /> Ingreso
           </Button>
-          <Button onClick={() => openForm("expense")} className="bg-rose-600 hover:bg-rose-700">
+          <Button onClick={() => openForm("expense")} className="bg-rose-600 hover:bg-rose-700" {...createButtonProps('add')}>
             <Minus className="h-4 w-4 mr-1" /> Egreso
           </Button>
           {isAdmin && (
-            <Button onClick={() => openForm("adjustment")} variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50">
+            <Button onClick={() => openForm("adjustment")} variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50" {...createButtonProps('add')}>
               <SlidersHorizontal className="h-4 w-4 mr-1" /> Ajuste
             </Button>
           )}
