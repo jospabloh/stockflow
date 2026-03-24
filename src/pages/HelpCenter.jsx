@@ -143,8 +143,8 @@ export default function HelpCenter() {
         {activeArticle ? (
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold mb-6">{activeArticle.title}</h1>
-            <div className="prose prose-sm max-w-none dark:prose-invert">
-              <ReactMarkdown>{activeArticle.content}</ReactMarkdown>
+            <div className="text-slate-700 dark:text-slate-300">
+              <MarkdownContent content={activeArticle.content} />
             </div>
           </div>
         ) : (
