@@ -19,6 +19,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [movements, setMovements] = useState([]);
   const [quotations, setQuotations] = useState([]);
