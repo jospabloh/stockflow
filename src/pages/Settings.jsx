@@ -28,8 +28,7 @@ import {
 import { toast } from "sonner";
 
 export default function Settings() {
-  const { businessId, refreshBusiness } = useBusinessContext();
-  const [currentUser, setCurrentUser] = useState(null);
+  const { businessId } = useBusinessContext();
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [settings, setSettings] = useState(null);
@@ -55,7 +54,6 @@ export default function Settings() {
 
   useEffect(() => {
     base44.auth.me().then(u => {
-      setCurrentUser(u);
       setIsAdmin(u?.role === "admin");
       setCheckingAuth(false);
     }).catch(() => setCheckingAuth(false));
@@ -101,13 +99,7 @@ export default function Settings() {
     if (settingsId) {
       await base44.entities.AppSettings.update(settingsId, settings);
     } else {
-      const bid = currentUser?.business_id || businessId;
-      if (!bid) {
-        toast.error("No se encontró el negocio asociado. Recarga la página e intenta de nuevo.");
-        setSaving(false);
-        return;
-      }
-      const created = await base44.entities.AppSettings.create({ ...settings, business_id: bid });
+      const created = await base44.entities.AppSettings.create({ ...settings, business_id: businessId });
       setSettingsId(created.id);
     }
     setSaving(false);
@@ -119,9 +111,7 @@ export default function Settings() {
     if (editingCat) {
       await base44.entities.Category.update(editingCat.id, catForm);
     } else {
-      const bid = currentUser?.business_id || businessId;
-      if (!bid) { toast.error("No se encontró el negocio. Recarga la página."); return; }
-      await base44.entities.Category.create({ ...catForm, business_id: bid });
+      await base44.entities.Category.create({ ...catForm, business_id: businessId });
     }
     const cats = await base44.entities.Category.list();
     setCategories(cats);
@@ -144,9 +134,7 @@ export default function Settings() {
     if (editingSup) {
       await base44.entities.Supplier.update(editingSup.id, supForm);
     } else {
-      const bid = currentUser?.business_id || businessId;
-      if (!bid) { toast.error("No se encontró el negocio. Recarga la página."); return; }
-      await base44.entities.Supplier.create({ ...supForm, business_id: bid });
+      await base44.entities.Supplier.create({ ...supForm, business_id: businessId });
     }
     const sups = await base44.entities.Supplier.list();
     setSuppliers(sups);

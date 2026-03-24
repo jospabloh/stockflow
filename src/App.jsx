@@ -19,7 +19,6 @@ const MovementNew = lazy(() => import('./pages/Movements/MovementNew'));
 const QuotationNew = lazy(() => import('./pages/Quotations/QuotationNew'));
 const QuotationEdit = lazy(() => import('./pages/Quotations/QuotationEdit'));
 const PettyCash = lazy(() => import('./pages/PettyCash'));
-const SeedDemo = lazy(() => import('./pages/SeedDemo'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center">
@@ -86,7 +85,6 @@ const AuthenticatedApp = () => {
       <Route path="/Quotations/new" element={<LayoutWrapper currentPageName="Quotations"><Suspense fallback={<PageLoader />}><QuotationNew /></Suspense></LayoutWrapper>} />
       <Route path="/Quotations/edit/:id" element={<LayoutWrapper currentPageName="Quotations"><Suspense fallback={<PageLoader />}><QuotationEdit /></Suspense></LayoutWrapper>} />
       <Route path="/PettyCash" element={<LayoutWrapper currentPageName="PettyCash"><Suspense fallback={<PageLoader />}><PettyCash /></Suspense></LayoutWrapper>} />
-      <Route path="/SeedDemo" element={<LayoutWrapper currentPageName="SeedDemo"><Suspense fallback={<PageLoader />}><SeedDemo /></Suspense></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
