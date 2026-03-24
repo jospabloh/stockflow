@@ -39,11 +39,11 @@ import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import { createButtonProps } from "@/lib/a11y";
 
 const statusConfig = {
-  draft: { label: "Borrador", color: "bg-amber-100 text-amber-700", dot: "bg-amber-400" },
-  sent: { label: "Enviada", color: "bg-amber-100 text-amber-700", dot: "bg-amber-400" },
-  accepted: { label: "Aceptada", color: "bg-amber-100 text-amber-700", dot: "bg-amber-400" },
-  converted: { label: "Concretada", color: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-500" },
-  cancelled: { label: "Cancelada", color: "bg-red-100 text-red-700", dot: "bg-red-500" },
+  draft: { label: "Borrador", color: "bg-slate-100 text-slate-700", dot: "bg-slate-400", desc: "Cotización en edición" },
+  sent: { label: "Enviada", color: "bg-blue-100 text-blue-700", dot: "bg-blue-400", desc: "Enviada al cliente" },
+  accepted: { label: "Aceptada", color: "bg-amber-100 text-amber-700", dot: "bg-amber-400", desc: "Aceptada por cliente" },
+  converted: { label: "Concretada", color: "bg-emerald-100 text-emerald-700", dot: "bg-emerald-500", desc: "Convertida en venta" },
+  cancelled: { label: "Cancelada", color: "bg-red-100 text-red-700", dot: "bg-red-500", desc: "Cancelada/Anulada" },
 };
 
 const isExpired = (q) => {
