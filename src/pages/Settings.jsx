@@ -101,9 +101,12 @@ export default function Settings() {
     if (settingsId) {
       await base44.entities.AppSettings.update(settingsId, settings);
     } else {
-      // Leer business_id fresco del usuario para garantizar que el RLS lo acepte
-      const me = await base44.auth.me();
-      const bid = me?.business_id || businessId;
+      const bid = currentUser?.business_id || businessId;
+      if (!bid) {
+        toast.error("No se encontró el negocio asociado. Recarga la página e intenta de nuevo.");
+        setSaving(false);
+        return;
+      }
       const created = await base44.entities.AppSettings.create({ ...settings, business_id: bid });
       setSettingsId(created.id);
     }
