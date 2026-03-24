@@ -10,70 +10,26 @@ const ROLE_CONFIG = {
 };
 
 const markdownComponents = {
-  h2: ({ children }) => (
-    <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mt-8 mb-3 pb-2 border-b border-slate-100 dark:border-slate-700 first:mt-0">
-      {children}
-    </h2>
-  ),
-  h3: ({ children }) => (
-    <h3 className="text-base font-semibold text-slate-700 dark:text-slate-200 mt-5 mb-2">
-      {children}
-    </h3>
-  ),
-  p: ({ children }) => (
-    <p className="text-slate-600 dark:text-slate-300 leading-relaxed my-2 text-sm">{children}</p>
-  ),
-  ul: ({ children }) => (
-    <ul className="my-2 space-y-1 pl-4">{children}</ul>
-  ),
-  ol: ({ children }) => (
-    <ol className="my-2 space-y-2 pl-4 list-decimal">{children}</ol>
-  ),
-  li: ({ children }) => (
-    <li className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm list-disc ml-2">{children}</li>
-  ),
-  strong: ({ children }) => (
-    <strong className="font-semibold text-slate-800 dark:text-slate-100">{children}</strong>
-  ),
-  blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 dark:border-indigo-600 rounded-r-xl py-2 px-4 my-3 not-italic text-slate-700 dark:text-slate-300 text-sm">
-      {children}
-    </blockquote>
-  ),
-  code: ({ className, children }) => {
-    const isBlock = /language-/.test(className || "") || String(children).includes("\n");
-    return isBlock ? (
-      <pre className="bg-slate-900 dark:bg-slate-950 text-slate-100 rounded-xl p-4 my-3 overflow-x-auto text-xs font-mono leading-relaxed">
-        <code className={className}>{children}</code>
-      </pre>
-    ) : (
-      <code className="bg-slate-100 dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded text-xs font-mono">
-        {children}
-      </code>
-    );
+  h2: ({ children }) => <h2 className="text-lg font-bold mt-6 mb-3">{children}</h2>,
+  h3: ({ children }) => <h3 className="text-base font-semibold mt-4 mb-2">{children}</h3>,
+  p: ({ children }) => <p className="text-sm leading-relaxed my-2">{children}</p>,
+  ul: ({ children }) => <ul className="my-2 space-y-1 pl-4">{children}</ul>,
+  ol: ({ children }) => <ol className="my-2 space-y-2 pl-4 list-decimal">{children}</ol>,
+  li: ({ children }) => <li className="text-sm list-disc ml-2">{children}</li>,
+  strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+  blockquote: ({ children }) => <blockquote className="border-l-4 border-indigo-400 bg-indigo-50 py-2 px-4 my-3 text-sm">{children}</blockquote>,
+  code: ({ className, children, inline }) => {
+    if (inline) {
+      return <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">{children}</code>;
+    }
+    return <pre className="bg-slate-900 text-slate-100 rounded p-4 my-3 overflow-x-auto text-xs font-mono"><code>{children}</code></pre>;
   },
-  table: ({ children }) => (
-    <div className="my-4 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-      <table className="w-full border-collapse" style={{ minWidth: "100%" }}>{children}</table>
-    </div>
-  ),
-  thead: ({ children }) => (
-    <thead className="bg-slate-50 dark:bg-slate-800 border-b-2 border-slate-200 dark:border-slate-700">{children}</thead>
-  ),
-  th: ({ children }) => (
-    <th className="px-3 py-2.5 text-left text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider whitespace-nowrap border-r border-slate-200 dark:border-slate-700 last:border-r-0">
-      {children}
-    </th>
-  ),
-  td: ({ children }) => (
-    <td className="px-3 py-2.5 text-slate-600 dark:text-slate-300 text-sm border-r border-b border-slate-100 dark:border-slate-800 last:border-r-0 align-top leading-relaxed">
-      {children}
-    </td>
-  ),
-  tr: ({ children }) => (
-    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors even:bg-slate-50/50 dark:even:bg-slate-800/20">{children}</tr>
-  ),
-  hr: () => <hr className="my-6 border-slate-200 dark:border-slate-700" />,
+  table: ({ children }) => <div className="my-4 overflow-x-auto rounded border border-slate-200"><table className="w-full border-collapse">{children}</table></div>,
+  thead: ({ children }) => <thead className="bg-slate-50 border-b">{children}</thead>,
+  th: ({ children }) => <th className="px-3 py-2 text-left text-xs font-bold">{children}</th>,
+  td: ({ children }) => <td className="px-3 py-2 text-sm border-r border-b last:border-r-0">{children}</td>,
+  tr: ({ children }) => <tr className="border-b last:border-b-0">{children}</tr>,
+  hr: () => <hr className="my-6" />,
 };
 
 export default function HelpViewer({ article, allArticles, onNavigate }) {
