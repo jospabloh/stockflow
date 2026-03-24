@@ -276,10 +276,10 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
         </div>
         <div className="flex justify-end gap-3 pt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} {...createButtonProps('cancel')}>
             <X className="h-4 w-4 mr-1" /> Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={!form.name || !form.sale_price || saving} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button onClick={handleSave} disabled={!form.name || !form.sale_price || saving} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
             <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Guardar"}
           </Button>
         </div>
