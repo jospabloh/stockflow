@@ -37,6 +37,8 @@ import { generateQuotationPDF } from "@/components/quotations/QuotationPDF";
 import QuotationPreviewDialog from "@/components/quotations/QuotationPreviewDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import { createButtonProps } from "@/lib/a11y";
+import VirtualizedQuotationTable from "@/components/tables/VirtualizedQuotationTable";
+import { useState } from "react";
 
 const statusConfig = {
   draft: { label: "Borrador", color: "bg-slate-100 text-slate-700", dot: "bg-slate-400", desc: "Cotización en edición" },
