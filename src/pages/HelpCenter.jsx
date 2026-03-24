@@ -9,6 +9,7 @@ import { Search, X, BookOpen, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+// Help Center — Centro de Ayuda StockFlow
 export default function HelpCenter() {
   const [articles, setArticles] = useState([]);
   const [activeId, setActiveId] = useState(null);
