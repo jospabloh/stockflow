@@ -1441,6 +1441,123 @@ Solo puedes eliminar un proveedor si **no hay productos vinculados** a él.`
     },
 
     // ═══════════════════════════════════════════════
+    // CAJA CHICA
+    // ═══════════════════════════════════════════════
+    {
+      id: "petty-cash-overview",
+      category: "Caja Chica",
+      role: "all",
+      title: "🐷 Caja Chica — Guía Completa",
+      keywords: ["caja chica", "efectivo", "gastos menores", "fondo", "ingreso", "egreso", "ajuste", "saldo", "caja", "dinero"],
+      related_ids: ["petty-cash-movements", "roles-overview"],
+      content: `## 🐷 Caja Chica
+
+El módulo de Caja Chica permite llevar un control sencillo del dinero disponible para gastos menores del negocio. Cada movimiento queda asociado al negocio correspondiente, por lo que la información siempre se mantiene separada y ordenada.
+
+---
+
+### ¿Qué es la Caja Chica?
+
+Es un fondo de dinero físico que se usa para cubrir gastos pequeños del día a día: papelería, limpieza, transporte, viáticos menores, etc. No es una cuenta bancaria ni un sistema contable — es el control del efectivo disponible para el negocio.
+
+---
+
+### Funciones Principales
+
+| Función | Descripción |
+|---|---|
+| **Fondo Inicial** | Registra el dinero con el que empieza la caja |
+| **Ingreso** | Cuando entra dinero a la caja (reposición, reintegro) |
+| **Egreso** | Cuando sale dinero por un gasto menor |
+| **Ajuste** | Corrección manual del saldo (solo Admin) |
+| **Historial** | Consulta todos los movimientos con filtros |
+| **Saldo actual** | Muestra el dinero disponible en todo momento |
+
+---
+
+### Cómo Usar la Caja Chica
+
+**Paso 1 — Registrar el Fondo Inicial**
+Si es la primera vez que usas la caja chica:
+1. Ve a **Caja Chica** en el menú
+2. Haz clic en **"Fondo Inicial"**
+3. Ingresa el monto con el que inicias la caja
+4. Agrega una descripción y la fecha
+5. Guarda — el saldo se establece automáticamente
+
+**Paso 2 — Registrar un Ingreso**
+Cuando entra dinero a la caja (reposición de fondo, reintegro, etc.):
+1. Haz clic en **"Ingreso"**
+2. Ingresa el monto, descripción y fecha
+3. Selecciona una categoría si aplica
+4. Guarda — el saldo aumenta automáticamente
+
+**Paso 3 — Registrar un Egreso**
+Cuando se realiza un gasto con el dinero de la caja:
+1. Haz clic en **"Egreso"**
+2. Ingresa el monto, descripción y fecha
+3. Selecciona la categoría del gasto (papelería, limpieza, transporte, etc.)
+4. Agrega referencia o comprobante si tienes
+5. Guarda — el saldo disminuye automáticamente
+
+> ⚠️ Si el egreso deja el saldo en negativo, el sistema te avisará con una advertencia antes de guardar.
+
+**Paso 4 — Realizar un Ajuste (solo Admin)**
+Si hay una diferencia entre el saldo del sistema y el efectivo físico:
+1. Haz clic en **"Ajuste"**
+2. Ingresa el monto de la diferencia
+3. Describe claramente el motivo del ajuste
+4. Guarda — el ajuste queda registrado y distinguido en el historial
+
+---
+
+### Cómo se Calcula el Saldo
+
+El saldo actual es la suma de todos los movimientos del negocio:
+
+\`\`\`
+Saldo = Fondo Inicial + Ingresos − Egresos ± Ajustes
+\`\`\`
+
+| Tipo de movimiento | Efecto |
+|---|---|
+| Fondo Inicial | ➕ Suma |
+| Ingreso | ➕ Suma |
+| Egreso | ➖ Resta |
+| Ajuste | ➕ o ➖ según el monto |
+
+---
+
+### Historial de Movimientos
+
+En la pestaña **"Historial completo"** puedes:
+- Filtrar por **tipo** de movimiento
+- Filtrar por **rango de fechas**
+- Buscar por **descripción** o **categoría**
+- **Exportar a CSV** para análisis externo
+
+---
+
+### Importante
+
+- Todos los movimientos están ligados al **negocio actual** — cada negocio tiene su propia caja chica.
+- El saldo se actualiza automáticamente con cada movimiento.
+- Se recomienda capturar una **descripción clara** en cada movimiento para facilitar auditorías.
+- Los **ajustes** son operaciones de corrección y solo están disponibles para Administradores.
+- La caja chica está diseñada para **gastos menores del día a día**, no para contabilidad formal.
+
+---
+
+### Buenas Prácticas
+
+1. Registra cada gasto al momento de realizarlo, no al final del día.
+2. Siempre captura una referencia (ticket, folio, recibo) cuando exista comprobante.
+3. Realiza un conteo físico periódico y usa **Ajuste** si hay diferencias.
+4. Repone el fondo con un **Ingreso** cuando el saldo esté bajo.
+5. Usa categorías consistentes para poder analizar en qué se gasta más.`
+    },
+
+    // ═══════════════════════════════════════════════
     // REFERENCIA RÁPIDA
     // ═══════════════════════════════════════════════
     {
