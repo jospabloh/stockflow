@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { localHelpData } from "@/lib/helpData";
+import helpData from "@/lib/helpDataWrapper.js";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
