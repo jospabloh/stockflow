@@ -18,6 +18,7 @@ const ProductEdit = lazy(() => import('./pages/Products/ProductEdit'));
 const MovementNew = lazy(() => import('./pages/Movements/MovementNew'));
 const QuotationNew = lazy(() => import('./pages/Quotations/QuotationNew'));
 const QuotationEdit = lazy(() => import('./pages/Quotations/QuotationEdit'));
+const PettyCash = lazy(() => import('./pages/PettyCash'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center">
