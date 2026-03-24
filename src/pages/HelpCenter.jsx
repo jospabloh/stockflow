@@ -1,10 +1,91 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { localHelpData } from "@/lib/helpData";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import ReactMarkdown from "react-markdown";
 
 export default function HelpCenter() {
+  const [articles, setArticles] = useState([]);
+  const [activeId, setActiveId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    // Initialize articles from local data
+    const arts = (localHelpData && localHelpData.articles) || [];
+    setArticles(arts);
+    
+    // Set first article as active
+    if (arts.length > 0) {
+      setActiveId(arts[0].id);
+    }
+  }, []);
+
+  const activeArticle = articles.find(a => a.id === activeId);
+
+  const filtered = articles.filter(a => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      a.title.toLowerCase().includes(q) ||
+      a.keywords?.some(k => k.toLowerCase().includes(q))
+    );
+  });
+
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold">Test: Help Center Works</h1>
-      <p>If you see this, the page is rendering.</p>
+    <div className="flex h-full gap-0 bg-background">
+      {/* Sidebar */}
+      <aside className="w-72 bg-card border-r border-border flex flex-col">
+        <div className="p-4 border-b border-border">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Buscar..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 text-sm h-9"
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto">
+          {filtered.length > 0 ? (
+            filtered.map(article => (
+              <button
+                key={article.id}
+                onClick={() => setActiveId(article.id)}
+                className={`w-full text-left px-4 py-2 text-sm border-l-2 transition-all ${
+                  activeId === article.id
+                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 font-medium"
+                    : "border-transparent text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                <div className="line-clamp-2">{article.title}</div>
+              </button>
+            ))
+          ) : (
+            <div className="p-4 text-center text-sm text-slate-400">
+              No hay resultados
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto p-8">
+        {activeArticle ? (
+          <div className="max-w-3xl">
+            <h1 className="text-3xl font-bold mb-6">{activeArticle.title}</h1>
+            <div className="prose prose-sm max-w-none dark:prose-invert">
+              <ReactMarkdown>{activeArticle.content}</ReactMarkdown>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-slate-400">Selecciona un tema</p>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
