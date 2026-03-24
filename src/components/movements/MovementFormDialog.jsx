@@ -219,8 +219,8 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={!form.product_id || !form.quantity || saving} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button variant="outline" onClick={() => onOpenChange(false)} {...createButtonProps('cancel')}>Cancelar</Button>
+          <Button onClick={handleSave} disabled={!form.product_id || !form.quantity || saving} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
             <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Registrar"}
           </Button>
         </div>
