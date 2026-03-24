@@ -14,10 +14,10 @@ export default function HelpCenter() {
 
   useEffect(() => {
     try {
-      console.log("Initializing with test articles");
-      setArticles(TEST_ARTICLES);
-      if (TEST_ARTICLES.length > 0) {
-        setActiveId(TEST_ARTICLES[0].id);
+      const arts = (localHelpData && localHelpData.articles) || [];
+      setArticles(arts);
+      if (arts.length > 0) {
+        setActiveId(arts[0].id);
       }
     } catch (err) {
       console.error("Error loading help data:", err);
