@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import moment from "moment";
 import MovementFormDialog from "@/components/movements/MovementFormDialog";
+import TableSkeleton from "@/components/skeletons/TableSkeleton";
 
 const typeConfig = {
   entry: { label: "Entrada", icon: ArrowDownLeft, color: "bg-emerald-100 text-emerald-700" },
