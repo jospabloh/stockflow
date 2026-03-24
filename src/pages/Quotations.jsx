@@ -75,6 +75,12 @@ export default function Quotations() {
     base44.entities.AppSettings.list().then(s => setSettings(s[0] || null)).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const status = params.get("status");
+    if (status) setStatusFilter(status);
+  }, [location.search]);
+
   const loadData = () => {
     setLoading(true);
     base44.entities.Quotation.list("-created_date", 100).then((q) => {
