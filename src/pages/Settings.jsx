@@ -139,7 +139,9 @@ export default function Settings() {
     if (editingSup) {
       await base44.entities.Supplier.update(editingSup.id, supForm);
     } else {
-      await base44.entities.Supplier.create({ ...supForm, business_id: businessId });
+      const me = await base44.auth.me();
+      const bid = me?.business_id || businessId;
+      await base44.entities.Supplier.create({ ...supForm, business_id: bid });
     }
     const sups = await base44.entities.Supplier.list();
     setSuppliers(sups);
