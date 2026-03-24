@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { createButtonProps } from "@/lib/a11y";
 
 export default function ProductTable({ products, categories, onEdit, onDelete, isAdmin }) {
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || "—";
@@ -20,7 +21,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
     const isBelowMin = !isOutOfStock && product.stock < minStock;
     const isAtMin = !isOutOfStock && product.stock === minStock;
     return (
-      <TableRow key={product.id} className="hover:bg-muted/40 transition-colors">
+       <TableRow key={product.id} className="hover:bg-muted/40 transition-colors" role="row">
         <TableCell>
           <div>
             <p className="font-medium text-foreground">{product.name}</p>
@@ -59,12 +60,24 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
           <div className="flex items-center justify-center gap-1">
             {isAdmin && (
               <>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(product)}>
-                  <Pencil className="h-4 w-4 text-slate-400" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDelete(product)}>
-                  <Trash2 className="h-4 w-4 text-slate-400 hover:text-red-500" />
-                </Button>
+                <Button 
+                   variant="ghost" 
+                   size="icon" 
+                   className="h-8 w-8" 
+                   onClick={() => onEdit(product)}
+                   {...createButtonProps('edit')}
+                 >
+                   <Pencil className="h-4 w-4 text-slate-400" />
+                 </Button>
+                 <Button 
+                   variant="ghost" 
+                   size="icon" 
+                   className="h-8 w-8" 
+                   onClick={() => onDelete(product)}
+                   {...createButtonProps('delete')}
+                 >
+                   <Trash2 className="h-4 w-4 text-slate-400 hover:text-red-500" />
+                 </Button>
               </>
             )}
           </div>
@@ -103,10 +116,22 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
         </div>
         {isAdmin && (
           <div className="flex items-center justify-end gap-1 border-t border-border pt-2">
-            <Button variant="ghost" size="sm" className="h-11 px-3" onClick={() => onEdit(product)}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-11 px-3" 
+              onClick={() => onEdit(product)}
+              {...createButtonProps('edit')}
+            >
               <Pencil className="h-4 w-4 text-muted-foreground mr-1" /> Editar
             </Button>
-            <Button variant="ghost" size="sm" className="h-11 px-3 text-red-400 hover:text-red-600" onClick={() => onDelete(product)}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-11 px-3 text-red-400 hover:text-red-600" 
+              onClick={() => onDelete(product)}
+              {...createButtonProps('delete')}
+            >
               <Trash2 className="h-4 w-4 mr-1" /> Eliminar
             </Button>
           </div>
@@ -128,17 +153,17 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
       {/* Desktop: table */}
       <div className="hidden md:block bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
-          <Table>
+          <Table role="table" aria-label="Lista de productos" aria-describedby="products-table-desc">
             <TableHeader>
-              <TableRow className="bg-muted/40">
-                <TableHead className="font-semibold text-muted-foreground">Producto</TableHead>
-                <TableHead className="font-semibold text-muted-foreground">SKU</TableHead>
-                <TableHead className="font-semibold text-muted-foreground">Categoría</TableHead>
-                {isAdmin && <TableHead className="font-semibold text-muted-foreground text-right">Precio Compra</TableHead>}
-                <TableHead className="font-semibold text-muted-foreground text-right">Precio Venta</TableHead>
-                <TableHead className="font-semibold text-muted-foreground text-right">Stock</TableHead>
-                <TableHead className="font-semibold text-muted-foreground text-center">Estado</TableHead>
-                <TableHead className="font-semibold text-muted-foreground text-center">Acciones</TableHead>
+              <TableRow className="bg-muted/40" role="row">
+                <TableHead className="font-semibold text-muted-foreground" role="columnheader">Producto</TableHead>
+                <TableHead className="font-semibold text-muted-foreground" role="columnheader">SKU</TableHead>
+                <TableHead className="font-semibold text-muted-foreground" role="columnheader">Categoría</TableHead>
+                {isAdmin && <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Precio Compra</TableHead>}
+                <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Precio Venta</TableHead>
+                <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Stock</TableHead>
+                <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader">Estado</TableHead>
+                <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
