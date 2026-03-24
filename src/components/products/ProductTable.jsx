@@ -1,18 +1,17 @@
 import React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, AlertTriangle } from "lucide-react";
 import { createButtonProps } from "@/lib/a11y";
+import VirtualizedProductTable from "@/components/tables/VirtualizedProductTable";
 
 export default function ProductTable({ products, categories, onEdit, onDelete, isAdmin }) {
+  // Use virtualized table for desktop, card layout for mobile
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
+  if (!isMobile && products.length > 20) {
+    return <VirtualizedProductTable products={products} categories={categories} onEdit={onEdit} onDelete={onDelete} isAdmin={isAdmin} />;
+  }
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || "—";
 
   const ProductRow = ({ product }) => {
