@@ -79,9 +79,11 @@ export default function HelpCenter() {
         {activeArticle ? (
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold mb-6">{activeArticle.title}</h1>
-            <div className="whitespace-pre-wrap text-sm text-slate-700">
-              {activeArticle.content}
-            </div>
+            <Suspense fallback={<div className="h-8 w-8 animate-spin border-4 border-indigo-200 border-t-indigo-600 rounded-full" />}>
+              <div className="prose prose-sm max-w-none dark:prose-invert">
+                <ReactMarkdown>{activeArticle.content}</ReactMarkdown>
+              </div>
+            </Suspense>
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">
