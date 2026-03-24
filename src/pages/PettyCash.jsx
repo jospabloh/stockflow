@@ -64,7 +64,7 @@ export default function PettyCash() {
   const openForm = (type) => { setFormType(type); setFormOpen(true); };
 
   if (!businessId) return (
-    <div className="flex flex-col items-center justify-center h-64 gap-4">
+    <div className="flex flex-col items-center justify-center min-h-64 gap-4">
       <PiggyBank className="h-12 w-12 text-slate-300" />
       <p className="text-slate-500">No se encontró un negocio asociado a tu cuenta.</p>
     </div>
