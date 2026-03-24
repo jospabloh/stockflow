@@ -377,19 +377,19 @@ export default function Quotations() {
                             <DropdownMenuItem onClick={() => generateQuotationPDF(q, settings)}>
                               <FileDown className="h-4 w-4 mr-2" /> Descargar PDF
                             </DropdownMenuItem>
-                            {q.status !== "converted" && q.status !== "cancelled" && (
-                              <DropdownMenuItem onClick={() => {
-                                if (isExpired(q)) {
-                                  alert(`Cotización vencida el ${new Date(q.valid_until).toLocaleDateString("es-MX")}. No se puede convertir.`);
-                                  return;
-                                }
-                                setConvertQuotation(q);
-                                setConvertPaymentMethod(q.payment_method || "");
-                                setConvertError("");
-                              }}>
-                                <ShoppingCart className="h-4 w-4 mr-2" /> Convertir en Venta
-                              </DropdownMenuItem>
-                            )}
+                            {(q.status === "sent" || q.status === "accepted") && (
+                               <DropdownMenuItem onClick={() => {
+                                 if (isExpired(q)) {
+                                   alert(`Cotización vencida el ${new Date(q.valid_until).toLocaleDateString("es-MX")}. No se puede convertir.`);
+                                   return;
+                                 }
+                                 setConvertQuotation(q);
+                                 setConvertPaymentMethod(q.payment_method || "");
+                                 setConvertError("");
+                               }}>
+                                 <ShoppingCart className="h-4 w-4 mr-2" /> Convertir en Venta
+                               </DropdownMenuItem>
+                             )}
                             {q.status === "converted" && !q.paid && (
                               <DropdownMenuItem onClick={() => { setPayQuotation(q); setPaymentMethod(q.payment_method || ""); }}>
                                 <DollarSign className="h-4 w-4 mr-2" /> Confirmar Pago
