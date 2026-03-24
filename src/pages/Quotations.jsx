@@ -270,7 +270,7 @@ export default function Quotations() {
                               Vencida
                             </Badge>
                           ) : (
-                            <Badge className={`${status.color} border-0 flex items-center gap-1.5 w-fit`}>
+                            <Badge className={`${status.color} border-0 flex items-center gap-1.5 w-fit`} title={status.desc}>
                               <span className={`h-2 w-2 rounded-full ${status.dot} inline-block`} />
                               {status.label}
                             </Badge>
