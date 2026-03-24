@@ -232,17 +232,28 @@ export default function Reports() {
         <TabsContent value="quotations">
           {/* Filters */}
           <Card className="border-0 shadow-sm p-4 mb-4">
-            <div className="flex flex-wrap gap-4 items-end">
-              <div className="min-w-[180px]">
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="min-w-[160px]">
+                <label className="text-xs text-slate-500 mb-1 block">Estado</label>
+                <MobileSelect value={qStatusFilter} onValueChange={setQStatusFilter} options={[
+                  { value: "all", label: "Todos" },
+                  ...quotationStatuses.map(s => ({ value: s, label: s === "draft" ? "Borrador" : s === "sent" ? "Enviada" : s === "accepted" ? "Aceptada" : s === "converted" ? "Concretada" : "Cancelada" }))
+                ]} />
+              </div>
+              <div className="min-w-[160px]">
                 <label className="text-xs text-slate-500 mb-1 block">Cliente</label>
-                <MobileSelect value={qClientFilter} onChange={setQClientFilter} options={[{ value: "all", label: "Todos los clientes" }, ...uniqueClients.map(c => ({ value: c, label: c }))]} />
+                <MobileSelect value={qClientFilter} onValueChange={setQClientFilter} options={[{ value: "all", label: "Todos" }, ...uniqueClients.map(c => ({ value: c, label: c }))]} />
               </div>
-              <div className="min-w-[180px]">
+              <div className="min-w-[160px]">
                 <label className="text-xs text-slate-500 mb-1 block">Forma de pago</label>
-                <MobileSelect value={qPaymentFilter} onChange={setQPaymentFilter} options={[{ value: "all", label: "Todas las formas" }, ...uniquePaymentMethods.map(p => ({ value: p, label: p }))]} />
+                <MobileSelect value={qPaymentFilter} onValueChange={setQPaymentFilter} options={[{ value: "all", label: "Todas" }, ...uniquePaymentMethods.map(p => ({ value: p, label: p }))]} />
               </div>
-              <Button variant="outline" size="sm" onClick={() => { setQClientFilter("all"); setQPaymentFilter("all"); }}>
-                Limpiar filtros
+              <div className="min-w-[160px]">
+                <label className="text-xs text-slate-500 mb-1 block">Pago</label>
+                <MobileSelect value={qPaidFilter} onValueChange={setQPaidFilter} options={[{ value: "all", label: "Todos" }, { value: "paid", label: "Pagadas" }, { value: "pending", label: "Pendientes" }]} />
+              </div>
+              <Button variant="outline" size="sm" onClick={() => { setQStatusFilter("converted"); setQClientFilter("all"); setQPaymentFilter("all"); setQPaidFilter("all"); }}>
+                Limpiar
               </Button>
             </div>
           </Card>
