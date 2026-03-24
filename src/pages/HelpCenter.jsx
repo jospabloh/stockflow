@@ -60,6 +60,7 @@ export default function HelpCenter() {
     setSearchResults(results);
   };
 
+
   const handleSelect = (id) => {
     setActiveId(id);
     setSearchQuery("");
