@@ -316,7 +316,7 @@ export default function Settings() {
                 <Plus className="h-4 w-4 mr-1" /> Nueva
               </Button>
             </div>
-            <Table>
+            <Table {...createTableProps('categories-table')}>
               <TableHeader>
                 <TableRow>
                   <TableHead>Color</TableHead>
