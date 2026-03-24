@@ -114,7 +114,9 @@ export default function Settings() {
     if (editingCat) {
       await base44.entities.Category.update(editingCat.id, catForm);
     } else {
-      await base44.entities.Category.create({ ...catForm, business_id: businessId });
+      const me = await base44.auth.me();
+      const bid = me?.business_id || businessId;
+      await base44.entities.Category.create({ ...catForm, business_id: bid });
     }
     const cats = await base44.entities.Category.list();
     setCategories(cats);
