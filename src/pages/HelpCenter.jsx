@@ -1,11 +1,7 @@
-import React, { useState, useEffect, Suspense, lazy } from "react";
-import { base44 } from "@/api/base44Client";
+import React, { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { localHelpData } from "@/lib/helpData";
-
-// Lazy load markdown to avoid module issues
-const ReactMarkdown = lazy(() => import("react-markdown"));
 
 export default function HelpCenter() {
   const [articles, setArticles] = useState([]);
