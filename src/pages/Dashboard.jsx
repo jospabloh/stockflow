@@ -170,27 +170,27 @@ export default function Dashboard() {
         <Card className="border-0 shadow-sm p-5">
           <h3 className="font-semibold text-slate-700 mb-4">Semáforo de Cotizaciones</h3>
           <div className="space-y-3">
-            <Link to={createPageUrl("Quotations")} className="flex justify-between items-center bg-emerald-50 rounded-lg px-4 py-2.5 hover:bg-emerald-100 transition-colors cursor-pointer">
+            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=converted`)} className="w-full text-left flex justify-between items-center bg-emerald-50 rounded-lg px-4 py-2.5 hover:bg-emerald-100 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" />
                 <span className="text-sm text-slate-600">Concretadas en venta</span>
               </div>
               <span className="font-bold text-emerald-700 text-lg">{quotGreen}</span>
-            </Link>
-            <Link to={createPageUrl("Quotations")} className="flex justify-between items-center bg-amber-50 rounded-lg px-4 py-2.5 hover:bg-amber-100 transition-colors cursor-pointer">
+            </button>
+            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=active`)} className="w-full text-left flex justify-between items-center bg-amber-50 rounded-lg px-4 py-2.5 hover:bg-amber-100 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-amber-400 inline-block" />
                 <span className="text-sm text-slate-600">Sin concretar (activas)</span>
               </div>
               <span className="font-bold text-amber-600 text-lg">{quotYellow}</span>
-            </Link>
-            <Link to={createPageUrl("Quotations")} className="flex justify-between items-center bg-red-50 rounded-lg px-4 py-2.5 hover:bg-red-100 transition-colors cursor-pointer">
+            </button>
+            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=cancelled`)} className="w-full text-left flex justify-between items-center bg-red-50 rounded-lg px-4 py-2.5 hover:bg-red-100 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-red-500 inline-block" />
                 <span className="text-sm text-slate-600">Canceladas</span>
               </div>
               <span className="font-bold text-red-600 text-lg">{quotRed}</span>
-            </Link>
+            </button>
           </div>
         </Card>
       </div>
