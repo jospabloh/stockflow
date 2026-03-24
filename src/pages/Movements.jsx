@@ -150,10 +150,10 @@ export default function Movements() {
                 </TableRow>
               ) : (
                 filtered.map((m) => {
-                  const config = typeConfig[m.type] || typeConfig.adjustment;
-                  const IconComp = config.icon;
-                  return (
-                    <TableRow key={m.id} className="hover:bg-slate-50/50 transition-colors">
+                const config = typeConfig[m.type] || typeConfig.adjustment;
+                const IconComp = config.icon;
+                return (
+                  <TableRow key={m.id} className="hover:bg-slate-50/50 transition-colors" aria-label={`${config.label} de ${m.product_name}, cantidad ${m.quantity}`}>
                       <TableCell className="text-slate-600 text-sm">
                         {moment.utc(m.created_date).local().format("DD/MM/YY HH:mm")}
                       </TableCell>
