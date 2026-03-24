@@ -59,19 +59,34 @@ const MarkdownContent = ({ content }) => {
       );
     } else if (line.includes('|') && !trimmed.startsWith('|') === false) {
       const tableLines = [];
-      while (i < lines.length && lines[i].includes('|') && !/^[\-|=\s]+$/.test(lines[i].trim())) {
-        tableLines.push(lines[i]);
+      while (i < lines.length && lines[i].includes('|')) {
+        if (!/^[\-|=\s]+$/.test(lines[i].trim())) {
+          tableLines.push(lines[i]);
+        }
         i++;
       }
       i--;
       
-      const rows = tableLines.map(l => l.split('|').map(c => c.trim()).filter(c => c));
-      if (rows.length > 0) {
+      if (tableLines.length > 0) {
+        const rows = tableLines.map(l => l.split('|').map(c => c.trim()).filter(c => c));
+        const headerRow = rows[0];
+        const bodyRows = rows.slice(1);
+        
         elements.push(
           <table key={i} className="w-full border-collapse border border-slate-300 my-4 text-sm">
+            <thead>
+              <tr className="bg-slate-100 border-b-2 border-slate-400">
+                {headerRow.map((cell, idx) => {
+                  const formatted = renderInline(cell);
+                  return (
+                    <th key={idx} className="border border-slate-300 px-3 py-2 font-semibold text-left" dangerouslySetInnerHTML={{ __html: formatted }} />
+                  );
+                })}
+              </tr>
+            </thead>
             <tbody>
-              {rows.map((row, idx) => (
-                <tr key={idx} className={idx === 0 ? 'bg-slate-100 border-b-2 border-slate-400 font-semibold' : ''}>
+              {bodyRows.map((row, ridx) => (
+                <tr key={ridx}>
                   {row.map((cell, cidx) => {
                     const formatted = renderInline(cell);
                     return (
