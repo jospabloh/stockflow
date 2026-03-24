@@ -9,6 +9,8 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BusinessProvider } from '@/components/BusinessContext';
+import { NavigationProvider } from '@/lib/NavigationContext';
+import PageTransition from '@/components/PageTransition';
 import BusinessSetup from './pages/BusinessSetup';
 
 const HelpCenter = lazy(() => import('./pages/HelpCenter'));
