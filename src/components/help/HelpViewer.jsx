@@ -41,16 +41,19 @@ const markdownComponents = {
       {children}
     </blockquote>
   ),
-  code: ({ inline, children }) =>
-    inline ? (
+  code: ({ node, className, children, ...props }) => {
+    const isBlock = !props.hasOwnProperty || node?.position?.start?.line !== node?.position?.end?.line;
+    const match = /language-(\w+)/.exec(className || "");
+    return match || String(children).includes("\n") ? (
+      <pre className="bg-slate-900 dark:bg-slate-950 text-slate-100 rounded-xl p-4 my-3 overflow-x-auto text-xs font-mono leading-relaxed">
+        <code className={className}>{children}</code>
+      </pre>
+    ) : (
       <code className="bg-slate-100 dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded text-xs font-mono">
         {children}
       </code>
-    ) : (
-      <pre className="bg-slate-900 dark:bg-slate-950 text-slate-100 rounded-xl p-4 my-3 overflow-x-auto text-xs font-mono leading-relaxed">
-        <code>{children}</code>
-      </pre>
-    ),
+    );
+  },
   table: ({ children }) => (
     <div className="my-4 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
       <table className="w-full border-collapse" style={{ minWidth: "100%" }}>{children}</table>
