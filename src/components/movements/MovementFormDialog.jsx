@@ -14,6 +14,7 @@ import { MobileSelect } from "@/components/ui/MobileSelect";
 import { Save, ScanLine } from "lucide-react";
 import { toast } from "sonner";
 import { useBusinessContext } from "@/components/BusinessContext";
+import { createButtonProps } from "@/lib/a11y";
 
 const TYPES = [
   { value: "entry", label: "Entrada (Compra)" },
