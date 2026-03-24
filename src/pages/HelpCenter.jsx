@@ -11,9 +11,12 @@ export default function HelpCenter() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    // Initialize articles from local data
-    const arts = (localHelpData && localHelpData.articles) || [];
-    setArticles(arts);
+    try {
+      // Initialize articles from local data
+      console.log("localHelpData:", localHelpData);
+      const arts = (localHelpData && localHelpData.articles) || [];
+      console.log("Loaded articles:", arts.length);
+      setArticles(arts);
     
     // Set first article as active
     if (arts.length > 0) {
