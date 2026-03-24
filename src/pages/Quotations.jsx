@@ -186,6 +186,7 @@ export default function Quotations() {
             reference: `Cancelación ${cancelQuotation.folio}`,
             reason: `Cancelación: ${cancelReason}`,
             quotation_id: cancelQuotation.id,
+            business_id: cancelQuotation.business_id,
           });
           await base44.entities.Product.update(product.id, { stock: restoredStock });
         }
