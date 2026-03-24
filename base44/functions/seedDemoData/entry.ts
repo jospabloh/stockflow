@@ -32,12 +32,16 @@ const clients = [
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+
+    // Verificar que sea admin antes de proceder
+    let user = null;
+    try { user = await base44.auth.me(); } catch {}
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Solo admins pueden ejecutar esto' }, { status: 403 });
     }
 
-    const sr = base44.asServiceRole;
+    // Usar el cliente del usuario admin (que sí pasa el RLS user_condition)
+    const sr = base44;
     const results = {};
 
     // Categories
