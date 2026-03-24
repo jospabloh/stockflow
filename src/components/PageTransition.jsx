@@ -3,7 +3,13 @@ import { motion } from 'framer-motion';
 import { useNavigation } from '@/lib/NavigationContext';
 
 export default function PageTransition({ children }) {
-  const { direction } = useNavigation();
+  let direction = 'forward';
+  try {
+    const nav = useNavigation();
+    direction = nav.direction;
+  } catch {
+    // Navigation context not available, use default
+  }
 
   const variants = {
     forward: {
