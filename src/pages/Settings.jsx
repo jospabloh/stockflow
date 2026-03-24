@@ -373,10 +373,10 @@ export default function Settings() {
                     <TableCell className="text-slate-500">{sup.email || "—"}</TableCell>
                     <TableCell className="text-slate-500">{sup.phone || "—"}</TableCell>
                     <TableCell className="text-center">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingSup(sup); setSupForm({ name: sup.name, contact_name: sup.contact_name || "", email: sup.email || "", phone: sup.phone || "" }); setSupFormOpen(true); }}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingSup(sup); setSupForm({ name: sup.name, contact_name: sup.contact_name || "", email: sup.email || "", phone: sup.phone || "" }); setSupFormOpen(true); }} {...createButtonProps('edit')}>
                         <Pencil className="h-4 w-4 text-slate-400" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteSupplier(sup.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteSupplier(sup.id)} {...createButtonProps('delete')}>
                         <Trash2 className="h-4 w-4 text-slate-400" />
                       </Button>
                     </TableCell>
