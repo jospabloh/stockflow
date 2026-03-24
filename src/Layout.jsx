@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigation } from "@/lib/NavigationContext";
 
 // Detect if running as installed PWA / native app (not regular browser tab)
 const IS_NATIVE_APP = typeof window !== "undefined" && (
   window.matchMedia("(display-mode: standalone)").matches ||
   window.navigator.standalone === true
 );
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useNavigation } from "@/lib/NavigationContext";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useBusinessContext } from "@/components/BusinessContext";
