@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import ReactMarkdown from "react-markdown";
 
 // Minimal test articles to verify rendering
 const TEST_ARTICLES = [
