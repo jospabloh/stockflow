@@ -22,30 +22,27 @@ export default function HelpCenter() {
     (async () => {
       try {
         const data = await loadHelpData();
+        console.log("Data loaded:", data?.articles?.length);
+        
         const user = await base44.auth.me().catch(() => null);
-
         const arts = data.articles || [];
+        
         setArticles(arts);
         setUserRole(user?.role);
 
         const params = new URLSearchParams(window.location.search);
         const articleParam = params.get("article");
         
-        let initialId = null;
-        if (articleParam) {
+        let initialId = articles.length > 0 ? "roles-overview" : null;
+        if (articleParam && articles.find(a => a.id === articleParam)) {
           initialId = articleParam;
-        } else {
-          const role = user?.role;
-          if (role === "admin") {
-            initialId = "welcome-admin";
-          } else if (role === "almacenista") {
-            initialId = "welcome-almacenista";
-          } else {
-            initialId = "roles-overview";
-          }
+        } else if (user?.role === "admin") {
+          initialId = "welcome-admin";
+        } else if (user?.role === "almacenista") {
+          initialId = "welcome-almacenista";
         }
         
-        setActiveId(initialId);
+        if (initialId) setActiveId(initialId);
         setLoading(false);
       } catch (err) {
         console.error("Help error:", err);
