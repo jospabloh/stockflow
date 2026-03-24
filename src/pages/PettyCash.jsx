@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   PiggyBank, TrendingUp, TrendingDown, ListOrdered,
-  Plus, Minus, SlidersHorizontal, History, Key
+  Plus, Minus, SlidersHorizontal, History
 } from "lucide-react";
 import moment from "moment";
 import PettyCashMovementForm from "@/components/petty-cash/PettyCashMovementForm";
