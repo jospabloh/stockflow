@@ -35,6 +35,7 @@ import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import { generateQuotationPDF } from "@/components/quotations/QuotationPDF";
 import QuotationPreviewDialog from "@/components/quotations/QuotationPreviewDialog";
+import TableSkeleton from "@/components/skeletons/TableSkeleton";
 
 const statusConfig = {
   draft: { label: "Borrador", color: "bg-amber-100 text-amber-700", dot: "bg-amber-400" },
