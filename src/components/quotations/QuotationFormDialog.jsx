@@ -268,12 +268,14 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
               {form.items.map((item, idx) => (
                 <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-slate-50 rounded-xl p-3">
                   <div className="col-span-12 md:col-span-4">
-                    <Label className="text-xs">Producto</Label>
-                    <MobileSelect
+                    <Label className="text-xs" htmlFor={`product-${idx}`}>Producto</Label>
+                    <SelectWrapper
+                      id={`product-${idx}`}
                       value={item.product_id}
                       onValueChange={(v) => updateItem(idx, "product_id", v)}
                       placeholder="Seleccionar"
                       options={products.map((p) => ({ value: p.id, label: p.name }))}
+                      aria-label={`Producto ${idx + 1}`}
                     />
                   </div>
                   <div className="col-span-4 md:col-span-2">
