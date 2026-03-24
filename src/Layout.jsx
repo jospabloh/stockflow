@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 // Detect if running as installed PWA / native app (not regular browser tab)
 const IS_NATIVE_APP = typeof window !== "undefined" && (
@@ -33,6 +34,7 @@ import {
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigation } from "@/lib/NavigationContext";
 
 const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
@@ -56,7 +58,7 @@ export default function Layout({ children, currentPageName }) {
   const mainRef = useRef(null);
   const { businessId, isLoading: bizLoading } = useBusinessContext();
   const { sessionStatus, reactivate } = useSessionManager(!!businessId);
-  const { goBack } = useNavigation();
+  const { goBack, direction } = useNavigation();
   const navigate = useNavigate();
   const location = useLocation();
   const isRoot = location.pathname === "/" || location.pathname === "/Dashboard";
@@ -276,28 +278,35 @@ export default function Layout({ children, currentPageName }) {
           <SessionBanner onReactivate={reactivate} />
         )}
 
-        {/* Page content */}
-        <main
-          ref={mainRef}
-          className="flex-1 p-4 lg:p-8 page-transition pb-24 lg:pb-8 overflow-y-auto"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          {/* Pull-to-refresh indicator — only shown in native/standalone mode */}
-          {IS_NATIVE_APP && (pullY > 10 || refreshing) && (
-            <div
-              className="flex items-center justify-center transition-all duration-150"
-              style={{ height: refreshing ? 44 : pullY * 0.5 }}
-            >
+        {/* Page content with framer-motion animations */}
+        <AnimatePresence mode="wait">
+          <motion.main
+            key={location.pathname}
+            ref={mainRef}
+            className="flex-1 p-4 lg:p-8 pb-24 lg:pb-8 overflow-y-auto"
+            initial={{ opacity: 0, x: direction === 'back' ? -30 : 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction === 'back' ? 30 : -30 }}
+            transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* Pull-to-refresh indicator — only shown in native/standalone mode */}
+            {IS_NATIVE_APP && (pullY > 10 || refreshing) && (
               <div
-                className={`h-6 w-6 border-2 border-indigo-400 border-t-transparent rounded-full ${refreshing ? "animate-spin" : ""}`}
-                style={{ transform: refreshing ? undefined : `rotate(${pullY * 4}deg)` }}
-              />
-            </div>
-          )}
-          {children}
-        </main>
+                className="flex items-center justify-center transition-all duration-150"
+                style={{ height: refreshing ? 44 : pullY * 0.5 }}
+              >
+                <div
+                  className={`h-6 w-6 border-2 border-indigo-400 border-t-transparent rounded-full ${refreshing ? "animate-spin" : ""}`}
+                  style={{ transform: refreshing ? undefined : `rotate(${pullY * 4}deg)` }}
+                />
+              </div>
+            )}
+            {children}
+          </motion.main>
+        </AnimatePresence>
 
 
       </div>

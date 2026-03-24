@@ -42,6 +42,7 @@ export default function Settings() {
   const [rfcSaved, setRfcSaved] = useState(false);
   const [confirmDeleteRfc, setConfirmDeleteRfc] = useState(false);
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
+  const [confirmDeleteStep, setConfirmDeleteStep] = useState(0); // 0: initial, 1: warning, 2: confirm
   const [deletingAccount, setDeletingAccount] = useState(false);
 
   // Category/Supplier form
@@ -474,7 +475,10 @@ export default function Settings() {
               <Button
                 variant="outline"
                 className="border-red-300 text-red-600 hover:bg-red-100 hover:border-red-400 select-none"
-                onClick={() => setConfirmDeleteAccount(true)}
+                onClick={() => {
+                  setConfirmDeleteAccount(true);
+                  setConfirmDeleteStep(0);
+                }}
               >
                 <Trash2 className="h-4 w-4 mr-1" /> Eliminar mi cuenta
               </Button>
@@ -614,45 +618,113 @@ export default function Settings() {
         </TabsContent>
       </Tabs>
 
-      {/* Delete Account Modal */}
+      {/* Delete Account Modal — Multi-step Flow */}
       {confirmDeleteAccount && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                <UserX className="h-6 w-6 text-red-500" />
-              </div>
-              <div>
-                <p className="font-bold text-slate-800">¿Eliminar tu cuenta?</p>
-                <p className="text-sm text-slate-500">Esta acción no se puede deshacer.</p>
-              </div>
-            </div>
-            <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700 space-y-1">
-              <p>• Se cerrará tu sesión de inmediato.</p>
-              <p>• No podrás volver a acceder con este usuario.</p>
-              <p>• Los datos del negocio permanecerán en el sistema.</p>
-            </div>
-            <div className="flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setConfirmDeleteAccount(false)} disabled={deletingAccount}>
-                Cancelar
-              </Button>
-              <Button
-                className="bg-red-600 hover:bg-red-700 select-none"
-                disabled={deletingAccount}
-                onClick={async () => {
-                  setDeletingAccount(true);
-                  try {
-                    const me = await base44.auth.me();
-                    await base44.entities.User.delete(me.id);
-                  } catch (_e) {
-                    // Silently proceed to logout even if deletion fails
-                  }
-                  base44.auth.logout();
-                }}
-              >
-                {deletingAccount ? "Eliminando..." : "Sí, eliminar cuenta"}
-              </Button>
-            </div>
+            {confirmDeleteStep === 0 && (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <UserX className="h-6 w-6 text-red-500" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-800">¿Eliminar tu cuenta?</p>
+                    <p className="text-sm text-slate-500">Esta acción no se puede deshacer.</p>
+                  </div>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700 space-y-1">
+                  <p className="font-semibold mb-2">⚠️ Consecuencias de la eliminación:</p>
+                  <p>• Se cerrará tu sesión de inmediato.</p>
+                  <p>• No podrás volver a acceder con este usuario.</p>
+                  <p>• Los datos del negocio permanecerán en el sistema.</p>
+                  <p>• Tu email podrá ser utilizado para registrarse nuevamente.</p>
+                </div>
+                <div className="flex gap-3 justify-end">
+                  <Button variant="outline" onClick={() => setConfirmDeleteAccount(false)}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    className="bg-red-600 hover:bg-red-700"
+                    onClick={() => setConfirmDeleteStep(1)}
+                  >
+                    Continuar
+                  </Button>
+                </div>
+              </>
+            )}
+            {confirmDeleteStep === 1 && (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                    <AlertTriangle className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-800">⚠️ Última oportunidad</p>
+                    <p className="text-sm text-slate-500">Asegúrate antes de continuar</p>
+                  </div>
+                </div>
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-2 text-sm">
+                  <p className="font-semibold text-orange-900">Revisar antes de eliminar:</p>
+                  <ul className="space-y-1.5 text-orange-800">
+                    <li>✓ Descargaste o exportaste tus datos importantes</li>
+                    <li>✓ Informaste a tu equipo sobre esta eliminación</li>
+                    <li>✓ Entiendes que esto es permanente e irreversible</li>
+                  </ul>
+                </div>
+                <div className="flex gap-3 justify-end">
+                  <Button variant="outline" onClick={() => setConfirmDeleteStep(0)}>
+                    Atrás
+                  </Button>
+                  <Button
+                    className="bg-orange-600 hover:bg-orange-700"
+                    onClick={() => setConfirmDeleteStep(2)}
+                  >
+                    Entiendo, eliminar
+                  </Button>
+                </div>
+              </>
+            )}
+            {confirmDeleteStep === 2 && (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <UserX className="h-6 w-6 text-red-500" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-800">Confirmar eliminación final</p>
+                    <p className="text-sm text-slate-500">Punto de no retorno</p>
+                  </div>
+                </div>
+                <div className="bg-red-50 border border-red-300 rounded-xl p-4">
+                  <p className="text-sm font-semibold text-red-800 mb-2">🚨 Operación irreversible</p>
+                  <p className="text-sm text-red-700">
+                    Tu cuenta será eliminada permanentemente junto con toda tu información personal. Los datos del negocio se mantendrán pero serán inaccesibles bajo este usuario.
+                  </p>
+                </div>
+                <div className="flex gap-3 justify-end">
+                  <Button variant="outline" onClick={() => setConfirmDeleteStep(0)} disabled={deletingAccount}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    className="bg-red-600 hover:bg-red-700 select-none"
+                    disabled={deletingAccount}
+                    onClick={async () => {
+                      setDeletingAccount(true);
+                      try {
+                        const me = await base44.auth.me();
+                        await base44.entities.User.delete(me.id);
+                      } catch (_e) {
+                        // Silently proceed to logout even if deletion fails
+                      }
+                      base44.auth.logout();
+                    }}
+                  >
+                    {deletingAccount ? "Eliminando cuenta..." : "Sí, eliminar cuenta permanentemente"}
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

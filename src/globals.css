@@ -105,18 +105,6 @@ header p, nav p, aside p { user-select: text; -webkit-user-select: text; }
   background: #94a3b8;
 }
 
-
-
-/* Smooth transitions — Android-style horizontal slide */
-.page-transition {
-  animation: slideInRight 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(28px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
 /* Print styles */
 @media print {
   .no-print { display: none !important; }

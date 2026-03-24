@@ -1,7 +1,34 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const NavigationContext = createContext();
+
+// Detect Android hardware back button
+const setupAndroidBackButton = (goBackCallback) => {
+  const handleBackButton = (event) => {
+    // Only intercept if on a nested route (not root)
+    const path = window.location.pathname;
+    if (path !== '/' && path !== '/Dashboard') {
+      event.preventDefault();
+      goBackCallback();
+    }
+  };
+
+  // Listen for both popstate and custom backbutton events
+  window.addEventListener('popstate', handleBackButton);
+  
+  // For Android WebView support
+  if (window.document && window.document.addEventListener) {
+    window.document.addEventListener('backbutton', handleBackButton, false);
+  }
+
+  return () => {
+    window.removeEventListener('popstate', handleBackButton);
+    if (window.document && window.document.removeEventListener) {
+      window.document.removeEventListener('backbutton', handleBackButton);
+    }
+  };
+};
 
 export function NavigationProvider({ children }) {
   const location = useLocation();
@@ -30,12 +57,18 @@ export function NavigationProvider({ children }) {
     });
   }, [location.pathname]);
 
-  const goBack = () => {
+  const goBack = useCallback(() => {
     setDirection('back');
     if (navigationStack.length > 1) {
       window.history.back();
     }
-  };
+  }, [navigationStack.length]);
+
+  // Setup Android back button handling
+  useEffect(() => {
+    const cleanup = setupAndroidBackButton(goBack);
+    return cleanup;
+  }, [goBack]);
 
   return (
     <NavigationContext.Provider value={{ direction, navigationStack, goBack }}>
