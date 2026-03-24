@@ -72,9 +72,12 @@ const MarkdownContent = ({ content }) => {
             <tbody>
               {rows.map((row, idx) => (
                 <tr key={idx} className={idx === 0 ? 'bg-slate-100 border-b-2 border-slate-400 font-semibold' : ''}>
-                  {row.map((cell, cidx) => (
-                    <td key={cidx} className="border border-slate-300 px-3 py-2">{cell}</td>
-                  ))}
+                  {row.map((cell, cidx) => {
+                    const formatted = renderInline(cell);
+                    return (
+                      <td key={cidx} className="border border-slate-300 px-3 py-2" dangerouslySetInnerHTML={{ __html: formatted }} />
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
