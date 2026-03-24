@@ -158,8 +158,10 @@ export default function Reports() {
   const totalPaid = paidQuotations.reduce((s, q) => s + (q.total || 0), 0);
   const totalPending = pendingPayment.reduce((s, q) => s + (q.total || 0), 0);
 
-  const uniqueClients = [...new Set(convertedQuotations.map((q) => q.client_name).filter(Boolean))].sort();
-  const uniquePaymentMethods = [...new Set(convertedQuotations.map((q) => q.payment_method).filter(Boolean))].sort();
+  const uniqueClients = [...new Set(quotations.map((q) => q.client_name).filter(Boolean))].sort();
+  const uniquePaymentMethods = [...new Set(quotations.map((q) => q.payment_method).filter(Boolean))].sort();
+  const movementTypes = ["entry", "exit", "return", "adjustment"];
+  const quotationStatuses = ["draft", "sent", "accepted", "converted", "cancelled"];
 
   const totalSalesValue = filteredMovements
     .filter((m) => m.type === "exit")
