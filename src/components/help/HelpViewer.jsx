@@ -111,7 +111,7 @@ export default function HelpViewer({ article, allArticles, onNavigate }) {
 
         {/* Content — Markdown with custom components */}
         <div>
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{article.content}</ReactMarkdown>
+          <ReactMarkdown components={markdownComponents}>{article.content}</ReactMarkdown>
         </div>
 
         {/* Related articles */}
