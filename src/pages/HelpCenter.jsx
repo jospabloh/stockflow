@@ -1,27 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { localHelpData } from "@/lib/helpData";
 
-// Minimal test articles to verify rendering
-const TEST_ARTICLES = [
-  {
-    id: "glossary",
-    category: "Primeros Pasos",
-    role: "all",
-    title: "📚 Glosario de Términos",
-    keywords: ["glosario"],
-    content: `## 📚 Glosario\n\nEste es un test.`
-  },
-  {
-    id: "roles",
-    category: "Primeros Pasos",
-    role: "all",
-    title: "👥 Roles del Sistema",
-    keywords: ["roles"],
-    content: `## 👥 Roles\n\nAdmin y Almacenista.`
-  }
-];
+// Lazy load markdown to avoid module issues
+const ReactMarkdown = lazy(() => import("react-markdown"));
 
 export default function HelpCenter() {
   const [articles, setArticles] = useState([]);
