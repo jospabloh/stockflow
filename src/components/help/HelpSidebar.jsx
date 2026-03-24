@@ -1,117 +1,114 @@
-import React, { useState } from "react";
-import { ChevronDown, ChevronRight, BookOpen, Shield, Package } from "lucide-react";
-import { cn } from "@/lib/utils";
+import React, { useState, useMemo } from "react";
+import { ChevronDown, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
-const ROLE_BADGE = {
-  admin: { label: "Admin", cls: "bg-indigo-100 text-indigo-700" },
-  almacenista: { label: "Almacenista", cls: "bg-cyan-100 text-cyan-700" },
-  all: null,
-};
+export default function HelpSidebar({ articles, activeId, onSelectArticle, searchQuery, onSearchChange }) {
+  const [expandedCategories, setExpandedCategories] = useState({});
 
-export default function HelpSidebar({ articles, activeId, onSelect, userRole }) {
-  // Agrupar por categoría
-  const grouped = articles.reduce((acc, art) => {
-    if (!acc[art.category]) acc[art.category] = [];
-    acc[art.category].push(art);
-    return acc;
-  }, {});
+  // Group articles by category
+  const grouped = useMemo(() => {
+    const groups = {};
+    articles.forEach(article => {
+      if (!groups[article.category]) {
+        groups[article.category] = [];
+      }
+      groups[article.category].push(article);
+    });
+    return groups;
+  }, [articles]);
 
-  // Detectar categoría activa para abrirla por defecto
-  const activeArticle = articles.find(a => a.id === activeId);
-  const [openCats, setOpenCats] = useState(() => {
-    const initial = {};
-    if (activeArticle) initial[activeArticle.category] = true;
-    else if (Object.keys(grouped)[0]) initial[Object.keys(grouped)[0]] = true;
-    return initial;
-  });
+  // Filter articles based on search
+  const filtered = useMemo(() => {
+    if (!searchQuery.trim()) return grouped;
+    
+    const q = searchQuery.toLowerCase();
+    const result = {};
+    
+    Object.entries(grouped).forEach(([category, items]) => {
+      const matches = items.filter(item =>
+        item.title.toLowerCase().includes(q) ||
+        item.keywords?.some(k => k.toLowerCase().includes(q))
+      );
+      if (matches.length > 0) {
+        result[category] = matches;
+      }
+    });
+    
+    return result;
+  }, [grouped, searchQuery]);
 
-  const toggleCat = (cat) => {
-    setOpenCats(prev => ({ ...prev, [cat]: !prev[cat] }));
+  const toggleCategory = (category) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
   };
 
-  // Filtrar artículos por rol si se especifica
-  const filterArticle = (art) => {
-    if (!userRole) return true;
-    return art.role === "all" || art.role === userRole;
-  };
+  const categories = Object.keys(filtered).sort();
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="px-4 py-4 border-b border-slate-100">
-        <div className="flex items-center gap-2">
-          <BookOpen className="h-4 w-4 text-indigo-600" />
-          <span className="font-semibold text-slate-700 text-sm">Centro de Ayuda</span>
+    <aside className="w-72 bg-card border-r border-border flex flex-col h-full">
+      {/* Search */}
+      <div className="p-4 border-b border-border sticky top-0 bg-card/95 backdrop-blur-sm">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            placeholder="Buscar..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-9 text-sm h-9"
+          />
         </div>
-        {userRole && (
-          <div className="mt-2 flex items-center gap-1.5">
-            {userRole === "admin"
-              ? <Shield className="h-3 w-3 text-indigo-500" />
-              : <Package className="h-3 w-3 text-cyan-500" />
-            }
-            <span className={cn(
-              "text-xs font-medium px-2 py-0.5 rounded-full",
-              userRole === "admin" ? "bg-indigo-50 text-indigo-600" : "bg-cyan-50 text-cyan-600"
-            )}>
-              {userRole === "admin" ? "Administrador" : "Almacenista"}
-            </span>
-          </div>
-        )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-2">
-        {Object.entries(grouped).map(([category, catArticles]) => {
-          const visibleArticles = catArticles.filter(filterArticle);
-          if (visibleArticles.length === 0) return null;
-          const isOpen = openCats[category];
-
-          return (
-            <div key={category}>
-              {/* Category header */}
+      {/* Categories */}
+      <div className="flex-1 overflow-y-auto">
+        {categories.length > 0 ? (
+          categories.map(category => (
+            <div key={category} className="border-b border-border/50">
+              {/* Category Header */}
               <button
-                onClick={() => toggleCat(category)}
-                className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-slate-50 transition-colors group"
+                onClick={() => toggleCategory(category)}
+                className="w-full px-4 py-3 flex items-center gap-2 hover:bg-muted text-sm font-medium text-foreground transition-colors"
               >
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider group-hover:text-slate-600 transition-colors">
-                  {category}
+                <ChevronDown
+                  className="h-4 w-4 transition-transform"
+                  style={{
+                    transform: expandedCategories[category] ? "rotate(0)" : "rotate(-90deg)"
+                  }}
+                />
+                {category}
+                <span className="ml-auto text-xs text-muted-foreground">
+                  {filtered[category].length}
                 </span>
-                {isOpen
-                  ? <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
-                  : <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-                }
               </button>
 
-              {/* Articles list */}
-              {isOpen && (
-                <div className="pb-1">
-                  {visibleArticles.map(art => {
-                    const isActive = art.id === activeId;
-                    const badge = ROLE_BADGE[art.role];
-                    return (
-                      <button
-                        key={art.id}
-                        onClick={() => onSelect(art.id)}
-                        className={cn(
-                          "w-full text-left px-4 py-2 text-sm transition-all border-l-2 flex items-start gap-2",
-                          isActive
-                            ? "border-indigo-500 bg-indigo-50 text-indigo-700 font-medium"
-                            : "border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-800"
-                        )}
-                      >
-                        <span className="flex-1 leading-snug">{art.title}</span>
-                        {badge && !userRole && (
-                          <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 mt-0.5", badge.cls)}>
-                            {badge.label}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
+              {/* Articles */}
+              {expandedCategories[category] && (
+                <div className="bg-muted/30">
+                  {filtered[category].map(article => (
+                    <button
+                      key={article.id}
+                      onClick={() => onSelectArticle(article.id)}
+                      className={`w-full text-left px-6 py-2.5 text-sm border-l-2 transition-all ${
+                        activeId === article.id
+                          ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 font-medium"
+                          : "border-transparent text-slate-600 dark:text-slate-400 hover:bg-muted/50"
+                      }`}
+                    >
+                      <div className="line-clamp-2">{article.title}</div>
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
-          );
-        })}
-      </nav>
-    </div>
+          ))
+        ) : (
+          <div className="p-4 text-center text-sm text-slate-400">
+            No hay resultados
+          </div>
+        )}
+      </div>
+    </aside>
   );
 }
