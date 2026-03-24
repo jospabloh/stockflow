@@ -143,7 +143,7 @@ export default function Layout({ children, currentPageName }) {
       <aside
         id="sidebar-nav"
         aria-label="Menú lateral"
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-72 bg-card border-r border-border 
+        className={`fixed lg:sticky top-0 left-0 z-50 h-svh w-72 bg-card border-r border-border 
         flex flex-col transition-transform duration-300 ease-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
