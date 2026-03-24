@@ -68,11 +68,11 @@ export function NavigationProvider({ children }) {
     }
   }, [navigationStack.length]);
 
-  // Setup Android back button handling
+  // Setup Android back button handling with strict stack validation
   useEffect(() => {
-    const cleanup = setupAndroidBackButton(goBack);
+    const cleanup = setupAndroidBackButton(navigationStack, goBack);
     return cleanup;
-  }, [goBack]);
+  }, [navigationStack, goBack]);
 
   return (
     <NavigationContext.Provider value={{ direction, navigationStack, goBack }}>
