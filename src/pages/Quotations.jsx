@@ -36,6 +36,7 @@ import { useNavigate } from "react-router-dom";
 import { generateQuotationPDF } from "@/components/quotations/QuotationPDF";
 import QuotationPreviewDialog from "@/components/quotations/QuotationPreviewDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
+import { createButtonProps } from "@/lib/a11y";
 
 const statusConfig = {
   draft: { label: "Borrador", color: "bg-amber-100 text-amber-700", dot: "bg-amber-400" },
@@ -213,6 +214,7 @@ export default function Quotations() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
+            aria-label="Buscar cotizaciones por cliente o folio"
           />
         </div>
         <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Quotations/new")}>
@@ -222,17 +224,17 @@ export default function Quotations() {
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="overflow-x-auto">
-          <Table>
+          <Table role="table" aria-label="Lista de cotizaciones">
             <TableHeader>
-              <TableRow className="bg-slate-50/50">
-                <TableHead className="font-semibold text-slate-600">Folio</TableHead>
-                <TableHead className="font-semibold text-slate-600">Cliente</TableHead>
-                <TableHead className="font-semibold text-slate-600">Fecha</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-right">Total</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-center">Estado</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-center">Factura</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-center">Seguimiento</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-center">Acciones</TableHead>
+              <TableRow className="bg-slate-50/50" role="row">
+                <TableHead className="font-semibold text-slate-600" role="columnheader">Folio</TableHead>
+                <TableHead className="font-semibold text-slate-600" role="columnheader">Cliente</TableHead>
+                <TableHead className="font-semibold text-slate-600" role="columnheader">Fecha</TableHead>
+                <TableHead className="font-semibold text-slate-600 text-right" role="columnheader">Total</TableHead>
+                <TableHead className="font-semibold text-slate-600 text-center" role="columnheader">Estado</TableHead>
+                <TableHead className="font-semibold text-slate-600 text-center" role="columnheader">Factura</TableHead>
+                <TableHead className="font-semibold text-slate-600 text-center" role="columnheader">Seguimiento</TableHead>
+                <TableHead className="font-semibold text-slate-600 text-center" role="columnheader">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -244,7 +246,7 @@ export default function Quotations() {
                 filtered.map((q) => {
                   const status = statusConfig[q.status] || statusConfig.draft;
                   return (
-                    <TableRow key={q.id} className="hover:bg-slate-50/50 transition-colors">
+                    <TableRow key={q.id} className="hover:bg-slate-50/50 transition-colors" role="row">
                       <TableCell className="font-mono text-sm text-indigo-600 cursor-pointer hover:underline" onClick={() => setPreviewQuotation(q)}>
                         <span className="flex items-center gap-1.5">
                           {q.folio}
@@ -422,9 +424,9 @@ export default function Quotations() {
 
       {/* Cancel dialog */}
       <AlertDialog open={!!cancelQuotation} onOpenChange={(v) => { if (!v) { setCancelQuotation(null); setCancelReason(""); } }}>
-        <AlertDialogContent>
+        <AlertDialogContent role="alertdialog" aria-labelledby="cancel-title">
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle id="cancel-title">
               {cancelQuotation?.status === "converted" ? `¿Anular venta ${cancelQuotation?.folio}?` : `¿Cancelar cotización ${cancelQuotation?.folio}?`}
             </AlertDialogTitle>
             <AlertDialogDescription>
