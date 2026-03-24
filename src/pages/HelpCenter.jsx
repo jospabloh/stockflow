@@ -3,6 +3,23 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { localHelpData } from "@/lib/helpData";
 
+// Render inline markdown formatting (bold, italic, code)
+const renderInline = (text) => {
+  const parts = [];
+  let lastIndex = 0;
+  
+  // Replace **bold** with <strong>
+  const boldRegex = /\*\*(.+?)\*\*/g;
+  let match;
+  const replacedBold = text.replace(boldRegex, '<strong>$1</strong>');
+  
+  // Replace *italic* with <em>
+  const italicRegex = /\*(.+?)\*/g;
+  const replacedItalic = replacedBold.replace(italicRegex, '<em>$1</em>');
+  
+  return replacedItalic;
+};
+
 // Simple markdown-like parser for display
 const MarkdownContent = ({ content }) => {
   const lines = content.split('\n');
@@ -11,6 +28,13 @@ const MarkdownContent = ({ content }) => {
 
   while (i < lines.length) {
     const line = lines[i];
+    const trimmed = line.trim();
+    
+    // Skip separator lines (---, ===, etc.)
+    if (/^[\-|=\s]+$/.test(trimmed)) {
+      i++;
+      continue;
+    }
     
     // Headers
     if (line.startsWith('## ')) {
@@ -22,29 +46,45 @@ const MarkdownContent = ({ content }) => {
         <h1 key={i} className="text-3xl font-bold mt-8 mb-4">{line.slice(2)}</h1>
       );
     }
+    // Code blocks
+    else if (line.startsWith('```')) {
+      const codeLines = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith('```')) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      elements.push(
+        <pre key={i} className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto my-4 text-sm">
+          <code>{codeLines.join('\n')}</code>
+        </pre>
+      );
+    }
     // Tables (simple markdown table)
-    else if (line.includes('|')) {
+    else if (line.includes('|') && !trimmed.startsWith('|') === false) {
       const tableLines = [];
-      while (i < lines.length && lines[i].includes('|')) {
+      while (i < lines.length && lines[i].includes('|') && !/^[\-|=\s]+$/.test(lines[i].trim())) {
         tableLines.push(lines[i]);
         i++;
       }
       i--; // Back up one
       
       const rows = tableLines.map(l => l.split('|').map(c => c.trim()).filter(c => c));
-      elements.push(
-        <table key={i} className="w-full border-collapse border border-slate-300 my-4">
-          <tbody>
-            {rows.map((row, idx) => (
-              <tr key={idx} className={idx === 1 ? 'border-b-2 border-slate-400 bg-slate-100' : ''}>
-                {row.map((cell, cidx) => (
-                  <td key={cidx} className="border border-slate-300 px-3 py-2 text-sm">{cell}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      );
+      if (rows.length > 0) {
+        elements.push(
+          <table key={i} className="w-full border-collapse border border-slate-300 my-4 text-sm">
+            <tbody>
+              {rows.map((row, idx) => (
+                <tr key={idx} className={idx === 0 ? 'bg-slate-100 border-b-2 border-slate-400 font-semibold' : ''}>
+                  {row.map((cell, cidx) => (
+                    <td key={cidx} className="border border-slate-300 px-3 py-2">{cell}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        );
+      }
     }
     // Blockquote
     else if (line.startsWith('> ')) {
@@ -55,9 +95,10 @@ const MarkdownContent = ({ content }) => {
       );
     }
     // Paragraph
-    else if (line.trim()) {
+    else if (trimmed) {
+      const formatted = renderInline(trimmed);
       elements.push(
-        <p key={i} className="my-2 leading-relaxed">{line}</p>
+        <p key={i} className="my-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: formatted }} />
       );
     }
     // Empty line
