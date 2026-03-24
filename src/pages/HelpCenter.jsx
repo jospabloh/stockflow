@@ -22,7 +22,10 @@ export default function HelpCenter() {
     if (arts.length > 0) {
       setActiveId(arts[0].id);
     }
-  }, []);
+    } catch (err) {
+    console.error("Error loading help data:", err);
+    }
+    }, []);
 
   const activeArticle = articles.find(a => a.id === activeId);
 
