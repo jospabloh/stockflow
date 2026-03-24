@@ -38,7 +38,6 @@ import QuotationPreviewDialog from "@/components/quotations/QuotationPreviewDial
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import { createButtonProps } from "@/lib/a11y";
 import VirtualizedQuotationTable from "@/components/tables/VirtualizedQuotationTable";
-import { useState, useEffect } from "react";
 
 const statusConfig = {
   draft: { label: "Borrador", color: "bg-slate-100 text-slate-700", dot: "bg-slate-400", desc: "Cotización en edición" },
