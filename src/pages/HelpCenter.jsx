@@ -27,13 +27,23 @@ const MarkdownContent = ({ content }) => {
       continue;
     }
     
-    if (line.startsWith('## ')) {
+    if (line.startsWith('### ')) {
+      const heading = line.slice(4);
+      const formatted = renderInline(heading);
       elements.push(
-        <h2 key={i} className="text-2xl font-bold mt-6 mb-3">{line.slice(3)}</h2>
+        <h3 key={i} className="text-xl font-bold mt-5 mb-2" dangerouslySetInnerHTML={{ __html: formatted }} />
+      );
+    } else if (line.startsWith('## ')) {
+      const heading = line.slice(3);
+      const formatted = renderInline(heading);
+      elements.push(
+        <h2 key={i} className="text-2xl font-bold mt-6 mb-3" dangerouslySetInnerHTML={{ __html: formatted }} />
       );
     } else if (line.startsWith('# ')) {
+      const heading = line.slice(2);
+      const formatted = renderInline(heading);
       elements.push(
-        <h1 key={i} className="text-3xl font-bold mt-8 mb-4">{line.slice(2)}</h1>
+        <h1 key={i} className="text-3xl font-bold mt-8 mb-4" dangerouslySetInnerHTML={{ __html: formatted }} />
       );
     } else if (line.startsWith('```')) {
       const codeLines = [];
