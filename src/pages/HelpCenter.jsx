@@ -13,8 +13,8 @@ export default function HelpCenter() {
   useEffect(() => {
     try {
       // Initialize articles from local data
-      console.log("localHelpData:", localHelpData);
-      const arts = (localHelpData && localHelpData.articles) || [];
+      console.log("helpData:", helpData);
+      const arts = (helpData && helpData.articles) || [];
       console.log("Loaded articles:", arts.length);
       setArticles(arts);
     
