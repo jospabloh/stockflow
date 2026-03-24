@@ -4,11 +4,12 @@ import HelpSidebar from "@/components/help/HelpSidebar";
 
 // Render inline markdown formatting
 const renderInline = (text) => {
-  const boldRegex = /\*\*(.+?)\*\*/g;
-  const replacedBold = text.replace(boldRegex, '<strong>$1</strong>');
-  const italicRegex = /\*(.+?)\*/g;
-  const replacedItalic = replacedBold.replace(italicRegex, '<em>$1</em>');
-  return replacedItalic;
+  let result = text;
+  // Handle **bold** (must be before *italic*)
+  result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Handle *italic*
+  result = result.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  return result;
 };
 
 // Markdown parser
