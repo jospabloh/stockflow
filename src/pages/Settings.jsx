@@ -300,7 +300,7 @@ export default function Settings() {
               </div>
             </div>
             <div className="flex justify-end">
-              <Button onClick={handleSaveSettings} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
+              <Button onClick={handleSaveSettings} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
                 <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Guardar"}
               </Button>
             </div>
