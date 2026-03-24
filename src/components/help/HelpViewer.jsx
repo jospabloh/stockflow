@@ -41,10 +41,9 @@ const markdownComponents = {
       {children}
     </blockquote>
   ),
-  code: ({ node, className, children, ...props }) => {
-    const isBlock = !props.hasOwnProperty || node?.position?.start?.line !== node?.position?.end?.line;
-    const match = /language-(\w+)/.exec(className || "");
-    return match || String(children).includes("\n") ? (
+  code: ({ className, children }) => {
+    const isBlock = /language-/.test(className || "") || String(children).includes("\n");
+    return isBlock ? (
       <pre className="bg-slate-900 dark:bg-slate-950 text-slate-100 rounded-xl p-4 my-3 overflow-x-auto text-xs font-mono leading-relaxed">
         <code className={className}>{children}</code>
       </pre>
