@@ -28,7 +28,8 @@ import {
 import { toast } from "sonner";
 
 export default function Settings() {
-  const { businessId } = useBusinessContext();
+  const { businessId, refreshBusiness } = useBusinessContext();
+  const [currentUser, setCurrentUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [settings, setSettings] = useState(null);
