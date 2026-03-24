@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { createButtonProps } from "@/lib/a11y";
 import {
   PiggyBank, TrendingUp, TrendingDown, ListOrdered,
   Plus, Minus, SlidersHorizontal, History
