@@ -135,11 +135,10 @@ export default function Dashboard() {
 
       {/* Today's Sales Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Link to={createPageUrl("Movements")} className="block">
-          <Card className="border-0 shadow-sm p-5 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-0.5">
-            <h3 className="font-semibold text-slate-700 mb-4 flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-indigo-500" /> Ventas del Día
-            </h3>
+        <Card className="border-0 shadow-sm p-5 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-0.5" onClick={() => navigate(`${createPageUrl("Movements")}?type=exit`)}>
+          <h3 className="font-semibold text-slate-700 mb-4 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-indigo-500" /> Ventas del Día
+          </h3>
             {todayExits.length === 0 ? (
               <p className="text-sm text-slate-400 py-4 text-center">Sin ventas registradas hoy</p>
             ) : (
