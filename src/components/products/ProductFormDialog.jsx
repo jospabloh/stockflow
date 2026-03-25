@@ -258,22 +258,22 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
           <div>
             <Label>Precio de compra</Label>
-            <Input type="number" min={0} step="0.01" value={form.purchase_price} onChange={(e) => updateField("purchase_price", parseFloat(e.target.value) || 0)} />
+            <Input type="number" min={0} step="0.01" value={form.purchase_price === 0 ? "" : form.purchase_price} placeholder="0.00" onChange={(e) => updateField("purchase_price", e.target.value === "" ? 0 : parseFloat(e.target.value) || 0)} />
           </div>
           <div>
             <Label>Precio de venta *</Label>
-            <Input type="number" min={0} step="0.01" value={form.sale_price} onChange={(e) => updateField("sale_price", parseFloat(e.target.value) || 0)} />
+            <Input type="number" min={0} step="0.01" value={form.sale_price === 0 ? "" : form.sale_price} placeholder="0.00" onChange={(e) => updateField("sale_price", e.target.value === "" ? 0 : parseFloat(e.target.value) || 0)} />
             {form.purchase_price > 0 && form.sale_price > 0 && form.sale_price <= form.purchase_price && (
               <p className="text-xs text-amber-600 mt-1">⚠️ El precio de venta es menor o igual al costo. Verifica el margen.</p>
             )}
           </div>
           <div>
             <Label>Stock actual</Label>
-            <Input type="number" min={0} value={form.stock} onChange={(e) => updateField("stock", parseInt(e.target.value) || 0)} disabled={!!product} />
+            <Input type="number" min={0} value={form.stock === 0 ? "" : form.stock} placeholder="0" onChange={(e) => updateField("stock", e.target.value === "" ? 0 : parseInt(e.target.value) || 0)} disabled={!!product} />
           </div>
           <div>
             <Label>Stock mínimo</Label>
-            <Input type="number" min={0} value={form.min_stock} onChange={(e) => updateField("min_stock", parseInt(e.target.value) || 0)} />
+            <Input type="number" min={0} value={form.min_stock === 0 ? "" : form.min_stock} placeholder="0" onChange={(e) => updateField("min_stock", e.target.value === "" ? 0 : parseInt(e.target.value) || 0)} />
           </div>
           <div>
             <Label>Unidad</Label>
