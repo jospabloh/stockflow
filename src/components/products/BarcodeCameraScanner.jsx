@@ -14,18 +14,26 @@ export default function BarcodeCameraScanner({ onDetected, onClose }) {
     const reader = new BrowserMultiFormatReader();
     readerRef.current = reader;
 
+    const stopCamera = () => {
+      try { readerRef.current?.reset(); } catch {}
+      // Release all video tracks to free camera hardware
+      if (videoRef.current?.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach(t => t.stop());
+        videoRef.current.srcObject = null;
+      }
+    };
+
     reader.decodeFromVideoDevice(undefined, videoRef.current, (result, err) => {
       if (result && !detectedRef.current) {
         detectedRef.current = true;
+        stopCamera();
         onDetected(result.getText());
       }
     }).catch(() => {
       setError("No se pudo acceder a la cámara. Verifica los permisos.");
     });
 
-    return () => {
-      try { readerRef.current?.reset(); } catch {}
-    };
+    return () => { stopCamera(); };
   }, []);
 
   return (
