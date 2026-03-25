@@ -226,21 +226,35 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
           <div>
             <Label>Categoría</Label>
-            <MobileSelect
-              value={form.category}
-              onValueChange={(v) => updateField("category", v)}
-              placeholder="Seleccionar categoría"
-              options={categories.map((c) => ({ value: c.id, label: c.name }))}
-            />
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <MobileSelect
+                  value={form.category}
+                  onValueChange={(v) => updateField("category", v)}
+                  placeholder="Seleccionar categoría"
+                  options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                />
+              </div>
+              <Button type="button" variant="outline" size="icon" onClick={() => { setNewCatName(""); setShowNewCatDialog(true); }} title="Nueva categoría">
+                <Plus className="h-4 w-4 text-indigo-500" />
+              </Button>
+            </div>
           </div>
           <div>
             <Label>Proveedor</Label>
-            <MobileSelect
-              value={form.supplier}
-              onValueChange={(v) => updateField("supplier", v)}
-              placeholder="Seleccionar proveedor"
-              options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
-            />
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <MobileSelect
+                  value={form.supplier}
+                  onValueChange={(v) => updateField("supplier", v)}
+                  placeholder="Seleccionar proveedor"
+                  options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
+                />
+              </div>
+              <Button type="button" variant="outline" size="icon" onClick={() => { setNewSupName(""); setShowNewSupDialog(true); }} title="Nuevo proveedor">
+                <Plus className="h-4 w-4 text-indigo-500" />
+              </Button>
+            </div>
           </div>
           <div>
             <Label>Precio de compra</Label>
