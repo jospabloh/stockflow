@@ -323,6 +323,57 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Mini-dialog: Nueva Categoría */}
+    <Dialog open={showNewCatDialog} onOpenChange={setShowNewCatDialog}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nueva Categoría</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div>
+            <Label>Nombre *</Label>
+            <Input
+              value={newCatName}
+              onChange={(e) => setNewCatName(e.target.value)}
+              placeholder="Ej: Electrónica"
+              autoFocus
+              onKeyDown={(e) => e.key === "Enter" && handleCreateCategory()}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowNewCatDialog(false)}>Cancelar</Button>
+            <Button onClick={handleCreateCategory} disabled={!newCatName.trim()} className="bg-indigo-600 hover:bg-indigo-700">Crear</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    {/* Mini-dialog: Nuevo Proveedor */}
+    <Dialog open={showNewSupDialog} onOpenChange={setShowNewSupDialog}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Nuevo Proveedor</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div>
+            <Label>Nombre *</Label>
+            <Input
+              value={newSupName}
+              onChange={(e) => setNewSupName(e.target.value)}
+              placeholder="Ej: Distribuidora ABC"
+              autoFocus
+              onKeyDown={(e) => e.key === "Enter" && handleCreateSupplier()}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowNewSupDialog(false)}>Cancelar</Button>
+            <Button onClick={handleCreateSupplier} disabled={!newSupName.trim()} className="bg-indigo-600 hover:bg-indigo-700">Crear</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+
     </React.Fragment>
   );
 }
