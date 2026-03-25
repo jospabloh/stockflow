@@ -44,7 +44,7 @@ export default function BarcodeCameraScanner({ onDetected, onClose }) {
           <div className="p-6 text-center text-red-500 text-sm">{error}</div>
         ) : (
           <div className="relative">
-            <video ref={videoRef} className="w-full" autoPlay muted playsInline />
+            <video ref={videoRef} className="w-full min-h-[260px] object-cover bg-black" autoPlay muted playsInline />
             {/* Guía visual */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="border-2 border-emerald-400 rounded-lg w-2/3 h-24 opacity-80" />
