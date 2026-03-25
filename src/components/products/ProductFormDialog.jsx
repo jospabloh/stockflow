@@ -149,6 +149,26 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
 
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
+  const handleCreateCategory = async () => {
+    if (!newCatName.trim()) return;
+    const created = await base44.entities.Category.create({ name: newCatName.trim(), color: "#6366f1", business_id: businessId });
+    const cats = await base44.entities.Category.list();
+    setCategories(cats);
+    updateField("category", created.id);
+    setNewCatName("");
+    setShowNewCatDialog(false);
+  };
+
+  const handleCreateSupplier = async () => {
+    if (!newSupName.trim()) return;
+    const created = await base44.entities.Supplier.create({ name: newSupName.trim(), business_id: businessId });
+    const sups = await base44.entities.Supplier.list();
+    setSuppliers(sups);
+    updateField("supplier", created.id);
+    setNewSupName("");
+    setShowNewSupDialog(false);
+  };
+
   return (
     <React.Fragment>
     {showCamera && (
