@@ -60,24 +60,24 @@ header p, nav p, aside p { user-select: text; -webkit-user-select: text; }
 /* Dark mode — applied via .dark class by next-themes */
 .dark {
   --background: 222 47% 6%;
-  --foreground: 215 25% 88%;          /* gris claro en vez de blanco puro */
-  --card: 222 47% 11%;
-  --card-foreground: 215 25% 88%;
-  --popover: 222 47% 11%;
-  --popover-foreground: 215 25% 88%;
-  --primary: 239 60% 65%;             /* desaturado para no "vibrar" */
-  --primary-foreground: 215 25% 92%;
-  --secondary: 217 33% 18%;
-  --secondary-foreground: 215 25% 85%;
-  --muted: 217 33% 15%;
-  --muted-foreground: 215 18% 55%;
-  --accent: 186 55% 38%;              /* desaturado para modo oscuro */
-  --accent-foreground: 215 25% 92%;
-  --destructive: 0 55% 48%;
-  --destructive-foreground: 215 25% 92%;
-  --border: 217 28% 20%;
-  --input: 217 28% 20%;
-  --ring: 239 60% 65%;
+  --foreground: 0 0% 96%;             /* WCAG AA white para máximo contraste */
+  --card: 222 47% 13%;                /* más claro para distinguir del background */
+  --card-foreground: 0 0% 96%;
+  --popover: 222 47% 13%;
+  --popover-foreground: 0 0% 96%;
+  --primary: 239 84% 65%;             /* más luminoso */
+  --primary-foreground: 0 0% 100%;    /* blanco puro para botones primarios */
+  --secondary: 217 33% 28%;           /* más claro que antes */
+  --secondary-foreground: 0 0% 96%;
+  --muted: 217 33% 22%;               /* más visible que antes */
+  --muted-foreground: 0 0% 80%;       /* más claro que antes (era 55%) */
+  --accent: 186 94% 48%;              /* más saturado y luminoso */
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;           /* más luminoso */
+  --destructive-foreground: 0 0% 100%;
+  --border: 217 28% 28%;              /* más visible */
+  --input: 217 33% 25%;               /* más claro que card para inputs */
+  --ring: 239 84% 65%;
 }
 
 @layer base {

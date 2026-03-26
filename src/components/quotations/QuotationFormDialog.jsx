@@ -208,7 +208,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           {/* Client info */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
-              <Label>Cliente *</Label>
+              <Label className="text-foreground mb-1.5 block">Cliente *</Label>
               <Input
                 value={clientSearch || form.client_name}
                 onChange={(e) => {
@@ -248,18 +248,18 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
               )}
             </div>
             <div>
-              <Label>Email</Label>
+              <Label className="text-foreground mb-1.5 block">Email</Label>
               <Input value={form.client_email} onChange={(e) => setForm({ ...form, client_email: e.target.value })} placeholder="correo@email.com" />
             </div>
             <div>
-              <Label>Teléfono</Label>
+              <Label className="text-foreground mb-1.5 block">Teléfono</Label>
               <Input value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })} placeholder="Teléfono" />
             </div>
           </div>
 
           {/* Barcode scanner */}
-          <div className="space-y-1">
-            <Label>Escanear producto</Label>
+          <div className="space-y-2">
+            <Label className="text-foreground mb-1.5 block">Escanear producto</Label>
             <div className="flex gap-2">
               <Input
                 ref={barcodeRef}
@@ -288,9 +288,9 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
             </div>
             <div className="space-y-2">
               {form.items.map((item, idx) => (
-                <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-slate-50 rounded-xl p-3">
+                <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-card border border-border rounded-xl p-3">
                   <div className="col-span-12 md:col-span-4">
-                    <Label className="text-xs" htmlFor={`product-${idx}`}>Producto</Label>
+                    <Label className="text-xs text-foreground mb-1.5 block" htmlFor={`product-${idx}`}>Producto</Label>
                     <SelectWrapper
                       id={`product-${idx}`}
                       value={item.product_id}
@@ -301,7 +301,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                     />
                   </div>
                   <div className="col-span-4 md:col-span-2">
-                    <Label className="text-xs">Cantidad</Label>
+                    <Label className="text-xs text-foreground mb-1.5 block">Cantidad</Label>
                     <Input
                       type="number" min={1}
                       value={item.quantity}
@@ -315,12 +315,12 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                     )}
                   </div>
                   <div className="col-span-4 md:col-span-3">
-                    <Label className="text-xs">Precio unitario</Label>
+                    <Label className="text-xs text-foreground mb-1.5 block">Precio unitario</Label>
                     <Input type="number" min={0} step="0.01" value={item.unit_price} onChange={(e) => updateItem(idx, "unit_price", parseFloat(e.target.value) || 0)} />
                   </div>
                   <div className="col-span-3 md:col-span-2">
-                    <Label className="text-xs">Total</Label>
-                    <p className="h-9 flex items-center font-semibold text-slate-700 text-sm">${(item.total || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
+                    <Label className="text-xs text-foreground mb-1.5 block">Total</Label>
+                    <p className="h-9 flex items-center font-bold text-foreground text-sm">${(item.total || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
                   </div>
                   <div className="col-span-1 hidden md:flex flex-col items-center justify-end pb-1">
                     <button
@@ -346,31 +346,31 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           </div>
 
           {/* Tax & totals */}
-          <div className="bg-slate-50 rounded-xl p-4 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-slate-500">Subtotal (todos los productos)</span>
-              <span className="font-medium">${subtotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+          <div className="bg-card border border-border rounded-xl p-4 space-y-3 text-sm">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Subtotal (todos los productos)</span>
+              <span className="font-semibold text-foreground">${subtotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
             {taxableSubtotal > 0 && (
-              <div className="flex justify-between text-slate-500">
+              <div className="flex justify-between items-center text-muted-foreground">
                 <span>Base gravable (productos con IVA 16%)</span>
-                <span>${taxableSubtotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                <span className="text-foreground">${taxableSubtotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
               </div>
             )}
-            <div className="flex justify-between text-slate-500">
-              <span>IVA 16%</span>
-              <span>${taxAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+            <div className="flex justify-between items-center border-t border-border pt-3">
+              <span className="text-muted-foreground">IVA 16%</span>
+              <span className="font-semibold text-foreground">${taxAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
-            <div className="flex justify-between text-lg border-t pt-2">
-              <span className="font-semibold">Total</span>
-              <span className="font-bold text-indigo-700">${total.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+            <div className="flex justify-between items-center text-lg font-bold border-t border-border pt-3 bg-accent/10 -mx-4 px-4 py-3 rounded">
+              <span className="text-foreground">Total</span>
+              <span className="text-accent">${total.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
 
           {/* Payment, validity, notes */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
            <div>
-             <Label htmlFor="payment-method">Forma de pago</Label>
+             <Label htmlFor="payment-method" className="text-foreground mb-1.5 block">Forma de pago</Label>
              <SelectWrapper
                id="payment-method"
                value={form.payment_method}
@@ -381,11 +381,11 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
              />
            </div>
             <div>
-              <Label>Vigencia</Label>
+              <Label className="text-foreground mb-1.5 block">Vigencia</Label>
               <Input type="date" value={form.valid_until} onChange={(e) => setForm({ ...form, valid_until: e.target.value })} />
             </div>
             <div>
-              <Label>Notas / Condiciones</Label>
+              <Label className="text-foreground mb-1.5 block">Notas / Condiciones</Label>
               <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Condiciones de pago, entrega..." rows={2} />
             </div>
           </div>

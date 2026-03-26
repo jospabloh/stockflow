@@ -174,7 +174,8 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         </DialogHeader>
 
         {/* Barcode scanner input */}
-        <div className="space-y-1 pt-2">
+        <div className="space-y-2 pt-2">
+          <Label className="text-foreground mb-1.5 block">Escanear producto</Label>
           <div className="flex gap-2">
             <Input
               ref={barcodeRef}
@@ -195,12 +196,12 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
         <div className="space-y-4">
           {form.type === "adjustment" && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
+            <div className="bg-amber-100/40 border border-amber-400 rounded-xl p-3 text-xs text-amber-100 dark:text-amber-200">
               ⚠️ El <strong>ajuste</strong> establece el stock final de forma absoluta. Ejemplo: si ingresas 10, el stock quedará en 10 unidades.
             </div>
           )}
           <div>
-            <Label>Producto *</Label>
+            <Label className="text-foreground mb-1.5 block">Producto *</Label>
             <MobileSelect
               value={form.product_id}
               onValueChange={handleProductSelect}
@@ -213,14 +214,14 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           </div>
 
           {selectedProduct && (
-            <div className="bg-slate-50 rounded-xl p-3 text-sm">
-              <p className="font-medium text-slate-700">{selectedProduct.name}</p>
-              <p className="text-slate-500">Stock actual: <span className="font-semibold">{selectedProduct.stock} {selectedProduct.unit}</span></p>
+            <div className="bg-card border border-border rounded-xl p-3 text-sm">
+              <p className="font-semibold text-foreground">{selectedProduct.name}</p>
+              <p className="text-muted-foreground">Stock actual: <span className="font-semibold text-foreground">{selectedProduct.stock} {selectedProduct.unit}</span></p>
             </div>
           )}
 
           <div>
-            <Label>Tipo de movimiento *</Label>
+            <Label className="text-foreground mb-1.5 block">Tipo de movimiento *</Label>
             <MobileSelect
               value={form.type}
               onValueChange={(v) => {
@@ -236,28 +237,28 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>{form.type === "adjustment" ? "Stock absoluto nuevo (valor final) *" : "Cantidad *"}</Label>
+              <Label className="text-foreground mb-1.5 block">{form.type === "adjustment" ? "Stock absoluto nuevo (valor final) *" : "Cantidad *"}</Label>
               <Input type="number" min={0} value={form.quantity} onChange={(e) => updateField("quantity", parseInt(e.target.value) || 0)} />
             </div>
             <div>
-              <Label>Precio unitario</Label>
+              <Label className="text-foreground mb-1.5 block">Precio unitario</Label>
               <Input type="number" min={0} step="0.01" value={form.unit_price} onChange={(e) => updateField("unit_price", parseFloat(e.target.value) || 0)} />
             </div>
           </div>
 
-          <div className="bg-indigo-50 rounded-xl p-3 text-center">
-            <p className="text-sm text-slate-500">Total</p>
-            <p className="text-2xl font-bold text-indigo-700">
+          <div className="bg-accent/10 border border-accent rounded-xl p-4 text-center">
+            <p className="text-sm text-muted-foreground mb-1">Total</p>
+            <p className="text-2xl font-bold text-accent">
               ${(form.quantity * form.unit_price).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
             </p>
           </div>
 
           <div>
-            <Label>Referencia</Label>
+            <Label className="text-foreground mb-1.5 block">Referencia</Label>
             <Input value={form.reference} onChange={(e) => updateField("reference", e.target.value)} placeholder="No. factura, orden..." />
           </div>
           <div>
-            <Label>Motivo / Notas</Label>
+            <Label className="text-foreground mb-1.5 block">Motivo / Notas</Label>
             <Textarea value={form.reason} onChange={(e) => updateField("reason", e.target.value)} placeholder="Opcional" rows={2} />
           </div>
         </div>

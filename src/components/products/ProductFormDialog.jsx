@@ -303,15 +303,15 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
             )}
           </div>
           <div>
-            <Label>Stock actual</Label>
+            <Label className="text-foreground mb-1.5 block">Stock actual</Label>
             <Input type="number" min={0} value={form.stock === 0 ? "" : form.stock} placeholder="0" onChange={(e) => updateField("stock", e.target.value === "" ? 0 : parseInt(e.target.value) || 0)} disabled={!!product} />
           </div>
           <div>
-            <Label>Stock mínimo</Label>
+            <Label className="text-foreground mb-1.5 block">Stock mínimo</Label>
             <Input type="number" min={0} value={form.min_stock === 0 ? "" : form.min_stock} placeholder="0" onChange={(e) => updateField("min_stock", e.target.value === "" ? 0 : parseInt(e.target.value) || 0)} />
           </div>
           <div>
-            <Label>Unidad</Label>
+            <Label className="text-foreground mb-1.5 block">Unidad</Label>
             <MobileSelect
               value={form.unit}
               onValueChange={(v) => updateField("unit", v)}
@@ -320,7 +320,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
             />
           </div>
           <div>
-            <Label>IVA del producto</Label>
+            <Label className="text-foreground mb-1.5 block">IVA del producto</Label>
             <MobileSelect
               value={String(form.tax_rate ?? 16)}
               onValueChange={(v) => updateField("tax_rate", Number(v))}
@@ -332,7 +332,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
             />
           </div>
           <div>
-            <Label>Estado</Label>
+            <Label className="text-foreground mb-1.5 block">Estado</Label>
             <MobileSelect
               value={form.status}
               onValueChange={(v) => updateField("status", v)}
@@ -344,7 +344,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
             />
           </div>
           <div className="md:col-span-2">
-            <Label>Descripción</Label>
+            <Label className="text-foreground mb-1.5 block">Descripción</Label>
             <Textarea value={form.description} onChange={(e) => updateField("description", e.target.value)} placeholder="Descripción..." rows={3} />
           </div>
         </div>
@@ -367,7 +367,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div>
-            <Label>Nombre *</Label>
+            <Label className="text-foreground mb-1.5 block">Nombre *</Label>
             <Input
               value={newCatName}
               onChange={(e) => setNewCatName(e.target.value)}
@@ -392,7 +392,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div>
-            <Label>Nombre *</Label>
+            <Label className="text-foreground mb-1.5 block">Nombre *</Label>
             <Input
               value={newSupName}
               onChange={(e) => setNewSupName(e.target.value)}
