@@ -54,18 +54,18 @@ Deno.serve(async (req) => {
       result.tests.client_validation = { success: true, rejected_missing_name: true };
     }
 
-    // TEST 2: Client validation (missing phone)
+    // TEST 2: Client validation (missing phone) - NOW ENFORCED AT ENTITY LEVEL
     try {
       await base44.entities.Client.create({
         business_id: businessId,
         name: `TEST_CLIENT_NO_PHONE_${timestamp}`
       });
-      result.issues.push("CLIENT VALIDATION: Missing phone was accepted (should fail)");
-      result.tests.client_validation = { success: false, issue: "Missing phone accepted" };
+      result.issues.push("CLIENT VALIDATION: Missing phone was accepted (should fail - ENTITY VIOLATION)");
+      result.tests.client_validation = { success: false, issue: "Missing phone accepted - ENTITY CONSTRAINT FAILED" };
     } catch (e) {
-      // Expected
-      if (!result.tests.client_validation) {
-        result.tests.client_validation = { success: true, rejected_missing_phone: true };
+      // Expected: Entity schema now requires phone
+      if (!result.tests.client_validation?.success) {
+        result.tests.client_validation = { success: true, rejected_missing_phone: true, reason: "entity_level_constraint" };
       }
     }
 

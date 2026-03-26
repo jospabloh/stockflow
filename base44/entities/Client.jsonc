@@ -41,7 +41,8 @@
     }
   },
   "required": [
-    "name"
+    "name",
+    "phone"
   ],
   "rls": {
     "create": {
