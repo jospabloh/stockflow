@@ -157,22 +157,28 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
 
   const handleSave = async () => {
     setSaving(true);
-    const folio = quotation?.folio || await generateFolio();
-    const data = {
-      ...form,
-      subtotal,
-      tax: taxAmount,
-      total,
-      folio,
-    };
-    if (quotation) {
-      await base44.entities.Quotation.update(quotation.id, data);
-    } else {
-      await base44.entities.Quotation.create({ ...data, business_id: businessId });
+    try {
+      const folio = quotation?.folio || await generateFolio();
+      const data = {
+        ...form,
+        subtotal,
+        tax: taxAmount,
+        total,
+        folio,
+      };
+      if (quotation) {
+        await base44.entities.Quotation.update(quotation.id, data);
+      } else {
+        await base44.entities.Quotation.create({ ...data, business_id: businessId });
+      }
+      // Solo cerrar DESPUÉS de guardar exitosamente
+      onSaved();
+      onOpenChange(false);
+    } catch (error) {
+      // Error se maneja, diálogo permanece abierto
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    onSaved();
-    onOpenChange(false);
   };
 
   return (

@@ -55,9 +55,9 @@ export default function Dashboard() {
   // Today's sales breakdown
   const todayExits = todayMovements.filter((m) => m.type === "exit");
   const todaySalesRevenue = todayExits.reduce((sum, m) => sum + (m.total || 0), 0);
+  // CORREGIDO: Usar unit_price del movimiento (costo histórico), no el precio actual del producto
   const todaySalesCost = todayExits.reduce((sum, m) => {
-    const prod = products.find(p => p.id === m.product_id);
-    return sum + (m.quantity || 0) * (prod?.purchase_price || 0);
+    return sum + ((m.quantity || 0) * (m.unit_price || 0));
   }, 0);
   const todayProfit = todaySalesRevenue - todaySalesCost;
   const todayMargin = todaySalesRevenue > 0 ? (todayProfit / todaySalesRevenue) * 100 : 0;

@@ -84,40 +84,68 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   const handleSave = async () => {
     setSaving(true);
     const product = selectedProduct;
-    let newStock = product.stock || 0;
 
-    // BUG-014: Validar stock suficiente para salidas
-    if (form.type === "exit" && newStock < form.quantity) {
-      toast.error(`Stock insuficiente. Solo hay ${newStock} unidad(es) disponibles de "${product.name}".`);
+    // VALIDACIÓN COMPLETA BACKEND de cantidad
+    if (!Number.isInteger(form.quantity) || form.quantity < 0 || isNaN(form.quantity)) {
+      toast.error("Cantidad no válida. Debe ser un número entero positivo.");
       setSaving(false);
       return;
     }
 
-    if (form.type === "entry" || form.type === "return") {
-      newStock += form.quantity;
-    } else if (form.type === "exit") {
+    // Para entrada, return, y adjustment, cantidad debe ser > 0. Para exit también.
+    if (form.quantity === 0) {
+      toast.error("Cantidad debe ser mayor a 0.");
+      setSaving(false);
+      return;
+    }
+
+    // Validación específica por tipo
+    let newStock = product.stock || 0;
+
+    if (form.type === "exit" || form.type === "return") {
+      // Salidas y devoluciones decrementan
+      if (newStock < form.quantity) {
+        toast.error(`Stock insuficiente. Solo hay ${newStock} unidad(es) disponibles de "${product.name}".`);
+        setSaving(false);
+        return;
+      }
       newStock -= form.quantity;
+    } else if (form.type === "entry") {
+      // Entradas incrementan
+      newStock += form.quantity;
     } else if (form.type === "adjustment") {
+      // Ajuste REEMPLAZA (no suma)
       newStock = form.quantity;
     }
 
-    // Optimistic: close immediately and notify parent with projected stock
-    onSaved({ productId: product.id, newStock, _optimistic: true });
-    onOpenChange(false);
+    // Validar que stock final no sea negativo (extra safety para adjustment)
+    if (newStock < 0) {
+      toast.error("La operación resultaría en stock negativo. No permitido.");
+      setSaving(false);
+      return;
+    }
 
-    await base44.entities.Movement.create({
-      ...form,
-      product_name: product.name,
-      total: form.quantity * form.unit_price,
-      stock_after: newStock,
-      business_id: businessId,
-    });
+    try {
+      await base44.entities.Movement.create({
+        ...form,
+        product_name: product.name,
+        total: form.quantity * form.unit_price,
+        stock_after: newStock,
+        business_id: businessId,
+      });
 
-    await base44.entities.Product.update(product.id, { stock: newStock });
+      await base44.entities.Product.update(product.id, { stock: newStock });
 
-    setSaving(false);
-    // Final reconcile after network
-    onSaved({ _reconcile: true });
+      // Solo cerrar y notificar DESPUÉS de éxito
+      onSaved({ productId: product.id, newStock, _optimistic: true });
+      onOpenChange(false);
+      onSaved({ _reconcile: true });
+    } catch (error) {
+      toast.error(`Error al registrar movimiento: ${error.message}`);
+      // No cerrar diálogo si hay error
+    } finally {
+      setSaving(false);
+    }
   };
 
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));

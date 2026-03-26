@@ -55,15 +55,22 @@ export default function Settings() {
   const [supForm, setSupForm] = useState({ name: "", contact_name: "", email: "", phone: "" });
 
   useEffect(() => {
-    base44.auth.me().then(u => {
-      setIsAdmin(u?.role === "admin");
-      setCheckingAuth(false);
-    }).catch(() => setCheckingAuth(false));
-    Promise.all([
-      base44.entities.AppSettings.list("-created_date", 1),
-      base44.entities.Category.list(),
-      base44.entities.Supplier.list(),
-    ]).then(([sets, cats, sups]) => {
+     const checkAndLoadSettings = async () => {
+       try {
+         const u = await base44.auth.me();
+         setIsAdmin(u?.role === "admin");
+         setCheckingAuth(false);
+
+         // Si no es admin, NO cargar nada de configuración (protección backend)
+         if (u?.role !== "admin") {
+           return;
+         }
+
+         const [sets, cats, sups] = await Promise.all([
+           base44.entities.AppSettings.list("-created_date", 1),
+           base44.entities.Category.list(),
+           base44.entities.Supplier.list(),
+         ]);
       if (sets.length > 0) {
         setSettings(sets[0]);
         setSettingsId(sets[0].id);
@@ -77,15 +84,21 @@ export default function Settings() {
       }
       setCategories(cats);
       setSuppliers(sups);
-      setLoading(false);
-    });
-    // Load business entity for invite code
-    if (businessId) {
-      base44.entities.Business.filter({ id: businessId }).then(list => {
+
+      // Load business entity for invite code
+      if (businessId) {
+        const list = await base44.entities.Business.filter({ id: businessId });
         if (list.length > 0) setBusiness(list[0]);
-      }).catch(() => {});
-    }
-  }, []);
+      }
+      } catch (err) {
+      console.error("Error loading settings:", err);
+      } finally {
+      setLoading(false);
+      }
+      };
+
+      checkAndLoadSettings();
+      }, [businessId]);
 
   const validateRFC = (rfc) => {
     if (!rfc) return true; // optional

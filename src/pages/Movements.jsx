@@ -78,20 +78,33 @@ export default function Movements() {
   });
 
   const handleExportCSV = () => {
-    const headers = ["Fecha", "Producto", "Tipo", "Cantidad", "Precio Unit.", "Total", "Referencia"];
-    const rows = filtered.map((m) => [
-      moment.utc(m.created_date).local().format("DD/MM/YYYY HH:mm"),
-      m.product_name, typeConfig[m.type]?.label || m.type,
-      m.quantity, m.unit_price || 0, m.total || 0, m.reference || "",
-    ]);
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "movimientos.csv";
-    a.click();
-  };
+     // Helper para escapar valores CSV
+     const escapeCSV = (value) => {
+       const str = String(value || "");
+       if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+         return `"${str.replace(/"/g, '""')}"`;
+       }
+       return str;
+     };
+
+     const headers = ["Fecha", "Producto", "Tipo", "Cantidad", "Precio Unit.", "Total", "Referencia"];
+     const rows = filtered.map((m) => [
+       moment.utc(m.created_date).local().format("DD/MM/YYYY HH:mm"),
+       m.product_name, typeConfig[m.type]?.label || m.type,
+       m.quantity, m.unit_price || 0, m.total || 0, m.reference || "",
+     ]);
+
+     // Escapar todos los valores
+     const escapedRows = rows.map((r) => r.map(escapeCSV).join(","));
+     const csv = [headers.map(escapeCSV).join(","), ...escapedRows].join("\n");
+
+     const blob = new Blob([csv], { type: "text/csv" });
+     const url = URL.createObjectURL(blob);
+     const a = document.createElement("a");
+     a.href = url;
+     a.download = "movimientos.csv";
+     a.click();
+   };
 
   if (loading) {
     return <TableSkeleton rows={8} columns={7} />;

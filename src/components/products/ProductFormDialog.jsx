@@ -118,33 +118,38 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
 
   const handleSave = async () => {
     setSaving(true);
-    // Optimistic: close immediately & notify parent so the list re-renders without waiting
-    onSaved({ ...form, id: product?.id, _optimistic: true });
-    onOpenChange(false);
 
-    if (product) {
-      await base44.entities.Product.update(product.id, form);
-    } else {
-      const created = await base44.entities.Product.create({ ...form, business_id: businessId });
-      // BUG-007: Registrar stock inicial como movimiento de entrada
-      if (form.stock > 0 && created?.id) {
-        await base44.entities.Movement.create({
-          product_id: created.id,
-          product_name: form.name,
-          type: "entry",
-          quantity: form.stock,
-          unit_price: form.purchase_price || 0,
-          total: (form.stock) * (form.purchase_price || 0),
-          reason: "Stock inicial",
-          reference: "Stock inicial",
-          stock_after: form.stock,
-          business_id: businessId,
-        });
+    try {
+      if (product) {
+        await base44.entities.Product.update(product.id, form);
+      } else {
+        const created = await base44.entities.Product.create({ ...form, business_id: businessId });
+        // BUG-007: Registrar stock inicial como movimiento de entrada
+        if (form.stock > 0 && created?.id) {
+          await base44.entities.Movement.create({
+            product_id: created.id,
+            product_name: form.name,
+            type: "entry",
+            quantity: form.stock,
+            unit_price: form.purchase_price || 0,
+            total: (form.stock) * (form.purchase_price || 0),
+            reason: "Stock inicial",
+            reference: "Stock inicial",
+            stock_after: form.stock,
+            business_id: businessId,
+          });
+        }
       }
+      // Solo cerrar DESPUÉS de que todo haya guardado exitosamente
+      onSaved({ ...form, id: product?.id, _optimistic: true });
+      onOpenChange(false);
+      onSaved({ _reconcile: true });
+    } catch (error) {
+      // Si hay error, mantener diálogo abierto y mostrar error
+      onSaved({ _error: error.message });
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    // Final reconcile: refresh parent once network is settled
-    onSaved({ _reconcile: true });
   };
 
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
@@ -258,11 +263,21 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
           <div>
             <Label>Precio de compra</Label>
-            <Input type="number" min={0} step="0.01" value={form.purchase_price === 0 ? "" : form.purchase_price} placeholder="0.00" onChange={(e) => updateField("purchase_price", e.target.value === "" ? 0 : parseFloat(e.target.value) || 0)} />
+            <Input type="number" min={0} step="0.01" value={form.purchase_price === 0 ? "" : form.purchase_price} placeholder="0.00" onChange={(e) => {
+              const val = parseFloat(e.target.value);
+              if (!isNaN(val) && val >= 0 && val <= 999999999) {
+                updateField("purchase_price", val || 0);
+              }
+            }} />
           </div>
           <div>
             <Label>Precio de venta *</Label>
-            <Input type="number" min={0} step="0.01" value={form.sale_price === 0 ? "" : form.sale_price} placeholder="0.00" onChange={(e) => updateField("sale_price", e.target.value === "" ? 0 : parseFloat(e.target.value) || 0)} />
+            <Input type="number" min={0} step="0.01" value={form.sale_price === 0 ? "" : form.sale_price} placeholder="0.00" onChange={(e) => {
+              const val = parseFloat(e.target.value);
+              if (!isNaN(val) && val >= 0 && val <= 999999999) {
+                updateField("sale_price", val || 0);
+              }
+            }} />
             {form.purchase_price > 0 && form.sale_price > 0 && form.sale_price <= form.purchase_price && (
               <p className="text-xs text-amber-600 mt-1">⚠️ El precio de venta es menor o igual al costo. Verifica el margen.</p>
             )}

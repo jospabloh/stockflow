@@ -103,18 +103,32 @@ export default function Products() {
   };
 
   const handleExportCSV = () => {
-    const headers = isAdmin
-      ? ["Nombre", "SKU", "Código de barras", "Precio Compra", "Precio Venta", "Stock", "Unidad"]
-      : ["Nombre", "SKU", "Código de barras", "Precio Venta", "Stock", "Unidad"];
-    const rows = filteredProducts.map((p) => isAdmin
-      ? [p.name, p.sku || "", p.barcode || "", p.purchase_price || 0, p.sale_price, p.stock, p.unit || "pieza"]
-      : [p.name, p.sku || "", p.barcode || "", p.sale_price, p.stock, p.unit || "pieza"]
-    );
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    window.open(url, "_blank");
-  };
+     // Helper para escapar valores CSV: envuelve en comillas si contiene coma, comilla o salto
+     const escapeCSV = (value) => {
+       const str = String(value || "");
+       if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+         return `"${str.replace(/"/g, '""')}"`;
+       }
+       return str;
+     };
+
+     const headers = isAdmin
+       ? ["Nombre", "SKU", "Código de barras", "Precio Compra", "Precio Venta", "Stock", "Unidad"]
+       : ["Nombre", "SKU", "Código de barras", "Precio Venta", "Stock", "Unidad"];
+
+     const rows = filteredProducts.map((p) => isAdmin
+       ? [p.name, p.sku || "", p.barcode || "", p.purchase_price || 0, p.sale_price, p.stock, p.unit || "pieza"]
+       : [p.name, p.sku || "", p.barcode || "", p.sale_price, p.stock, p.unit || "pieza"]
+     );
+
+     // Escapar todos los valores
+     const escapedRows = rows.map((r) => r.map(escapeCSV).join(","));
+     const csv = [headers.map(escapeCSV).join(","), ...escapedRows].join("\n");
+
+     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+     const url = URL.createObjectURL(blob);
+     window.open(url, "_blank");
+   };
 
   if (loading) {
     return <TableSkeleton rows={8} columns={6} />;

@@ -123,82 +123,131 @@ export default function Quotations() {
       return;
     }
 
-    // BUG-018: Validar stock suficiente antes de proceder
+    // FASE 1: Validar stock ANTES de cualquier operación (captura estado actual)
+    const itemsWithStock = [];
     for (const item of (convertQuotation.items || [])) {
       const prods = await base44.entities.Product.filter({ id: item.product_id });
       const product = prods[0];
-      if (product && item.quantity > (product.stock || 0)) {
-        setConvertError(`Stock insuficiente para "${item.product_name}": solo hay ${product.stock} unidad(es).`);
+      if (!product) {
+        setConvertError(`Producto "${item.product_name}" ya no existe. Edita la cotización.`);
         return;
       }
-    }
-
-    // Create exit movements for each item — BUG-009: popular reason
-    for (const item of (convertQuotation.items || [])) {
-      const prods = await base44.entities.Product.filter({ id: item.product_id });
-      const product = prods[0];
-      if (product) {
-        const newStock = (product.stock || 0) - item.quantity;
-        await base44.entities.Movement.create({
-           product_id: item.product_id,
-           product_name: item.product_name,
-           type: "exit",
-           quantity: item.quantity,
-           unit_price: item.unit_price,
-           total: item.total,
-           stock_after: newStock,
-           reference: `Venta ${convertQuotation.folio}`,
-           reason: `Venta a ${convertQuotation.client_name}`,
-           quotation_id: convertQuotation.id,
-           business_id: convertQuotation.business_id,
-         });
-        await base44.entities.Product.update(product.id, { stock: newStock });
+      if (item.quantity > (product.stock || 0)) {
+        setConvertError(`Stock insuficiente para "${item.product_name}": disponible ${product.stock}, solicitado ${item.quantity}.`);
+        return;
       }
+      itemsWithStock.push({ ...item, product });
     }
 
-    await base44.entities.Quotation.update(convertQuotation.id, {
-      status: "converted",
-      payment_method: convertPaymentMethod,
-    });
-    setConvertQuotation(null);
-    setConvertPaymentMethod("");
-    setConvertError("");
-    loadData();
+    // FASE 2: Preparar todas las operaciones sin ejecutarlas aún
+    const movementsToCreate = itemsWithStock.map(item => ({
+      product_id: item.product_id,
+      product_name: item.product_name,
+      type: "exit",
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      total: item.total,
+      stock_after: (item.product.stock || 0) - item.quantity,
+      reference: `Venta ${convertQuotation.folio}`,
+      reason: `Venta a ${convertQuotation.client_name}`,
+      quotation_id: convertQuotation.id,
+      business_id: convertQuotation.business_id,
+    }));
+
+    const productsToUpdate = itemsWithStock.map(item => ({
+      id: item.product.id,
+      newStock: (item.product.stock || 0) - item.quantity,
+    }));
+
+    // FASE 3: Ejecutar operaciones con manejo de errores. Si algo falla, todo se revierte
+    try {
+      // Crear movimientos
+      const createdMovements = [];
+      for (const mov of movementsToCreate) {
+        createdMovements.push(await base44.entities.Movement.create(mov));
+      }
+
+      // Actualizar stock de productos
+      for (const prod of productsToUpdate) {
+        await base44.entities.Product.update(prod.id, { stock: prod.newStock });
+      }
+
+      // Marcar cotización como convertida
+      await base44.entities.Quotation.update(convertQuotation.id, {
+        status: "converted",
+        payment_method: convertPaymentMethod,
+      });
+
+      setConvertQuotation(null);
+      setConvertPaymentMethod("");
+      setConvertError("");
+      loadData();
+    } catch (error) {
+      // Si algo falló, mostrar error claro y no avanzar
+      setConvertError(`Error durante conversión: ${error.message || "Intenta nuevamente"}. El stock no fue modificado.`);
+    }
   };
 
   const handleCancel = async () => {
     if (!cancelQuotation) return;
-    // BUG-020: Revertir stock si la cotización ya había sido convertida
+
+    // FASE 1: Si la cotización fue convertida, buscar movimientos de salida originales para revertir correctamente
     if (cancelQuotation.status === "converted") {
-      for (const item of (cancelQuotation.items || [])) {
-        const prods = await base44.entities.Product.filter({ id: item.product_id });
-        const product = prods[0];
-        if (product) {
-          const restoredStock = (product.stock || 0) + item.quantity;
-          await base44.entities.Movement.create({
-            product_id: item.product_id,
-            product_name: item.product_name,
-            type: "return",
-            quantity: item.quantity,
-            unit_price: item.unit_price,
-            total: item.total,
-            stock_after: restoredStock,
-            reference: `Cancelación ${cancelQuotation.folio}`,
-            reason: `Cancelación: ${cancelReason}`,
-            quotation_id: cancelQuotation.id,
-            business_id: cancelQuotation.business_id,
-          });
-          await base44.entities.Product.update(product.id, { stock: restoredStock });
+      try {
+        // Buscar movimientos de EXIT asociados a esta cotización
+        const exitMovements = await base44.entities.Movement.filter({
+          quotation_id: cancelQuotation.id,
+          type: "exit",
+        });
+
+        // Para cada movimiento de salida, crear un movimiento de retorno inverso
+        for (const exitMov of exitMovements) {
+          // stock_after del exit es el stock resultante DESPUÉS de la salida
+          // Para restaurar, simplemente sumamos la cantidad nuevamente
+          const prods = await base44.entities.Product.filter({ id: exitMov.product_id });
+          const product = prods[0];
+
+          if (product) {
+            // Restaurar stock: el stock actual del producto + cantidad que se retorna
+            const restoredStock = (product.stock || 0) + exitMov.quantity;
+
+            // Crear movimiento de retorno
+            await base44.entities.Movement.create({
+              product_id: exitMov.product_id,
+              product_name: exitMov.product_name,
+              type: "return",
+              quantity: exitMov.quantity,
+              unit_price: exitMov.unit_price,
+              total: exitMov.total,
+              stock_after: restoredStock,
+              reference: `Cancelación ${cancelQuotation.folio}`,
+              reason: `Cancelación: ${cancelReason}`,
+              quotation_id: cancelQuotation.id,
+              business_id: cancelQuotation.business_id,
+            });
+
+            // Actualizar stock del producto
+            await base44.entities.Product.update(product.id, { stock: restoredStock });
+          }
         }
+      } catch (error) {
+        toast.error(`Error al revertir stock: ${error.message}`);
+        return;
       }
     }
-    await base44.entities.Quotation.update(cancelQuotation.id, {
-      status: "cancelled",
-      cancellation_reason: cancelReason,
-    });
-    setCancelQuotation(null);
-    setCancelReason("");
-    loadData();
+
+    // FASE 2: Marcar cotización como cancelada
+    try {
+      await base44.entities.Quotation.update(cancelQuotation.id, {
+        status: "cancelled",
+        cancellation_reason: cancelReason,
+      });
+      setCancelQuotation(null);
+      setCancelReason("");
+      loadData();
+    } catch (error) {
+      toast.error(`Error al cancelar cotización: ${error.message}`);
+    }
   };
 
   const handleConfirmPayment = async () => {
