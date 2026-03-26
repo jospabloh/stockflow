@@ -54,7 +54,7 @@ export default function Layout({ children, currentPageName }) {
   const [pullY, setPullY] = useState(0);
   const touchStartY = useRef(0);
   const mainRef = useRef(null);
-  const { businessId, businessName, isLoading: bizLoading, user } = useBusinessContext();
+  const { businessId, businessName, businessNameLocked, isLoading: bizLoading, user } = useBusinessContext();
   const { sessionStatus, reactivate } = useSessionManager(!!businessId);
   const { goBack, direction } = useNavigation();
   const navigate = useNavigate();
@@ -157,7 +157,7 @@ export default function Layout({ children, currentPageName }) {
               <p className="text-xs text-muted-foreground">Control de stock</p>
             </div>
           </div>
-          {businessName && (
+          {businessName && businessNameLocked && (
             <div className="text-xs text-muted-foreground bg-slate-50 dark:bg-slate-900 px-2 py-1.5 rounded-lg">
               <span className="font-medium text-foreground">{businessName}</span>
             </div>

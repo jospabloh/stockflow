@@ -8,6 +8,7 @@ export function BusinessProvider({ children }) {
   const [businessId, setBusinessId] = useState(null);
   const [businessName, setBusinessName] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [businessNameLocked, setBusinessNameLocked] = useState(false); // MITIGATION: don't display until exact match confirmed
   const lastUserEmailRef = useRef(null);
   const lastBusinessIdRef = useRef(null);
 
@@ -34,18 +35,22 @@ export function BusinessProvider({ children }) {
           const exactMatch = businesses.find(b => b.id === bid);
           if (exactMatch) {
             setBusinessName(exactMatch.name);
-            console.log(`[BusinessContext] ✓ Loaded business "${exactMatch.name}" (ID: ${bid}) for user ${u?.email}`);
+            setBusinessNameLocked(true); // MITIGATION: mark as verified, safe to display
+            console.log(`[BusinessContext] ✓ [LOCKED] Business name verified: "${exactMatch.name}" (ID: ${bid}) for user ${u?.email}`);
           } else {
             console.log(`[BusinessContext] ✗ No exact match for business ID ${bid}. Filter returned: ${businesses.map(b => `${b.id}=${b.name}`).join(', ')}`);
             setBusinessName(null);
+            setBusinessNameLocked(false);
           }
         } catch (e) {
           console.log("[BusinessContext] Error loading business name:", e.message);
           setBusinessName(null);
+          setBusinessNameLocked(false);
         }
       } else {
         console.log(`[BusinessContext] No business_id for user ${u?.email}`);
         setBusinessName(null);
+        setBusinessNameLocked(false);
       }
     } catch (err) {
       console.log("[BusinessContext] Error loading user:", err.message);
@@ -85,7 +90,7 @@ export function BusinessProvider({ children }) {
   }, [loadUser]);
 
   return (
-    <BusinessContext.Provider value={{ user, businessId, businessName, isLoading, refreshBusiness }}>
+    <BusinessContext.Provider value={{ user, businessId, businessName, businessNameLocked, isLoading, refreshBusiness }}>
       {children}
     </BusinessContext.Provider>
   );
