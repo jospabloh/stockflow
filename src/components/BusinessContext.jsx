@@ -29,16 +29,21 @@ export function BusinessProvider({ children }) {
       // Load business name if businessId exists
       if (bid) {
         try {
-          const businesses = await base44.entities.Business.filter({ id: bid });
-          // CRITICAL WORKAROUND: RLS filter bug returns multiple businesses
-          // MUST find exact match by ID, not just take first result
-          const exactMatch = businesses.find(b => b.id === bid);
-          if (exactMatch) {
-            setBusinessName(exactMatch.name);
-            setBusinessNameLocked(true); // MITIGATION: mark as verified, safe to display
-            console.log(`[BusinessContext] ✓ [LOCKED] Business name verified: "${exactMatch.name}" (ID: ${bid}) for user ${u?.email}`);
+          // Use backend function to fetch business without RLS restrictions
+          // This prevents infinite loop when user doesn't own the business record
+          const response = await fetch('/api/functions/getBusinessName', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ business_id: bid })
+          });
+          const result = await response.json();
+          
+          if (result.success && result.business_name) {
+            setBusinessName(result.business_name);
+            setBusinessNameLocked(true);
+            console.log(`[BusinessContext] ✓ [LOCKED] Business name verified: "${result.business_name}" (ID: ${bid}) for user ${u?.email}`);
           } else {
-            console.log(`[BusinessContext] ✗ No exact match for business ID ${bid}. Filter returned: ${businesses.map(b => `${b.id}=${b.name}`).join(', ')}`);
+            console.log(`[BusinessContext] ✗ Could not load business name for ID ${bid}: ${result.error}`);
             setBusinessName(null);
             setBusinessNameLocked(false);
           }
