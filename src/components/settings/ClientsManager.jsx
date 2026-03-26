@@ -35,16 +35,32 @@ export default function ClientsManager() {
   const openEdit = (c) => { setEditing(c); setForm({ name: c.name, email: c.email || "", phone: c.phone || "", address: c.address || "", rfc: c.rfc || "", notes: c.notes || "", status: c.status || "active" }); setFormOpen(true); };
 
   const handleSave = async () => {
-    setSaving(true);
-    if (editing) {
-      await base44.entities.Client.update(editing.id, form);
-    } else {
-      await base44.entities.Client.create({ ...form, business_id: businessId });
+    // Validate required fields
+    if (!form.name?.trim()) {
+      toast.error("El nombre es requerido");
+      return;
     }
-    await load();
-    setSaving(false);
-    setFormOpen(false);
-    toast.success(editing ? "Cliente actualizado" : "Cliente creado");
+    if (!form.phone?.trim()) {
+      toast.error("El teléfono es requerido");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      if (editing) {
+        await base44.entities.Client.update(editing.id, form);
+        toast.success("✓ Cliente actualizado");
+      } else {
+        await base44.entities.Client.create({ ...form, business_id: businessId });
+        toast.success("✓ Cliente creado");
+      }
+      await load();
+      setFormOpen(false);
+    } catch (error) {
+      toast.error(`Error: ${error.message || 'No se pudo guardar el cliente'}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (client) => {
@@ -129,14 +145,14 @@ export default function ClientsManager() {
               <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Email</Label>
-                <Input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-              </div>
-              <div>
-                <Label>Teléfono</Label>
-                <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-              </div>
+            <div>
+              <Label>Email</Label>
+              <Input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+            </div>
+            <div>
+              <Label>Teléfono *</Label>
+              <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+            </div>
             </div>
             <div>
               <Label>Dirección</Label>
@@ -165,8 +181,8 @@ export default function ClientsManager() {
               <Input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setFormOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSave} disabled={!form.name || saving} className="bg-indigo-600 hover:bg-indigo-700">
+              <Button variant="outline" onClick={() => setFormOpen(false)} disabled={saving}>Cancelar</Button>
+              <Button onClick={handleSave} disabled={!form.name?.trim() || !form.phone?.trim() || saving} className="bg-indigo-600 hover:bg-indigo-700">
                 {saving ? "Guardando..." : "Guardar"}
               </Button>
             </div>

@@ -148,7 +148,7 @@ export default function Settings() {
         toast.success("✓ Categoría actualizada");
       } else {
         await base44.entities.Category.create({ ...catForm, business_id: businessId });
-        toast.success("✓ Categoría creada");
+        toast.success("✓ Categoría creada exitosamente");
       }
       // CRITICAL: Filter by business_id, never use list()
       const cats = await base44.entities.Category.filter({ business_id: businessId });
@@ -158,7 +158,7 @@ export default function Settings() {
       setCatForm({ name: "", description: "", color: "#6366f1" });
     } catch (error) {
       console.error("Save category error:", error);
-      toast.error(`Error: ${error.message || 'No se pudo guardar la categoría'}`);
+      toast.error(`Error al guardar categoría: ${error.message || 'Intenta de nuevo'}`);
     }
   };
 
@@ -183,7 +183,7 @@ export default function Settings() {
         toast.success("✓ Proveedor actualizado");
       } else {
         await base44.entities.Supplier.create({ ...supForm, business_id: businessId });
-        toast.success("✓ Proveedor creado");
+        toast.success("✓ Proveedor creado exitosamente");
       }
       // CRITICAL: Filter by business_id, never use list()
       const sups = await base44.entities.Supplier.filter({ business_id: businessId });
@@ -193,7 +193,7 @@ export default function Settings() {
       setSupForm({ name: "", contact_name: "", email: "", phone: "" });
     } catch (error) {
       console.error("Save supplier error:", error);
-      toast.error(`Error: ${error.message || 'No se pudo guardar el proveedor'}`);
+      toast.error(`Error al guardar proveedor: ${error.message || 'Intenta de nuevo'}`);
     }
   };
 

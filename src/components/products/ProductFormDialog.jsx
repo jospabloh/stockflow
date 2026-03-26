@@ -15,6 +15,7 @@ import { Save, X, ScanBarcode, Wand2, Camera, Plus } from "lucide-react";
 import BarcodeCameraScanner from "./BarcodeCameraScanner";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps } from "@/lib/a11y";
+import { toast } from "sonner";
 
 const UNITS = ["pieza", "kg", "litro", "metro", "caja", "paquete"];
 
@@ -123,6 +124,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
     try {
       if (product) {
         await base44.entities.Product.update(product.id, form);
+        toast.success("✓ Producto actualizado");
       } else {
         const created = await base44.entities.Product.create({ ...form, business_id: businessId });
         // BUG-007: Registrar stock inicial como movimiento de entrada
@@ -140,13 +142,14 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
             business_id: businessId,
           });
         }
+        toast.success("✓ Producto creado");
       }
       // Solo cerrar DESPUÉS de que todo haya guardado exitosamente
       onSaved({ ...form, id: product?.id, _optimistic: true });
       onOpenChange(false);
       onSaved({ _reconcile: true });
     } catch (error) {
-      // Si hay error, mantener diálogo abierto y mostrar error
+      toast.error(`Error: ${error.message || 'No se pudo guardar el producto'}`);
       onSaved({ _error: error.message });
     } finally {
       setSaving(false);
