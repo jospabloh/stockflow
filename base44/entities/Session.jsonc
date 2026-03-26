@@ -1,0 +1,77 @@
+{
+  "name": "Session",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID del usuario due\u00f1o de la sesi\u00f3n"
+    },
+    "device_id": {
+      "type": "string",
+      "description": "Fingerprint \u00fanico del dispositivo"
+    },
+    "device_name": {
+      "type": "string",
+      "description": "Nombre legible del dispositivo (ej: Chrome / Mac)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "passive",
+        "revoked"
+      ],
+      "default": "active",
+      "description": "Estado de la sesi\u00f3n"
+    },
+    "last_seen": {
+      "type": "string",
+      "description": "\u00daltima actividad (timestamp ISO)"
+    }
+  },
+  "required": [
+    "user_id",
+    "device_id"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "data.user_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
