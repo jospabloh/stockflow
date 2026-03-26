@@ -181,20 +181,28 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
 
   const handleCreateCategory = async () => {
     if (!newCatName.trim()) return;
-    const created = await base44.entities.Category.create({ name: newCatName.trim(), color: "#6366f1", business_id: businessId });
+    const response = await base44.functions.invoke('createCategorySafe', { name: newCatName.trim(), color: "#6366f1", business_id: businessId });
+    if (!response.data.success) {
+      toast.error(`Error: ${response.data.error}`);
+      return;
+    }
     const cats = await base44.entities.Category.filter({ business_id: businessId });
     setCategories(cats);
-    updateField("category", created.id);
+    updateField("category", response.data.category.id);
     setNewCatName("");
     setShowNewCatDialog(false);
   };
 
   const handleCreateSupplier = async () => {
     if (!newSupName.trim()) return;
-    const created = await base44.entities.Supplier.create({ name: newSupName.trim(), business_id: businessId });
+    const response = await base44.functions.invoke('createSupplierSafe', { name: newSupName.trim(), business_id: businessId });
+    if (!response.data.success) {
+      toast.error(`Error: ${response.data.error}`);
+      return;
+    }
     const sups = await base44.entities.Supplier.filter({ business_id: businessId });
     setSuppliers(sups);
-    updateField("supplier", created.id);
+    updateField("supplier", response.data.supplier.id);
     setNewSupName("");
     setShowNewSupDialog(false);
   };

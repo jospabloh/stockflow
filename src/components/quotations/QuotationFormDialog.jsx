@@ -185,7 +185,12 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
         
         await base44.entities.Quotation.update(quotation.id, data);
       } else {
-        await base44.entities.Quotation.create({ ...data, business_id: businessId });
+        const response = await base44.functions.invoke('createQuotationSafe', { ...data, business_id: businessId });
+        if (!response.data.success) {
+          toast.error(`Error: ${response.data.error}`);
+          setSaving(false);
+          return;
+        }
       }
       // Solo cerrar DESPUÉS de guardar exitosamente
       onSaved();

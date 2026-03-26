@@ -142,13 +142,17 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         return;
       }
       
-      await base44.entities.Movement.create({
+      const response = await base44.functions.invoke('createMovementSafe', {
         ...form,
         product_name: product.name,
         total: form.quantity * form.unit_price,
         stock_after: newStock,
         business_id: businessId,
       });
+      if (!response.data.success) {
+        toast.error(`Error: ${response.data.error}`);
+        return;
+      }
 
       await base44.entities.Product.update(product.id, { stock: newStock });
 
