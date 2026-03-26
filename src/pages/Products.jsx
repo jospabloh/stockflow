@@ -95,12 +95,6 @@ export default function Products() {
 
   const handleDelete = async () => {
     if (deleteProduct) {
-      // CRITICAL FIX: Validate ownership before delete
-      if (deleteProduct.business_id !== businessId) {
-        toast.error("No tienes permiso para eliminar este producto");
-        setDeleteProduct(null);
-        return;
-      }
       // Filter movements by business_id for safety
       const movs = await base44.entities.Movement.filter({ 
         product_id: deleteProduct.id,
@@ -111,7 +105,15 @@ export default function Products() {
         setDeleteProduct(null);
         return;
       }
-      await base44.entities.Product.delete(deleteProduct.id);
+      // CRITICAL: Use backend-validated safe function for delete
+      const response = await base44.functions.invoke('deleteProductSafe', {
+        product_id: deleteProduct.id
+      });
+      if (!response.data.success) {
+        toast.error(`Error: ${response.data.error}`);
+        setDeleteProduct(null);
+        return;
+      }
       setDeleteProduct(null);
       loadData(businessId);
     }
