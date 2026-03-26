@@ -95,7 +95,17 @@ export default function Products() {
 
   const handleDelete = async () => {
     if (deleteProduct) {
-      const movs = await base44.entities.Movement.filter({ product_id: deleteProduct.id });
+      // CRITICAL FIX: Validate ownership before delete
+      if (deleteProduct.business_id !== businessId) {
+        toast.error("No tienes permiso para eliminar este producto");
+        setDeleteProduct(null);
+        return;
+      }
+      // Filter movements by business_id for safety
+      const movs = await base44.entities.Movement.filter({ 
+        product_id: deleteProduct.id,
+        business_id: businessId 
+      });
       if (movs.length > 0) {
         toast.error(`No se puede eliminar: hay ${movs.length} movimiento(s) registrado(s) para este producto.`);
         setDeleteProduct(null);
@@ -103,7 +113,7 @@ export default function Products() {
       }
       await base44.entities.Product.delete(deleteProduct.id);
       setDeleteProduct(null);
-      loadData();
+      loadData(businessId);
     }
   };
 

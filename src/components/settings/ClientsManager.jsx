@@ -27,7 +27,10 @@ export default function ClientsManager() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
 
-  const load = () => base44.entities.Client.list("-created_date").then(setClients);
+  // CRITICAL FIX: Filter clients by business_id to prevent cross-tenant data leaks
+  const load = () => businessId 
+    ? base44.entities.Client.filter({ business_id: businessId }, "-created_date").then(setClients)
+    : Promise.resolve().then(() => setClients([]));
 
   useEffect(() => { load(); }, []);
 
@@ -48,6 +51,12 @@ export default function ClientsManager() {
     setSaving(true);
     try {
       if (editing) {
+        // CRITICAL FIX: Validate ownership before update
+        if (editing.business_id !== businessId) {
+          toast.error("No tienes permiso para editar este cliente");
+          setFormOpen(false);
+          return;
+        }
         await base44.entities.Client.update(editing.id, form);
         toast.success("✓ Cliente actualizado");
       } else {
@@ -64,7 +73,16 @@ export default function ClientsManager() {
   };
 
   const handleDelete = async (client) => {
-    const quots = await base44.entities.Quotation.filter({ client_name: client.name });
+    // CRITICAL FIX: Validate ownership before delete
+    if (client.business_id !== businessId) {
+      toast.error("No tienes permiso para eliminar este cliente");
+      return;
+    }
+    // Filter quotations by both client_name AND business_id for safety
+    const quots = await base44.entities.Quotation.filter({ 
+      client_name: client.name,
+      business_id: businessId 
+    });
     if (quots.length > 0) {
       toast.error(`No se puede eliminar: ${quots.length} cotización(es) están registradas para este cliente.`);
       return;

@@ -129,9 +129,14 @@ export default function Quotations() {
     }
 
     // FASE 1: Validar stock ANTES de cualquier operación (captura estado actual)
+    // CRITICAL FIX: Add business_id filter for cross-tenant safety
+    if (convertQuotation.business_id !== businessId) {
+      setConvertError("No tienes permiso para convertir esta cotización");
+      return;
+    }
     const itemsWithStock = [];
     for (const item of (convertQuotation.items || [])) {
-      const prods = await base44.entities.Product.filter({ id: item.product_id });
+      const prods = await base44.entities.Product.filter({ id: item.product_id, business_id: businessId });
       const product = prods[0];
       if (!product) {
         setConvertError(`Producto "${item.product_name}" ya no existe. Edita la cotización.`);
@@ -196,21 +201,30 @@ export default function Quotations() {
   const handleCancel = async () => {
     if (!cancelQuotation) return;
 
+    // CRITICAL FIX: Validate ownership before cancel
+    if (cancelQuotation.business_id !== businessId) {
+      toast.error("No tienes permiso para cancelar esta cotización");
+      setCancelQuotation(null);
+      return;
+    }
+
     // FASE 1: Si la cotización fue convertida, buscar movimientos de salida originales para revertir correctamente
     if (cancelQuotation.status === "converted") {
       try {
-        // Buscar movimientos de EXIT asociados a esta cotización
+        // Buscar movimientos de EXIT asociados a esta cotización (with business_id filter)
         const exitMovements = await base44.entities.Movement.filter({
           quotation_id: cancelQuotation.id,
           type: "exit",
+          business_id: businessId,
         });
 
         // Para cada movimiento de salida, crear un movimiento de retorno inverso
-        for (const exitMov of exitMovements) {
-          // stock_after del exit es el stock resultante DESPUÉS de la salida
-          // Para restaurar, simplemente sumamos la cantidad nuevamente
-          const prods = await base44.entities.Product.filter({ id: exitMov.product_id });
-          const product = prods[0];
+         for (const exitMov of exitMovements) {
+           // stock_after del exit es el stock resultante DESPUÉS de la salida
+           // Para restaurar, simplemente sumamos la cantidad nuevamente
+           // CRITICAL FIX: Add business_id filter
+           const prods = await base44.entities.Product.filter({ id: exitMov.product_id, business_id: businessId });
+           const product = prods[0];
 
           if (product) {
             // Restaurar stock: el stock actual del producto + cantidad que se retorna
@@ -257,6 +271,12 @@ export default function Quotations() {
 
   const handleConfirmPayment = async () => {
     if (!payQuotation) return;
+    // CRITICAL FIX: Validate ownership before payment
+    if (payQuotation.business_id !== businessId) {
+      toast.error("No tienes permiso para confirmar el pago de esta cotización");
+      setPayQuotation(null);
+      return;
+    }
     // Solo permitir confirmar pago si es cotización convertida
     if (payQuotation.status !== "converted") {
       setPayQuotation(null);
