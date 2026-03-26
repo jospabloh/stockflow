@@ -142,7 +142,12 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         await base44.entities.Product.update(product.id, form);
         toast.success("✓ Producto actualizado");
       } else {
-        const created = await base44.entities.Product.create({ ...form, business_id: businessId });
+        const response = await base44.functions.invoke('createProductSafe', { ...form, business_id: businessId });
+        if (!response.data.success) {
+          toast.error(`Error: ${response.data.error}`);
+          return;
+        }
+        const created = response.data.product;
         // BUG-007: Registrar stock inicial como movimiento de entrada
         if (form.stock > 0 && created?.id) {
           await base44.entities.Movement.create({

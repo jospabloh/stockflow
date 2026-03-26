@@ -60,7 +60,12 @@ export default function ClientsManager() {
         await base44.entities.Client.update(editing.id, form);
         toast.success("✓ Cliente actualizado");
       } else {
-        await base44.entities.Client.create({ ...form, business_id: businessId });
+        const response = await base44.functions.invoke('createClientSafe', { ...form, business_id: businessId });
+        if (!response.data.success) {
+          toast.error(`Error: ${response.data.error}`);
+          setSaving(false);
+          return;
+        }
         toast.success("✓ Cliente creado");
       }
       await load();
