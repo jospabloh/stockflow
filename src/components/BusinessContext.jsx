@@ -9,12 +9,20 @@ export function BusinessProvider({ children }) {
   const [businessName, setBusinessName] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const lastUserEmailRef = useRef(null);
+  const lastBusinessIdRef = useRef(null);
 
   const loadUser = useCallback(async () => {
     try {
       const u = await base44.auth.me();
       setUser(u);
       const bid = u?.business_id || null;
+      
+      // CRITICAL: Always reload business name if business_id changed
+      if (bid !== lastBusinessIdRef.current) {
+        console.log(`[BusinessContext] business_id changed: ${lastBusinessIdRef.current} → ${bid}`);
+        lastBusinessIdRef.current = bid;
+      }
+      
       setBusinessId(bid);
       
       // Load business name if businessId exists
@@ -23,7 +31,7 @@ export function BusinessProvider({ children }) {
           const businesses = await base44.entities.Business.filter({ id: bid });
           if (businesses.length > 0) {
             setBusinessName(businesses[0].name);
-            console.log(`[BusinessContext] ✓ Loaded business "${businesses[0].name}" for user ${u?.email}`);
+            console.log(`[BusinessContext] ✓ Loaded business "${businesses[0].name}" (ID: ${bid}) for user ${u?.email}`);
           } else {
             console.log(`[BusinessContext] ✗ No business found for ID ${bid}`);
             setBusinessName(null);
@@ -59,6 +67,14 @@ export function BusinessProvider({ children }) {
       loadUser();
     }
   }, [user?.email, loadUser]);
+
+  // CRITICAL FIX: Detect business_id changes and reload immediately
+  useEffect(() => {
+    if (businessId && businessId !== lastBusinessIdRef.current) {
+      console.log(`[BusinessContext] business_id changed to ${businessId}, reloading business name`);
+      loadUser();
+    }
+  }, [businessId, loadUser]);
 
   const refreshBusiness = useCallback(() => {
     console.log("[BusinessContext] Manual refresh triggered");

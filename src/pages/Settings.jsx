@@ -45,6 +45,7 @@ export default function Settings() {
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
   const [confirmDeleteStep, setConfirmDeleteStep] = useState(0); // 0: initial, 1: warning, 2: confirm
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [diagnosticBusinessId, setDiagnosticBusinessId] = useState(null);
 
   // Category/Supplier form
   const [catFormOpen, setCatFormOpen] = useState(false);
@@ -58,6 +59,8 @@ export default function Settings() {
      const checkAndLoadSettings = async () => {
        try {
          const u = await base44.auth.me();
+         setDiagnosticBusinessId(businessId);
+         console.log(`[Settings] Loading for businessId: ${businessId}, user.business_id: ${u?.business_id}`);
          setIsAdmin(u?.role === "admin");
          setCheckingAuth(false);
 
