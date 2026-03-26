@@ -183,7 +183,16 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           return;
         }
         
-        await base44.entities.Quotation.update(quotation.id, data);
+        // CRITICAL: Use safe function for quotation update (with ownership validation)
+        const response = await base44.functions.invoke('updateQuotationSafe', {
+          quotation_id: quotation.id,
+          updates: data
+        });
+        if (!response.data.success) {
+          toast.error(`Error: ${response.data.error}`);
+          setSaving(false);
+          return;
+        }
       } else {
         const response = await base44.functions.invoke('createQuotationSafe', { ...data, business_id: businessId });
         if (!response.data.success) {

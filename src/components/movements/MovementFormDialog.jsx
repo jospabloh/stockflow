@@ -154,7 +154,15 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         return;
       }
 
-      await base44.entities.Product.update(product.id, { stock: newStock });
+      // CRITICAL: Use safe function to update product stock (with ownership validation)
+      const updateResponse = await base44.functions.invoke('updateProductSafe', {
+        product_id: product.id,
+        updates: { stock: newStock }
+      });
+      if (!updateResponse.data.success) {
+        toast.error(`Error actualizando stock: ${updateResponse.data.error}`);
+        return;
+      }
 
       // Solo cerrar y notificar DESPUÉS de éxito
       onSaved({ productId: product.id, newStock, _optimistic: true });
