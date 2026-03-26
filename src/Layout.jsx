@@ -49,13 +49,12 @@ const navItems = [
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState(null);
   const [lowStockCount, setLowStockCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
   const touchStartY = useRef(0);
   const mainRef = useRef(null);
-  const { businessId, businessName, isLoading: bizLoading } = useBusinessContext();
+  const { businessId, businessName, isLoading: bizLoading, user } = useBusinessContext();
   const { sessionStatus, reactivate } = useSessionManager(!!businessId);
   const { goBack, direction } = useNavigation();
   const navigate = useNavigate();
@@ -65,7 +64,6 @@ export default function Layout({ children, currentPageName }) {
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
     base44.entities.Product.filter({ status: "active" }).then(products => {
       const low = products.filter(p => p.stock <= p.min_stock).length;
       setLowStockCount(low);
