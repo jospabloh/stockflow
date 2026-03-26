@@ -1,0 +1,111 @@
+{
+  "name": "Movement",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "description": "ID del producto"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Nombre del producto (desnormalizado)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "entry",
+        "exit",
+        "return",
+        "adjustment"
+      ],
+      "description": "Tipo de movimiento"
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Cantidad"
+    },
+    "unit_price": {
+      "type": "number",
+      "description": "Precio unitario en este movimiento"
+    },
+    "total": {
+      "type": "number",
+      "description": "Total del movimiento"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Motivo o referencia"
+    },
+    "reference": {
+      "type": "string",
+      "description": "N\u00famero de factura, orden, etc."
+    },
+    "stock_after": {
+      "type": "number",
+      "description": "Stock resultante despu\u00e9s del movimiento"
+    },
+    "quotation_id": {
+      "type": "string",
+      "description": "ID de cotizaci\u00f3n relacionada"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    }
+  },
+  "required": [
+    "product_id",
+    "type",
+    "quantity"
+  ],
+  "rls": {
+    "create": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "almacenista"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "read": {
+      "data.business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

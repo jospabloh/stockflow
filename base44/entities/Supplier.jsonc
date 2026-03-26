@@ -1,0 +1,82 @@
+{
+  "name": "Supplier",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del proveedor"
+    },
+    "contact_name": {
+      "type": "string",
+      "description": "Nombre del contacto"
+    },
+    "email": {
+      "type": "string",
+      "description": "Correo electr\u00f3nico"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono"
+    },
+    "address": {
+      "type": "string",
+      "description": "Direcci\u00f3n"
+    },
+    "rfc": {
+      "type": "string",
+      "description": "RFC del proveedor"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas adicionales"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "data.business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

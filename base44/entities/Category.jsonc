@@ -1,0 +1,66 @@
+{
+  "name": "Category",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre de la categor\u00eda"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n de la categor\u00eda"
+    },
+    "color": {
+      "type": "string",
+      "description": "Color representativo (hex)"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "data.business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

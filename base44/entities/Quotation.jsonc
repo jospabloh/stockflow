@@ -1,0 +1,185 @@
+{
+  "name": "Quotation",
+  "type": "object",
+  "properties": {
+    "folio": {
+      "type": "string",
+      "description": "N\u00famero de folio"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "ID del cliente vinculado"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Nombre del cliente"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "Email del cliente"
+    },
+    "client_phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono del cliente"
+    },
+    "items": {
+      "type": "array",
+      "description": "Productos de la cotizaci\u00f3n",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "product_name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "tax_rate": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "subtotal": {
+      "type": "number",
+      "description": "Subtotal"
+    },
+    "tax": {
+      "type": "number",
+      "description": "IVA"
+    },
+    "total": {
+      "type": "number",
+      "description": "Total"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "sent",
+        "accepted",
+        "converted",
+        "cancelled"
+      ],
+      "default": "draft",
+      "description": "Estado de la cotizaci\u00f3n"
+    },
+    "invoice_status": {
+      "type": "string",
+      "enum": [
+        "pendiente",
+        "emitida",
+        "no_requerida"
+      ],
+      "description": "Estado de facturaci\u00f3n"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas o condiciones"
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de vigencia"
+    },
+    "payment_method": {
+      "type": "string",
+      "description": "Forma de pago"
+    },
+    "in_route": {
+      "type": "boolean",
+      "default": false,
+      "description": "Pedido en ruta de entrega"
+    },
+    "delivered": {
+      "type": "boolean",
+      "default": false,
+      "description": "Pedido entregado al cliente"
+    },
+    "paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Pago recibido efectivamente"
+    },
+    "cancellation_reason": {
+      "type": "string",
+      "description": "Raz\u00f3n o motivo de cancelaci\u00f3n"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    }
+  },
+  "required": [
+    "client_name",
+    "items"
+  ],
+  "rls": {
+    "create": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "almacenista"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "read": {
+      "data.business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "almacenista"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "name": "PettyCashMovement",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    },
+    "movement_type": {
+      "type": "string",
+      "enum": [
+        "initial_fund",
+        "income",
+        "expense",
+        "adjustment"
+      ],
+      "description": "Tipo: fondo_inicial, ingreso, egreso, ajuste"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Monto del movimiento"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n del movimiento"
+    },
+    "category": {
+      "type": "string",
+      "description": "Categor\u00eda del movimiento"
+    },
+    "movement_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha del movimiento"
+    },
+    "reference": {
+      "type": "string",
+      "description": "Referencia o folio (opcional)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas adicionales (opcional)"
+    }
+  },
+  "required": [
+    "business_id",
+    "movement_type",
+    "amount",
+    "description",
+    "movement_date"
+  ],
+  "rls": {
+    "create": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "almacenista"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "read": {
+      "data.business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "almacenista"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
