@@ -51,61 +51,16 @@
   ],
   "rls": {
     "create": {
-      "$and": [
-        {
-          "data.business_id": "{{user.business_id}}"
-        },
-        {
-          "$or": [
-            {
-              "user_condition": {
-                "role": "admin"
-              }
-            },
-            {
-              "user_condition": {
-                "role": "almacenista"
-              }
-            }
-          ]
-        }
-      ]
+      "data.business_id": "{{user.business_id}}"
     },
     "read": {
       "data.business_id": "{{user.business_id}}"
     },
     "update": {
-      "$and": [
-        {
-          "data.business_id": "{{user.business_id}}"
-        },
-        {
-          "$or": [
-            {
-              "user_condition": {
-                "role": "admin"
-              }
-            },
-            {
-              "user_condition": {
-                "role": "almacenista"
-              }
-            }
-          ]
-        }
-      ]
+      "data.business_id": "{{user.business_id}}"
     },
     "delete": {
-      "$and": [
-        {
-          "data.business_id": "{{user.business_id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "data.business_id": "{{user.business_id}}"
     }
   }
 }
