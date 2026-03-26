@@ -42,7 +42,8 @@
   },
   "required": [
     "name",
-    "phone"
+    "phone",
+    "business_id"
   ],
   "rls": {
     "create": {

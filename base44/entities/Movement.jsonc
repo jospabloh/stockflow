@@ -56,7 +56,8 @@
   "required": [
     "product_id",
     "type",
-    "quantity"
+    "quantity",
+    "business_id"
   ],
   "rls": {
     "create": {

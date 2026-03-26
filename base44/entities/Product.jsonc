@@ -85,7 +85,8 @@
   },
   "required": [
     "name",
-    "sale_price"
+    "sale_price",
+    "business_id"
   ],
   "rls": {
     "create": {

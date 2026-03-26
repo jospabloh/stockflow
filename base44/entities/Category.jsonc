@@ -20,7 +20,8 @@
     }
   },
   "required": [
-    "name"
+    "name",
+    "business_id"
   ],
   "rls": {
     "create": {

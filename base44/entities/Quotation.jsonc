@@ -121,7 +121,8 @@
   },
   "required": [
     "client_name",
-    "items"
+    "items",
+    "business_id"
   ],
   "rls": {
     "create": {
