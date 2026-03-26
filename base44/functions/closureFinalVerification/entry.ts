@@ -80,12 +80,25 @@ Deno.serve(async (req) => {
       results.tests.step_3_entry_create = false;
     }
 
-    // Wait for automation sync
-    await new Promise(r => setTimeout(r, 500));
+    // Wait for automation sync (longer delay for stock calc)
+    await new Promise(r => setTimeout(r, 1000));
 
     // Check stock after entry
-    let product = await base44.entities.Product.get(results._product_id);
-    console.log(`[FINAL-CLOSURE] After ENTRY: stock = ${product.stock}`);
+    let product;
+    try {
+      product = await base44.entities.Product.get(results._product_id);
+      console.log(`[FINAL-CLOSURE] After ENTRY: stock = ${product.stock}`);
+    } catch (e) {
+      console.log(`[FINAL-CLOSURE] Error fetching product after entry: ${e.message}`);
+      // Try to fetch via list as fallback
+      const prods = await base44.entities.Product.filter({ id: results._product_id });
+      if (prods.length > 0) {
+        product = prods[0];
+        console.log(`[FINAL-CLOSURE] Found product via list: stock = ${product.stock}`);
+      } else {
+        throw new Error('Product not found via get or list');
+      }
+    }
 
     // STEP 4: Create exit movement (-10)
     try {
@@ -108,7 +121,7 @@ Deno.serve(async (req) => {
     }
 
     // Wait for automation sync
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 1000));
 
     // Check stock after exit
     product = await base44.entities.Product.get(results._product_id);
@@ -171,7 +184,7 @@ Deno.serve(async (req) => {
     }
 
     // Wait for final automation sync
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 1500));
 
     // STEP 8: Final stock verification
     product = await base44.entities.Product.get(results._product_id);
