@@ -167,6 +167,22 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
         folio,
       };
       if (quotation) {
+        // SECURITY: Validate ownership before update
+        const validation = await fetch('/api/functions/validateBusinessOwnership', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            entity_name: 'Quotation',
+            record_id: quotation.id,
+            operation: 'update'
+          })
+        });
+        const validResult = await validation.json();
+        if (!validResult.valid) {
+          alert("⚠️ No tienes permiso para modificar esta cotización");
+          return;
+        }
+        
         await base44.entities.Quotation.update(quotation.id, data);
       } else {
         await base44.entities.Quotation.create({ ...data, business_id: businessId });

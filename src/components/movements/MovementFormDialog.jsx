@@ -41,8 +41,8 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
-    if (open) {
-      base44.entities.Product.filter({ status: "active" }).then(setProducts);
+    if (open && businessId) {
+      base44.entities.Product.filter({ status: "active", business_id: businessId }).then(setProducts);
       setForm({ product_id: "", type: "entry", quantity: 1, unit_price: 0, reason: "", reference: "" });
       setSelectedProduct(null);
       setBarcodeInput("");
@@ -50,7 +50,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       // Autofocus en el campo de código de barras al abrir
       setTimeout(() => barcodeRef.current?.focus(), 100);
     }
-  }, [open]);
+  }, [open, businessId]);
 
   const handleBarcodeSearch = () => {
     if (!barcodeInput.trim()) return;
@@ -126,6 +126,22 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
     }
 
     try {
+      // SECURITY: Validate product ownership before mutation
+      const validation = await fetch('/api/functions/validateBusinessOwnership', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          entity_name: 'Product',
+          record_id: product.id,
+          operation: 'update'
+        })
+      });
+      const validResult = await validation.json();
+      if (!validResult.valid) {
+        toast.error("⚠️ No tienes permiso para modificar este producto");
+        return;
+      }
+      
       await base44.entities.Movement.create({
         ...form,
         product_name: product.name,

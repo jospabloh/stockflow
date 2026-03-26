@@ -123,6 +123,22 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
 
     try {
       if (product) {
+        // SECURITY: Validate ownership before update
+        const validation = await fetch('/api/functions/validateBusinessOwnership', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            entity_name: 'Product',
+            record_id: product.id,
+            operation: 'update'
+          })
+        });
+        const validResult = await validation.json();
+        if (!validResult.valid) {
+          toast.error("⚠️ No tienes permiso para modificar este producto");
+          return;
+        }
+        
         await base44.entities.Product.update(product.id, form);
         toast.success("✓ Producto actualizado");
       } else {
