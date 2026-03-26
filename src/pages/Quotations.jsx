@@ -70,9 +70,13 @@ export default function Quotations() {
   const [payMarkDelivered, setPayMarkDelivered] = useState(false);
   const [previewQuotation, setPreviewQuotation] = useState(null);
   const [settings, setSettings] = useState(null);
+  const [businessId, setBusinessId] = useState(null);
 
   useEffect(() => {
-    base44.entities.AppSettings.list().then(s => setSettings(s[0] || null)).catch(() => {});
+    base44.auth.me().then(u => {
+      setBusinessId(u?.business_id || null);
+      base44.entities.AppSettings.filter({ business_id: u?.business_id }).then(s => setSettings(s[0] || null)).catch(() => {});
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -81,15 +85,16 @@ export default function Quotations() {
     if (status) setStatusFilter(status);
   }, [location.search]);
 
-  const loadData = () => {
+  const loadData = async (bId) => {
+    if (!bId) return;
     setLoading(true);
-    base44.entities.Quotation.list("-created_date", 100).then((q) => {
+    base44.entities.Quotation.filter({ business_id: bId }, "-created_date", 100).then((q) => {
       setQuotations(q);
       setLoading(false);
     });
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { if (businessId) loadData(businessId); }, [businessId]);
 
   const filtered = quotations.filter((q) => {
     const s = search.toLowerCase();

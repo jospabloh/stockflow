@@ -45,16 +45,17 @@ export default function Reports() {
   useEffect(() => {
     base44.auth.me().then(async (u) => {
       const admin = u?.role === "admin";
+      const bId = u?.business_id;
       setIsAdmin(admin);
       const [prods, movs, cats] = await Promise.all([
-        base44.entities.Product.list("-created_date", 500),
-        base44.entities.Movement.list("-created_date", 1000),
-        base44.entities.Category.list(),
+        base44.entities.Product.filter({ business_id: bId }, "-created_date", 500),
+        base44.entities.Movement.filter({ business_id: bId }, "-created_date", 1000),
+        base44.entities.Category.filter({ business_id: bId }),
       ]);
       setProducts(prods);
       setMovements(movs);
       setCategories(cats);
-      const quots = await base44.entities.Quotation.list("-created_date", 500).catch(() => []);
+      const quots = await base44.entities.Quotation.filter({ business_id: bId }, "-created_date", 500).catch(() => []);
       setQuotations(quots);
       setLoading(false);
     }).catch(() => setLoading(false));

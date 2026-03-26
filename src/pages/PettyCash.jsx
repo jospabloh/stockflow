@@ -24,7 +24,7 @@ export default function PettyCash() {
 
   const loadMovements = async () => {
     if (!businessId) return;
-    const data = await base44.entities.PettyCashMovement.list("-movement_date", 500);
+    const data = await base44.entities.PettyCashMovement.filter({ business_id: businessId }, "-movement_date", 500);
     setMovements(data);
     setLoading(false);
   };

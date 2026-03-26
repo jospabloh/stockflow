@@ -30,6 +30,7 @@ export default function Products() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [stockFilter, setStockFilter] = useState("all");
   const [deleteProduct, setDeleteProduct] = useState(null);
+  const [businessId, setBusinessId] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -38,10 +39,11 @@ export default function Products() {
     }
   }, []);
 
-  const loadData = () => {
+  const loadData = async (bId) => {
+    if (!bId) return;
     Promise.all([
-      base44.entities.Product.list("-created_date", 500),
-      base44.entities.Category.list(),
+      base44.entities.Product.filter({ business_id: bId }, "-created_date", 500),
+      base44.entities.Category.filter({ business_id: bId }),
     ]).then(([prods, cats]) => {
       setProducts(prods);
       setCategories(cats);
@@ -52,7 +54,7 @@ export default function Products() {
   const handleSaved = (payload) => {
     if (!payload || payload._reconcile) {
       // Network settled — do a silent background refresh
-      loadData();
+      loadData(businessId);
       return;
     }
     if (payload._optimistic) {
@@ -69,8 +71,11 @@ export default function Products() {
   };
 
   useEffect(() => {
-    base44.auth.me().then(u => setIsAdmin(u?.role === "admin")).catch(() => {});
-    loadData();
+    base44.auth.me().then(u => {
+      setIsAdmin(u?.role === "admin");
+      setBusinessId(u?.business_id || null);
+      loadData(u?.business_id || null);
+    }).catch(() => setLoading(false));
   }, []);
 
   const filteredProducts = products.filter((p) => {

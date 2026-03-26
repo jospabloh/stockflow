@@ -35,9 +35,9 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      base44.entities.Product.filter({ status: "active" }).then(setProducts);
-      base44.entities.Client.filter({ status: "active" }).then(setClients);
+    if (open && businessId) {
+      base44.entities.Product.filter({ business_id: businessId, status: "active" }).then(setProducts);
+      base44.entities.Client.filter({ business_id: businessId, status: "active" }).then(setClients);
       if (quotation) {
         setForm({
           client_name: quotation.client_name || "",
@@ -63,7 +63,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       setBarcodeNotFound(false);
       setTimeout(() => barcodeRef.current?.focus(), 150);
     }
-  }, [open, quotation]);
+  }, [open, quotation, businessId]);
 
   const handleBarcodeSearch = () => {
     if (!barcodeInput.trim()) return;
@@ -148,8 +148,8 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     const mm = mxDate.find(p => p.type === "month").value;
     const dd = mxDate.find(p => p.type === "day").value;
     const datePrefix = `COT-${yy}${mm}${dd}`;
-    // Fetch all quotations (high limit) to count today's folios correctly
-    const all = await base44.entities.Quotation.list("-created_date", 2000);
+    // Fetch all quotations for this business to count today's folios correctly
+    const all = await base44.entities.Quotation.filter({ business_id: businessId }, "-created_date", 2000);
     const todayCount = all.filter(q => q.folio && q.folio.startsWith(datePrefix)).length;
     const seq = String(todayCount).padStart(4, "0");
     return `${datePrefix}-${seq}`;

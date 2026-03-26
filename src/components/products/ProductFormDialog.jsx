@@ -41,14 +41,15 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   const scannerTimeoutRef = useRef(null);
 
   useEffect(() => {
+    if (!businessId) return;
     Promise.all([
-      base44.entities.Category.list(),
-      base44.entities.Supplier.list(),
+      base44.entities.Category.filter({ business_id: businessId }),
+      base44.entities.Supplier.filter({ business_id: businessId }),
     ]).then(([cats, sups]) => {
       setCategories(cats);
       setSuppliers(sups);
     });
-  }, []);
+  }, [businessId]);
 
   useEffect(() => {
     if (!open) {
@@ -90,7 +91,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
     const prefix = selectedCategory
       ? selectedCategory.name.replace(/\s+/g, "").substring(0, 3).toUpperCase()
       : "PRD";
-    const products = await base44.entities.Product.list();
+    const products = await base44.entities.Product.filter({ business_id: businessId });
     const existing = products
       .map(p => p.sku)
       .filter(s => s && s.startsWith(prefix + "-"))
@@ -157,7 +158,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   const handleCreateCategory = async () => {
     if (!newCatName.trim()) return;
     const created = await base44.entities.Category.create({ name: newCatName.trim(), color: "#6366f1", business_id: businessId });
-    const cats = await base44.entities.Category.list();
+    const cats = await base44.entities.Category.filter({ business_id: businessId });
     setCategories(cats);
     updateField("category", created.id);
     setNewCatName("");
@@ -167,7 +168,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   const handleCreateSupplier = async () => {
     if (!newSupName.trim()) return;
     const created = await base44.entities.Supplier.create({ name: newSupName.trim(), business_id: businessId });
-    const sups = await base44.entities.Supplier.list();
+    const sups = await base44.entities.Supplier.filter({ business_id: businessId });
     setSuppliers(sups);
     updateField("supplier", created.id);
     setNewSupName("");

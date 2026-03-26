@@ -29,15 +29,16 @@ export default function Dashboard() {
   useEffect(() => {
     base44.auth.me().then(async (u) => {
       const admin = u?.role === "admin";
+      const bId = u?.business_id;
       setIsAdmin(admin);
       const [prods, movs] = await Promise.all([
-        base44.entities.Product.list("-created_date", 500),
-        base44.entities.Movement.list("-created_date", 200),
+        base44.entities.Product.filter({ business_id: bId }, "-created_date", 500),
+        base44.entities.Movement.filter({ business_id: bId }, "-created_date", 200),
       ]);
       setProducts(prods);
       setMovements(movs);
       if (admin) {
-        const quots = await base44.entities.Quotation.list("-created_date", 200).catch(() => []);
+        const quots = await base44.entities.Quotation.filter({ business_id: bId }, "-created_date", 200).catch(() => []);
         setQuotations(quots);
       }
       setLoading(false);

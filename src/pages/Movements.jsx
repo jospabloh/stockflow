@@ -42,9 +42,11 @@ export default function Movements() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [businessId, setBusinessId] = useState(null);
 
-  const loadData = () => {
-    base44.entities.Movement.list("-created_date", 200).then((movs) => {
+  const loadData = async (bId) => {
+    if (!bId) return;
+    base44.entities.Movement.filter({ business_id: bId }, "-created_date", 200).then((movs) => {
       setMovements(movs);
       setLoading(false);
     });
@@ -52,14 +54,17 @@ export default function Movements() {
 
   const handleSaved = (payload) => {
     if (!payload || payload._reconcile) {
-      loadData();
+      loadData(businessId);
     }
     // optimistic: movement list will reflect after reconcile
   };
 
   useEffect(() => {
-    base44.auth.me().then(u => setIsAdmin(u?.role === "admin")).catch(() => {});
-    loadData();
+    base44.auth.me().then(u => {
+      setIsAdmin(u?.role === "admin");
+      setBusinessId(u?.business_id || null);
+      loadData(u?.business_id || null);
+    }).catch(() => setLoading(false));
   }, []);
 
   useEffect(() => {
