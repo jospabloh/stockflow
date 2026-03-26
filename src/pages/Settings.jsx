@@ -92,7 +92,9 @@ export default function Settings() {
        // Load business entity for invite code
        if (businessId) {
          const list = await base44.entities.Business.filter({ id: businessId });
-         if (list.length > 0) setBusiness(list[0]);
+         // CRITICAL: Find exact match to avoid RLS filter bug
+         const exactBusiness = list.find(b => b.id === businessId);
+         if (exactBusiness) setBusiness(exactBusiness);
        }
        } catch (err) {
        console.error("Error loading settings:", err);

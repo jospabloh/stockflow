@@ -29,11 +29,13 @@ export function BusinessProvider({ children }) {
       if (bid) {
         try {
           const businesses = await base44.entities.Business.filter({ id: bid });
-          if (businesses.length > 0) {
-            setBusinessName(businesses[0].name);
-            console.log(`[BusinessContext] ✓ Loaded business "${businesses[0].name}" (ID: ${bid}) for user ${u?.email}`);
+          // CRITICAL: Find the exact match by ID to avoid RLS filter bug
+          const exactMatch = businesses.find(b => b.id === bid);
+          if (exactMatch) {
+            setBusinessName(exactMatch.name);
+            console.log(`[BusinessContext] ✓ Loaded business "${exactMatch.name}" (ID: ${bid}) for user ${u?.email}`);
           } else {
-            console.log(`[BusinessContext] ✗ No business found for ID ${bid}`);
+            console.log(`[BusinessContext] ✗ No exact business match for ID ${bid}`);
             setBusinessName(null);
           }
         } catch (e) {

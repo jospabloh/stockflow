@@ -64,11 +64,12 @@ export default function Layout({ children, currentPageName }) {
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    base44.entities.Product.filter({ status: "active" }).then(products => {
+    if (!businessId) return;
+    base44.entities.Product.filter({ status: "active", business_id: businessId }).then(products => {
       const low = products.filter(p => p.stock <= p.min_stock).length;
       setLowStockCount(low);
     }).catch(() => {});
-  }, []);
+  }, [businessId]);
 
   useEffect(() => {
     if (!bizLoading && !businessId) {
