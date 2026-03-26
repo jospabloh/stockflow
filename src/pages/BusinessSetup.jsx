@@ -55,50 +55,59 @@ export default function BusinessSetup() {
   };
 
   const handleJoin = async () => {
-    const code = inviteCode.trim().toUpperCase();
-    if (!code) return;
-    if (joinCooldown > 0) return;
-    if (joinAttempts >= 5) {
-      toast.error("Demasiados intentos fallidos. Espera antes de intentar de nuevo.");
-      setJoinCooldown(60);
-      return;
-    }
-    setLoading(true);
-    try {
-      const businesses = await base44.entities.Business.filter({ invite_code: code });
-      if (businesses.length === 0) {
-        const attempts = joinAttempts + 1;
-        setJoinAttempts(attempts);
-        if (attempts >= 5) {
-          setJoinCooldown(60);
-          toast.error("5 intentos fallidos. Bloqueado por 60 segundos.");
-        } else {
-          toast.error(`Código no válido. ${5 - attempts} intento(s) restantes.`);
-        }
-        setLoading(false);
-        return;
-      }
-      const business = businesses[0];
-      if (business.invite_code_active === false) {
-        toast.error("Este código de invitación está desactivado. Contacta al administrador.");
-        setLoading(false);
-        return;
-      }
-      // Update user with business assignment
-      await base44.auth.updateMe({ business_id: business.id, role: "almacenista" });
-      // Wait for business context to refresh
-      await refreshBusiness();
-      // Small delay to ensure state updates
-      await new Promise(resolve => setTimeout(resolve, 500));
-      toast.success(`¡Bienvenido a ${business.name}!`);
-      navigate("/Dashboard");
-    } catch (error) {
-      console.error("Join error:", error);
-      toast.error(`Error: ${error.message || 'Algo salió mal'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+     const code = inviteCode.trim().toUpperCase();
+     if (!code) return;
+     if (joinCooldown > 0) return;
+     if (joinAttempts >= 5) {
+       toast.error("Demasiados intentos fallidos. Espera antes de intentar de nuevo.");
+       setJoinCooldown(60);
+       return;
+     }
+     setLoading(true);
+     try {
+       const businesses = await base44.entities.Business.filter({ invite_code: code });
+       if (businesses.length === 0) {
+         const attempts = joinAttempts + 1;
+         setJoinAttempts(attempts);
+         if (attempts >= 5) {
+           setJoinCooldown(60);
+           toast.error("5 intentos fallidos. Bloqueado por 60 segundos.");
+         } else {
+           toast.error(`Código no válido. ${5 - attempts} intento(s) restantes.`);
+         }
+         setLoading(false);
+         return;
+       }
+       const business = businesses[0];
+       if (business.invite_code_active === false) {
+         toast.error("Este código de invitación está desactivado. Contacta al administrador.");
+         setLoading(false);
+         return;
+       }
+       if (business.status !== "active") {
+         toast.error("Este negocio no está activo. Contacta al administrador.");
+         setLoading(false);
+         return;
+       }
+       // Update user with business assignment
+       await base44.auth.updateMe({ business_id: business.id, role: "almacenista" });
+       // Wait for business context to refresh and verify business_id is updated
+       await refreshBusiness();
+       // Verify the user's business_id was updated before navigating
+       const verifyUser = await base44.auth.me();
+       if (verifyUser.business_id !== business.id) {
+         throw new Error("Falló la asignación del negocio. Intenta de nuevo.");
+       }
+       // Only THEN reset loading and navigate
+       setLoading(false);
+       toast.success(`¡Bienvenido a ${business.name}!`);
+       navigate("/Dashboard");
+     } catch (error) {
+       console.error("Join error:", error);
+       toast.error(`Error: ${error.message || 'Algo salió mal'}`);
+       setLoading(false);
+     }
+   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/40 flex flex-col items-center justify-center p-4">

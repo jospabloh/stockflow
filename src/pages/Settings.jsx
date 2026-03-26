@@ -133,17 +133,28 @@ export default function Settings() {
   };
 
   const handleSaveCategory = async () => {
-    if (editingCat) {
-      await base44.entities.Category.update(editingCat.id, catForm);
-    } else {
-      await base44.entities.Category.create({ ...catForm, business_id: businessId });
+    if (!catForm.name.trim()) {
+      toast.error("El nombre de la categoría es requerido");
+      return;
     }
-    // CRITICAL: Filter by business_id, never use list()
-    const cats = await base44.entities.Category.filter({ business_id: businessId });
-    setCategories(cats);
-    setCatFormOpen(false);
-    setEditingCat(null);
-    setCatForm({ name: "", description: "", color: "#6366f1" });
+    try {
+      if (editingCat) {
+        await base44.entities.Category.update(editingCat.id, catForm);
+        toast.success("✓ Categoría actualizada");
+      } else {
+        await base44.entities.Category.create({ ...catForm, business_id: businessId });
+        toast.success("✓ Categoría creada");
+      }
+      // CRITICAL: Filter by business_id, never use list()
+      const cats = await base44.entities.Category.filter({ business_id: businessId });
+      setCategories(cats);
+      setCatFormOpen(false);
+      setEditingCat(null);
+      setCatForm({ name: "", description: "", color: "#6366f1" });
+    } catch (error) {
+      console.error("Save category error:", error);
+      toast.error(`Error: ${error.message || 'No se pudo guardar la categoría'}`);
+    }
   };
 
   const handleDeleteCategory = async (id) => {
@@ -157,17 +168,28 @@ export default function Settings() {
   };
 
   const handleSaveSupplier = async () => {
-    if (editingSup) {
-      await base44.entities.Supplier.update(editingSup.id, supForm);
-    } else {
-      await base44.entities.Supplier.create({ ...supForm, business_id: businessId });
+    if (!supForm.name.trim()) {
+      toast.error("El nombre del proveedor es requerido");
+      return;
     }
-    // CRITICAL: Filter by business_id, never use list()
-    const sups = await base44.entities.Supplier.filter({ business_id: businessId });
-    setSuppliers(sups);
-    setSupFormOpen(false);
-    setEditingSup(null);
-    setSupForm({ name: "", contact_name: "", email: "", phone: "" });
+    try {
+      if (editingSup) {
+        await base44.entities.Supplier.update(editingSup.id, supForm);
+        toast.success("✓ Proveedor actualizado");
+      } else {
+        await base44.entities.Supplier.create({ ...supForm, business_id: businessId });
+        toast.success("✓ Proveedor creado");
+      }
+      // CRITICAL: Filter by business_id, never use list()
+      const sups = await base44.entities.Supplier.filter({ business_id: businessId });
+      setSuppliers(sups);
+      setSupFormOpen(false);
+      setEditingSup(null);
+      setSupForm({ name: "", contact_name: "", email: "", phone: "" });
+    } catch (error) {
+      console.error("Save supplier error:", error);
+      toast.error(`Error: ${error.message || 'No se pudo guardar el proveedor'}`);
+    }
   };
 
   const handleDeleteSupplier = async (id) => {
