@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     // CRITICAL: Validate business_id ownership
     if (product.business_id !== user.business_id) {
       return Response.json(
-        { error: `Unauthorized: business_id mismatch (expected: ${user.business_id}, got: ${product.business_id})` },
+        { error: 'Forbidden' },
         { status: 403 }
       );
     }
