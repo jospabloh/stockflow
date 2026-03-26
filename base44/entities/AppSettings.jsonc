@@ -1,0 +1,101 @@
+{
+  "name": "AppSettings",
+  "type": "object",
+  "properties": {
+    "business_name": {
+      "type": "string",
+      "description": "Nombre del negocio"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "URL del logotipo"
+    },
+    "primary_color": {
+      "type": "string",
+      "description": "Color primario (hex)",
+      "default": "#4F46E5"
+    },
+    "secondary_color": {
+      "type": "string",
+      "description": "Color secundario (hex)",
+      "default": "#06B6D4"
+    },
+    "tax_rate": {
+      "type": "number",
+      "description": "Tasa de IVA (%)",
+      "default": 16
+    },
+    "currency": {
+      "type": "string",
+      "description": "Moneda",
+      "default": "MXN"
+    },
+    "low_stock_email": {
+      "type": "string",
+      "description": "Email para alertas de stock bajo"
+    },
+    "quotation_footer": {
+      "type": "string",
+      "description": "Texto al pie de las cotizaciones"
+    },
+    "address": {
+      "type": "string",
+      "description": "Direcci\u00f3n del negocio"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono del negocio"
+    },
+    "rfc": {
+      "type": "string",
+      "description": "RFC del negocio",
+      "pattern": "^[A-Z&\u00d1]{3,4}[0-9]{6}[A-Z0-9]{3}$"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "data.business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

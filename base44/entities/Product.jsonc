@@ -1,0 +1,149 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del producto"
+    },
+    "sku": {
+      "type": "string",
+      "description": "C\u00f3digo SKU"
+    },
+    "barcode": {
+      "type": "string",
+      "description": "C\u00f3digo de barras"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n del producto"
+    },
+    "category": {
+      "type": "string",
+      "description": "ID de la categor\u00eda"
+    },
+    "supplier": {
+      "type": "string",
+      "description": "ID del proveedor"
+    },
+    "purchase_price": {
+      "type": "number",
+      "description": "Precio de compra"
+    },
+    "sale_price": {
+      "type": "number",
+      "description": "Precio de venta"
+    },
+    "stock": {
+      "type": "number",
+      "description": "Existencias actuales",
+      "default": 0
+    },
+    "min_stock": {
+      "type": "number",
+      "description": "Stock m\u00ednimo para alerta",
+      "default": 5
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "pieza",
+        "kg",
+        "litro",
+        "metro",
+        "caja",
+        "paquete"
+      ],
+      "default": "pieza",
+      "description": "Unidad de medida"
+    },
+    "tax_rate": {
+      "type": "number",
+      "enum": [
+        0,
+        16
+      ],
+      "default": 16,
+      "description": "Tasa de IVA aplicable al producto (0 o 16%)"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "URL de imagen del producto"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    }
+  },
+  "required": [
+    "name",
+    "sale_price"
+  ],
+  "rls": {
+    "create": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "almacenista"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "read": {
+      "data.business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "user_condition": {
+                "role": "almacenista"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.business_id": "{{user.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
