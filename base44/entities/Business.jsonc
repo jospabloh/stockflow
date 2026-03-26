@@ -1,0 +1,79 @@
+{
+  "name": "Business",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del negocio"
+    },
+    "rfc": {
+      "type": "string",
+      "description": "RFC del negocio"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono"
+    },
+    "address": {
+      "type": "string",
+      "description": "Direcci\u00f3n"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "URL del logotipo"
+    },
+    "invite_code": {
+      "type": "string",
+      "description": "C\u00f3digo \u00fanico de invitaci\u00f3n"
+    },
+    "invite_code_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si el c\u00f3digo de invitaci\u00f3n est\u00e1 activo y acepta nuevos miembros"
+    },
+    "tax_rate": {
+      "type": "number",
+      "default": 16,
+      "description": "Tasa de IVA (%)"
+    },
+    "currency": {
+      "type": "string",
+      "default": "MXN"
+    },
+    "low_stock_email": {
+      "type": "string",
+      "description": "Email para alertas de stock bajo"
+    },
+    "quotation_footer": {
+      "type": "string",
+      "description": "Texto al pie de cotizaciones"
+    },
+    "primary_color": {
+      "type": "string",
+      "default": "#4F46E5",
+      "description": "Color primario"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "read": {
+      "id": "{{user.business_id}}"
+    },
+    "update": {
+      "id": "{{user.business_id}}"
+    },
+    "delete": {
+      "id": "{{user.business_id}}"
+    }
+  }
+}

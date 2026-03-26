@@ -51,16 +51,16 @@
   ],
   "rls": {
     "create": {
-      "data.business_id": "{{user.business_id}}"
+      "business_id": "{{user.business_id}}"
     },
     "read": {
-      "data.business_id": "{{user.business_id}}"
+      "business_id": "{{user.business_id}}"
     },
     "update": {
-      "data.business_id": "{{user.business_id}}"
+      "business_id": "{{user.business_id}}"
     },
     "delete": {
-      "data.business_id": "{{user.business_id}}"
+      "business_id": "{{user.business_id}}"
     }
   }
 }
