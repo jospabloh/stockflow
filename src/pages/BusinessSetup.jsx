@@ -64,30 +64,40 @@ export default function BusinessSetup() {
       return;
     }
     setLoading(true);
-    const businesses = await base44.entities.Business.filter({ invite_code: code });
-    if (businesses.length === 0) {
-      const attempts = joinAttempts + 1;
-      setJoinAttempts(attempts);
-      if (attempts >= 5) {
-        setJoinCooldown(60);
-        toast.error("5 intentos fallidos. Bloqueado por 60 segundos.");
-      } else {
-        toast.error(`Código no válido. ${5 - attempts} intento(s) restantes.`);
+    try {
+      const businesses = await base44.entities.Business.filter({ invite_code: code });
+      if (businesses.length === 0) {
+        const attempts = joinAttempts + 1;
+        setJoinAttempts(attempts);
+        if (attempts >= 5) {
+          setJoinCooldown(60);
+          toast.error("5 intentos fallidos. Bloqueado por 60 segundos.");
+        } else {
+          toast.error(`Código no válido. ${5 - attempts} intento(s) restantes.`);
+        }
+        setLoading(false);
+        return;
       }
+      const business = businesses[0];
+      if (business.invite_code_active === false) {
+        toast.error("Este código de invitación está desactivado. Contacta al administrador.");
+        setLoading(false);
+        return;
+      }
+      // Update user with business assignment
+      await base44.auth.updateMe({ business_id: business.id, role: "almacenista" });
+      // Wait for business context to refresh
+      await refreshBusiness();
+      // Small delay to ensure state updates
+      await new Promise(resolve => setTimeout(resolve, 500));
+      toast.success(`¡Bienvenido a ${business.name}!`);
+      navigate("/Dashboard");
+    } catch (error) {
+      console.error("Join error:", error);
+      toast.error(`Error: ${error.message || 'Algo salió mal'}`);
+    } finally {
       setLoading(false);
-      return;
     }
-    const business = businesses[0];
-    if (business.invite_code_active === false) {
-      toast.error("Este código de invitación está desactivado. Contacta al administrador.");
-      setLoading(false);
-      return;
-    }
-    await base44.auth.updateMe({ business_id: business.id, role: "almacenista" });
-    await refreshBusiness();
-    toast.success(`¡Bienvenido a ${business.name}!`);
-    navigate("/Dashboard");
-    setLoading(false);
   };
 
   return (

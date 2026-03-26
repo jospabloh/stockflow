@@ -66,39 +66,40 @@ export default function Settings() {
            return;
          }
 
+         // CRITICAL FIX: Filter ALL by business_id, never use list() without filtering
          const [sets, cats, sups] = await Promise.all([
-           base44.entities.AppSettings.list("-created_date", 1),
-           base44.entities.Category.list(),
-           base44.entities.Supplier.list(),
+           businessId ? base44.entities.AppSettings.filter({ business_id: businessId }) : Promise.resolve([]),
+           businessId ? base44.entities.Category.filter({ business_id: businessId }) : Promise.resolve([]),
+           businessId ? base44.entities.Supplier.filter({ business_id: businessId }) : Promise.resolve([]),
          ]);
       if (sets.length > 0) {
-        setSettings(sets[0]);
-        setSettingsId(sets[0].id);
-        setRfcSaved(!!sets[0].rfc);
-      } else {
-        setSettings({
-          business_name: "", logo_url: "", primary_color: "#4F46E5",
-          secondary_color: "#06B6D4", tax_rate: 16, currency: "MXN",
-          low_stock_email: "", quotation_footer: "", address: "", phone: "", rfc: "",
-        });
-      }
-      setCategories(cats);
-      setSuppliers(sups);
+         setSettings(sets[0]);
+         setSettingsId(sets[0].id);
+         setRfcSaved(!!sets[0].rfc);
+       } else {
+         setSettings({
+           business_name: "", logo_url: "", primary_color: "#4F46E5",
+           secondary_color: "#06B6D4", tax_rate: 16, currency: "MXN",
+           low_stock_email: "", quotation_footer: "", address: "", phone: "", rfc: "",
+         });
+       }
+       setCategories(cats);
+       setSuppliers(sups);
 
-      // Load business entity for invite code
-      if (businessId) {
-        const list = await base44.entities.Business.filter({ id: businessId });
-        if (list.length > 0) setBusiness(list[0]);
-      }
-      } catch (err) {
-      console.error("Error loading settings:", err);
-      } finally {
-      setLoading(false);
-      }
-      };
+       // Load business entity for invite code
+       if (businessId) {
+         const list = await base44.entities.Business.filter({ id: businessId });
+         if (list.length > 0) setBusiness(list[0]);
+       }
+       } catch (err) {
+       console.error("Error loading settings:", err);
+       } finally {
+       setLoading(false);
+       }
+       };
 
-      checkAndLoadSettings();
-      }, [businessId]);
+       checkAndLoadSettings();
+       }, [businessId]);
 
   const validateRFC = (rfc) => {
     if (!rfc) return true; // optional
@@ -111,15 +112,24 @@ export default function Settings() {
       return;
     }
     setSaving(true);
-    if (settingsId) {
-      await base44.entities.AppSettings.update(settingsId, settings);
-    } else {
-      const created = await base44.entities.AppSettings.create({ ...settings, business_id: businessId });
-      setSettingsId(created.id);
+    try {
+      if (settingsId) {
+        await base44.entities.AppSettings.update(settingsId, settings);
+      } else {
+        const created = await base44.entities.AppSettings.create({ ...settings, business_id: businessId });
+        setSettingsId(created.id);
+      }
+      setRfcSaved(!!settings?.rfc);
+      toast.success("✓ Configuración guardada exitosamente", {
+        duration: 4000,
+        icon: "✓",
+      });
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error(`Error al guardar: ${error.message || 'Intenta de nuevo'}`);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    setRfcSaved(!!settings?.rfc);
-    toast.success("Configuración guardada");
   };
 
   const handleSaveCategory = async () => {
@@ -128,7 +138,8 @@ export default function Settings() {
     } else {
       await base44.entities.Category.create({ ...catForm, business_id: businessId });
     }
-    const cats = await base44.entities.Category.list();
+    // CRITICAL: Filter by business_id, never use list()
+    const cats = await base44.entities.Category.filter({ business_id: businessId });
     setCategories(cats);
     setCatFormOpen(false);
     setEditingCat(null);
@@ -151,7 +162,8 @@ export default function Settings() {
     } else {
       await base44.entities.Supplier.create({ ...supForm, business_id: businessId });
     }
-    const sups = await base44.entities.Supplier.list();
+    // CRITICAL: Filter by business_id, never use list()
+    const sups = await base44.entities.Supplier.filter({ business_id: businessId });
     setSuppliers(sups);
     setSupFormOpen(false);
     setEditingSup(null);

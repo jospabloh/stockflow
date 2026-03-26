@@ -55,7 +55,7 @@ export default function Layout({ children, currentPageName }) {
   const [pullY, setPullY] = useState(0);
   const touchStartY = useRef(0);
   const mainRef = useRef(null);
-  const { businessId, isLoading: bizLoading } = useBusinessContext();
+  const { businessId, businessName, isLoading: bizLoading } = useBusinessContext();
   const { sessionStatus, reactivate } = useSessionManager(!!businessId);
   const { goBack, direction } = useNavigation();
   const navigate = useNavigate();
@@ -148,7 +148,7 @@ export default function Layout({ children, currentPageName }) {
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         {/* Logo area */}
-        <div className="p-6 border-b border-border">
+        <div className="p-6 border-b border-border space-y-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-200">
               <Package className="h-5 w-5 text-white" />
@@ -158,6 +158,11 @@ export default function Layout({ children, currentPageName }) {
               <p className="text-xs text-muted-foreground">Control de stock</p>
             </div>
           </div>
+          {businessName && (
+            <div className="text-xs text-muted-foreground bg-slate-50 dark:bg-slate-900 px-2 py-1.5 rounded-lg">
+              <span className="font-medium text-foreground">{businessName}</span>
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
