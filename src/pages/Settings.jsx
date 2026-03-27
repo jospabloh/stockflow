@@ -119,7 +119,15 @@ export default function Settings() {
     setSaving(true);
     try {
       if (settingsId) {
-        await base44.entities.AppSettings.update(settingsId, settings);
+        const response = await base44.functions.invoke('updateAppSettingsSafe', {
+          settings_id: settingsId,
+          updates: settings
+        });
+        if (!response.data.success) {
+          toast.error(`Error: ${response.data.error || 'No se pudo guardar'}`);
+          setSaving(false);
+          return;
+        }
       } else {
         const created = await base44.entities.AppSettings.create({ ...settings, business_id: businessId });
         setSettingsId(created.id);
@@ -144,7 +152,14 @@ export default function Settings() {
     }
     try {
       if (editingCat) {
-        await base44.entities.Category.update(editingCat.id, catForm);
+        const response = await base44.functions.invoke('updateCategorySafe', {
+          category_id: editingCat.id,
+          updates: catForm
+        });
+        if (!response.data.success) {
+          toast.error(`Error: ${response.data.error || 'No se pudo actualizar'}`);
+          return;
+        }
         toast.success("✓ Categoría actualizada");
       } else {
         await base44.entities.Category.create({ ...catForm, business_id: businessId });
@@ -163,12 +178,11 @@ export default function Settings() {
   };
 
   const handleDeleteCategory = async (id) => {
-    const products = await base44.entities.Product.filter({ category: id });
-    if (products.length > 0) {
-      toast.error(`No se puede eliminar: ${products.length} producto(s) usan esta categoría.`);
+    const response = await base44.functions.invoke('deleteCategorySafe', { category_id: id });
+    if (!response.data.success) {
+      toast.error(response.data.error || 'No se pudo eliminar');
       return;
     }
-    await base44.entities.Category.delete(id);
     setCategories(categories.filter((c) => c.id !== id));
   };
 
@@ -179,7 +193,14 @@ export default function Settings() {
     }
     try {
       if (editingSup) {
-        await base44.entities.Supplier.update(editingSup.id, supForm);
+        const response = await base44.functions.invoke('updateSupplierSafe', {
+          supplier_id: editingSup.id,
+          updates: supForm
+        });
+        if (!response.data.success) {
+          toast.error(`Error: ${response.data.error || 'No se pudo actualizar'}`);
+          return;
+        }
         toast.success("✓ Proveedor actualizado");
       } else {
         await base44.entities.Supplier.create({ ...supForm, business_id: businessId });
@@ -198,12 +219,11 @@ export default function Settings() {
   };
 
   const handleDeleteSupplier = async (id) => {
-    const products = await base44.entities.Product.filter({ supplier: id });
-    if (products.length > 0) {
-      toast.error(`No se puede eliminar: ${products.length} producto(s) tienen este proveedor asignado.`);
+    const response = await base44.functions.invoke('deleteSupplierSafe', { supplier_id: id });
+    if (!response.data.success) {
+      toast.error(response.data.error || 'No se pudo eliminar');
       return;
     }
-    await base44.entities.Supplier.delete(id);
     setSuppliers(suppliers.filter((s) => s.id !== id));
   };
 
@@ -211,7 +231,14 @@ export default function Settings() {
 
   const handleToggleInviteCode = async (active) => {
     if (!business) return;
-    await base44.entities.Business.update(business.id, { invite_code_active: active });
+    const response = await base44.functions.invoke('updateBusinessSafe', {
+      business_id: business.id,
+      updates: { invite_code_active: active }
+    });
+    if (!response.data.success) {
+      toast.error(`Error: ${response.data.error || 'No se pudo actualizar'}`);
+      return;
+    }
     setBusiness({ ...business, invite_code_active: active });
     toast.success(active ? "Código de invitación activado" : "Código desactivado — nadie nuevo podrá unirse");
   };
@@ -221,7 +248,14 @@ export default function Settings() {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let code = "BSNS-";
     for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-    await base44.entities.Business.update(business.id, { invite_code: code });
+    const response = await base44.functions.invoke('updateBusinessSafe', {
+      business_id: business.id,
+      updates: { invite_code: code }
+    });
+    if (!response.data.success) {
+      toast.error(`Error: ${response.data.error || 'No se pudo renovar el código'}`);
+      return;
+    }
     setBusiness({ ...business, invite_code: code });
     toast.success("Código renovado. El código anterior ya no funciona.");
   };
@@ -652,7 +686,15 @@ export default function Settings() {
                         updateSettings("rfc", "");
                         setSaving(true);
                         if (settingsId) {
-                          await base44.entities.AppSettings.update(settingsId, { ...settings, rfc: "" });
+                          const response = await base44.functions.invoke('updateAppSettingsSafe', {
+                            settings_id: settingsId,
+                            updates: { ...settings, rfc: "" }
+                          });
+                          if (!response.data.success) {
+                            toast.error(`Error: ${response.data.error || 'No se pudo eliminar RFC'}`);
+                            setSaving(false);
+                            return;
+                          }
                         }
                         setSaving(false);
                         setRfcSaved(false);
