@@ -169,31 +169,23 @@ export default function Quotations() {
       newStock: (item.product.stock || 0) - item.quantity,
     }));
 
-    // FASE 3: Ejecutar operaciones con manejo de errores. Si algo falla, todo se revierte
+    // CRITICAL: Use backend-validated safe function for conversion
     try {
-      // Crear movimientos
-      const createdMovements = [];
-      for (const mov of movementsToCreate) {
-        createdMovements.push(await base44.entities.Movement.create(mov));
-      }
-
-      // Actualizar stock de productos
-      for (const prod of productsToUpdate) {
-        await base44.entities.Product.update(prod.id, { stock: prod.newStock });
-      }
-
-      // Marcar cotización como convertida
-      await base44.entities.Quotation.update(convertQuotation.id, {
-        status: "converted",
-        payment_method: convertPaymentMethod,
+      const response = await base44.functions.invoke('convertQuotationSafe', {
+        quotation_id: convertQuotation.id,
+        payment_method: convertPaymentMethod
       });
+      
+      if (!response.data.success) {
+        setConvertError(`Error: ${response.data.error || 'Conversion failed'}`);
+        return;
+      }
 
       setConvertQuotation(null);
       setConvertPaymentMethod("");
       setConvertError("");
-      loadData();
+      loadData(businessId);
     } catch (error) {
-      // Si algo falló, mostrar error claro y no avanzar
       setConvertError(`Error durante conversión: ${error.message || "Intenta nuevamente"}. El stock no fue modificado.`);
     }
   };
@@ -208,87 +200,57 @@ export default function Quotations() {
       return;
     }
 
-    // FASE 1: Si la cotización fue convertida, buscar movimientos de salida originales para revertir correctamente
-    if (cancelQuotation.status === "converted") {
-      try {
-        // Buscar movimientos de EXIT asociados a esta cotización (with business_id filter)
-        const exitMovements = await base44.entities.Movement.filter({
-          quotation_id: cancelQuotation.id,
-          type: "exit",
-          business_id: businessId,
-        });
-
-        // Para cada movimiento de salida, crear un movimiento de retorno inverso
-         for (const exitMov of exitMovements) {
-           // stock_after del exit es el stock resultante DESPUÉS de la salida
-           // Para restaurar, simplemente sumamos la cantidad nuevamente
-           // CRITICAL FIX: Add business_id filter
-           const prods = await base44.entities.Product.filter({ id: exitMov.product_id, business_id: businessId });
-           const product = prods[0];
-
-          if (product) {
-            // Restaurar stock: el stock actual del producto + cantidad que se retorna
-            const restoredStock = (product.stock || 0) + exitMov.quantity;
-
-            // Crear movimiento de retorno
-            await base44.entities.Movement.create({
-              product_id: exitMov.product_id,
-              product_name: exitMov.product_name,
-              type: "return",
-              quantity: exitMov.quantity,
-              unit_price: exitMov.unit_price,
-              total: exitMov.total,
-              stock_after: restoredStock,
-              reference: `Cancelación ${cancelQuotation.folio}`,
-              reason: `Cancelación: ${cancelReason}`,
-              quotation_id: cancelQuotation.id,
-              business_id: cancelQuotation.business_id,
-            });
-
-            // Actualizar stock del producto
-            await base44.entities.Product.update(product.id, { stock: restoredStock });
-          }
-        }
-      } catch (error) {
-        toast.error(`Error al revertir stock: ${error.message}`);
+    // CRITICAL: Use backend-validated safe function for cancellation
+    try {
+      const response = await base44.functions.invoke('cancelQuotationSafe', {
+        quotation_id: cancelQuotation.id,
+        cancellation_reason: cancelReason
+      });
+      
+      if (!response.data.success) {
+        toast.error(`Error: ${response.data.error || 'Cancellation failed'}`);
         return;
       }
-    }
 
-    // FASE 2: Marcar cotización como cancelada
-    try {
-      await base44.entities.Quotation.update(cancelQuotation.id, {
-        status: "cancelled",
-        cancellation_reason: cancelReason,
-      });
       setCancelQuotation(null);
       setCancelReason("");
-      loadData();
+      loadData(businessId);
     } catch (error) {
       toast.error(`Error al cancelar cotización: ${error.message}`);
     }
   };
 
   const handleConfirmPayment = async () => {
-    if (!payQuotation) return;
-    // CRITICAL FIX: Validate ownership before payment
-    if (payQuotation.business_id !== businessId) {
-      toast.error("No tienes permiso para confirmar el pago de esta cotización");
-      setPayQuotation(null);
-      return;
-    }
-    // Solo permitir confirmar pago si es cotización convertida
-    if (payQuotation.status !== "converted") {
-      setPayQuotation(null);
-      return;
-    }
-    const update = { paid: true, payment_method: paymentMethod };
-    if (payMarkDelivered) { update.delivered = true; update.in_route = false; }
-    await base44.entities.Quotation.update(payQuotation.id, update);
-    setPayQuotation(null);
-    setPaymentMethod("");
-    setPayMarkDelivered(false);
-    loadData();
+   if (!payQuotation) return;
+   // CRITICAL FIX: Validate ownership before payment
+   if (payQuotation.business_id !== businessId) {
+     toast.error("No tienes permiso para confirmar el pago de esta cotización");
+     setPayQuotation(null);
+     return;
+   }
+   // Solo permitir confirmar pago si es cotización convertida
+   if (payQuotation.status !== "converted") {
+     setPayQuotation(null);
+     return;
+   }
+   // CRITICAL: Use backend-validated safe function for payment confirmation
+   const updates = { paid: true, payment_method: paymentMethod };
+   if (payMarkDelivered) { updates.delivered = true; updates.in_route = false; }
+
+   const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
+     quotation_id: payQuotation.id,
+     updates
+   });
+
+   if (!response.data.success) {
+     toast.error(`Error: ${response.data.error || 'Payment confirmation failed'}`);
+     return;
+   }
+
+   setPayQuotation(null);
+   setPaymentMethod("");
+   setPayMarkDelivered(false);
+   loadData(businessId);
   };
 
   const handleEdit = (q) => {
@@ -337,12 +299,18 @@ export default function Quotations() {
           setPaymentMethod(q.payment_method || "");
         }}
         onInvoiceStatusChange={async (q, val) => {
-          await base44.entities.Quotation.update(q.id, { invoice_status: val });
-          loadData();
+          const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
+            quotation_id: q.id,
+            updates: { invoice_status: val }
+          });
+          if (response.data.success) loadData(businessId);
         }}
         onInRouteChange={async (q) => {
-          await base44.entities.Quotation.update(q.id, { in_route: !q.in_route, delivered: false });
-          loadData();
+          const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
+            quotation_id: q.id,
+            updates: { in_route: !q.in_route, delivered: false }
+          });
+          if (response.data.success) loadData(businessId);
         }}
         onDeliveredChange={(q) => {
           if (!q.delivered) {
@@ -350,7 +318,12 @@ export default function Quotations() {
             setPaymentMethod(q.payment_method || "");
             setPayMarkDelivered(true);
           } else {
-            base44.entities.Quotation.update(q.id, { delivered: false }).then(loadData);
+            base44.functions.invoke('updateQuotationFlagsSafe', {
+              quotation_id: q.id,
+              updates: { delivered: false }
+            }).then(response => {
+              if (response.data.success) loadData(businessId);
+            });
           }
         }}
         isExpired={isExpired}
