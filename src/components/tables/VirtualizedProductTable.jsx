@@ -32,7 +32,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
           </div>
         )}
         <div className="w-24 text-right font-semibold text-foreground text-xs">
-          ${product.sale_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+          ${(product.retail_sale_price ?? product.sale_price ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
         </div>
         <div className="w-32 text-right">
           <div className="flex flex-col items-end gap-0.5">
@@ -102,7 +102,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
         <div className="w-20">SKU</div>
         <div className="w-20">Categoría</div>
         {isAdmin && <div className="w-24 text-right">Precio Compra</div>}
-        <div className="w-24 text-right">Precio Venta</div>
+        <div className="w-24 text-right">Precio Menudeo</div>
         <div className="w-32 text-right">Stock</div>
         <div className="w-16 text-center">Estado</div>
         <div className="w-20 text-center">Acciones</div>

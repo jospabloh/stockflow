@@ -7,26 +7,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Save, ScanLine, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, Save, ScanLine, AlertTriangle, Info } from "lucide-react";
 import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import { useBusinessContext } from "@/components/BusinessContext";
-import { createButtonProps, createTableProps } from "@/lib/a11y";
+import { createButtonProps } from "@/lib/a11y";
+import { calculatePrice } from "@/lib/pricingEngine";
 
 const PAYMENT_METHODS = [
   "Efectivo", "Transferencia", "Tarjeta de crédito", "Tarjeta de débito",
   "Cheque", "Depósito bancario", "Por definir",
 ];
 
+function PriceInfo({ rule, origin, warning }) {
+  if (!origin) return null;
+  return (
+    <div className={`mt-1 px-2 py-1 rounded text-[10px] flex items-start gap-1 ${warning ? "bg-amber-50 text-amber-700" : "bg-indigo-50 text-indigo-600"}`}>
+      {warning ? <AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" /> : <Info className="h-3 w-3 shrink-0 mt-0.5" />}
+      <span>{warning || origin}</span>
+    </div>
+  );
+}
+
 export default function QuotationFormDialog({ open, onOpenChange, quotation, onSaved }) {
   const { businessId } = useBusinessContext();
   const barcodeRef = useRef(null);
   const [products, setProducts] = useState([]);
   const [clients, setClients] = useState([]);
+  const [selectedClient, setSelectedClient] = useState(null);
   const [clientSearch, setClientSearch] = useState("");
   const [showClientSuggestions, setShowClientSuggestions] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState("");
   const [barcodeNotFound, setBarcodeNotFound] = useState(false);
-  const [taxLabel, setTaxLabel] = useState("IVA");
+  const [itemPriceInfo, setItemPriceInfo] = useState({});
   const [form, setForm] = useState({
     client_name: "", client_email: "", client_phone: "",
     items: [], notes: "", valid_until: "", status: "draft",
@@ -49,51 +61,81 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           status: quotation.status || "draft",
           payment_method: quotation.payment_method || "Por definir",
         });
-        setTaxLabel("IVA");
+        // Try to find the selected client
+        if (quotation.client_id) {
+          base44.entities.Client.filter({ id: quotation.client_id, business_id: businessId }).then(res => {
+            if (res.length > 0) setSelectedClient(res[0]);
+          });
+        }
       } else {
         setForm({
           client_name: "", client_email: "", client_phone: "",
           items: [], notes: "", valid_until: "", status: "draft",
           payment_method: "Por definir",
         });
-        setTaxLabel("IVA");
+        setSelectedClient(null);
         setClientSearch("");
       }
+      setItemPriceInfo({});
       setBarcodeInput("");
       setBarcodeNotFound(false);
       setTimeout(() => barcodeRef.current?.focus(), 150);
     }
   }, [open, quotation, businessId]);
 
+  // Recalculate ALL item prices when selected client changes
+  useEffect(() => {
+    if (!open) return;
+    setForm(prev => {
+      const newItems = prev.items.map((item, idx) => {
+        const product = products.find(p => p.id === item.product_id);
+        if (!product) return item;
+        const { price, rule, origin, warning } = calculatePrice({ product, client: selectedClient, quantity: item.quantity });
+        setItemPriceInfo(pi => ({ ...pi, [idx]: { rule, origin, warning } }));
+        return {
+          ...item,
+          unit_price: price,
+          total: item.quantity * price,
+        };
+      });
+      return { ...prev, items: newItems };
+    });
+  }, [selectedClient, open]);
+
+  const applyPricingToItem = (item, product, quantity, idx) => {
+    const { price, rule, origin, warning } = calculatePrice({ product, client: selectedClient, quantity });
+    setItemPriceInfo(pi => ({ ...pi, [idx]: { rule, origin, warning } }));
+    return { ...item, unit_price: price, total: quantity * price };
+  };
+
   const handleBarcodeSearch = () => {
     if (!barcodeInput.trim()) return;
-    const found = products.find(
-      (p) => p.barcode === barcodeInput.trim() || p.sku === barcodeInput.trim()
-    );
+    const found = products.find(p => p.barcode === barcodeInput.trim() || p.sku === barcodeInput.trim());
     if (found) {
       setBarcodeNotFound(false);
-      const existingIdx = form.items.findIndex(i => i.product_id === found.id);
-      if (existingIdx >= 0) {
-        const items = [...form.items];
-        items[existingIdx] = {
-          ...items[existingIdx],
-          quantity: items[existingIdx].quantity + 1,
-          total: (items[existingIdx].quantity + 1) * items[existingIdx].unit_price,
-        };
-        setForm(prev => ({ ...prev, items }));
-      } else {
-        setForm(prev => ({
-          ...prev,
-          items: [...prev.items, {
+      setForm(prev => {
+        const existingIdx = prev.items.findIndex(i => i.product_id === found.id);
+        const items = [...prev.items];
+        if (existingIdx >= 0) {
+          const newQty = items[existingIdx].quantity + 1;
+          const updated = applyPricingToItem(items[existingIdx], found, newQty, existingIdx);
+          items[existingIdx] = { ...updated, quantity: newQty };
+        } else {
+          const newIdx = items.length;
+          const { price, rule, origin, warning } = calculatePrice({ product: found, client: selectedClient, quantity: 1 });
+          setItemPriceInfo(pi => ({ ...pi, [newIdx]: { rule, origin, warning } }));
+          items.push({
             product_id: found.id,
             product_name: found.name,
             quantity: 1,
-            unit_price: found.sale_price,
-            total: found.sale_price,
+            unit_price: price,
+            total: price,
             tax_rate: found.tax_rate ?? 16,
-          }],
-        }));
-      }
+            available_stock: found.stock ?? 0,
+          });
+        }
+        return { ...prev, items };
+      });
       setBarcodeInput("");
     } else {
       setBarcodeNotFound(true);
@@ -101,33 +143,59 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   };
 
   const addItem = () => {
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
       items: [...prev.items, { product_id: "", product_name: "", quantity: 1, unit_price: 0, total: 0, tax_rate: 16 }],
     }));
   };
 
   const removeItem = (index) => {
-    setForm((prev) => ({ ...prev, items: prev.items.filter((_, i) => i !== index) }));
+    setForm(prev => ({ ...prev, items: prev.items.filter((_, i) => i !== index) }));
+    setItemPriceInfo(pi => {
+      const next = {};
+      Object.entries(pi).forEach(([k, v]) => {
+        const ki = parseInt(k);
+        if (ki < index) next[ki] = v;
+        else if (ki > index) next[ki - 1] = v;
+      });
+      return next;
+    });
   };
 
   const updateItem = (index, field, value) => {
-    setForm((prev) => {
+    setForm(prev => {
       const items = [...prev.items];
       items[index] = { ...items[index], [field]: value };
+
       if (field === "product_id") {
-        const product = products.find((p) => p.id === value);
+        const product = products.find(p => p.id === value);
         if (product) {
+          const qty = items[index].quantity || 1;
+          const { price, rule, origin, warning } = calculatePrice({ product, client: selectedClient, quantity: qty });
+          setItemPriceInfo(pi => ({ ...pi, [index]: { rule, origin, warning } }));
           items[index].product_name = product.name;
-          items[index].unit_price = product.sale_price;
-          items[index].total = items[index].quantity * product.sale_price;
+          items[index].unit_price = price;
+          items[index].total = qty * price;
           items[index].tax_rate = product.tax_rate ?? 16;
           items[index].available_stock = product.stock ?? 0;
         }
+      } else if (field === "quantity") {
+        const product = products.find(p => p.id === items[index].product_id);
+        if (product) {
+          const qty = Number(value) || 1;
+          const { price, rule, origin, warning } = calculatePrice({ product, client: selectedClient, quantity: qty });
+          setItemPriceInfo(pi => ({ ...pi, [index]: { rule, origin, warning } }));
+          items[index].unit_price = price;
+          items[index].total = qty * price;
+        } else {
+          items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
+        }
+      } else if (field === "unit_price") {
+        // Manual override — clear price info
+        setItemPriceInfo(pi => ({ ...pi, [index]: null }));
+        items[index].total = (items[index].quantity || 0) * (Number(value) || 0);
       }
-      if (field === "quantity" || field === "unit_price") {
-        items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
-      }
+
       return { ...prev, items };
     });
   };
@@ -138,7 +206,6 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   const total = subtotal + taxAmount;
 
   const generateFolio = async () => {
-    // Use Mexico City local time to generate the date prefix
     const now = new Date();
     const mxDate = new Intl.DateTimeFormat("es-MX", {
       timeZone: "America/Mexico_City",
@@ -148,64 +215,43 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     const mm = mxDate.find(p => p.type === "month").value;
     const dd = mxDate.find(p => p.type === "day").value;
     const datePrefix = `COT-${yy}${mm}${dd}`;
-    // Fetch all quotations for this business to count today's folios correctly
     const all = await base44.entities.Quotation.filter({ business_id: businessId }, "-created_date", 2000);
     const todayCount = all.filter(q => q.folio && q.folio.startsWith(datePrefix)).length;
-    const seq = String(todayCount).padStart(4, "0");
-    return `${datePrefix}-${seq}`;
+    return `${datePrefix}-${String(todayCount).padStart(4, "0")}`;
   };
 
   const handleSave = async () => {
     setSaving(true);
     try {
       const folio = quotation?.folio || await generateFolio();
-      const data = {
-        ...form,
-        subtotal,
-        tax: taxAmount,
-        total,
-        folio,
-      };
+      const data = { ...form, subtotal, tax: taxAmount, total, folio };
       if (quotation) {
-        // SECURITY: Validate ownership before update
         const validation = await fetch('/api/functions/validateBusinessOwnership', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            entity_name: 'Quotation',
-            record_id: quotation.id,
-            operation: 'update'
-          })
+          body: JSON.stringify({ entity_name: 'Quotation', record_id: quotation.id, operation: 'update' })
         });
         const validResult = await validation.json();
         if (!validResult.valid) {
           alert("⚠️ No tienes permiso para modificar esta cotización");
           return;
         }
-        
-        // CRITICAL: Use safe function for quotation update (with ownership validation)
-        const response = await base44.functions.invoke('updateQuotationSafe', {
-          quotation_id: quotation.id,
-          updates: data
-        });
+        const response = await base44.functions.invoke('updateQuotationSafe', { quotation_id: quotation.id, updates: data });
         if (!response.data.success) {
-          toast.error(`Error: ${response.data.error}`);
           setSaving(false);
           return;
         }
       } else {
         const response = await base44.functions.invoke('createQuotationSafe', { ...data, business_id: businessId });
         if (!response.data.success) {
-          toast.error(`Error: ${response.data.error}`);
           setSaving(false);
           return;
         }
       }
-      // Solo cerrar DESPUÉS de guardar exitosamente
       onSaved();
       onOpenChange(false);
     } catch (error) {
-      // Error se maneja, diálogo permanece abierto
+      // keep dialog open on error
     } finally {
       setSaving(false);
     }
@@ -227,7 +273,8 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                 value={clientSearch || form.client_name}
                 onChange={(e) => {
                   setClientSearch(e.target.value);
-                  setForm({ ...form, client_name: e.target.value, client_email: "", client_phone: "" });
+                  setForm(prev => ({ ...prev, client_name: e.target.value, client_email: "", client_phone: "" }));
+                  setSelectedClient(null);
                   setShowClientSuggestions(true);
                 }}
                 onFocus={() => setShowClientSuggestions(true)}
@@ -244,7 +291,8 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                         type="button"
                         className="w-full text-left px-3 py-2 hover:bg-indigo-50 text-sm border-b border-slate-50 last:border-0"
                         onMouseDown={() => {
-                        setForm({ ...form, client_id: c.id, client_name: c.name, client_email: c.email || "", client_phone: c.phone || "" });
+                          setForm(prev => ({ ...prev, client_id: c.id, client_name: c.name, client_email: c.email || "", client_phone: c.phone || "" }));
+                          setSelectedClient(c);
                           setClientSearch("");
                           setShowClientSuggestions(false);
                         }}
@@ -253,6 +301,11 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                         {(c.email || c.phone) && (
                           <p className="text-xs text-slate-400">{[c.email, c.phone].filter(Boolean).join(" · ")}</p>
                         )}
+                        {(c.force_purchase_all_products || c.force_wholesale_all_products) && (
+                          <p className="text-[10px] text-indigo-500 font-medium">
+                            ⚡ {c.force_purchase_all_products ? "Precio compra forzado" : "Precio mayoreo forzado"}
+                          </p>
+                        )}
                       </button>
                     ))}
                   {clients.filter(c => c.name.toLowerCase().includes((clientSearch || form.client_name).toLowerCase())).length === 0 && (
@@ -260,14 +313,19 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                   )}
                 </div>
               )}
+              {selectedClient && (selectedClient.force_purchase_all_products || selectedClient.force_wholesale_all_products) && (
+                <p className="text-[10px] text-indigo-600 font-medium mt-1">
+                  ⚡ {selectedClient.force_purchase_all_products ? "Precio de compra activo para este cliente" : "Precio mayoreo activo para este cliente"}
+                </p>
+              )}
             </div>
             <div>
               <Label className="text-foreground mb-1.5 block">Email</Label>
-              <Input value={form.client_email} onChange={(e) => setForm({ ...form, client_email: e.target.value })} placeholder="correo@email.com" />
+              <Input value={form.client_email} onChange={(e) => setForm(prev => ({ ...prev, client_email: e.target.value }))} placeholder="correo@email.com" />
             </div>
             <div>
               <Label className="text-foreground mb-1.5 block">Teléfono</Label>
-              <Input value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })} placeholder="Teléfono" />
+              <Input value={form.client_phone} onChange={(e) => setForm(prev => ({ ...prev, client_phone: e.target.value }))} placeholder="Teléfono" />
             </div>
           </div>
 
@@ -302,7 +360,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
             </div>
             <div className="space-y-2">
               {form.items.map((item, idx) => (
-                <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-card border border-border rounded-xl p-3">
+                <div key={idx} className="grid grid-cols-12 gap-2 items-start bg-card border border-border rounded-xl p-3">
                   <div className="col-span-12 md:col-span-4">
                     <Label className="text-xs text-foreground mb-1.5 block" htmlFor={`product-${idx}`}>Producto</Label>
                     <SelectWrapper
@@ -319,7 +377,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                     <Input
                       type="number" min={1}
                       value={item.quantity}
-                      onChange={(e) => updateItem(idx, "quantity", parseInt(e.target.value) || 0)}
+                      onChange={(e) => updateItem(idx, "quantity", parseInt(e.target.value) || 1)}
                       className={item.available_stock !== undefined && item.quantity > item.available_stock ? "border-red-400 focus-visible:ring-red-300" : ""}
                     />
                     {item.available_stock !== undefined && item.quantity > item.available_stock && (
@@ -329,14 +387,17 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                     )}
                   </div>
                   <div className="col-span-4 md:col-span-3">
-                    <Label className="text-xs text-foreground mb-1.5 block">Precio unitario</Label>
+                    <Label className="text-xs text-foreground mb-1.5 block">Precio aplicado</Label>
                     <Input type="number" min={0} step="0.01" value={item.unit_price} onChange={(e) => updateItem(idx, "unit_price", parseFloat(e.target.value) || 0)} />
+                    {itemPriceInfo[idx] && (
+                      <PriceInfo rule={itemPriceInfo[idx].rule} origin={itemPriceInfo[idx].origin} warning={itemPriceInfo[idx].warning} />
+                    )}
                   </div>
                   <div className="col-span-3 md:col-span-2">
                     <Label className="text-xs text-foreground mb-1.5 block">Total</Label>
                     <p className="h-9 flex items-center font-bold text-foreground text-sm">${(item.total || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
                   </div>
-                  <div className="col-span-1 hidden md:flex flex-col items-center justify-end pb-1">
+                  <div className="col-span-1 hidden md:flex flex-col items-center justify-start pt-6">
                     <button
                       type="button"
                       onClick={() => updateItem(idx, "tax_rate", item.tax_rate > 0 ? 0 : 16)}
@@ -346,7 +407,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                       {item.tax_rate > 0 ? "IVA" : "0%"}
                     </button>
                   </div>
-                  <div className="col-span-1">
+                  <div className="col-span-1 flex items-start pt-5">
                     <Button variant="ghost" size="icon" className="h-8 w-8" type="button" onClick={() => removeItem(idx)}>
                       <Trash2 className="h-4 w-4 text-red-400" />
                     </Button>
@@ -383,31 +444,36 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
 
           {/* Payment, validity, notes */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-           <div>
-             <Label htmlFor="payment-method" className="text-foreground mb-1.5 block">Forma de pago</Label>
-             <SelectWrapper
-               id="payment-method"
-               value={form.payment_method}
-               onValueChange={(v) => setForm({ ...form, payment_method: v })}
-               placeholder="Seleccionar"
-               options={PAYMENT_METHODS.map(m => ({ value: m, label: m }))}
-               aria-label="Método de pago"
-             />
-           </div>
+            <div>
+              <Label htmlFor="payment-method" className="text-foreground mb-1.5 block">Forma de pago</Label>
+              <SelectWrapper
+                id="payment-method"
+                value={form.payment_method}
+                onValueChange={(v) => setForm(prev => ({ ...prev, payment_method: v }))}
+                placeholder="Seleccionar"
+                options={PAYMENT_METHODS.map(m => ({ value: m, label: m }))}
+                aria-label="Método de pago"
+              />
+            </div>
             <div>
               <Label className="text-foreground mb-1.5 block">Vigencia</Label>
-              <Input type="date" value={form.valid_until} onChange={(e) => setForm({ ...form, valid_until: e.target.value })} />
+              <Input type="date" value={form.valid_until} onChange={(e) => setForm(prev => ({ ...prev, valid_until: e.target.value }))} />
             </div>
             <div>
               <Label className="text-foreground mb-1.5 block">Notas / Condiciones</Label>
-              <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Condiciones de pago, entrega..." rows={2} />
+              <Textarea value={form.notes} onChange={(e) => setForm(prev => ({ ...prev, notes: e.target.value }))} placeholder="Condiciones de pago, entrega..." rows={2} />
             </div>
           </div>
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)} {...createButtonProps('cancel')}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={!form.client_name || form.items.length === 0 || saving || form.items.some(i => i.available_stock !== undefined && i.quantity > i.available_stock)} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
+          <Button
+            onClick={handleSave}
+            disabled={!form.client_name || form.items.length === 0 || saving || form.items.some(i => i.available_stock !== undefined && i.quantity > i.available_stock)}
+            className="bg-indigo-600 hover:bg-indigo-700"
+            {...createButtonProps('save')}
+          >
             <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Guardar"}
           </Button>
         </div>

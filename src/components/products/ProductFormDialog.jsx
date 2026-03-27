@@ -26,7 +26,8 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   const [form, setForm] = useState({
     name: "", sku: "", barcode: "", description: "",
     category: "", supplier: "", purchase_price: 0,
-    sale_price: 0, stock: 0, min_stock: 5, unit: "pieza",
+    retail_sale_price: 0, wholesale_sale_price: "", wholesale_min_qty: "",
+    stock: 0, min_stock: 5, unit: "pieza",
     status: "active", tax_rate: 16,
   });
   const [saving, setSaving] = useState(false);
@@ -54,7 +55,6 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
 
   useEffect(() => {
     if (!open) {
-      // Reset camera and scanner state when dialog closes
       setShowCamera(false);
       setScanning(false);
       barcodeBuffer.current = "";
@@ -70,7 +70,9 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         category: product.category || "",
         supplier: product.supplier || "",
         purchase_price: product.purchase_price || 0,
-        sale_price: product.sale_price || 0,
+        retail_sale_price: product.retail_sale_price ?? product.sale_price ?? 0,
+        wholesale_sale_price: product.wholesale_sale_price ?? "",
+        wholesale_min_qty: product.wholesale_min_qty ?? "",
         stock: product.stock || 0,
         min_stock: product.min_stock || 5,
         unit: product.unit || "pieza",
@@ -81,7 +83,8 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
       setForm({
         name: "", sku: "", barcode: "", description: "",
         category: "", supplier: "", purchase_price: 0,
-        sale_price: 0, stock: 0, min_stock: 5, unit: "pieza",
+        retail_sale_price: 0, wholesale_sale_price: "", wholesale_min_qty: "",
+        stock: 0, min_stock: 5, unit: "pieza",
         status: "active", tax_rate: 16,
       });
     }
@@ -120,13 +123,19 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
 
   const handleSave = async () => {
     setSaving(true);
-
     try {
+      // Build payload — only include optional numeric fields if explicitly set
+      const payload = {
+        ...form,
+        retail_sale_price: Number(form.retail_sale_price) || 0,
+        wholesale_sale_price: form.wholesale_sale_price !== "" ? Number(form.wholesale_sale_price) : undefined,
+        wholesale_min_qty: form.wholesale_min_qty !== "" ? Number(form.wholesale_min_qty) : undefined,
+      };
+
       if (product) {
-        // CRITICAL: Use backend-validated safe function for update
         const response = await base44.functions.invoke('updateProductSafe', {
           product_id: product.id,
-          updates: form
+          updates: payload
         });
         if (!response.data.success) {
           toast.error(`Error: ${response.data.error}`);
@@ -134,13 +143,12 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         }
         toast.success("✓ Producto actualizado");
       } else {
-        const response = await base44.functions.invoke('createProductSafe', { ...form, business_id: businessId });
+        const response = await base44.functions.invoke('createProductSafe', { ...payload, business_id: businessId });
         if (!response.data.success) {
           toast.error(`Error: ${response.data.error}`);
           return;
         }
         const created = response.data.product;
-        // BUG-007: Registrar stock inicial como movimiento de entrada
         if (form.stock > 0 && created?.id) {
           await base44.entities.Movement.create({
             product_id: created.id,
@@ -157,7 +165,6 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         }
         toast.success("✓ Producto creado");
       }
-      // Solo cerrar DESPUÉS de que todo haya guardado exitosamente
       onSaved({ ...form, id: product?.id, _optimistic: true });
       onOpenChange(false);
       onSaved({ _reconcile: true });
@@ -174,10 +181,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   const handleCreateCategory = async () => {
     if (!newCatName.trim()) return;
     const response = await base44.functions.invoke('createCategorySafe', { name: newCatName.trim(), color: "#6366f1", business_id: businessId });
-    if (!response.data.success) {
-      toast.error(`Error: ${response.data.error}`);
-      return;
-    }
+    if (!response.data.success) { toast.error(`Error: ${response.data.error}`); return; }
     const cats = await base44.entities.Category.filter({ business_id: businessId });
     setCategories(cats);
     updateField("category", response.data.category.id);
@@ -188,10 +192,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   const handleCreateSupplier = async () => {
     if (!newSupName.trim()) return;
     const response = await base44.functions.invoke('createSupplierSafe', { name: newSupName.trim(), business_id: businessId });
-    if (!response.data.success) {
-      toast.error(`Error: ${response.data.error}`);
-      return;
-    }
+    if (!response.data.success) { toast.error(`Error: ${response.data.error}`); return; }
     const sups = await base44.entities.Supplier.filter({ business_id: businessId });
     setSuppliers(sups);
     updateField("supplier", response.data.supplier.id);
@@ -199,14 +200,13 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
     setShowNewSupDialog(false);
   };
 
+  const canSave = form.name && (Number(form.retail_sale_price) >= 0) && form.name.trim();
+
   return (
     <React.Fragment>
     {showCamera && (
       <BarcodeCameraScanner
-        onDetected={(code) => {
-          updateField("barcode", code);
-          setShowCamera(false);
-        }}
+        onDetected={(code) => { updateField("barcode", code); setShowCamera(false); }}
         onClose={() => setShowCamera(false)}
       />
     )}
@@ -242,14 +242,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
                 />
                 <ScanBarcode className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${scanning ? "text-emerald-500 animate-pulse" : "text-slate-300"}`} />
               </div>
-              <Button
-                type="button"
-                variant={isMobile ? "default" : "outline"}
-                size="icon"
-                onClick={() => setShowCamera(true)}
-                title="Escanear con cámara"
-                className={isMobile ? "bg-indigo-600 hover:bg-indigo-700" : ""}
-              >
+              <Button type="button" variant={isMobile ? "default" : "outline"} size="icon" onClick={() => setShowCamera(true)} title="Escanear con cámara" className={isMobile ? "bg-indigo-600 hover:bg-indigo-700" : ""}>
                 <Camera className="h-4 w-4" />
               </Button>
             </div>
@@ -258,12 +251,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
             <Label>Categoría</Label>
             <div className="flex gap-2">
               <div className="flex-1">
-                <MobileSelect
-                  value={form.category}
-                  onValueChange={(v) => updateField("category", v)}
-                  placeholder="Seleccionar categoría"
-                  options={categories.map((c) => ({ value: c.id, label: c.name }))}
-                />
+                <MobileSelect value={form.category} onValueChange={(v) => updateField("category", v)} placeholder="Seleccionar categoría" options={categories.map((c) => ({ value: c.id, label: c.name }))} />
               </div>
               <Button type="button" variant="outline" size="icon" onClick={() => { setNewCatName(""); setShowNewCatDialog(true); }} title="Nueva categoría">
                 <Plus className="h-4 w-4 text-indigo-500" />
@@ -274,39 +262,52 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
             <Label>Proveedor</Label>
             <div className="flex gap-2">
               <div className="flex-1">
-                <MobileSelect
-                  value={form.supplier}
-                  onValueChange={(v) => updateField("supplier", v)}
-                  placeholder="Seleccionar proveedor"
-                  options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
-                />
+                <MobileSelect value={form.supplier} onValueChange={(v) => updateField("supplier", v)} placeholder="Seleccionar proveedor" options={suppliers.map((s) => ({ value: s.id, label: s.name }))} />
               </div>
               <Button type="button" variant="outline" size="icon" onClick={() => { setNewSupName(""); setShowNewSupDialog(true); }} title="Nuevo proveedor">
                 <Plus className="h-4 w-4 text-indigo-500" />
               </Button>
             </div>
           </div>
+
+          {/* PRICING SECTION */}
           <div>
             <Label>Precio de compra</Label>
             <Input type="number" min={0} step="0.01" value={form.purchase_price === 0 ? "" : form.purchase_price} placeholder="0.00" onChange={(e) => {
               const val = parseFloat(e.target.value);
-              if (!isNaN(val) && val >= 0 && val <= 999999999) {
-                updateField("purchase_price", val || 0);
-              }
+              updateField("purchase_price", isNaN(val) ? 0 : Math.max(0, val));
             }} />
           </div>
           <div>
-            <Label>Precio de venta *</Label>
-            <Input type="number" min={0} step="0.01" value={form.sale_price === 0 ? "" : form.sale_price} placeholder="0.00" onChange={(e) => {
+            <Label>Precio menudeo *</Label>
+            <Input type="number" min={0} step="0.01" value={form.retail_sale_price === 0 ? "" : form.retail_sale_price} placeholder="0.00" onChange={(e) => {
               const val = parseFloat(e.target.value);
-              if (!isNaN(val) && val >= 0 && val <= 999999999) {
-                updateField("sale_price", val || 0);
-              }
+              updateField("retail_sale_price", isNaN(val) ? 0 : Math.max(0, val));
             }} />
-            {form.purchase_price > 0 && form.sale_price > 0 && form.sale_price <= form.purchase_price && (
-              <p className="text-xs text-amber-600 mt-1">⚠️ El precio de venta es menor o igual al costo. Verifica el margen.</p>
+            {form.purchase_price > 0 && form.retail_sale_price > 0 && form.retail_sale_price <= form.purchase_price && (
+              <p className="text-xs text-amber-600 mt-1">⚠️ El precio menudeo es menor o igual al costo.</p>
             )}
           </div>
+          <div>
+            <Label>Precio mayoreo</Label>
+            <Input type="number" min={0} step="0.01" value={form.wholesale_sale_price} placeholder="Opcional" onChange={(e) => {
+              const val = e.target.value;
+              if (val === "") { updateField("wholesale_sale_price", ""); return; }
+              const num = parseFloat(val);
+              if (!isNaN(num) && num >= 0) updateField("wholesale_sale_price", num);
+            }} />
+          </div>
+          <div>
+            <Label>Cantidad mínima para mayoreo</Label>
+            <Input type="number" min={0} step="1" value={form.wholesale_min_qty} placeholder="Opcional" onChange={(e) => {
+              const val = e.target.value;
+              if (val === "") { updateField("wholesale_min_qty", ""); return; }
+              const num = parseInt(val, 10);
+              if (!isNaN(num) && num >= 0) updateField("wholesale_min_qty", num);
+            }} />
+            <p className="text-xs text-muted-foreground mt-1">Dejar vacío para no configurar precio mayoreo por cantidad</p>
+          </div>
+
           <div>
             <Label className="text-foreground mb-1.5 block">Stock actual</Label>
             <Input type="number" min={0} value={form.stock === 0 ? "" : form.stock} placeholder="0" onChange={(e) => updateField("stock", e.target.value === "" ? 0 : parseInt(e.target.value) || 0)} disabled={!!product} />
@@ -317,12 +318,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
           <div>
             <Label className="text-foreground mb-1.5 block">Unidad</Label>
-            <MobileSelect
-              value={form.unit}
-              onValueChange={(v) => updateField("unit", v)}
-              placeholder="Unidad"
-              options={UNITS.map((u) => ({ value: u, label: u }))}
-            />
+            <MobileSelect value={form.unit} onValueChange={(v) => updateField("unit", v)} placeholder="Unidad" options={UNITS.map((u) => ({ value: u, label: u }))} />
           </div>
           <div>
             <Label className="text-foreground mb-1.5 block">IVA del producto</Label>
@@ -338,15 +334,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
           <div>
             <Label className="text-foreground mb-1.5 block">Estado</Label>
-            <MobileSelect
-              value={form.status}
-              onValueChange={(v) => updateField("status", v)}
-              placeholder="Estado"
-              options={[
-                { value: "active", label: "Activo" },
-                { value: "inactive", label: "Inactivo" },
-              ]}
-            />
+            <MobileSelect value={form.status} onValueChange={(v) => updateField("status", v)} placeholder="Estado" options={[{ value: "active", label: "Activo" }, { value: "inactive", label: "Inactivo" }]} />
           </div>
           <div className="md:col-span-2">
             <Label className="text-foreground mb-1.5 block">Descripción</Label>
@@ -357,29 +345,20 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           <Button variant="outline" onClick={() => onOpenChange(false)} {...createButtonProps('cancel')}>
             <X className="h-4 w-4 mr-1" /> Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={!form.name || !form.sale_price || saving} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
+          <Button onClick={handleSave} disabled={!canSave || saving} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
             <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Guardar"}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
 
-    {/* Mini-dialog: Nueva Categoría */}
     <Dialog open={showNewCatDialog} onOpenChange={setShowNewCatDialog}>
       <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Nueva Categoría</DialogTitle>
-        </DialogHeader>
+        <DialogHeader><DialogTitle>Nueva Categoría</DialogTitle></DialogHeader>
         <div className="space-y-4 pt-2">
           <div>
             <Label className="text-foreground mb-1.5 block">Nombre *</Label>
-            <Input
-              value={newCatName}
-              onChange={(e) => setNewCatName(e.target.value)}
-              placeholder="Ej: Electrónica"
-              autoFocus
-              onKeyDown={(e) => e.key === "Enter" && handleCreateCategory()}
-            />
+            <Input value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="Ej: Electrónica" autoFocus onKeyDown={(e) => e.key === "Enter" && handleCreateCategory()} />
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowNewCatDialog(false)}>Cancelar</Button>
@@ -389,22 +368,13 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
       </DialogContent>
     </Dialog>
 
-    {/* Mini-dialog: Nuevo Proveedor */}
     <Dialog open={showNewSupDialog} onOpenChange={setShowNewSupDialog}>
       <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Nuevo Proveedor</DialogTitle>
-        </DialogHeader>
+        <DialogHeader><DialogTitle>Nuevo Proveedor</DialogTitle></DialogHeader>
         <div className="space-y-4 pt-2">
           <div>
             <Label className="text-foreground mb-1.5 block">Nombre *</Label>
-            <Input
-              value={newSupName}
-              onChange={(e) => setNewSupName(e.target.value)}
-              placeholder="Ej: Distribuidora ABC"
-              autoFocus
-              onKeyDown={(e) => e.key === "Enter" && handleCreateSupplier()}
-            />
+            <Input value={newSupName} onChange={(e) => setNewSupName(e.target.value)} placeholder="Ej: Distribuidora ABC" autoFocus onKeyDown={(e) => e.key === "Enter" && handleCreateSupplier()} />
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowNewSupDialog(false)}>Cancelar</Button>
@@ -413,7 +383,6 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         </div>
       </DialogContent>
     </Dialog>
-
     </React.Fragment>
   );
 }

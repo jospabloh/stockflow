@@ -43,7 +43,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
           </TableCell>
         )}
         <TableCell className="text-right font-semibold text-foreground">
-          ${product.sale_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+          ${(product.retail_sale_price ?? product.sale_price ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
         </TableCell>
         <TableCell className="text-right">
           <div className="flex flex-col items-end gap-0.5">
@@ -119,7 +119,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
             {isBelowMin && <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1 rounded">STOCK CRÍTICO</span>}
             {isAtMin && <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-1 rounded">STOCK MÍNIMO</span>}
           </div>
-          <span className="font-bold text-foreground">${product.sale_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+          <span className="font-bold text-foreground">${(product.retail_sale_price ?? product.sale_price ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
         </div>
         {isAdmin && (
           <div className="flex items-center justify-end gap-1 border-t border-border pt-2">
@@ -167,7 +167,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
                 <TableHead className="font-semibold text-muted-foreground" role="columnheader">SKU</TableHead>
                 <TableHead className="font-semibold text-muted-foreground" role="columnheader">Categoría</TableHead>
                 {isAdmin && <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Precio Compra</TableHead>}
-                <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Precio Venta</TableHead>
+                <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Precio Menudeo</TableHead>
                 <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Stock</TableHead>
                 <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader">Estado</TableHead>
                 <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader">Acciones</TableHead>

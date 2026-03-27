@@ -35,6 +35,16 @@
       "default": "active",
       "description": "Estado del cliente"
     },
+    "force_wholesale_all_products": {
+      "type": "boolean",
+      "default": false,
+      "description": "Aplicar precio mayoreo en todos los productos y en cualquier cantidad"
+    },
+    "force_purchase_all_products": {
+      "type": "boolean",
+      "default": false,
+      "description": "Aplicar precio de compra en todos los productos y en cualquier cantidad"
+    },
     "business_id": {
       "type": "string",
       "description": "ID del negocio al que pertenece"

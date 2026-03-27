@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Pencil, Trash2, UserCheck, UserX } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useBusinessContext } from "@/components/BusinessContext";
 import {
@@ -16,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-const emptyForm = { name: "", email: "", phone: "", address: "", rfc: "", notes: "", status: "active" };
+const emptyForm = { name: "", email: "", phone: "", address: "", rfc: "", notes: "", status: "active", force_wholesale_all_products: false, force_purchase_all_products: false };
 
 export default function ClientsManager() {
   const { businessId } = useBusinessContext();
@@ -35,7 +36,7 @@ export default function ClientsManager() {
   useEffect(() => { load(); }, []);
 
   const openNew = () => { setEditing(null); setForm(emptyForm); setFormOpen(true); };
-  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, email: c.email || "", phone: c.phone || "", address: c.address || "", rfc: c.rfc || "", notes: c.notes || "", status: c.status || "active" }); setFormOpen(true); };
+  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, email: c.email || "", phone: c.phone || "", address: c.address || "", rfc: c.rfc || "", notes: c.notes || "", status: c.status || "active", force_wholesale_all_products: c.force_wholesale_all_products || false, force_purchase_all_products: c.force_purchase_all_products || false }); setFormOpen(true); };
 
   const handleSave = async () => {
     // Validate required fields
@@ -48,16 +49,26 @@ export default function ClientsManager() {
       return;
     }
 
+    // Frontend: mutually exclusive flags
+    if (form.force_wholesale_all_products && form.force_purchase_all_products) {
+      toast.error('No es posible activar "precio mayoreo" y "precio de compra" al mismo tiempo.');
+      return;
+    }
+
     setSaving(true);
     try {
       if (editing) {
-        // CRITICAL FIX: Validate ownership before update
         if (editing.business_id !== businessId) {
           toast.error("No tienes permiso para editar este cliente");
           setFormOpen(false);
           return;
         }
-        await base44.entities.Client.update(editing.id, form);
+        const response = await base44.functions.invoke('updateClientSafe', { client_id: editing.id, updates: form });
+        if (!response.data.success) {
+          toast.error(`Error: ${response.data.error}`);
+          setSaving(false);
+          return;
+        }
         toast.success("✓ Cliente actualizado");
       } else {
         const response = await base44.functions.invoke('createClientSafe', { ...form, business_id: businessId });
@@ -203,6 +214,41 @@ export default function ClientsManager() {
               <Label>Notas</Label>
               <Input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
             </div>
+
+            {/* Pricing flags */}
+            <div className="border border-border rounded-lg p-3 space-y-3 bg-muted/30">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Configuración de precios</p>
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="force_wholesale"
+                  checked={form.force_wholesale_all_products}
+                  onCheckedChange={(checked) => {
+                    setForm(prev => ({ ...prev, force_wholesale_all_products: !!checked, ...(checked ? { force_purchase_all_products: false } : {}) }));
+                  }}
+                />
+                <Label htmlFor="force_wholesale" className="text-sm leading-snug cursor-pointer">
+                  Aplicar precio mayoreo en todos los productos y en cualquier cantidad
+                </Label>
+              </div>
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="force_purchase"
+                  checked={form.force_purchase_all_products}
+                  onCheckedChange={(checked) => {
+                    setForm(prev => ({ ...prev, force_purchase_all_products: !!checked, ...(checked ? { force_wholesale_all_products: false } : {}) }));
+                  }}
+                />
+                <Label htmlFor="force_purchase" className="text-sm leading-snug cursor-pointer">
+                  Aplicar precio de compra en todos los productos y en cualquier cantidad
+                </Label>
+              </div>
+              {(form.force_wholesale_all_products || form.force_purchase_all_products) && (
+                <p className="text-xs text-indigo-600 font-medium">
+                  ⚡ {form.force_purchase_all_products ? "Precio de compra" : "Precio mayoreo"} activo para este cliente
+                </p>
+              )}
+            </div>
+
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={() => setFormOpen(false)} disabled={saving}>Cancelar</Button>
               <Button onClick={handleSave} disabled={!form.name?.trim() || !form.phone?.trim() || saving} className="bg-indigo-600 hover:bg-indigo-700">

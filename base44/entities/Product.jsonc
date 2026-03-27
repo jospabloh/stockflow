@@ -30,9 +30,17 @@
       "type": "number",
       "description": "Precio de compra"
     },
-    "sale_price": {
+    "retail_sale_price": {
       "type": "number",
-      "description": "Precio de venta"
+      "description": "Precio de venta al menudeo"
+    },
+    "wholesale_sale_price": {
+      "type": "number",
+      "description": "Precio de venta al mayoreo"
+    },
+    "wholesale_min_qty": {
+      "type": "number",
+      "description": "Cantidad m\u00ednima para aplicar precio de mayoreo (0 = no configurado)"
     },
     "stock": {
       "type": "number",
@@ -85,7 +93,7 @@
   },
   "required": [
     "name",
-    "sale_price",
+    "retail_sale_price",
     "business_id"
   ],
   "rls": {

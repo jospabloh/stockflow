@@ -1,11 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
-/**
- * Safe Client creation with business_id validation
- * Rejects if:
- * 1. business_id is missing
- * 2. business_id doesn't match user's business_id
- */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -16,25 +10,28 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { name, phone, business_id, email, address, rfc, notes, status } = body;
+    const {
+      name, phone, business_id,
+      email, address, rfc, notes, status,
+      force_wholesale_all_products, force_purchase_all_products
+    } = body;
 
-    // VALIDATION: business_id required
     if (!business_id) {
-      return Response.json({ 
-        success: false, 
-        error: 'business_id is required' 
+      return Response.json({ success: false, error: 'business_id is required' }, { status: 400 });
+    }
+
+    if (business_id !== user.business_id) {
+      return Response.json({ success: false, error: 'Unauthorized: business_id mismatch' }, { status: 403 });
+    }
+
+    // VALIDATION: Mutually exclusive pricing flags
+    if (force_wholesale_all_products && force_purchase_all_products) {
+      return Response.json({
+        success: false,
+        error: 'No es posible activar "precio mayoreo" y "precio de compra" al mismo tiempo. Desactiva uno antes de activar el otro.'
       }, { status: 400 });
     }
 
-    // VALIDATION: business_id must match user's business
-    if (business_id !== user.business_id) {
-      return Response.json({ 
-        success: false, 
-        error: `Unauthorized: business_id mismatch (expected: ${user.business_id}, got: ${business_id})` 
-      }, { status: 403 });
-    }
-
-    // All validations passed, create the client
     const client = await base44.entities.Client.create({
       name,
       phone,
@@ -43,18 +40,13 @@ Deno.serve(async (req) => {
       address,
       rfc,
       notes,
-      status
+      status,
+      force_wholesale_all_products: force_wholesale_all_products || false,
+      force_purchase_all_products: force_purchase_all_products || false
     });
 
-    return Response.json({ 
-      success: true, 
-      client_id: client.id,
-      client
-    });
+    return Response.json({ success: true, client_id: client.id, client });
   } catch (error) {
-    return Response.json({ 
-      success: false, 
-      error: error.message 
-    }, { status: 500 });
+    return Response.json({ success: false, error: error.message }, { status: 500 });
   }
 });

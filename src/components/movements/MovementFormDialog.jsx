@@ -63,7 +63,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       setForm((prev) => ({
         ...prev,
         product_id: found.id,
-        unit_price: prev.type === "exit" ? found.sale_price : found.purchase_price,
+        unit_price: prev.type === "exit" ? (found.retail_sale_price ?? found.sale_price ?? 0) : (found.purchase_price ?? 0),
       }));
       setBarcodeInput("");
     } else {
@@ -77,7 +77,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
     setForm((prev) => ({
       ...prev,
       product_id: productId,
-      unit_price: prev.type === "exit" ? (found?.sale_price || 0) : (found?.purchase_price || 0),
+      unit_price: prev.type === "exit" ? (found?.retail_sale_price ?? found?.sale_price ?? 0) : (found?.purchase_price ?? 0),
     }));
   };
 
@@ -239,7 +239,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
               onValueChange={(v) => {
                 updateField("type", v);
                 if (selectedProduct) {
-                  updateField("unit_price", v === "exit" ? selectedProduct.sale_price : selectedProduct.purchase_price);
+                  updateField("unit_price", v === "exit" ? (selectedProduct.retail_sale_price ?? selectedProduct.sale_price ?? 0) : (selectedProduct.purchase_price ?? 0));
                 }
               }}
               placeholder="Tipo"
