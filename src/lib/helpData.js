@@ -1,7 +1,12 @@
+import { helpDataExtension } from './helpDataExtension.js';
+
 export const localHelpData = {
-  version: "2.1",
-  last_updated: "2026-03-24",
-  articles: [
+  version: "2.2",
+  last_updated: "2026-03-27",
+  get articles() { return [..._baseArticles, ...helpDataExtension]; }
+};
+
+const _baseArticles = [
 
     // ═══════════════════════════════════════════════
     // PRIMEROS PASOS
@@ -590,18 +595,24 @@ Ve a **Configuración → Importar Productos** para cargar múltiples productos 
 4. Revisa la vista previa con los productos detectados
 5. Confirma la importación
 
-**Columnas de la plantilla:**
+**Columnas de la plantilla (Productos):**
 
 | Columna | Obligatorio |
 |---|:---:|
 | nombre | ✅ |
-| precio_venta | ✅ |
+| precio_menudeo | — |
+| precio_mayoreo | — |
+| cantidad_minima_mayoreo | — |
 | precio_compra | — |
 | sku | — |
+| codigo_barras | — |
 | descripcion | — |
-| stock_inicial | — |
+| stock | — |
 | stock_minimo | — |
-| unidad | — |`
+| unidad | — |
+| categoria | — |
+
+También puedes importar **Clientes** y **Categorías** desde la misma sección. Ver artículos de ayuda: "Importar Clientes" e "Importar Categorías".`
     },
     {
       id: "products-inventory",
@@ -1716,8 +1727,7 @@ Una guía de bolsillo con las acciones más frecuentes de tu día a día.
 **¿Cómo sé si una cotización ya fue pagada?**
 → En la lista de Cotizaciones, busca el ícono de pago en la columna de seguimiento. Verde = pagado, gris = pendiente.`
     },
-  ]
-};
+];
 
 /**
  * Carga los datos de ayuda — primero intenta desde URL remota, fallback al JSON local.
