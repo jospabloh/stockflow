@@ -40,6 +40,7 @@ export default function Movements() {
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [canCreateMovement, setCanCreateMovement] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [businessId, setBusinessId] = useState(null);
@@ -61,7 +62,10 @@ export default function Movements() {
 
   useEffect(() => {
     base44.auth.me().then(u => {
-      setIsAdmin(u?.role === "admin");
+      const role = u?.role;
+      setIsAdmin(role === "admin");
+      // Admins AND almacenistas can create inventory movements
+      setCanCreateMovement(role === "admin" || role === "almacenista");
       setBusinessId(u?.business_id || null);
       loadData(u?.business_id || null);
     }).catch(() => setLoading(false));
@@ -145,7 +149,7 @@ export default function Movements() {
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1" /> CSV
           </Button>
-          {isAdmin && (
+          {canCreateMovement && (
             <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Movements/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Movimiento
             </Button>

@@ -94,28 +94,22 @@ export default function Products() {
   };
 
   const handleDelete = async () => {
-    if (deleteProduct) {
-      // Filter movements by business_id for safety
-      const movs = await base44.entities.Movement.filter({ 
-        product_id: deleteProduct.id,
-        business_id: businessId 
-      });
-      if (movs.length > 0) {
-        toast.error(`No se puede eliminar: hay ${movs.length} movimiento(s) registrado(s) para este producto.`);
-        setDeleteProduct(null);
-        return;
-      }
-      // CRITICAL: Use backend-validated safe function for delete
+    if (!deleteProduct) return;
+    try {
+      // Backend function handles: ownership check, movement check, and actual delete
       const response = await base44.functions.invoke('deleteProductSafe', {
-        product_id: deleteProduct.id
+        product_id: deleteProduct.id,
       });
-      if (!response.data.success) {
-        toast.error(`Error: ${response.data.error}`);
-        setDeleteProduct(null);
-        return;
+      if (response.data?.success) {
+        toast.success("Producto eliminado correctamente");
+        setProducts((prev) => prev.filter((p) => p.id !== deleteProduct.id));
+      } else {
+        toast.error(response.data?.error || "No se pudo eliminar el producto");
       }
+    } catch (error) {
+      toast.error(`Error al eliminar: ${error.message}`);
+    } finally {
       setDeleteProduct(null);
-      loadData(businessId);
     }
   };
 

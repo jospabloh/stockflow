@@ -29,6 +29,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Only admins can edit product details (almacenista uses updateProductStockSafe for stock only)
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: admin role required' }, { status: 403 });
+    }
+
+    if (!user.business_id) {
+      return Response.json({ error: 'User has no business assigned' }, { status: 403 });
+    }
+
     const body = await req.json();
     const { product_id, updates } = body;
 
@@ -36,9 +45,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'product_id and updates are required' }, { status: 400 });
     }
 
-    // Fetch product to validate ownership
-    const products = await base44.entities.Product.filter({ id: product_id });
-    if (products.length === 0) {
+    // Use service role to fetch product — prevents RLS from silently blocking valid requests
+    let products;
+    try {
+      products = await base44.asServiceRole.entities.Product.filter({ id: product_id });
+    } catch (_e) {
+      return Response.json({ error: 'Product not found' }, { status: 404 });
+    }
+    if (!products || products.length === 0) {
       return Response.json({ error: 'Product not found' }, { status: 404 });
     }
 
@@ -46,6 +60,10 @@ Deno.serve(async (req) => {
 
     // CRITICAL: Validate business_id ownership (cross-tenant protection)
     if (product.business_id !== user.business_id) {
+      console.error(
+        `[updateProductSafe] CROSS-TENANT ATTEMPT: user ${user.email} (business ${user.business_id}) ` +
+        `tried to update product ${product_id} (business ${product.business_id})`
+      );
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -79,6 +97,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ success: true, product_id, product: updated });
   } catch (error) {
+    console.error('[updateProductSafe]', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

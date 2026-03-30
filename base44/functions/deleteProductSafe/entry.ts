@@ -9,6 +9,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Only admins can delete products
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: admin role required' }, { status: 403 });
+    }
+
+    if (!user.business_id) {
+      return Response.json({ error: 'User has no business assigned' }, { status: 403 });
+    }
+
     const body = await req.json();
     const { product_id } = body;
 
@@ -16,31 +25,52 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'product_id is required' }, { status: 400 });
     }
 
-    // Fetch product to validate ownership
-    const products = await base44.entities.Product.filter({ id: product_id });
-    if (products.length === 0) {
+    // CRITICAL: Use service role to fetch product — bypasses RLS so we can validate ownership manually.
+    // This fixes the bug where RLS would return 0 results for valid products causing silent 404.
+    let products;
+    try {
+      products = await base44.asServiceRole.entities.Product.filter({ id: product_id });
+    } catch (_e) {
+      return Response.json({ error: 'Product not found' }, { status: 404 });
+    }
+    if (!products || products.length === 0) {
       return Response.json({ error: 'Product not found' }, { status: 404 });
     }
 
     const product = products[0];
 
-    // CRITICAL: Validate business_id ownership
+    // CRITICAL: Validate business_id ownership — prevent cross-tenant delete
     if (product.business_id !== user.business_id) {
-      return Response.json(
-        { error: 'Forbidden' },
-        { status: 403 }
+      console.error(
+        `[deleteProductSafe] CROSS-TENANT ATTEMPT: user ${user.email} (business ${user.business_id}) ` +
+        `tried to delete product ${product_id} (business ${product.business_id})`
       );
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Delete product
-    await base44.entities.Product.delete(product_id);
+    // Check for associated movements — use service role for consistency
+    const movements = await base44.asServiceRole.entities.Movement.filter({
+      product_id,
+      business_id: user.business_id,
+    });
+
+    if (movements.length > 0) {
+      return Response.json({
+        success: false,
+        error: `No se puede eliminar: hay ${movements.length} movimiento(s) registrado(s) para este producto.`,
+      }, { status: 400 });
+    }
+
+    // All checks passed — delete
+    await base44.asServiceRole.entities.Product.delete(product_id);
 
     return Response.json({
       success: true,
       product_id,
-      message: 'Product deleted successfully'
+      message: 'Product deleted successfully',
     });
   } catch (error) {
+    console.error('[deleteProductSafe]', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

@@ -126,22 +126,17 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
     }
 
     try {
-      // SECURITY: Validate product ownership before mutation
-      const validation = await fetch('/api/functions/validateBusinessOwnership', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          entity_name: 'Product',
-          record_id: product.id,
-          operation: 'update'
-        })
+      // SECURITY: Validate product belongs to same business via backend
+      const validResult = await base44.functions.invoke('validateBusinessOwnership', {
+        entity_name: 'Product',
+        record_id: product.id,
+        operation: 'update',
       });
-      const validResult = await validation.json();
-      if (!validResult.valid) {
+      if (!validResult.data?.valid) {
         toast.error("⚠️ No tienes permiso para modificar este producto");
         return;
       }
-      
+
       const response = await base44.functions.invoke('createMovementSafe', {
         ...form,
         product_name: product.name,
@@ -154,10 +149,11 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         return;
       }
 
-      // CRITICAL: Use safe function to update product stock (with ownership validation)
-      const updateResponse = await base44.functions.invoke('updateProductSafe', {
+      // CRITICAL: Use dedicated stock update function (validates ownership server-side)
+      const updateResponse = await base44.functions.invoke('updateProductStockSafe', {
         product_id: product.id,
-        updates: { stock: newStock }
+        new_stock: newStock,
+        business_id: businessId,
       });
       if (!updateResponse.data.success) {
         toast.error(`Error actualizando stock: ${updateResponse.data.error}`);
