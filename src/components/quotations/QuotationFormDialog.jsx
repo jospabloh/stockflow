@@ -298,6 +298,9 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                         }}
                       >
                         <p className="font-medium text-slate-700">{c.name}</p>
+                        {c.business_name && (
+                          <p className="text-xs text-indigo-500 font-medium">{c.business_name}</p>
+                        )}
                         {(c.email || c.phone) && (
                           <p className="text-xs text-slate-400">{[c.email, c.phone].filter(Boolean).join(" · ")}</p>
                         )}
