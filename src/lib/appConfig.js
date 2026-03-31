@@ -2,11 +2,20 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "1.1.0";
+export const APP_VERSION = "1.2.0";
 
-export const RELEASE_DATE = "2026-03-27";
+export const RELEASE_DATE = "2026-03-31";
 
 export const CHANGELOG = [
+  {
+    version: "1.2.0",
+    date: "2026-03-31",
+    changes: [
+      "Formas de pago configurables desde Configuración (Pagos), compartidas en movimientos y cotizaciones",
+      "Eliminación segura de movimientos con reversión automática de stock",
+      "Mejoras de contraste y legibilidad en el formulario de movimientos (total visible en modo oscuro)",
+    ],
+  },
   {
     version: "1.1.0",
     date: "2026-03-27",
