@@ -37,6 +37,10 @@ export default function Settings() {
   const [business, setBusiness] = useState(null);
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [pmFormOpen, setPmFormOpen] = useState(false);
+  const [editingPm, setEditingPm] = useState(null);
+  const [pmForm, setPmForm] = useState({ name: "" });
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -70,12 +74,13 @@ export default function Settings() {
          }
 
          // CRITICAL FIX: Filter ALL by business_id, never use list() without filtering
-         const [sets, cats, sups] = await Promise.all([
+         const [sets, cats, sups, pms] = await Promise.all([
            businessId ? base44.entities.AppSettings.filter({ business_id: businessId }) : Promise.resolve([]),
            businessId ? base44.entities.Category.filter({ business_id: businessId }) : Promise.resolve([]),
            businessId ? base44.entities.Supplier.filter({ business_id: businessId }) : Promise.resolve([]),
-         ]);
-      if (sets.length > 0) {
+           businessId ? base44.entities.PaymentMethod.filter({ business_id: businessId }) : Promise.resolve([]),
+           ]);
+           if (sets.length > 0) {
          setSettings(sets[0]);
          setSettingsId(sets[0].id);
          setRfcSaved(!!sets[0].rfc);
@@ -88,6 +93,7 @@ export default function Settings() {
        }
        setCategories(cats);
        setSuppliers(sups);
+       setPaymentMethods(pms || []);
 
        // Load business entity for invite code
        if (businessId) {
@@ -227,6 +233,36 @@ export default function Settings() {
     }
   };
 
+  const handleSavePaymentMethod = async () => {
+    if (!pmForm.name.trim()) { toast.error("El nombre es requerido"); return; }
+    try {
+      if (editingPm) {
+        await base44.entities.PaymentMethod.update(editingPm.id, { name: pmForm.name });
+        toast.success("✓ Forma de pago actualizada");
+      } else {
+        await base44.entities.PaymentMethod.create({ name: pmForm.name, active: true, business_id: businessId });
+        toast.success("✓ Forma de pago creada");
+      }
+      const pms = await base44.entities.PaymentMethod.filter({ business_id: businessId });
+      setPaymentMethods(pms);
+      setPmFormOpen(false);
+      setEditingPm(null);
+      setPmForm({ name: "" });
+    } catch (error) {
+      toast.error(`Error: ${error.message}`);
+    }
+  };
+
+  const handleDeletePaymentMethod = async (id) => {
+    await base44.entities.PaymentMethod.delete(id);
+    setPaymentMethods(paymentMethods.filter(p => p.id !== id));
+  };
+
+  const handleTogglePaymentMethod = async (pm) => {
+    await base44.entities.PaymentMethod.update(pm.id, { active: !pm.active });
+    setPaymentMethods(paymentMethods.map(p => p.id === pm.id ? { ...p, active: !p.active } : p));
+  };
+
   const handleDeleteSupplier = async (id) => {
     const response = await base44.functions.invoke('deleteSupplierSafe', { supplier_id: id });
     if (!response.data.success) {
@@ -307,6 +343,7 @@ export default function Settings() {
           <TabsTrigger value="categories"><Palette className="h-4 w-4 mr-1" /> Categorías</TabsTrigger>
           <TabsTrigger value="suppliers"><Users className="h-4 w-4 mr-1" /> Proveedores</TabsTrigger>
           <TabsTrigger value="sat"><FileText className="h-4 w-4 mr-1" /> Facturación</TabsTrigger>
+          <TabsTrigger value="payments"><FileText className="h-4 w-4 mr-1" /> Pagos</TabsTrigger>
           <TabsTrigger value="clients"><Users className="h-4 w-4 mr-1" /> Clientes</TabsTrigger>
           <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>
           <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>
@@ -476,6 +513,55 @@ export default function Settings() {
                         <Pencil className="h-4 w-4 text-slate-400" />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteSupplier(sup.id)} {...createButtonProps('delete')}>
+                        <Trash2 className="h-4 w-4 text-slate-400" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        {/* Payment Methods */}
+        <TabsContent value="payments">
+          <Card className="border-0 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-semibold text-slate-700 text-lg">Formas de Pago</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Se usan en movimientos y cotizaciones</p>
+              </div>
+              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingPm(null); setPmForm({ name: "" }); setPmFormOpen(true); }}>
+                <Plus className="h-4 w-4 mr-1" /> Nueva
+              </Button>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead className="text-center">Activa</TableHead>
+                  <TableHead className="text-center">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paymentMethods.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
+                      No hay formas de pago. Crea la primera.
+                    </TableCell>
+                  </TableRow>
+                )}
+                {paymentMethods.map((pm) => (
+                  <TableRow key={pm.id}>
+                    <TableCell className="font-medium">{pm.name}</TableCell>
+                    <TableCell className="text-center">
+                      <Switch checked={pm.active !== false} onCheckedChange={() => handleTogglePaymentMethod(pm)} />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingPm(pm); setPmForm({ name: pm.name }); setPmFormOpen(true); }}>
+                        <Pencil className="h-4 w-4 text-slate-400" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeletePaymentMethod(pm.id)}>
                         <Trash2 className="h-4 w-4 text-slate-400" />
                       </Button>
                     </TableCell>
@@ -877,6 +963,29 @@ export default function Settings() {
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setCatFormOpen(false)}>Cancelar</Button>
               <Button onClick={handleSaveCategory} disabled={!catForm.name} className="bg-indigo-600 hover:bg-indigo-700">Guardar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Method Dialog */}
+      <Dialog open={pmFormOpen} onOpenChange={setPmFormOpen}>
+        <DialogContent className="pb-safe">
+          <DialogHeader>
+            <DialogTitle>{editingPm ? "Editar Forma de Pago" : "Nueva Forma de Pago"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <Label>Nombre *</Label>
+              <Input
+                value={pmForm.name}
+                onChange={(e) => setPmForm({ name: e.target.value })}
+                placeholder="Ej: Efectivo, Transferencia, Tarjeta..."
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setPmFormOpen(false)}>Cancelar</Button>
+              <Button onClick={handleSavePaymentMethod} disabled={!pmForm.name.trim()} className="bg-indigo-600 hover:bg-indigo-700">Guardar</Button>
             </div>
           </div>
         </DialogContent>

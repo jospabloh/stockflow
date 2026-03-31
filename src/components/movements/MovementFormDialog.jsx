@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { MobileSelect } from "@/components/ui/MobileSelect";
 import { Save, ScanLine } from "lucide-react";
 import { toast } from "sonner";
@@ -41,17 +40,23 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   const [barcodeInput, setBarcodeInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [clients, setClients] = useState([]);
 
   useEffect(() => {
     if (open && businessId) {
       Promise.all([
         base44.entities.Product.filter({ status: "active", business_id: businessId }),
         base44.entities.Category.filter({ business_id: businessId }),
-      ]).then(([prods, cats]) => {
+        base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }),
+        base44.entities.Client.filter({ business_id: businessId, status: "active" }),
+      ]).then(([prods, cats, pms, cls]) => {
         setProducts(prods);
         setCategories(cats);
+        setPaymentMethods(pms);
+        setClients(cls);
       });
-      setForm({ product_id: "", type: "exit", quantity: 1, reason: "", reference: "" });
+      setForm({ product_id: "", type: "exit", quantity: 1, reason: "", reference: "", payment_method: "", client_id: "" });
       setSelectedProduct(null);
       setBarcodeInput("");
       setBarcodeNotFound(false);
@@ -159,6 +164,10 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         return;
       }
 
+      // Resolver nombre de forma de pago para desnormalizar
+      const pmName = paymentMethods.find(p => p.id === form.payment_method)?.name || form.payment_method || "";
+      const clientName = clients.find(c => c.id === form.client_id)?.name || "";
+
       const response = await base44.functions.invoke('createMovementSafe', {
         ...form,
         unit_price: computedUnitPrice,
@@ -166,6 +175,8 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         total: form.quantity * computedUnitPrice,
         stock_after: newStock,
         business_id: businessId,
+        reference: pmName,
+        reason: clientName,
       });
       if (!response.data.success) {
         toast.error(`Error: ${response.data.error}`);
@@ -270,12 +281,25 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           </div>
 
           <div>
-            <Label className="text-foreground mb-1.5 block">Referencia</Label>
-            <Input value={form.reference} onChange={(e) => updateField("reference", e.target.value)} placeholder="No. factura, orden..." />
+            <Label className="text-foreground mb-1.5 block">Forma de pago</Label>
+            <MobileSelect
+              value={form.payment_method}
+              onValueChange={(v) => updateField("payment_method", v)}
+              placeholder="Seleccionar forma de pago"
+              options={paymentMethods.map((pm) => ({ value: pm.id, label: pm.name }))}
+            />
+            {paymentMethods.length === 0 && (
+              <p className="text-xs text-muted-foreground mt-1">No hay formas de pago configuradas. Agrégalas en Configuración → Pagos.</p>
+            )}
           </div>
           <div>
-            <Label className="text-foreground mb-1.5 block">Motivo / Notas</Label>
-            <Textarea value={form.reason} onChange={(e) => updateField("reason", e.target.value)} placeholder="Opcional" rows={2} />
+            <Label className="text-foreground mb-1.5 block">Cliente</Label>
+            <MobileSelect
+              value={form.client_id}
+              onValueChange={(v) => updateField("client_id", v)}
+              placeholder="Seleccionar cliente (opcional)"
+              options={clients.map((c) => ({ value: c.id, label: c.name + (c.business_name ? ` — ${c.business_name}` : "") }))}
+            />
           </div>
         </div>
 

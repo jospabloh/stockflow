@@ -1,0 +1,37 @@
+{
+  "name": "PaymentMethod",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre de la forma de pago"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si est\u00e1 disponible para usar"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    }
+  },
+  "required": [
+    "name",
+    "business_id"
+  ],
+  "rls": {
+    "create": {
+      "business_id": "{{user.business_id}}"
+    },
+    "read": {
+      "business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "business_id": "{{user.business_id}}"
+    },
+    "delete": {
+      "business_id": "{{user.business_id}}"
+    }
+  }
+}

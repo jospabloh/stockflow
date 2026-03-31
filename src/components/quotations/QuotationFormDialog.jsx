@@ -13,10 +13,7 @@ import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps } from "@/lib/a11y";
 import { calculatePrice, computeCategoryQtyMap } from "@/lib/pricingEngine";
 
-const PAYMENT_METHODS = [
-  "Efectivo", "Transferencia", "Tarjeta de crédito", "Tarjeta de débito",
-  "Cheque", "Depósito bancario", "Por definir",
-];
+
 
 function PriceInfo({ rule, origin, warning }) {
   if (!origin) return null;
@@ -34,6 +31,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [clients, setClients] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
   const [clientSearch, setClientSearch] = useState("");
   const [showClientSuggestions, setShowClientSuggestions] = useState(false);
@@ -53,10 +51,12 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
         base44.entities.Product.filter({ business_id: businessId, status: "active" }),
         base44.entities.Category.filter({ business_id: businessId }),
         base44.entities.Client.filter({ business_id: businessId, status: "active" }),
-      ]).then(([prods, cats, cls]) => {
+        base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }),
+      ]).then(([prods, cats, cls, pms]) => {
         setProducts(prods);
         setCategories(cats);
         setClients(cls);
+        setPaymentMethods(pms);
       });
       if (quotation) {
         setForm({
@@ -470,7 +470,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                 value={form.payment_method}
                 onValueChange={(v) => setForm(prev => ({ ...prev, payment_method: v }))}
                 placeholder="Seleccionar"
-                options={PAYMENT_METHODS.map(m => ({ value: m, label: m }))}
+                options={paymentMethods.map(m => ({ value: m.name, label: m.name }))}
                 aria-label="Método de pago"
               />
             </div>
