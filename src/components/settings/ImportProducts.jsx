@@ -36,20 +36,20 @@ const IMPORT_TYPES = {
     label: "Clientes",
     icon: Users,
     color: "emerald",
-    headers: ["nombre","nombre_negocio","telefono","email","direccion","force_wholesale_all_products","force_purchase_all_products"],
+    headers: ["nombre","nombre_negocio","giro","telefono","email","direccion","force_wholesale_all_products","force_purchase_all_products"],
     sampleRows: [
-      "Juan Pérez,Ferretería Pérez,449-123-4567,juan@email.com,Av. Principal 100,false,false",
-      "Distribuidora XYZ,,449-987-6543,contacto@xyz.com,Calle 5 #200,true,false",
+      "Juan Pérez,Ferretería Pérez,Ferretería,449-123-4567,juan@email.com,Av. Principal 100,false,false",
+      "Distribuidora XYZ,,Distribución,449-987-6543,contacto@xyz.com,Calle 5 #200,true,false",
     ],
     hint: 'Los campos "force_wholesale_all_products" y "force_purchase_all_products" aceptan: true/false, 1/0, sí/no. No pueden estar ambos en true.',
-    hintExtra: 'El campo "nombre_negocio" es opcional.',
+    hintExtra: 'Los campos "nombre_negocio" y "giro" son opcionales.',
     previewColumns: [
       { key: "name", label: "Nombre" },
       { key: "business_name", label: "Nombre Negocio" },
+      { key: "giro", label: "Giro" },
       { key: "phone", label: "Teléfono" },
       { key: "email", label: "Email" },
       { key: "force_wholesale_all_products", label: "Precio Mayoreo", format: "bool" },
-      { key: "force_purchase_all_products", label: "Precio Compra", format: "bool" },
     ],
   },
   categories: {
@@ -115,6 +115,7 @@ function rowToClient(row) {
   return {
     name: (row["nombre"] || row["name"] || "").trim(),
     business_name: (row["nombre_negocio"] || "").trim(),
+    giro: (row["giro"] || "").trim(),
     phone: (row["telefono"] || "").trim(),
     email: (row["email"] || "").trim(),
     address: (row["direccion"] || "").trim(),

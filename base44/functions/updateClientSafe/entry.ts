@@ -4,6 +4,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 const ALLOWED_UPDATE_FIELDS = new Set([
   'name',
   'business_name',
+  'giro',
   'email',
   'phone',
   'address',

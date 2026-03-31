@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const {
       name, phone, business_id,
-      business_name, email, address, rfc, notes, status,
+      business_name, giro, email, address, rfc, notes, status,
       force_wholesale_all_products, force_purchase_all_products
     } = body;
 
@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
     const client = await base44.entities.Client.create({
       name,
       business_name: business_name || "",
+      giro: giro || "",
       phone,
       business_id,
       email,

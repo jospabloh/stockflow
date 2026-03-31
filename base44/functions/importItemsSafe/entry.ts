@@ -159,6 +159,7 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.Client.create({
           name: nombre,
           business_name: (row['nombre_negocio'] || '').trim(),
+          giro: (row['giro'] || '').trim(),
           phone: (row['telefono'] || '').trim(),
           email: (row['email'] || '').trim(),
           address: (row['direccion'] || '').trim(),

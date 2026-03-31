@@ -17,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-const emptyForm = { name: "", business_name: "", email: "", phone: "", address: "", rfc: "", notes: "", status: "active", force_wholesale_all_products: false, force_purchase_all_products: false };
+const emptyForm = { name: "", business_name: "", giro: "", email: "", phone: "", address: "", rfc: "", notes: "", status: "active", force_wholesale_all_products: false, force_purchase_all_products: false };
 
 export default function ClientsManager() {
   const { businessId } = useBusinessContext();
@@ -36,7 +36,7 @@ export default function ClientsManager() {
   useEffect(() => { load(); }, []);
 
   const openNew = () => { setEditing(null); setForm(emptyForm); setFormOpen(true); };
-  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, business_name: c.business_name || "", email: c.email || "", phone: c.phone || "", address: c.address || "", rfc: c.rfc || "", notes: c.notes || "", status: c.status || "active", force_wholesale_all_products: c.force_wholesale_all_products || false, force_purchase_all_products: c.force_purchase_all_products || false }); setFormOpen(true); };
+  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, business_name: c.business_name || "", giro: c.giro || "", email: c.email || "", phone: c.phone || "", address: c.address || "", rfc: c.rfc || "", notes: c.notes || "", status: c.status || "active", force_wholesale_all_products: c.force_wholesale_all_products || false, force_purchase_all_products: c.force_purchase_all_products || false }); setFormOpen(true); };
 
   const handleSave = async () => {
     // Validate required fields
@@ -133,6 +133,7 @@ export default function ClientsManager() {
           <TableRow>
             <TableHead>Nombre</TableHead>
             <TableHead>Nombre Negocio</TableHead>
+            <TableHead>Giro</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Teléfono</TableHead>
             <TableHead>RFC</TableHead>
@@ -145,6 +146,7 @@ export default function ClientsManager() {
             <TableRow key={c.id}>
               <TableCell className="font-medium">{c.name}</TableCell>
               <TableCell className="text-slate-500">{c.business_name || "—"}</TableCell>
+              <TableCell className="text-slate-500">{c.giro || "—"}</TableCell>
               <TableCell className="text-slate-500">{c.email || "—"}</TableCell>
               <TableCell className="text-slate-500">{c.phone || "—"}</TableCell>
               <TableCell className="text-slate-500">{c.rfc || "—"}</TableCell>
@@ -165,7 +167,7 @@ export default function ClientsManager() {
           ))}
           {filtered.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-slate-400 py-8">No hay clientes registrados</TableCell>
+              <TableCell colSpan={8} className="text-center text-slate-400 py-8">No hay clientes registrados</TableCell>
             </TableRow>
           )}
         </TableBody>
@@ -186,6 +188,10 @@ export default function ClientsManager() {
                 <Label>Nombre Negocio</Label>
                 <Input value={form.business_name} onChange={e => setForm({ ...form, business_name: e.target.value })} placeholder="Opcional" />
               </div>
+            </div>
+            <div>
+              <Label>Giro</Label>
+              <Input value={form.giro} onChange={e => setForm({ ...form, giro: e.target.value })} placeholder="Ej. Ferretería, Restaurante, Distribuidora..." />
             </div>
             <div className="grid grid-cols-2 gap-3">
             <div>

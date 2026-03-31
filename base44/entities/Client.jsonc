@@ -10,6 +10,10 @@
       "type": "string",
       "description": "Nombre del negocio del cliente"
     },
+    "giro": {
+      "type": "string",
+      "description": "Giro o actividad comercial del cliente"
+    },
     "email": {
       "type": "string",
       "description": "Correo electr\u00f3nico"
