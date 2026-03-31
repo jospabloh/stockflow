@@ -21,11 +21,23 @@ import {
   RotateCcw,
   SlidersHorizontal,
   Download,
+  Trash2,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import moment from "moment";
 import MovementFormDialog from "@/components/movements/MovementFormDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import { createButtonProps } from "@/lib/a11y";
+import { toast } from "sonner";
 
 const typeConfig = {
   entry: { label: "Entrada", icon: ArrowDownLeft, color: "bg-emerald-100 text-emerald-700" },
@@ -44,6 +56,8 @@ export default function Movements() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [businessId, setBusinessId] = useState(null);
+  const [deletingMovement, setDeletingMovement] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const loadData = async (bId) => {
     if (!bId) return;
@@ -85,6 +99,25 @@ export default function Movements() {
     const matchType = typeFilter === "all" || m.type === typeFilter;
     return matchSearch && matchType;
   });
+
+  const handleDeleteMovement = async () => {
+    if (!deletingMovement) return;
+    setDeleteLoading(true);
+    try {
+      const res = await base44.functions.invoke('deleteMovementSafe', { movement_id: deletingMovement.id });
+      if (!res.data?.success) {
+        toast.error(`Error: ${res.data?.error || "No se pudo eliminar"}`);
+        return;
+      }
+      toast.success("Movimiento eliminado y stock revertido");
+      setDeletingMovement(null);
+      loadData(businessId);
+    } catch (e) {
+      toast.error(`Error: ${e.message}`);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   const handleExportCSV = () => {
      // Helper para escapar valores CSV
@@ -169,6 +202,7 @@ export default function Movements() {
               <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Total</TableHead>
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Referencia / Motivo</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Stock Después</TableHead>
+              {isAdmin && <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader">Acciones</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -207,7 +241,20 @@ export default function Movements() {
                         {m.reason && <div className="text-xs text-slate-400 mt-0.5">{m.reason}</div>}
                       </TableCell>
                       <TableCell className="text-right text-slate-600">{m.stock_after ?? "—"}</TableCell>
-                    </TableRow>
+                      {isAdmin && (
+                        <TableCell className="text-center">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50"
+                            onClick={() => setDeletingMovement(m)}
+                            aria-label="Eliminar movimiento"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      )}
+                      </TableRow>
                   );
                 })
               )}
@@ -216,7 +263,26 @@ export default function Movements() {
         </div>
       </div>
 
-
+      <AlertDialog open={!!deletingMovement} onOpenChange={(o) => !o && setDeletingMovement(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar este movimiento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminará el movimiento de <strong>{deletingMovement?.product_name}</strong> ({typeConfig[deletingMovement?.type]?.label}, {deletingMovement?.quantity} uds.) y el stock del producto será revertido automáticamente. Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteLoading}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteMovement}
+              disabled={deleteLoading}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {deleteLoading ? "Eliminando..." : "Sí, eliminar y revertir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

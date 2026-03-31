@@ -273,9 +273,9 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
             </div>
           </div>
 
-          <div className="bg-accent/10 border border-accent rounded-xl p-4 text-center">
+          <div className="bg-indigo-50 dark:bg-indigo-950 border border-indigo-300 dark:border-indigo-700 rounded-xl p-4 text-center">
             <p className="text-sm text-muted-foreground mb-1">Total</p>
-            <p className="text-2xl font-bold text-accent">
+            <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-300">
               ${(form.quantity * computedUnitPrice).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
             </p>
           </div>
