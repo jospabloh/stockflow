@@ -199,38 +199,39 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
+      <DialogContent className="max-w-lg flex flex-col max-h-[90vh] p-0">
+        <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
           <DialogTitle>Registrar Movimiento</DialogTitle>
         </DialogHeader>
 
-        {/* Barcode scanner input */}
-        <div className="space-y-2 pt-2">
-          <Label className="text-foreground mb-1.5 block">Escanear producto</Label>
-          <div className="flex gap-2">
-            <Input
-              ref={barcodeRef}
-              placeholder="🔫 Escanee código de barras o SKU..."
-              value={barcodeInput}
-              onChange={(e) => { setBarcodeInput(e.target.value); setBarcodeNotFound(false); }}
-              onKeyDown={(e) => e.key === "Enter" && handleBarcodeSearch()}
-              className={`flex-1 ${barcodeNotFound ? "border-red-400 focus-visible:ring-red-300" : ""}`}
-            />
-            <Button variant="outline" onClick={handleBarcodeSearch}>
-              <ScanLine className="h-4 w-4" />
-            </Button>
+        <div className="flex-1 overflow-y-auto px-6 py-2 space-y-4">
+          {/* Barcode scanner input */}
+          <div className="space-y-2">
+            <Label className="text-foreground mb-1.5 block">Escanear producto</Label>
+            <div className="flex gap-2">
+              <Input
+                ref={barcodeRef}
+                placeholder="🔫 Escanee código de barras o SKU..."
+                value={barcodeInput}
+                onChange={(e) => { setBarcodeInput(e.target.value); setBarcodeNotFound(false); }}
+                onKeyDown={(e) => e.key === "Enter" && handleBarcodeSearch()}
+                className={`flex-1 ${barcodeNotFound ? "border-red-400 focus-visible:ring-red-300" : ""}`}
+              />
+              <Button variant="outline" onClick={handleBarcodeSearch}>
+                <ScanLine className="h-4 w-4" />
+              </Button>
+            </div>
+            {barcodeNotFound && (
+              <p className="text-xs text-red-500 pl-1">Código no encontrado. Verifica el SKU o código de barras del producto.</p>
+            )}
           </div>
-          {barcodeNotFound && (
-            <p className="text-xs text-red-500 pl-1">Código no encontrado. Verifica el SKU o código de barras del producto.</p>
-          )}
-        </div>
 
-        <div className="space-y-4">
           {form.type === "adjustment" && (
             <div className="bg-amber-100/40 border border-amber-400 rounded-xl p-3 text-xs text-amber-100 dark:text-amber-200">
               ⚠️ El <strong>ajuste</strong> establece el stock final de forma absoluta. Ejemplo: si ingresas 10, el stock quedará en 10 unidades.
             </div>
           )}
+
           <ProductSearchInput
             products={products}
             selectedProduct={selectedProduct}
@@ -278,7 +279,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4">
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-border shrink-0">
           <Button variant="outline" onClick={() => onOpenChange(false)} {...createButtonProps('cancel')}>Cancelar</Button>
           <Button onClick={handleSave} disabled={!form.product_id || form.quantity <= 0 || saving} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
             <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Registrar"}
