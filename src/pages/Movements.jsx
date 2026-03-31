@@ -208,7 +208,7 @@ export default function Movements() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-slate-400">
+                  <TableCell colSpan={isAdmin ? 8 : 7} className="text-center py-12 text-slate-400">
                     Sin movimientos registrados
                   </TableCell>
                 </TableRow>
@@ -246,8 +246,8 @@ export default function Movements() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50"
-                            onClick={() => setDeletingMovement(m)}
+                            className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30"
+                            onClick={(e) => { e.stopPropagation(); setDeletingMovement(m); }}
                             aria-label="Eliminar movimiento"
                           >
                             <Trash2 className="h-4 w-4" />
