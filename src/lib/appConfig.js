@@ -2,14 +2,24 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "1.2.0";
+export const APP_VERSION = "1.3.0";
 
 export const RELEASE_DATE = "2026-03-31";
 
 export const CHANGELOG = [
   {
-    version: "1.2.0",
+    version: "1.3.0",
     date: "2026-03-31",
+    changes: [
+      "Campo 'Giro' agregado a clientes: visible en tabla, formulario e importación CSV",
+      "Dropdowns de Cliente y Forma de Pago con búsqueda en tiempo real en formulario de movimientos",
+      "Nuevo componente SearchableSelect reutilizable para selects buscables en toda la app",
+      "Mejoras de visibilidad en botón de eliminar movimientos para administradores",
+    ],
+  },
+  {
+    version: "1.2.0",
+    date: "2026-03-28",
     changes: [
       "Formas de pago configurables desde Configuración (Pagos), compartidas en movimientos y cotizaciones",
       "Eliminación segura de movimientos con reversión automática de stock",
