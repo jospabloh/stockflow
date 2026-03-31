@@ -96,7 +96,6 @@ Deno.serve(async (req) => {
           purchase_price: parseFloat(row['precio_compra'] || '0') || 0,
           retail_sale_price: precioMenudeo,
           wholesale_sale_price: parseFloat(row['precio_mayoreo'] || '0') || 0,
-          wholesale_min_qty: parseFloat(row['cantidad_minima_mayoreo'] || '0') || 0,
           stock: parseFloat(row['stock'] || '0') || 0,
           min_stock: parseFloat(row['stock_minimo'] || '5') || 5,
           unit,
@@ -185,11 +184,15 @@ Deno.serve(async (req) => {
           continue;
         }
 
+        const minQtyRaw = (row['cantidad_minima_mayoreo'] || '').trim();
+        const minQty = minQtyRaw !== '' ? parseFloat(minQtyRaw) : null;
+
         await base44.asServiceRole.entities.Category.create({
           name: nombre,
           description: (row['descripcion'] || '').trim(),
           color: '#6366f1',
           business_id: businessId,
+          ...(minQty != null && !isNaN(minQty) && minQty >= 0 ? { wholesale_min_qty: minQty } : {}),
         });
 
         results.push({ row: rowNum, nombre, status: 'ok' });

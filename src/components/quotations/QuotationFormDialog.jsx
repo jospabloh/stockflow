@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -11,7 +11,7 @@ import { Plus, Trash2, Save, ScanLine, AlertTriangle, Info } from "lucide-react"
 import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps } from "@/lib/a11y";
-import { calculatePrice } from "@/lib/pricingEngine";
+import { calculatePrice, computeCategoryQtyMap } from "@/lib/pricingEngine";
 
 const PAYMENT_METHODS = [
   "Efectivo", "Transferencia", "Tarjeta de crédito", "Tarjeta de débito",
@@ -32,6 +32,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   const { businessId } = useBusinessContext();
   const barcodeRef = useRef(null);
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
   const [clientSearch, setClientSearch] = useState("");
@@ -48,8 +49,15 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
 
   useEffect(() => {
     if (open && businessId) {
-      base44.entities.Product.filter({ business_id: businessId, status: "active" }).then(setProducts);
-      base44.entities.Client.filter({ business_id: businessId, status: "active" }).then(setClients);
+      Promise.all([
+        base44.entities.Product.filter({ business_id: businessId, status: "active" }),
+        base44.entities.Category.filter({ business_id: businessId }),
+        base44.entities.Client.filter({ business_id: businessId, status: "active" }),
+      ]).then(([prods, cats, cls]) => {
+        setProducts(prods);
+        setCategories(cats);
+        setClients(cls);
+      });
       if (quotation) {
         setForm({
           client_name: quotation.client_name || "",
@@ -83,30 +91,47 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     }
   }, [open, quotation, businessId]);
 
-  // Recalculate ALL item prices when selected client changes
-  useEffect(() => {
-    if (!open) return;
-    setForm(prev => {
-      const newItems = prev.items.map((item, idx) => {
-        const product = products.find(p => p.id === item.product_id);
-        if (!product) return item;
-        const { price, rule, origin, warning } = calculatePrice({ product, client: selectedClient, quantity: item.quantity });
-        setItemPriceInfo(pi => ({ ...pi, [idx]: { rule, origin, warning } }));
-        return {
-          ...item,
-          unit_price: price,
-          total: item.quantity * price,
-        };
-      });
-      return { ...prev, items: newItems };
-    });
-  }, [selectedClient, open]);
+  // Build a product map for quick lookup
+  const productMap = React.useMemo(() => {
+    const m = {};
+    for (const p of products) m[p.id] = p;
+    return m;
+  }, [products]);
 
-  const applyPricingToItem = (item, product, quantity, idx) => {
-    const { price, rule, origin, warning } = calculatePrice({ product, client: selectedClient, quantity });
-    setItemPriceInfo(pi => ({ ...pi, [idx]: { rule, origin, warning } }));
-    return { ...item, unit_price: price, total: quantity * price };
+  // Build a category map for quick lookup
+  const categoryMap = React.useMemo(() => {
+    const m = {};
+    for (const c of categories) m[c.id] = c;
+    return m;
+  }, [categories]);
+
+  // Recalculate a set of items applying category-level qty wholesale logic
+  const recalcAllItems = (items, newPriceInfo = {}) => {
+    const catQtyMap = computeCategoryQtyMap(items, productMap);
+    const recalcedItems = items.map((item, idx) => {
+      const product = productMap[item.product_id];
+      if (!product) return item;
+      const category = categoryMap[product.category];
+      const categoryQty = catQtyMap[product.category || "__none__"] || 0;
+      const { price, rule, origin, warning } = calculatePrice({
+        product, client: selectedClient, quantity: item.quantity, category, categoryQty,
+      });
+      newPriceInfo[idx] = { rule, origin, warning };
+      return { ...item, unit_price: price, total: item.quantity * price };
+    });
+    return { recalcedItems, newPriceInfo };
   };
+
+  // Recalculate ALL item prices when selected client or categories change
+  useEffect(() => {
+    if (!open || products.length === 0) return;
+    setForm(prev => {
+      const newPriceInfo = {};
+      const { recalcedItems, newPriceInfo: pi } = recalcAllItems(prev.items, newPriceInfo);
+      setItemPriceInfo(pi);
+      return { ...prev, items: recalcedItems };
+    });
+  }, [selectedClient, open, products, categories]);
 
   const handleBarcodeSearch = () => {
     if (!barcodeInput.trim()) return;
@@ -115,26 +140,23 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       setBarcodeNotFound(false);
       setForm(prev => {
         const existingIdx = prev.items.findIndex(i => i.product_id === found.id);
-        const items = [...prev.items];
+        let items = [...prev.items];
         if (existingIdx >= 0) {
-          const newQty = items[existingIdx].quantity + 1;
-          const updated = applyPricingToItem(items[existingIdx], found, newQty, existingIdx);
-          items[existingIdx] = { ...updated, quantity: newQty };
+          items[existingIdx] = { ...items[existingIdx], quantity: items[existingIdx].quantity + 1 };
         } else {
-          const newIdx = items.length;
-          const { price, rule, origin, warning } = calculatePrice({ product: found, client: selectedClient, quantity: 1 });
-          setItemPriceInfo(pi => ({ ...pi, [newIdx]: { rule, origin, warning } }));
           items.push({
             product_id: found.id,
             product_name: found.name,
             quantity: 1,
-            unit_price: price,
-            total: price,
+            unit_price: 0,
+            total: 0,
             tax_rate: found.tax_rate ?? 16,
             available_stock: found.stock ?? 0,
           });
         }
-        return { ...prev, items };
+        const { recalcedItems, newPriceInfo } = recalcAllItems(items, {});
+        setItemPriceInfo(newPriceInfo);
+        return { ...prev, items: recalcedItems };
       });
       setBarcodeInput("");
     } else {
@@ -164,36 +186,30 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
 
   const updateItem = (index, field, value) => {
     setForm(prev => {
-      const items = [...prev.items];
+      let items = [...prev.items];
       items[index] = { ...items[index], [field]: value };
 
       if (field === "product_id") {
-        const product = products.find(p => p.id === value);
+        const product = productMap[value];
         if (product) {
-          const qty = items[index].quantity || 1;
-          const { price, rule, origin, warning } = calculatePrice({ product, client: selectedClient, quantity: qty });
-          setItemPriceInfo(pi => ({ ...pi, [index]: { rule, origin, warning } }));
           items[index].product_name = product.name;
-          items[index].unit_price = price;
-          items[index].total = qty * price;
           items[index].tax_rate = product.tax_rate ?? 16;
           items[index].available_stock = product.stock ?? 0;
         }
+        // Recalc all (category qty map may change)
+        const { recalcedItems, newPriceInfo } = recalcAllItems(items, {});
+        setItemPriceInfo(newPriceInfo);
+        return { ...prev, items: recalcedItems };
       } else if (field === "quantity") {
-        const product = products.find(p => p.id === items[index].product_id);
-        if (product) {
-          const qty = Number(value) || 1;
-          const { price, rule, origin, warning } = calculatePrice({ product, client: selectedClient, quantity: qty });
-          setItemPriceInfo(pi => ({ ...pi, [index]: { rule, origin, warning } }));
-          items[index].unit_price = price;
-          items[index].total = qty * price;
-        } else {
-          items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
-        }
+        // Recalc all (category totals change)
+        const { recalcedItems, newPriceInfo } = recalcAllItems(items, {});
+        setItemPriceInfo(newPriceInfo);
+        return { ...prev, items: recalcedItems };
       } else if (field === "unit_price") {
-        // Manual override — clear price info
+        // Manual override — clear price info for this item only, keep others
         setItemPriceInfo(pi => ({ ...pi, [index]: null }));
         items[index].total = (items[index].quantity || 0) * (Number(value) || 0);
+        return { ...prev, items };
       }
 
       return { ...prev, items };

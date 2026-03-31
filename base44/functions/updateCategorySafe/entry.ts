@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
-// Whitelist — excludes id, business_id, metadata fields
-const ALLOWED_FIELDS = ['name', 'description', 'color'];
+// Whitelist — wholesale_min_qty added as Category is now the source of truth for this threshold
+const ALLOWED_FIELDS = ['name', 'description', 'color', 'wholesale_min_qty'];
 
 Deno.serve(async (req) => {
   try {
@@ -41,6 +41,11 @@ Deno.serve(async (req) => {
     const sanitized = {};
     for (const key of ALLOWED_FIELDS) {
       if (key in updates) sanitized[key] = updates[key];
+    }
+
+    // Validate wholesale_min_qty
+    if (sanitized.wholesale_min_qty != null && Number(sanitized.wholesale_min_qty) < 0) {
+      return Response.json({ error: 'La cantidad mínima mayoreo no puede ser negativa' }, { status: 400 });
     }
 
     if (Object.keys(sanitized).length === 0) {

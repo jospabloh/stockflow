@@ -38,10 +38,6 @@
       "type": "number",
       "description": "Precio de venta al mayoreo"
     },
-    "wholesale_min_qty": {
-      "type": "number",
-      "description": "Cantidad m\u00ednima para aplicar precio de mayoreo (0 = no configurado)"
-    },
     "stock": {
       "type": "number",
       "description": "Existencias actuales",

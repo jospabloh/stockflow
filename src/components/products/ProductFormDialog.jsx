@@ -26,7 +26,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   const [form, setForm] = useState({
     name: "", sku: "", barcode: "", description: "",
     category: "", supplier: "", purchase_price: 0,
-    retail_sale_price: 0, wholesale_sale_price: "", wholesale_min_qty: "",
+    retail_sale_price: 0, wholesale_sale_price: "",
     stock: 0, min_stock: 5, unit: "pieza",
     status: "active", tax_rate: 16,
   });
@@ -72,7 +72,6 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         purchase_price: product.purchase_price || 0,
         retail_sale_price: product.retail_sale_price ?? product.sale_price ?? 0,
         wholesale_sale_price: product.wholesale_sale_price ?? "",
-        wholesale_min_qty: product.wholesale_min_qty ?? "",
         stock: product.stock || 0,
         min_stock: product.min_stock || 5,
         unit: product.unit || "pieza",
@@ -83,7 +82,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
       setForm({
         name: "", sku: "", barcode: "", description: "",
         category: "", supplier: "", purchase_price: 0,
-        retail_sale_price: 0, wholesale_sale_price: "", wholesale_min_qty: "",
+        retail_sale_price: 0, wholesale_sale_price: "",
         stock: 0, min_stock: 5, unit: "pieza",
         status: "active", tax_rate: 16,
       });
@@ -129,7 +128,6 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         ...form,
         retail_sale_price: Number(form.retail_sale_price) || 0,
         wholesale_sale_price: form.wholesale_sale_price !== "" ? Number(form.wholesale_sale_price) : undefined,
-        wholesale_min_qty: form.wholesale_min_qty !== "" ? Number(form.wholesale_min_qty) : undefined,
       };
 
       if (product) {
@@ -296,16 +294,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
               const num = parseFloat(val);
               if (!isNaN(num) && num >= 0) updateField("wholesale_sale_price", num);
             }} />
-          </div>
-          <div>
-            <Label>Cantidad mínima para mayoreo</Label>
-            <Input type="number" min={0} step="1" value={form.wholesale_min_qty} placeholder="Opcional" onChange={(e) => {
-              const val = e.target.value;
-              if (val === "") { updateField("wholesale_min_qty", ""); return; }
-              const num = parseInt(val, 10);
-              if (!isNaN(num) && num >= 0) updateField("wholesale_min_qty", num);
-            }} />
-            <p className="text-xs text-muted-foreground mt-1">Dejar vacío para no configurar precio mayoreo por cantidad</p>
+            <p className="text-xs text-muted-foreground mt-1">La cantidad mínima para mayoreo se configura en la Categoría</p>
           </div>
 
           <div>

@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
       name, business_id,
       sku, barcode, description, category, supplier,
       purchase_price,
-      retail_sale_price, wholesale_sale_price, wholesale_min_qty,
+      retail_sale_price, wholesale_sale_price,
       stock, min_stock, unit, tax_rate, image_url, status
     } = body;
 
@@ -42,10 +42,6 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'El precio de compra no puede ser negativo' }, { status: 400 });
     }
 
-    if (wholesale_min_qty != null && wholesale_min_qty < 0) {
-      return Response.json({ success: false, error: 'La cantidad mínima para mayoreo no puede ser negativa' }, { status: 400 });
-    }
-
     const product = await base44.entities.Product.create({
       name,
       business_id,
@@ -57,7 +53,6 @@ Deno.serve(async (req) => {
       purchase_price,
       retail_sale_price,
       wholesale_sale_price,
-      wholesale_min_qty,
       stock,
       min_stock,
       unit,

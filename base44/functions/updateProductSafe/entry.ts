@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
-// SECURITY: Explicit whitelist of updatable Product fields
+// SECURITY: Explicit whitelist — wholesale_min_qty removed (now lives in Category)
 const ALLOWED_UPDATE_FIELDS = new Set([
   'name',
   'sku',
@@ -11,7 +11,6 @@ const ALLOWED_UPDATE_FIELDS = new Set([
   'purchase_price',
   'retail_sale_price',
   'wholesale_sale_price',
-  'wholesale_min_qty',
   'stock',
   'min_stock',
   'unit',
@@ -84,9 +83,6 @@ Deno.serve(async (req) => {
     }
     if (sanitized.purchase_price != null && sanitized.purchase_price < 0) {
       return Response.json({ success: false, error: 'El precio de compra no puede ser negativo' }, { status: 400 });
-    }
-    if (sanitized.wholesale_min_qty != null && sanitized.wholesale_min_qty < 0) {
-      return Response.json({ success: false, error: 'La cantidad mínima para mayoreo no puede ser negativa' }, { status: 400 });
     }
 
     if (Object.keys(sanitized).length === 0) {

@@ -16,13 +16,13 @@ const IMPORT_TYPES = {
     label: "Productos",
     icon: Package,
     color: "indigo",
-    headers: ["nombre","sku","codigo_barras","descripcion","precio_compra","precio_menudeo","precio_mayoreo","cantidad_minima_mayoreo","stock","stock_minimo","unidad","categoria"],
+    headers: ["nombre","sku","codigo_barras","descripcion","precio_compra","precio_menudeo","precio_mayoreo","stock","stock_minimo","unidad","categoria"],
     sampleRows: [
-      "Producto Ejemplo,SKU001,7501234567890,Descripción del producto,50.00,100.00,80.00,10,25,5,pieza,Electrónica",
-      "Otro Producto,SKU002,,Sin descripción,0,200.00,0,0,10,2,caja,",
+      "Producto Ejemplo,SKU001,7501234567890,Descripción del producto,50.00,100.00,80.00,25,5,pieza,Electrónica",
+      "Otro Producto,SKU002,,Sin descripción,0,200.00,0,10,2,caja,",
     ],
     hint: 'La columna "categoria" es opcional. Si se indica, debe existir en Configuración → Categorías.',
-    hintExtra: 'Unidades válidas: pieza, kg, litro, metro, caja, paquete.',
+    hintExtra: 'Unidades válidas: pieza, kg, litro, metro, caja, paquete. La cantidad mínima para mayoreo se configura en la Categoría, no en el producto.',
     previewColumns: [
       { key: "name", label: "Nombre" },
       { key: "sku", label: "SKU" },
@@ -56,16 +56,17 @@ const IMPORT_TYPES = {
     label: "Categorías",
     icon: Tag,
     color: "violet",
-    headers: ["nombre","descripcion"],
+    headers: ["nombre","descripcion","cantidad_minima_mayoreo"],
     sampleRows: [
-      "Electrónica,Productos electrónicos y accesorios",
-      "Herramientas,Herramientas manuales y eléctricas",
+      "Electrónica,Productos electrónicos y accesorios,10",
+      "Herramientas,Herramientas manuales y eléctricas,",
     ],
-    hint: 'Solo se requiere el nombre. La descripción es opcional.',
-    hintExtra: "",
+    hint: 'Solo se requiere el nombre. La descripción y cantidad_minima_mayoreo son opcionales.',
+    hintExtra: '"cantidad_minima_mayoreo": si el total de productos de esta categoría en una cotización alcanza este número, se aplica precio mayoreo automáticamente.',
     previewColumns: [
       { key: "name", label: "Nombre" },
       { key: "description", label: "Descripción" },
+      { key: "wholesale_min_qty", label: "Mín. Mayoreo", format: "number" },
     ],
   },
 };
@@ -102,7 +103,6 @@ function rowToProduct(row) {
     purchase_price: parseFloat(row["precio_compra"] || "0") || 0,
     retail_sale_price: parseFloat(row["precio_menudeo"] || row["precio_venta"] || "0") || 0,
     wholesale_sale_price: parseFloat(row["precio_mayoreo"] || "0") || 0,
-    wholesale_min_qty: parseFloat(row["cantidad_minima_mayoreo"] || "0") || 0,
     stock: parseFloat(row["stock"] || "0") || 0,
     min_stock: parseFloat(row["stock_minimo"] || "5") || 5,
     unit,
@@ -125,9 +125,12 @@ function rowToClient(row) {
 }
 
 function rowToCategory(row) {
+  const minQtyRaw = (row["cantidad_minima_mayoreo"] || "").trim();
+  const minQty = minQtyRaw !== "" ? parseFloat(minQtyRaw) : null;
   return {
     name: (row["nombre"] || row["name"] || "").trim(),
     description: (row["descripcion"] || "").trim(),
+    wholesale_min_qty: minQty != null && !isNaN(minQty) && minQty >= 0 ? minQty : null,
     _raw: row,
   };
 }

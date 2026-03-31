@@ -14,6 +14,10 @@
       "type": "string",
       "description": "Color representativo (hex)"
     },
+    "wholesale_min_qty": {
+      "type": "number",
+      "description": "Cantidad m\u00ednima por categor\u00eda para activar precio mayoreo (0 o vac\u00edo = no configurado)"
+    },
     "business_id": {
       "type": "string",
       "description": "ID del negocio al que pertenece"

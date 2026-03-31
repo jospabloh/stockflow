@@ -50,7 +50,7 @@ export default function Settings() {
   // Category/Supplier form
   const [catFormOpen, setCatFormOpen] = useState(false);
   const [editingCat, setEditingCat] = useState(null);
-  const [catForm, setCatForm] = useState({ name: "", description: "", color: "#6366f1" });
+  const [catForm, setCatForm] = useState({ name: "", description: "", color: "#6366f1", wholesale_min_qty: "" });
   const [supFormOpen, setSupFormOpen] = useState(false);
   const [editingSup, setEditingSup] = useState(null);
   const [supForm, setSupForm] = useState({ name: "", contact_name: "", email: "", phone: "" });
@@ -152,9 +152,13 @@ export default function Settings() {
     }
     try {
       if (editingCat) {
+        const catUpdates = {
+          ...catForm,
+          wholesale_min_qty: catForm.wholesale_min_qty !== "" ? Number(catForm.wholesale_min_qty) : null,
+        };
         const response = await base44.functions.invoke('updateCategorySafe', {
           category_id: editingCat.id,
-          updates: catForm
+          updates: catUpdates
         });
         if (!response.data.success) {
           toast.error(`Error: ${response.data.error || 'No se pudo actualizar'}`);
@@ -162,7 +166,12 @@ export default function Settings() {
         }
         toast.success("✓ Categoría actualizada");
       } else {
-        await base44.entities.Category.create({ ...catForm, business_id: businessId });
+        const newCat = {
+          ...catForm,
+          wholesale_min_qty: catForm.wholesale_min_qty !== "" ? Number(catForm.wholesale_min_qty) : undefined,
+          business_id: businessId,
+        };
+        await base44.entities.Category.create(newCat);
         toast.success("✓ Categoría creada exitosamente");
       }
       // CRITICAL: Filter by business_id, never use list()
@@ -170,7 +179,7 @@ export default function Settings() {
       setCategories(cats);
       setCatFormOpen(false);
       setEditingCat(null);
-      setCatForm({ name: "", description: "", color: "#6366f1" });
+      setCatForm({ name: "", description: "", color: "#6366f1", wholesale_min_qty: "" });
     } catch (error) {
       console.error("Save category error:", error);
       toast.error(`Error al guardar categoría: ${error.message || 'Intenta de nuevo'}`);
@@ -408,6 +417,7 @@ export default function Settings() {
                   <TableHead>Color</TableHead>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Descripción</TableHead>
+                  <TableHead className="text-right">Mín. Mayoreo</TableHead>
                   <TableHead className="text-center">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -417,8 +427,11 @@ export default function Settings() {
                     <TableCell><div className="h-6 w-6 rounded-full" style={{ backgroundColor: cat.color || "#6366f1" }} /></TableCell>
                     <TableCell className="font-medium">{cat.name}</TableCell>
                     <TableCell className="text-slate-500">{cat.description || "—"}</TableCell>
+                    <TableCell className="text-right text-slate-500 text-sm">
+                      {cat.wholesale_min_qty > 0 ? `${cat.wholesale_min_qty} uds.` : "—"}
+                    </TableCell>
                     <TableCell className="text-center">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCat(cat); setCatForm({ name: cat.name, description: cat.description || "", color: cat.color || "#6366f1" }); setCatFormOpen(true); }} {...createButtonProps('edit')}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCat(cat); setCatForm({ name: cat.name, description: cat.description || "", color: cat.color || "#6366f1", wholesale_min_qty: cat.wholesale_min_qty ?? "" }); setCatFormOpen(true); }} {...createButtonProps('edit')}>
                         <Pencil className="h-4 w-4 text-slate-400" />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteCategory(cat.id)} {...createButtonProps('delete')}>
@@ -845,6 +858,21 @@ export default function Settings() {
                 <Input type="color" value={catForm.color} onChange={(e) => setCatForm({ ...catForm, color: e.target.value })} className="w-14 h-10 p-1" />
                 <Input value={catForm.color} onChange={(e) => setCatForm({ ...catForm, color: e.target.value })} />
               </div>
+            </div>
+            <div>
+              <Label>Cantidad mínima para precio mayoreo</Label>
+              <Input
+                type="number" min={0} step="1"
+                value={catForm.wholesale_min_qty}
+                placeholder="Ej: 10 (dejar vacío para no aplicar)"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setCatForm({ ...catForm, wholesale_min_qty: val === "" ? "" : Math.max(0, parseInt(val) || 0) });
+                }}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Si la cantidad total de productos de esta categoría en una cotización alcanza este mínimo, se aplica precio mayoreo automáticamente.
+              </p>
             </div>
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setCatFormOpen(false)}>Cancelar</Button>
