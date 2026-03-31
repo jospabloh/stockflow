@@ -90,15 +90,11 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
     );
   }
 
-  const columnWidths = isAdmin
-    ? "flex-1 w-20 w-20 w-24 w-24 w-32 w-16 w-20"
-    : "flex-1 w-20 w-20 w-24 w-32 w-16 w-20";
-
   return (
     <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
       {/* Header */}
-      <div className={`flex items-center ${columnWidths} px-4 py-3 bg-muted/40 border-b border-border text-xs font-semibold text-muted-foreground sticky top-0 z-10`}>
-        <div className="flex-1">Producto</div>
+      <div className="flex items-center px-4 py-3 bg-muted/40 border-b border-border text-xs font-semibold text-muted-foreground sticky top-0 z-10">
+        <div className="flex-1 min-w-0">Producto</div>
         <div className="w-20">SKU</div>
         <div className="w-20">Categoría</div>
         {isAdmin && <div className="w-24 text-right">Precio Compra</div>}

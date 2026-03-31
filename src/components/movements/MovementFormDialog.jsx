@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   Dialog,
@@ -15,6 +15,7 @@ import { Save, ScanLine } from "lucide-react";
 import { toast } from "sonner";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps } from "@/lib/a11y";
+import { calculatePrice } from "@/lib/pricingEngine";
 
 const TYPES = [
   { value: "entry", label: "Entrada (Compra)" },
@@ -27,12 +28,12 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   const { businessId } = useBusinessContext();
   const barcodeRef = useRef(null);
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [barcodeNotFound, setBarcodeNotFound] = useState(false);
   const [form, setForm] = useState({
     product_id: "",
-    type: "entry",
+    type: "exit",
     quantity: 1,
-    unit_price: 0,
     reason: "",
     reference: "",
   });
@@ -42,15 +43,38 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
   useEffect(() => {
     if (open && businessId) {
-      base44.entities.Product.filter({ status: "active", business_id: businessId }).then(setProducts);
-      setForm({ product_id: "", type: "entry", quantity: 1, unit_price: 0, reason: "", reference: "" });
+      Promise.all([
+        base44.entities.Product.filter({ status: "active", business_id: businessId }),
+        base44.entities.Category.filter({ business_id: businessId }),
+      ]).then(([prods, cats]) => {
+        setProducts(prods);
+        setCategories(cats);
+      });
+      setForm({ product_id: "", type: "exit", quantity: 1, reason: "", reference: "" });
       setSelectedProduct(null);
       setBarcodeInput("");
       setBarcodeNotFound(false);
-      // Autofocus en el campo de código de barras al abrir
       setTimeout(() => barcodeRef.current?.focus(), 100);
     }
   }, [open, businessId]);
+
+  // Calcula el precio unitario según tipo y mayoreo
+  const computedUnitPrice = useMemo(() => {
+    if (!selectedProduct) return 0;
+    if (form.type === "entry") {
+      return selectedProduct.purchase_price ?? 0;
+    }
+    // Para exit/return/adjustment: aplicar lógica de mayoreo por categoría
+    const category = categories.find(c => c.id === selectedProduct.category);
+    const { price } = calculatePrice({
+      product: selectedProduct,
+      client: null,
+      quantity: form.quantity,
+      category,
+      categoryQty: form.quantity,
+    });
+    return price;
+  }, [selectedProduct, form.type, form.quantity, categories]);
 
   const handleBarcodeSearch = () => {
     if (!barcodeInput.trim()) return;
@@ -60,11 +84,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
     if (found) {
       setBarcodeNotFound(false);
       setSelectedProduct(found);
-      setForm((prev) => ({
-        ...prev,
-        product_id: found.id,
-        unit_price: prev.type === "exit" ? (found.retail_sale_price ?? found.sale_price ?? 0) : (found.purchase_price ?? 0),
-      }));
+      setForm((prev) => ({ ...prev, product_id: found.id }));
       setBarcodeInput("");
     } else {
       setBarcodeNotFound(true);
@@ -74,11 +94,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   const handleProductSelect = (productId) => {
     const found = products.find((p) => p.id === productId);
     setSelectedProduct(found);
-    setForm((prev) => ({
-      ...prev,
-      product_id: productId,
-      unit_price: prev.type === "exit" ? (found?.retail_sale_price ?? found?.sale_price ?? 0) : (found?.purchase_price ?? 0),
-    }));
+    setForm((prev) => ({ ...prev, product_id: productId }));
   };
 
   const handleSave = async () => {
@@ -139,8 +155,9 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
       const response = await base44.functions.invoke('createMovementSafe', {
         ...form,
+        unit_price: computedUnitPrice,
         product_name: product.name,
-        total: form.quantity * form.unit_price,
+        total: form.quantity * computedUnitPrice,
         stock_after: newStock,
         business_id: businessId,
       });
@@ -232,12 +249,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
             <Label className="text-foreground mb-1.5 block">Tipo de movimiento *</Label>
             <MobileSelect
               value={form.type}
-              onValueChange={(v) => {
-                updateField("type", v);
-                if (selectedProduct) {
-                  updateField("unit_price", v === "exit" ? (selectedProduct.retail_sale_price ?? selectedProduct.sale_price ?? 0) : (selectedProduct.purchase_price ?? 0));
-                }
-              }}
+              onValueChange={(v) => updateField("type", v)}
               placeholder="Tipo"
               options={TYPES.map((t) => ({ value: t.value, label: t.label }))}
             />
@@ -250,14 +262,17 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
             </div>
             <div>
               <Label className="text-foreground mb-1.5 block">Precio unitario</Label>
-              <Input type="number" min={0} step="0.01" value={form.unit_price} onChange={(e) => updateField("unit_price", parseFloat(e.target.value) || 0)} />
+              <div className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm items-center text-muted-foreground">
+                ${computedUnitPrice.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Precio del catálogo</p>
             </div>
           </div>
 
           <div className="bg-accent/10 border border-accent rounded-xl p-4 text-center">
             <p className="text-sm text-muted-foreground mb-1">Total</p>
             <p className="text-2xl font-bold text-accent">
-              ${(form.quantity * form.unit_price).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+              ${(form.quantity * computedUnitPrice).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
             </p>
           </div>
 
@@ -273,7 +288,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
         <div className="flex justify-end gap-3 pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)} {...createButtonProps('cancel')}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={!form.product_id || !form.quantity || saving} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
+          <Button onClick={handleSave} disabled={!form.product_id || form.quantity <= 0 || saving} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
             <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Registrar"}
           </Button>
         </div>
