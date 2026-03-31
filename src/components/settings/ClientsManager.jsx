@@ -17,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-const emptyForm = { name: "", email: "", phone: "", address: "", rfc: "", notes: "", status: "active", force_wholesale_all_products: false, force_purchase_all_products: false };
+const emptyForm = { name: "", business_name: "", email: "", phone: "", address: "", rfc: "", notes: "", status: "active", force_wholesale_all_products: false, force_purchase_all_products: false };
 
 export default function ClientsManager() {
   const { businessId } = useBusinessContext();
@@ -36,7 +36,7 @@ export default function ClientsManager() {
   useEffect(() => { load(); }, []);
 
   const openNew = () => { setEditing(null); setForm(emptyForm); setFormOpen(true); };
-  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, email: c.email || "", phone: c.phone || "", address: c.address || "", rfc: c.rfc || "", notes: c.notes || "", status: c.status || "active", force_wholesale_all_products: c.force_wholesale_all_products || false, force_purchase_all_products: c.force_purchase_all_products || false }); setFormOpen(true); };
+  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, business_name: c.business_name || "", email: c.email || "", phone: c.phone || "", address: c.address || "", rfc: c.rfc || "", notes: c.notes || "", status: c.status || "active", force_wholesale_all_products: c.force_wholesale_all_products || false, force_purchase_all_products: c.force_purchase_all_products || false }); setFormOpen(true); };
 
   const handleSave = async () => {
     // Validate required fields
@@ -110,6 +110,7 @@ export default function ClientsManager() {
 
   const filtered = clients.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
+    (c.business_name || "").toLowerCase().includes(search.toLowerCase()) ||
     (c.email || "").toLowerCase().includes(search.toLowerCase())
   );
 
@@ -131,6 +132,7 @@ export default function ClientsManager() {
         <TableHeader>
           <TableRow>
             <TableHead>Nombre</TableHead>
+            <TableHead>Nombre Negocio</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Teléfono</TableHead>
             <TableHead>RFC</TableHead>
@@ -142,6 +144,7 @@ export default function ClientsManager() {
           {filtered.map(c => (
             <TableRow key={c.id}>
               <TableCell className="font-medium">{c.name}</TableCell>
+              <TableCell className="text-slate-500">{c.business_name || "—"}</TableCell>
               <TableCell className="text-slate-500">{c.email || "—"}</TableCell>
               <TableCell className="text-slate-500">{c.phone || "—"}</TableCell>
               <TableCell className="text-slate-500">{c.rfc || "—"}</TableCell>
@@ -162,7 +165,7 @@ export default function ClientsManager() {
           ))}
           {filtered.length === 0 && (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-slate-400 py-8">No hay clientes registrados</TableCell>
+              <TableCell colSpan={7} className="text-center text-slate-400 py-8">No hay clientes registrados</TableCell>
             </TableRow>
           )}
         </TableBody>
@@ -174,9 +177,15 @@ export default function ClientsManager() {
             <DialogTitle>{editing ? "Editar Cliente" : "Nuevo Cliente"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 pt-2">
-            <div>
-              <Label>Nombre *</Label>
-              <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Nombre *</Label>
+                <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+              </div>
+              <div>
+                <Label>Nombre Negocio</Label>
+                <Input value={form.business_name} onChange={e => setForm({ ...form, business_name: e.target.value })} placeholder="Opcional" />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
             <div>

@@ -3,6 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 // SECURITY: Explicit whitelist of updatable Client fields
 const ALLOWED_UPDATE_FIELDS = new Set([
   'name',
+  'business_name',
   'email',
   'phone',
   'address',

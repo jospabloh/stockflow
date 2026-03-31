@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Nombre del cliente"
     },
+    "business_name": {
+      "type": "string",
+      "description": "Nombre del negocio del cliente"
+    },
     "email": {
       "type": "string",
       "description": "Correo electr\u00f3nico"
