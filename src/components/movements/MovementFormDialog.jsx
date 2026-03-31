@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps } from "@/lib/a11y";
 import { calculatePrice } from "@/lib/pricingEngine";
+import ProductSearchInput from "./ProductSearchInput";
 
 const TYPES = [
   { value: "entry", label: "Entrada (Compra)" },
@@ -92,8 +93,13 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   };
 
   const handleProductSelect = (productId) => {
+    if (!productId) {
+      setSelectedProduct(null);
+      setForm((prev) => ({ ...prev, product_id: "" }));
+      return;
+    }
     const found = products.find((p) => p.id === productId);
-    setSelectedProduct(found);
+    setSelectedProduct(found || null);
     setForm((prev) => ({ ...prev, product_id: productId }));
   };
 
@@ -225,25 +231,11 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
               ⚠️ El <strong>ajuste</strong> establece el stock final de forma absoluta. Ejemplo: si ingresas 10, el stock quedará en 10 unidades.
             </div>
           )}
-          <div>
-            <Label className="text-foreground mb-1.5 block">Producto *</Label>
-            <MobileSelect
-              value={form.product_id}
-              onValueChange={handleProductSelect}
-              placeholder="Seleccionar producto"
-              options={products.map((p) => ({
-                value: p.id,
-                label: `${p.name} — Stock: ${p.stock} ${p.unit}`,
-              }))}
-            />
-          </div>
-
-          {selectedProduct && (
-            <div className="bg-card border border-border rounded-xl p-3 text-sm">
-              <p className="font-semibold text-foreground">{selectedProduct.name}</p>
-              <p className="text-muted-foreground">Stock actual: <span className="font-semibold text-foreground">{selectedProduct.stock} {selectedProduct.unit}</span></p>
-            </div>
-          )}
+          <ProductSearchInput
+            products={products}
+            selectedProduct={selectedProduct}
+            onSelect={handleProductSelect}
+          />
 
           <div>
             <Label className="text-foreground mb-1.5 block">Tipo de movimiento *</Label>
