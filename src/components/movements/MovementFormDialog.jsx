@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MobileSelect } from "@/components/ui/MobileSelect";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import { Save, ScanLine } from "lucide-react";
 import { toast } from "sonner";
 import { useBusinessContext } from "@/components/BusinessContext";
@@ -282,7 +283,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
           <div>
             <Label className="text-foreground mb-1.5 block">Forma de pago</Label>
-            <MobileSelect
+            <SearchableSelect
               value={form.payment_method}
               onValueChange={(v) => updateField("payment_method", v)}
               placeholder="Seleccionar forma de pago"
@@ -294,7 +295,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           </div>
           <div>
             <Label className="text-foreground mb-1.5 block">Cliente</Label>
-            <MobileSelect
+            <SearchableSelect
               value={form.client_id}
               onValueChange={(v) => updateField("client_id", v)}
               placeholder="Seleccionar cliente (opcional)"
