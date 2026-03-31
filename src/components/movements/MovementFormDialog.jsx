@@ -199,7 +199,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg flex flex-col max-h-[90vh] p-0">
+      <DialogContent className="max-w-lg flex flex-col max-h-[calc(100vh-80px)] p-0">
         <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
           <DialogTitle>Registrar Movimiento</DialogTitle>
         </DialogHeader>
@@ -279,7 +279,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-border shrink-0">
+        <div className="flex justify-end gap-3 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-border shrink-0">
           <Button variant="outline" onClick={() => onOpenChange(false)} {...createButtonProps('cancel')}>Cancelar</Button>
           <Button onClick={handleSave} disabled={!form.product_id || form.quantity <= 0 || saving} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
             <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Registrar"}
