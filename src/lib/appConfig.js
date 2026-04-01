@@ -2,11 +2,28 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "1.8.0";
+export const APP_VERSION = "2.0.0";
 
 export const RELEASE_DATE = "2026-04-01";
 
 export const CHANGELOG = [
+  {
+    version: "2.0.0",
+    date: "2026-04-01",
+    changes: [
+      "🔮 Capa Predictiva/Inteligente de Reportes (solo Admin/Owner): 8 reportes con lógica determinística interna",
+      "Análisis Dinámico/Pivot: agrupación multi-dimensional (producto/categoría/cliente × mes/semana/día) con múltiples agregaciones",
+      "Más Vendidos: ranking de productos por valor de ventas con barras de progreso",
+      "Baja Rotación: productos con menor movimiento en período seleccionado",
+      "Tendencia: gráfico dual de entradas/salidas con líneas de evolución diaria",
+      "Riesgo de Agotamiento: predicción de días restantes de stock basada en promedio de 30 días",
+      "Sugerencia de Resurtido: cálculo automático de cantidades recomendadas con urgencia (crítica/alta/media)",
+      "Riesgo de Cobranza: puntuación determinística de riesgo por edad, monto y estado de entrega",
+      "Discrepancias/Anomalías: 5 reglas determinísticas para detectar irregularidades operativas",
+      "Acceso restringido: capa predictiva invisible para Sales/Warehouse/Storekeeper",
+      "Sin integraciones externas: todo cálculo es interno, sin uso de créditos de integración",
+    ],
+  },
   {
     version: "1.8.0",
     date: "2026-04-01",
