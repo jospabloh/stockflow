@@ -79,7 +79,7 @@ export default function Movements() {
       const role = u?.role;
       setIsAdmin(role === "admin");
       // Admins AND almacenistas can create inventory movements
-      setCanCreateMovement(role === "admin");
+      setCanCreateMovement(role === "admin" || role === "almacenista" || role === "user");
       setBusinessId(u?.business_id || null);
       loadData(u?.business_id || null);
     }).catch(() => setLoading(false));
