@@ -266,27 +266,22 @@ export default function Quotations() {
           });
           if (response.data.success) loadData(businessId);
         }}
-        onInRouteChange={async (q) => {
+        onInRouteChange={async (q, action) => {
+          let updates;
+          if (action === "in_route") {
+            updates = { in_route: true, delivered: false };
+          } else if (action === "delivered") {
+            updates = { delivered: true, in_route: false };
+          } else {
+            updates = { in_route: false, delivered: false };
+          }
           const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
             quotation_id: q.id,
-            updates: { in_route: !q.in_route, delivered: false }
+            updates
           });
           if (response.data.success) loadData(businessId);
         }}
-        onDeliveredChange={(q) => {
-          if (!q.delivered) {
-            setPayQuotation(q);
-            setPaymentMethod(q.payment_method || "");
-            setPayMarkDelivered(true);
-          } else {
-            base44.functions.invoke('updateQuotationFlagsSafe', {
-              quotation_id: q.id,
-              updates: { delivered: false }
-            }).then(response => {
-              if (response.data.success) loadData(businessId);
-            });
-          }
-        }}
+        onDeliveredChange={() => {}}
         isExpired={isExpired}
       />
 

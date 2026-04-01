@@ -336,27 +336,35 @@ export default function Reports() {
                   {filteredQuotations.length === 0 ? (
                     <tr><td colSpan={7} className="text-center py-10 text-slate-400">Sin ventas en el período seleccionado</td></tr>
                   ) : (
-                    filteredQuotations.map((q) => (
-                      <tr key={q.id} className="border-t border-slate-100 hover:bg-slate-50/50">
-                        <td className="px-4 py-3 font-mono text-indigo-600">{q.folio}</td>
-                        <td className="px-4 py-3 font-medium text-slate-800">{q.client_name}</td>
-                        <td className="px-4 py-3 text-slate-500">{moment(q.created_date).format("DD/MM/YY")}</td>
-                        <td className="px-4 py-3 text-right font-semibold text-slate-700">${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
-                        <td className="px-4 py-3 text-center">
-                          {q.delivered ? <span className="inline-flex items-center gap-1 text-emerald-600 text-xs font-medium"><CheckCircle2 className="h-3.5 w-3.5" /> Entregado</span>
-                            : q.in_route ? <span className="inline-flex items-center gap-1 text-blue-600 text-xs font-medium">En ruta</span>
-                            : <span className="text-slate-400 text-xs">Pendiente</span>}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          {isPaidConfirmed(q)
-                            ? <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full"><CheckCircle2 className="h-3 w-3" /> Pagado</span>
-                            : q.paid
-                              ? <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-700 text-xs font-medium px-2 py-0.5 rounded-full"><AlertCircle className="h-3 w-3" /> Confirmar forma</span>
-                              : <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full"><AlertCircle className="h-3 w-3" /> Pendiente</span>}
-                        </td>
-                        <td className="px-4 py-3 text-slate-600">{q.payment_method || "—"}</td>
-                      </tr>
-                    ))
+                    filteredQuotations.map((q) => {
+                      const deliveredUnpaid = q.delivered && !isPaidConfirmed(q);
+                      return (
+                        <tr key={q.id} className={`border-t border-slate-100 hover:bg-slate-50/50 ${deliveredUnpaid ? "bg-red-50/60" : ""}`}>
+                          <td className="px-4 py-3 font-mono text-indigo-600">
+                            {q.folio}
+                            {deliveredUnpaid && <span className="ml-1 text-[10px] font-bold text-red-600 bg-red-100 px-1 py-0.5 rounded">¡COBRAR!</span>}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-slate-800">{q.client_name}</td>
+                          <td className="px-4 py-3 text-slate-500">{moment(q.created_date).format("DD/MM/YY")}</td>
+                          <td className={`px-4 py-3 text-right font-semibold ${deliveredUnpaid ? "text-red-700" : "text-slate-700"}`}>${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
+                          <td className="px-4 py-3 text-center">
+                            {q.delivered ? <span className="inline-flex items-center gap-1 text-emerald-600 text-xs font-medium"><CheckCircle2 className="h-3.5 w-3.5" /> Entregado</span>
+                              : q.in_route ? <span className="inline-flex items-center gap-1 text-blue-600 text-xs font-medium">En ruta</span>
+                              : <span className="text-slate-400 text-xs">Pendiente</span>}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {isPaidConfirmed(q)
+                              ? <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full"><CheckCircle2 className="h-3 w-3" /> Pagado</span>
+                              : deliveredUnpaid
+                                ? <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full"><AlertCircle className="h-3 w-3" /> Entregado sin cobrar</span>
+                                : q.paid
+                                  ? <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-700 text-xs font-medium px-2 py-0.5 rounded-full"><AlertCircle className="h-3 w-3" /> Confirmar forma</span>
+                                  : <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full"><AlertCircle className="h-3 w-3" /> Pendiente</span>}
+                          </td>
+                          <td className="px-4 py-3 text-slate-600">{q.payment_method || "—"}</td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

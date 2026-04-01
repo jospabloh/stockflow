@@ -8,7 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2 } from "lucide-react";
+import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2, ChevronDown } from "lucide-react";
 import { createButtonProps } from "@/lib/a11y";
 import moment from "moment";
 
@@ -101,25 +101,47 @@ export default function VirtualizedQuotationTable({
         {/* Tracking (converted only) */}
         <div className="w-32">
           {q.status === "converted" && (
-            <div className="flex items-center justify-center gap-1.5">
-              <button
-                onClick={() => onInRouteChange(q)}
-                className={`flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-1 rounded transition-colors ${
-                  q.in_route ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-400 hover:bg-blue-50 hover:text-blue-500"
-                }`}
-              >
-                <Truck className="h-3 w-3" />
-                {q.in_route ? "En ruta" : "Ruta"}
-              </button>
-              <button
-                onClick={() => onDeliveredChange(q)}
-                className={`flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-1 rounded transition-colors ${
-                  q.delivered ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-400 hover:bg-emerald-50 hover:text-emerald-500"
-                }`}
-              >
-                <CheckCircle2 className="h-3 w-3" />
-                {q.delivered ? "Entregado" : "Entrega"}
-              </button>
+            <div className="flex items-center justify-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-1 rounded transition-colors ${
+                      q.delivered
+                        ? "bg-emerald-100 text-emerald-700"
+                        : q.in_route
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-slate-100 text-slate-400 hover:bg-blue-50 hover:text-blue-500"
+                    }`}
+                  >
+                    {q.delivered
+                      ? <><CheckCircle2 className="h-3 w-3" /> Entregado</>
+                      : q.in_route
+                        ? <><Truck className="h-3 w-3" /> En ruta</>
+                        : <><Truck className="h-3 w-3" /> Ruta</>
+                    }
+                    <ChevronDown className="h-2.5 w-2.5 ml-0.5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="text-xs min-w-[130px]">
+                  <DropdownMenuItem
+                    onClick={() => onInRouteChange(q, "in_route")}
+                    className={q.in_route && !q.delivered ? "bg-blue-50 text-blue-700 font-semibold" : ""}
+                  >
+                    <Truck className="h-3 w-3 mr-2 text-blue-500" /> En ruta
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onInRouteChange(q, "delivered")}
+                    className={q.delivered ? "bg-emerald-50 text-emerald-700 font-semibold" : ""}
+                  >
+                    <CheckCircle2 className="h-3 w-3 mr-2 text-emerald-500" /> Entregado
+                  </DropdownMenuItem>
+                  {(q.in_route || q.delivered) && (
+                    <DropdownMenuItem onClick={() => onInRouteChange(q, "none")} className="text-slate-400">
+                      Quitar estado
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
         </div>
@@ -129,23 +151,28 @@ export default function VirtualizedQuotationTable({
           {q.status === "converted" && (
             <button
               onClick={() => {
-                const needsConfirm = !q.paid || !q.payment_method || ["Por definir", "Pendiente de confirmar", ""].includes(q.payment_method);
-                if (needsConfirm) onPay(q);
+                const isPaid = q.paid && q.payment_method && !["Por definir", "Pendiente de confirmar", ""].includes(q.payment_method);
+                if (!isPaid) onPay(q);
               }}
               className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-1 rounded transition-colors ${
                 q.paid && q.payment_method && !["Por definir", "Pendiente de confirmar", ""].includes(q.payment_method)
                   ? "bg-green-100 text-green-700 cursor-default"
-                  : q.paid
-                    ? "bg-orange-100 text-orange-700 hover:bg-orange-200 cursor-pointer"
-                    : "bg-slate-100 text-slate-400 hover:bg-green-50 hover:text-green-500"
+                  : q.delivered && !q.paid
+                    ? "bg-red-100 text-red-700 hover:bg-red-200 cursor-pointer animate-pulse"
+                    : q.paid
+                      ? "bg-orange-100 text-orange-700 hover:bg-orange-200 cursor-pointer"
+                      : "bg-slate-100 text-slate-400 hover:bg-green-50 hover:text-green-500"
               }`}
+              title={q.delivered && !q.paid ? "⚠️ Entregado sin cobrar — requiere seguimiento" : undefined}
             >
               <DollarSign className="h-3 w-3" />
               {q.paid && q.payment_method && !["Por definir", "Pendiente de confirmar", ""].includes(q.payment_method)
                 ? q.payment_method.substring(0, 6)
-                : q.paid
-                  ? "Confirmar"
-                  : "Pago"}
+                : q.delivered && !q.paid
+                  ? "¡Cobrar!"
+                  : q.paid
+                    ? "Confirmar"
+                    : "Pago"}
             </button>
           )}
         </div>
