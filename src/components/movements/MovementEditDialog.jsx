@@ -78,6 +78,7 @@ export default function MovementEditDialog({ open, onOpenChange, movement, onSav
               options={clients.map((c) => ({
                 value: c.business_name || c.name,
                 label: c.business_name || c.name,
+                searchLabel: `${c.business_name || ""} ${c.name || ""}`.trim(),
               }))}
             />
           </div>
