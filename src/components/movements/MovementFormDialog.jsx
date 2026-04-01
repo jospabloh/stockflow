@@ -156,6 +156,9 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         const product = item.product;
         const qty = item.quantity;
         const unitPrice = calcPrice(product, movType, qty, categories);
+        const taxRate = product.tax_rate || 0;
+        const totalWithoutTax = qty * unitPrice;
+        const totalWithTax = totalWithoutTax * (1 + taxRate / 100);
         let newStock = product.stock || 0;
 
         if (movType === "exit" || movType === "return") {
@@ -178,7 +181,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           quantity: qty,
           unit_price: unitPrice,
           cost_price: product.purchase_price ?? 0,
-          total: qty * unitPrice,
+          total: totalWithTax,
           stock_after: newStock,
           business_id: businessId,
           reference: pmName,

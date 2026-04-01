@@ -281,11 +281,13 @@ export default function Movements() {
                           {m.type === "exit" ? "-" : "+"}{m.quantity}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right text-slate-700">
+                      <TableCell className="text-right text-slate-600 text-sm">
                         ${(m.unit_price || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                       </TableCell>
                       <TableCell className="text-right font-semibold text-slate-800">
-                        ${m.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "0.00"}
+                        <div className="space-y-0.5">
+                          <div>${m.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "0.00"}</div>
+                        </div>
                       </TableCell>
                       <TableCell className="text-slate-500 text-sm">{m.reference || "—"}</TableCell>
                       <TableCell className="text-slate-500 text-sm">{m.reason || "—"}</TableCell>
