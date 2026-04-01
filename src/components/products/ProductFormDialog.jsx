@@ -124,59 +124,55 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Build payload — only include optional numeric fields if explicitly set
       const payload = {
         ...form,
         retail_sale_price: Number(form.retail_sale_price) || 0,
         wholesale_sale_price: form.wholesale_sale_price !== "" ? Number(form.wholesale_sale_price) : undefined,
       };
 
+      let response;
+      
       if (product) {
-        const response = await base44.functions.invoke('updateProductSafe', {
+        response = await base44.functions.invoke('updateProductSafe', {
           product_id: product.id,
           updates: payload
         });
-        console.log("Update response:", response);
-        if (!response?.data?.success) {
-          const errorMsg = response?.data?.error || 'Error desconocido al actualizar';
-          toast.error(`Error: ${errorMsg}`);
-          setSaving(false);
-          return;
-        }
-        toast.success("✓ Producto actualizado");
       } else {
-        const response = await base44.functions.invoke('createProductSafe', { ...payload, business_id: businessId });
-        console.log("Create response:", response);
-        if (!response?.data?.success) {
-          const errorMsg = response?.data?.error || 'Error desconocido al crear';
-          toast.error(`Error: ${errorMsg}`);
-          setSaving(false);
-          return;
-        }
-        const created = response.data.product;
-        if (form.stock > 0 && created?.id) {
-          await base44.entities.Movement.create({
-            product_id: created.id,
-            product_name: form.name,
-            type: "entry",
-            quantity: form.stock,
-            unit_price: form.purchase_price || 0,
-            total: (form.stock) * (form.purchase_price || 0),
-            reason: "Stock inicial",
-            reference: "Stock inicial",
-            stock_after: form.stock,
-            business_id: businessId,
-          });
-        }
-        toast.success("✓ Producto creado");
+        response = await base44.functions.invoke('createProductSafe', { 
+          ...payload, 
+          business_id: businessId 
+        });
       }
-      onSaved({ ...form, id: product?.id, _optimistic: true });
+
+      // Check if response indicates failure
+      if (response.data.success === false) {
+        toast.error(`Error: ${response.data.error || 'No se pudo guardar'}`);
+        setSaving(false);
+        return;
+      }
+
+      // Success path
+      if (!product && response.data.product && form.stock > 0) {
+        await base44.entities.Movement.create({
+          product_id: response.data.product.id,
+          product_name: form.name,
+          type: "entry",
+          quantity: form.stock,
+          unit_price: form.purchase_price || 0,
+          total: form.stock * (form.purchase_price || 0),
+          reason: "Stock inicial",
+          reference: "Stock inicial",
+          stock_after: form.stock,
+          business_id: businessId,
+        });
+      }
+
+      toast.success(product ? "✓ Producto actualizado" : "✓ Producto creado");
+      onSaved({ ...form, id: product?.id || response.data.product_id, _optimistic: true });
       onOpenChange(false);
       onSaved({ _reconcile: true });
     } catch (error) {
-      console.error("Save error:", error);
       toast.error(`Error: ${error.message || 'No se pudo guardar el producto'}`);
-      onSaved({ _error: error.message });
     } finally {
       setSaving(false);
     }
