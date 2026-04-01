@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Code, Users, Tag, CheckCircle2, Clock } from "lucide-react";
+import { Heart, Code, Users, Tag, CheckCircle2, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { APP_VERSION, RELEASE_DATE, CHANGELOG } from "@/lib/appConfig";
 
 export default function About() {
   const [user, setUser] = useState(null);
+  const [historialOpen, setHistorialOpen] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -53,31 +54,6 @@ export default function About() {
           </ul>
         </div>
       </Card>
-
-      {/* Historial de versiones */}
-      {CHANGELOG.length > 1 && (
-        <Card className="border-0 shadow-sm p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-foreground">Historial de versiones</h2>
-          <div className="space-y-5">
-            {CHANGELOG.slice(1).map((release) => (
-              <div key={release.version} className="border-l-2 border-border pl-4 space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground">v{release.version}</span>
-                  <span className="text-xs text-muted-foreground">{release.date}</span>
-                </div>
-                <ul className="space-y-1">
-                  {release.changes.map((change, i) => (
-                    <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                      <span className="text-muted-foreground mt-0.5">•</span>
-                      {change}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
 
       <Card className="border-0 shadow-sm p-6 space-y-4">
         <h2 className="text-lg font-semibold text-foreground">Acerca de</h2>
@@ -140,6 +116,39 @@ export default function About() {
           Desarrollado con dedicación para ofrecerte la mejor experiencia en la gestión de tu inventario.
         </p>
       </Card>
+
+      {/* Historial de versiones — colapsable al final */}
+      {CHANGELOG.length > 1 && (
+        <Card className="border-0 shadow-sm overflow-hidden">
+          <button
+            onClick={() => setHistorialOpen(!historialOpen)}
+            className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-muted/50 transition-colors"
+          >
+            <span className="text-sm font-medium text-muted-foreground">Historial de versiones anteriores</span>
+            {historialOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+          </button>
+          {historialOpen && (
+            <div className="px-6 pb-5 space-y-4 border-t border-border pt-4">
+              {CHANGELOG.slice(1).map((release) => (
+                <div key={release.version} className="border-l-2 border-border pl-4 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-foreground">v{release.version}</span>
+                    <span className="text-xs text-muted-foreground">{release.date}</span>
+                  </div>
+                  <ul className="space-y-0.5">
+                    {release.changes.map((change, i) => (
+                      <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                        <span className="mt-0.5">•</span>
+                        {change}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 }
