@@ -174,11 +174,11 @@ export default function ClientsManager() {
       </Table>
 
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>{editing ? "Editar Cliente" : "Nuevo Cliente"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 pt-2">
+          <div className="space-y-3 pt-2 overflow-y-auto flex-1 pr-1">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Nombre *</Label>
