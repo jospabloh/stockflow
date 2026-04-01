@@ -2,11 +2,20 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "1.3.0";
+export const APP_VERSION = "1.4.0";
 
-export const RELEASE_DATE = "2026-03-31";
+export const RELEASE_DATE = "2026-04-01";
 
 export const CHANGELOG = [
+  {
+    version: "1.4.0",
+    date: "2026-04-01",
+    changes: [
+      "Botón de seguimiento unificado en cotizaciones: un solo dropdown 'Ruta' con opciones En Ruta / Entregado / Quitar estado",
+      "Indicador visual de alerta (rojo pulsante '¡Cobrar!') para pedidos entregados sin cobrar en la tabla de cotizaciones",
+      "Reportes: filas 'Entregado sin cobrar' resaltadas en rojo con etiqueta de alerta para facilitar seguimiento de cobranza",
+    ],
+  },
   {
     version: "1.3.0",
     date: "2026-03-31",

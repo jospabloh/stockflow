@@ -1023,15 +1023,25 @@ La fecha de vigencia pasó sin que la cotización se concretara.
 
 ### 📦 Seguimiento del Pedido
 
-Una vez concretada, aparece una sección de **Seguimiento** con tres acciones en orden:
+Una vez concretada, aparece un botón de **Ruta** y un botón de **Pago** en la fila de la cotización.
 
-| Acción | Cuándo usarla |
+**Botón Ruta (dropdown):** Toca el botón para desplegar las opciones de envío/entrega:
+
+| Opción | Cuándo usarla |
 |---|---|
 | **🚚 En Ruta** | El pedido salió del almacén hacia el cliente |
 | **✅ Entregado** | El cliente recibió físicamente el pedido |
-| **💲 Pago recibido** | El cliente pagó (registra el método de pago definitivo) |
+| **Quitar estado** | Revertir si se marcó por error |
 
-> 💡 Al marcar como **Entregado**, el sistema te preguntará si el pago ya fue recibido para simplificar el proceso.
+**Botón Pago:**
+
+| Estado | Qué significa |
+|---|---|
+| Gris "Pago" | Sin confirmar todavía |
+| 🔴 Rojo pulsante **"¡Cobrar!"** | Pedido entregado pero **sin cobrar** — requiere seguimiento urgente |
+| 🟢 Verde (método de pago) | Pago confirmado y registrado |
+
+> 💡 Cuando un pedido está **Entregado sin cobrar**, el botón se vuelve rojo y pulsante como alerta. También aparece resaltado en la sección de **Reportes → Cotizaciones**.
 
 ---
 
@@ -1677,8 +1687,8 @@ Una guía de bolsillo con las acciones más frecuentes de tu día a día.
 | Registrar una venta directa | Movimientos → + Nuevo → Salida |
 | Crear una cotización | Cotizaciones → + Nueva Cotización |
 | Convertir cotización en venta | Cotizaciones → Menú ⋯ → Convertir en Venta |
-| Marcar pedido como enviado | Cotizaciones → busca la venta → botón En Ruta |
-| Marcar pedido como entregado | Cotizaciones → busca la venta → botón Entregado |
+| Marcar pedido como enviado | Cotizaciones → busca la venta → botón Ruta → "En Ruta" |
+| Marcar pedido como entregado | Cotizaciones → busca la venta → botón Ruta → "Entregado" |
 | Registrar pago del cliente | Cotizaciones → busca la venta → botón Pago |
 | Buscar un producto específico | Productos → escribe nombre o SKU en búsqueda |
 | Ver historial de movimientos | Movimientos → filtra por fecha |
