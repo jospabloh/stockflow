@@ -64,6 +64,12 @@ export default function Dashboard() {
   const todaySalesFromQuotations = todayConvertedQuotations.reduce((sum, q) => sum + (q.total || 0), 0);
   const todaySalesFromDirectExits = todayDirectExits.reduce((sum, m) => sum + (m.total || 0), 0);
   const todaySalesRevenue = todaySalesFromQuotations + todaySalesFromDirectExits;
+  
+  // Venta real = ventas - pendiente de pago (cotizaciones no pagadas + movimientos directos no pagados)
+  const todayUnpaidQuotations = todayConvertedQuotations.filter(q => !q.paid).reduce((sum, q) => sum + (q.total || 0), 0);
+  const todayUnpaidDirectExits = todayDirectExits.filter(m => !m.paid).reduce((sum, m) => sum + (m.total || 0), 0);
+  const todayUnpaidTotal = todayUnpaidQuotations + todayUnpaidDirectExits;
+  const todayRealRevenue = todaySalesRevenue - todayUnpaidTotal;
 
   const productLookup = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
   const todaySalesCost = todayExits.reduce((sum, m) => {
@@ -210,6 +216,10 @@ export default function Dashboard() {
                 <div className="flex justify-between items-center bg-blue-50 rounded-lg px-4 py-2.5">
                   <span className="text-sm text-slate-600">Monto vendido</span>
                   <span className="font-bold text-blue-700">${todaySalesRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between items-center bg-purple-50 rounded-lg px-4 py-2.5">
+                  <span className="text-sm text-slate-600">Venta real (menos pendiente)</span>
+                  <span className="font-bold text-purple-700">${todayRealRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                 </div>
                 {isAdmin && (
                   <>
