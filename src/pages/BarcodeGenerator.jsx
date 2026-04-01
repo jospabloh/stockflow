@@ -39,9 +39,12 @@ export default function BarcodeGeneratorPage() {
 
     setSaving(true);
     try {
-      await base44.entities.Product.update(product.id, {
-        barcode,
-      });
+      const updateData = { barcode };
+      // Si el producto tiene sale_price pero no retail_sale_price, usar sale_price como retail_sale_price
+      if (product.sale_price && !product.retail_sale_price) {
+        updateData.retail_sale_price = product.sale_price;
+      }
+      await base44.entities.Product.update(product.id, updateData);
       setProduct({ ...product, barcode });
       toast.success("Código de barras guardado exitosamente");
     } catch (err) {
