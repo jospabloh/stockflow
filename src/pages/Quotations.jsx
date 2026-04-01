@@ -50,7 +50,10 @@ const statusConfig = {
 
 const isExpired = (q) => {
   if (!q.valid_until || q.status === "converted" || q.status === "cancelled") return false;
-  return new Date(q.valid_until) < new Date(new Date().toDateString());
+  // Vencida solo si la fecha límite YA pasó (el día siguiente al vencimiento)
+  const today = new Date(new Date().toDateString());
+  const validUntil = new Date(q.valid_until);
+  return validUntil < today;
 };
 
 export default function Quotations() {
