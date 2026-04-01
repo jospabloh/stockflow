@@ -2,11 +2,24 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "1.6.0";
+export const APP_VERSION = "1.7.0";
 
 export const RELEASE_DATE = "2026-04-01";
 
 export const CHANGELOG = [
+  {
+    version: "1.7.0",
+    date: "2026-04-01",
+    changes: [
+      "Auditoría y mejora de sección Reports para operaciones de distribuidor",
+      "Pestaña 'Más Vendidos' rediseñada: ahora ordena por valor de ventas (no solo cantidad) con barra de progreso",
+      "Pestaña 'Baja Rotación' mejorada: tabla con contexto de stock actual, mínimo y fecha de última salida",
+      "Nueva pestaña 'Inventario Actual' (admin): listado completo de stock con valor unitario y valor total por producto",
+      "Pestaña 'Mejor Margen' removida: datos infiables (schema usa retail_sale_price/wholesale_sale_price, no sale_price)",
+      "Pestaña 'Por Categoría' removida: bajo valor operativo (reemplazada por Inventario Actual más útil)",
+      "Mejora de contraste en modo oscuro: números y valores ahora más visibles en Dashboard y Reports",
+    ],
+  },
   {
     version: "1.6.0",
     date: "2026-04-01",

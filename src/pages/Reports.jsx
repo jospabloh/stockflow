@@ -15,9 +15,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
-  PieChart,
-  Pie,
-  Cell,
   LineChart,
   Line,
 } from "recharts";
@@ -68,53 +65,51 @@ export default function Reports() {
     return inRange && typeMatch;
   });
 
-  // Top selling products
+  // Top selling products by value
   const topSelling = (() => {
     const sales = {};
     filteredMovements.filter((m) => m.type === "exit").forEach((m) => {
-      sales[m.product_name] = (sales[m.product_name] || 0) + m.quantity;
+      if (!sales[m.product_id]) {
+        sales[m.product_id] = { name: m.product_name, qty: 0, value: 0, units_and_value: 0 };
+      }
+      sales[m.product_id].qty += m.quantity;
+      sales[m.product_id].value += (m.total || 0);
+      sales[m.product_id].units_and_value += m.quantity;
     });
-    return Object.entries(sales)
-      .sort(([, a], [, b]) => b - a)
+    return Object.values(sales)
+      .sort((a, b) => b.value - a.value)
       .slice(0, 10)
-      .map(([name, qty]) => ({ name: name?.length > 20 ? name.slice(0, 20) + "…" : name, cantidad: qty }));
+      .map((p) => ({ 
+        name: p.name?.length > 20 ? p.name.slice(0, 20) + "…" : p.name, 
+        cantidad: p.qty,
+        valor: Math.round(p.value)
+      }));
   })();
 
-  // Best margin products
-  const bestMargin = products
-    .filter((p) => p.purchase_price > 0 && p.sale_price > 0)
-    .map((p) => ({
-      name: p.name?.length > 20 ? p.name.slice(0, 20) + "…" : p.name,
-      margen: Math.round(((p.sale_price - p.purchase_price) / p.purchase_price) * 100),
-    }))
-    .sort((a, b) => b.margen - a.margen)
-    .slice(0, 10);
+  // Best margin products - DISABLED: product schema uses retail_sale_price/wholesale_sale_price, not sale_price
+  const bestMargin = [];
 
-  // Low rotation products (least exits)
+  // Low rotation products (least exits in period) - improved logic
   const lowRotation = (() => {
     const exits = {};
+    const lastMovementDate = {};
     filteredMovements.filter((m) => m.type === "exit").forEach((m) => {
       exits[m.product_id] = (exits[m.product_id] || 0) + m.quantity;
+      const d = moment(m.created_date);
+      if (!lastMovementDate[m.product_id] || d.isAfter(lastMovementDate[m.product_id])) {
+        lastMovementDate[m.product_id] = d;
+      }
     });
     return products
-      .filter((p) => p.status === "active")
+      .filter((p) => p.status === "active" && exits[p.id] !== undefined) // Only products with exits in period
       .map((p) => ({
         name: p.name?.length > 20 ? p.name.slice(0, 20) + "…" : p.name,
         salidas: exits[p.id] || 0,
         stock: p.stock,
+        ultima_salida: lastMovementDate[p.id] ? lastMovementDate[p.id].format("DD/MM/YY") : "—",
       }))
       .sort((a, b) => a.salidas - b.salidas)
       .slice(0, 10);
-  })();
-
-  // Stock by category
-  const stockByCategory = (() => {
-    const catMap = {};
-    products.filter((p) => p.status === "active").forEach((p) => {
-      const catName = categories.find((c) => c.id === p.category)?.name || "Sin categoría";
-      catMap[catName] = (catMap[catName] || 0) + ((p.stock || 0) * (p.purchase_price || 0));
-    });
-    return Object.entries(catMap).map(([name, value]) => ({ name, value: Math.round(value) }));
   })();
 
   // Daily movements trend
@@ -236,12 +231,10 @@ export default function Reports() {
         <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="quotations">Cotizaciones/Ventas</TabsTrigger>
           <TabsTrigger value="sales">Más Vendidos</TabsTrigger>
-          {isAdmin && <TabsTrigger value="margin">Mejor Margen</TabsTrigger>}
           <TabsTrigger value="low">Baja Rotación</TabsTrigger>
           <TabsTrigger value="trend">Tendencia</TabsTrigger>
-          {isAdmin && <TabsTrigger value="category">Por Categoría</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="inventory">Inventario Actual</TabsTrigger>}
         </TabsList>
-        {/* BUG-016: Nota para el usuario — las pestañas de margen y valor usan precios de compra (solo visibles para admins) */}
 
         <TabsContent value="quotations">
           {/* Filters */}
@@ -438,81 +431,81 @@ export default function Reports() {
         </TabsContent>
 
         <TabsContent value="sales">
-          {/* Movement type filter */}
-          <Card className="border-0 shadow-sm p-4 mb-4">
-            <div className="flex flex-wrap gap-3 items-end">
-              <div className="min-w-[160px]">
-                <label className="text-xs text-slate-500 mb-1 block">Tipo de Movimiento</label>
-                <MobileSelect value={movTypeFilter} onValueChange={setMovTypeFilter} options={[
-                  { value: "all", label: "Todos" },
-                  { value: "entry", label: "Entradas" },
-                  { value: "exit", label: "Salidas" },
-                  { value: "return", label: "Devoluciones" },
-                  { value: "adjustment", label: "Ajustes" }
-                ]} />
+          <Card className="border-0 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-semibold text-slate-700">Productos Más Vendidos (por valor)</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Período seleccionado</p>
               </div>
-              <Button variant="outline" size="sm" onClick={() => setMovTypeFilter("all")}>
-                Limpiar
-              </Button>
-            </div>
-          </Card>
-          <Card className="border-0 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-700">Productos Más Vendidos</h3>
-              <Button variant="outline" size="sm" onClick={() => handleExportCSV(topSelling, "mas_vendidos")}>
+              <Button variant="outline" size="sm" onClick={() => handleExportCSV(topSelling, "productos_mas_vendidos")}>
                 <Download className="h-4 w-4 mr-1" /> CSV
               </Button>
             </div>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={topSelling} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="name" type="category" width={150} tick={{ fill: "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
-                <Bar dataKey="cantidad" fill="#6366f1" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="margin">
-          <Card className="border-0 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-700">Productos con Mejor Margen (%)</h3>
-              <Button variant="outline" size="sm" onClick={() => handleExportCSV(bestMargin, "mejor_margen")}>
-                <Download className="h-4 w-4 mr-1" /> CSV
-              </Button>
-            </div>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={bestMargin} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="name" type="category" width={150} tick={{ fill: "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
-                <Bar dataKey="margen" fill="#10b981" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {topSelling.length === 0 ? (
+              <div className="text-center py-12 text-slate-400">
+                <p>Sin ventas registradas en el período seleccionado</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {topSelling.map((p, idx) => (
+                  <div key={idx} className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-slate-700">{idx + 1}. {p.name}</span>
+                      <span className="text-slate-600">${p.valor.toLocaleString("es-MX")} · {p.cantidad} u.</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-indigo-500 to-cyan-500 h-full rounded-full" 
+                        style={{ width: `${(p.valor / topSelling[0].valor) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
         </TabsContent>
 
         <TabsContent value="low">
-          <Card className="border-0 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
+          <Card className="border-0 shadow-sm overflow-hidden">
+            <div className="p-4 border-b bg-amber-50/50">
               <h3 className="font-semibold text-slate-700">Productos de Baja Rotación</h3>
-              <Button variant="outline" size="sm" onClick={() => handleExportCSV(lowRotation, "baja_rotacion")}>
-                <Download className="h-4 w-4 mr-1" /> CSV
-              </Button>
+              <p className="text-xs text-slate-400 mt-0.5">Productos con menor movimiento en el período seleccionado</p>
             </div>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={lowRotation} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="name" type="category" width={150} tick={{ fill: "#64748b", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
-                <Bar dataKey="salidas" fill="#f59e0b" radius={[0, 6, 6, 0]} />
-                <Bar dataKey="stock" fill="#94a3b8" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50/70">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-slate-500 font-medium">Producto</th>
+                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Salidas</th>
+                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Stock Act.</th>
+                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Mín.</th>
+                    <th className="text-left px-4 py-3 text-slate-500 font-medium">Última Salida</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lowRotation.length === 0 ? (
+                    <tr><td colSpan={5} className="text-center py-10 text-slate-400">Sin productos con salidas en el período</td></tr>
+                  ) : (
+                    lowRotation.map((p) => {
+                      const prod = products.find(pr => pr.name === p.name);
+                      return (
+                        <tr key={p.name} className="border-t border-slate-100 hover:bg-slate-50/50">
+                          <td className="px-4 py-3 font-medium text-slate-800">{p.name}</td>
+                          <td className="px-4 py-3 text-center font-semibold text-amber-600">{p.salidas}</td>
+                          <td className="px-4 py-3 text-center text-slate-700">{p.stock}</td>
+                          <td className="px-4 py-3 text-center text-slate-500">{prod?.min_stock || 5}</td>
+                          <td className="px-4 py-3 text-slate-600">{p.ultima_salida}</td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="p-4 bg-slate-50/50 border-t text-xs text-slate-500">
+              <p>💡 Estos productos tienen pocas salidas en el período. Considere: reducir stock, revisar precios, o impulsar ventas.</p>
+            </div>
           </Card>
         </TabsContent>
 
@@ -532,38 +525,46 @@ export default function Reports() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="category">
-          <Card className="border-0 shadow-sm p-6">
-            <h3 className="font-semibold text-slate-700 mb-4">Valor del Stock por Categoría</h3>
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={stockByCategory}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={110}
-                    innerRadius={60}
-                    paddingAngle={3}
-                  >
-                    {stockByCategory.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `$${value.toLocaleString("es-MX")}`} contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="space-y-2 min-w-[200px]">
-                {stockByCategory.map((cat, i) => (
-                  <div key={cat.name} className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                    <span className="text-sm text-slate-600 flex-1">{cat.name}</span>
-                    <span className="text-sm font-semibold text-slate-700">${cat.value.toLocaleString("es-MX")}</span>
-                  </div>
-                ))}
-              </div>
+        <TabsContent value="inventory">
+          <Card className="border-0 shadow-sm overflow-hidden">
+            <div className="p-4 border-b bg-emerald-50/50">
+              <h3 className="font-semibold text-slate-700">Inventario Actual por Producto</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Stock actual, valor al costo, y últimas transacciones</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50/70">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-slate-500 font-medium">Producto</th>
+                    <th className="text-left px-4 py-3 text-slate-500 font-medium">Categoría</th>
+                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Stock</th>
+                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Mín.</th>
+                    <th className="text-right px-4 py-3 text-slate-500 font-medium">Precio Unit.</th>
+                    <th className="text-right px-4 py-3 text-slate-500 font-medium">Valor Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.filter((p) => p.status === "active").length === 0 ? (
+                    <tr><td colSpan={6} className="text-center py-10 text-slate-400">Sin productos activos</td></tr>
+                  ) : (
+                    products.filter((p) => p.status === "active").map((p) => {
+                      const catName = categories.find((c) => c.id === p.category)?.name || "Sin categoría";
+                      const stockValue = (p.stock || 0) * (p.purchase_price || 0);
+                      const isLowStock = p.stock <= (p.min_stock || 5);
+                      return (
+                        <tr key={p.id} className={`border-t border-slate-100 hover:bg-slate-50/50 ${isLowStock ? "bg-amber-50/50" : ""}`}>
+                          <td className="px-4 py-3 font-medium text-slate-800">{p.name?.length > 30 ? p.name.slice(0, 30) + "…" : p.name}</td>
+                          <td className="px-4 py-3 text-slate-600 text-xs">{catName}</td>
+                          <td className="px-4 py-3 text-center font-semibold text-slate-700">{p.stock}</td>
+                          <td className="px-4 py-3 text-center text-slate-500">{p.min_stock || 5}</td>
+                          <td className="px-4 py-3 text-right text-slate-600">${(p.purchase_price || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
+                          <td className="px-4 py-3 text-right font-semibold text-slate-700">${stockValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
           </Card>
         </TabsContent>
