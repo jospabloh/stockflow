@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { localHelpData } from "@/lib/helpData";
+import { base44 } from "@/api/base44Client";
 import HelpSidebar from "@/components/help/HelpSidebar";
 
 // Render inline markdown formatting
@@ -126,15 +126,19 @@ export default function HelpCenter() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    try {
-      const arts = (localHelpData && localHelpData.articles) || [];
-      setArticles(arts);
-      if (arts.length > 0) {
-        setActiveId(arts[0].id);
+    const loadHelp = async () => {
+      try {
+        const { localHelpData } = await import("@/lib/helpData");
+        const arts = (localHelpData && localHelpData.articles) || [];
+        setArticles(arts);
+        if (arts.length > 0) {
+          setActiveId(arts[0].id);
+        }
+      } catch (err) {
+        console.error("Error loading help data:", err);
       }
-    } catch (err) {
-      console.error("Error loading help data:", err);
-    }
+    };
+    loadHelp();
   }, []);
 
   const activeArticle = articles.find(a => a.id === activeId);
