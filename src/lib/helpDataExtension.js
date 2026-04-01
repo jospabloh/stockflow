@@ -295,14 +295,67 @@ Los campos de precio aceptan: **true/false**, **1/0**, **sí/no**, **si/no**, **
 3. Usa esos mismos nombres en la columna \`categoria\` al importar productos`
   },
 
+  // ─── COBROS PENDIENTES ────────────────────────────────────────────────────
+  {
+    id: "pending-payments",
+    category: "Movimientos",
+    role: "all",
+    title: "💰 Control de Cobros Pendientes en Salidas Directas",
+    keywords: ["cobro pendiente", "pago pendiente", "salida sin cobrar", "movimiento sin pagar", "cobrar", "pendiente pago", "alerta cobro"],
+    related_ids: ["movements-register", "quotations-convert", "dashboard-admin"],
+    content: `## 💰 Control de Cobros Pendientes — Salidas Directas
+
+Cuando registras una **salida directa** (sin cotización), puedes indicar si el pago fue recibido en el momento o si quedó pendiente.
+
+---
+
+### ✅ Marcar como cobrado al registrar
+
+Al crear un movimiento de tipo **Salida**, verás el toggle **"Pago recibido"**:
+
+| Estado del toggle | Significado |
+|---|---|
+| ✅ **Activo** | El dinero fue recibido al momento (efectivo, pago inmediato) |
+| ❌ **Inactivo** (default) | El cobro queda pendiente — aparecerá en las alertas |
+
+---
+
+### 📋 Ver y gestionar cobros pendientes
+
+En la página de **Movimientos**, la columna **"Pago"** muestra:
+
+| Badge | Significado | Acción disponible |
+|---|---|---|
+| 🟠 **Pendiente** | Salida sin cobrar | Toca para confirmar el cobro |
+| 🟢 **Cobrado** | Pago ya registrado | Sin acción (solo informativo) |
+| — | No aplica | Entradas, devoluciones, ajustes o salidas vinculadas a cotización |
+
+> 💡 Al tocar el badge **Pendiente**, se abre un diálogo de confirmación antes de marcarlo como cobrado.
+
+---
+
+### 🟠 Alerta en el Dashboard
+
+Si hay cobros pendientes (cotizaciones o movimientos directos), el Dashboard muestra una tarjeta naranja con:
+- El **total de ventas sin cobrar** (suma acumulada)
+- El **desglose**: cuántas son de cotizaciones y cuántas de movimientos directos
+
+---
+
+### ⚠️ Importante
+
+- Una salida vinculada a una **cotización** gestiona su pago desde el módulo de **Cotizaciones**, no desde Movimientos.
+- Solo las salidas **directas** (sin quotation_id) muestran el badge de pago en la tabla de Movimientos.`
+  },
+
   // ─── VERSIÓN ──────────────────────────────────────────────────────────────
   {
     id: "version-about",
     category: "Versión y Actualizaciones",
     role: "all",
     title: "📋 Versión de la App y Últimos Cambios",
-    keywords: ["versión", "actualización", "changelog", "acerca de", "about", "novedades", "cambios", "release", "1.1.0"],
-    related_ids: ["welcome-admin", "import-overview", "pricing-products"],
+    keywords: ["versión", "actualización", "changelog", "acerca de", "about", "novedades", "cambios", "release", "1.5.0"],
+    related_ids: ["welcome-admin", "pending-payments", "movements-register"],
     content: `## 📋 Versión de la App y Registro de Cambios
 
 StockFlow muestra la versión actual y el historial de cambios en la pestaña **Acerca de**.
@@ -320,16 +373,24 @@ Verás:
 
 ---
 
-### 🆕 Versión 1.1.0 — Principales novedades
+### 🆕 Versión 1.5.0 — Últimos cambios *(1 de abril 2026)*
 
 | Área | Novedad |
 |---|---|
-| **Precios** | Nuevo esquema con precio menudeo, mayoreo y cantidad mínima por producto |
-| **Clientes** | Opciones de precio especial por cliente |
-| **Importación** | Plantilla de productos actualizada con nuevas columnas de precio |
-| **Importación** | Nueva importación masiva de clientes |
-| **Importación** | Nueva importación masiva de categorías |
-| **UI** | Corrección de contraste en tema oscuro en sección de importación |
+| **Movimientos** | Toggle "Pago recibido" al registrar salidas directas |
+| **Movimientos** | Columna "Pago" en tabla con badge Pendiente/Cobrado y confirmación con un toque |
+| **Dashboard** | Alerta naranja unificada de cobros pendientes: cotizaciones + movimientos directos |
+| **Dashboard** | Desglose en la alerta: cuántas son cotizaciones vs movimientos directos |
+
+---
+
+### 📌 Versión 1.4.0 *(31 de marzo 2026)*
+
+| Área | Novedad |
+|---|---|
+| **Cotizaciones** | Botón "Ruta" unificado con opciones En Ruta / Entregado / Quitar estado |
+| **Cotizaciones** | Indicador rojo pulsante "¡Cobrar!" para pedidos entregados sin cobrar |
+| **Reportes** | Filas resaltadas en rojo para ventas entregadas sin cobrar |
 
 ---
 

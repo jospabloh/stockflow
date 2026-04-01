@@ -1,8 +1,8 @@
 import { helpDataExtension } from './helpDataExtension.js';
 
 export const localHelpData = {
-  version: "2.2",
-  last_updated: "2026-03-27",
+  version: "2.3",
+  last_updated: "2026-04-01",
   get articles() { return [..._baseArticles, ...helpDataExtension]; }
 };
 
@@ -418,7 +418,20 @@ Barras comparativas de **entradas vs salidas** por día en la última semana. Te
 
 Lista de productos con stock crítico ordenados por urgencia. Cada alerta muestra:
 - Nombre del producto y SKU
-- Stock actual vs stock mínimo definido`
+- Stock actual vs stock mínimo definido
+
+---
+
+### 🟠 Alerta de Cobro Pendiente *(nueva en v1.5.0)*
+
+Si existen ventas sin cobrar, aparecerá una tarjeta naranja con el total acumulado. Incluye **dos fuentes**:
+
+| Fuente | Qué incluye |
+|---|---|
+| **Cotizaciones** | Convertidas en venta pero con pago no confirmado |
+| **Movimientos directos** | Salidas registradas sin cotización y sin marcar como cobradas |
+
+Haz clic en la tarjeta para ir al módulo correspondiente y gestionar los cobros pendientes.`
     },
     {
       id: "dashboard-almacenista",
@@ -837,10 +850,17 @@ Ve a **Movimientos → + Nuevo Movimiento** para abrir el formulario.
 - Puedes modificarlo si es necesario para el caso específico
 
 **Paso 5 — Motivo y Referencia**
-- **Motivo**: describe brevemente el movimiento
+- **Motivo**: describe brevemente el movimiento (o selecciona el cliente)
 - **Referencia**: número de factura, orden de compra, número de pedido, etc.
 
-**Paso 6 — Guardar**
+**Paso 6 — Estado de pago** *(solo para Salidas directas)*
+Si el tipo de movimiento es **Salida**, verás el toggle **"Pago recibido"**:
+- ✅ **Activo** → el cobro fue recibido en el momento (efectivo, transferencia inmediata)
+- ❌ **Inactivo** → el pago queda pendiente y aparecerá en las alertas de cobranza del Dashboard
+
+> 💡 Si olvidas marcarlo como cobrado en el momento, puedes actualizarlo después desde la lista de Movimientos.
+
+**Paso 7 — Guardar**
 - El stock del producto se actualiza **instantáneamente**
 - El movimiento queda registrado en el historial con fecha y hora
 

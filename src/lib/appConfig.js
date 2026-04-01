@@ -2,14 +2,24 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "1.4.0";
+export const APP_VERSION = "1.5.0";
 
 export const RELEASE_DATE = "2026-04-01";
 
 export const CHANGELOG = [
   {
-    version: "1.4.0",
+    version: "1.5.0",
     date: "2026-04-01",
+    changes: [
+      "Toggle 'Pago recibido' en el formulario de salidas directas para registrar el cobro en el momento",
+      "Columna 'Pago' en la tabla de Movimientos: badge Pendiente (clickeable) y Cobrado para salidas directas",
+      "Alerta de cobros pendientes en el Dashboard unificada: suma cotizaciones concretadas sin pagar + salidas directas sin cobrar",
+      "Desglose de la alerta: indica cuántas son de cotizaciones y cuántas de movimientos directos",
+    ],
+  },
+  {
+    version: "1.4.0",
+    date: "2026-03-31",
     changes: [
       "Botón de seguimiento unificado en cotizaciones: un solo dropdown 'Ruta' con opciones En Ruta / Entregado / Quitar estado",
       "Indicador visual de alerta (rojo pulsante '¡Cobrar!') para pedidos entregados sin cobrar en la tabla de cotizaciones",
