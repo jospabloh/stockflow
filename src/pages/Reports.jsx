@@ -227,10 +227,11 @@ export default function Reports() {
         </div>
       </Card>
 
-      <Tabs defaultValue={isAdmin ? "quotations" : "quotations"} className="space-y-6">
+      <Tabs defaultValue={isAdmin ? "quotations" : "movements"} className="space-y-6">
         <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1">
-          {/* Todos ven Cotizaciones/Ventas */}
+          {/* Todos ven Cotizaciones/Ventas y Movimientos */}
           <TabsTrigger value="quotations">Cotizaciones/Ventas</TabsTrigger>
+          <TabsTrigger value="movements">Movimientos de Stock</TabsTrigger>
           
           {/* Solo admin ve los reportes analíticos */}
           {isAdmin && (
@@ -239,6 +240,7 @@ export default function Reports() {
               <TabsTrigger value="low">Baja Rotación</TabsTrigger>
               <TabsTrigger value="trend">Tendencia</TabsTrigger>
               <TabsTrigger value="inventory">Inventario Actual</TabsTrigger>
+              <TabsTrigger value="predict">Predicción de Pedidos</TabsTrigger>
             </>
           )}
         </TabsList>
@@ -532,6 +534,59 @@ export default function Reports() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="movements">
+          <Card className="border-0 shadow-sm overflow-hidden">
+            <div className="p-4 border-b bg-cyan-50/50">
+              <h3 className="font-semibold text-slate-700">Movimientos de Stock</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Historial de entradas, salidas, devoluciones y ajustes</p>
+            </div>
+            <div className="p-4 mb-4">
+              <label className="text-xs text-slate-500 mb-2 block">Tipo de movimiento</label>
+              <MobileSelect value={movTypeFilter} onValueChange={setMovTypeFilter} options={[
+                { value: "all", label: "Todos" },
+                { value: "entry", label: "Entrada (Compra)" },
+                { value: "exit", label: "Salida (Venta)" },
+                { value: "return", label: "Devolución" },
+                { value: "adjustment", label: "Ajuste" }
+              ]} />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50/70">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-slate-500 font-medium">Fecha</th>
+                    <th className="text-left px-4 py-3 text-slate-500 font-medium">Producto</th>
+                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Tipo</th>
+                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Cantidad</th>
+                    <th className="text-right px-4 py-3 text-slate-500 font-medium">Total</th>
+                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Stock Resultante</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredMovements.length === 0 ? (
+                    <tr><td colSpan={6} className="text-center py-10 text-slate-400">Sin movimientos en el período seleccionado</td></tr>
+                  ) : (
+                    filteredMovements.map((m) => {
+                      const typeLabel = m.type === "entry" ? "Entrada" : m.type === "exit" ? "Salida" : m.type === "return" ? "Devolución" : "Ajuste";
+                      const typeBg = m.type === "entry" ? "bg-emerald-100 text-emerald-700" : m.type === "exit" ? "bg-cyan-100 text-cyan-700" : m.type === "return" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-700";
+                      return (
+                        <tr key={m.id} className="border-t border-slate-100 hover:bg-slate-50/50">
+                          <td className="px-4 py-3 text-slate-500 text-xs">{moment(m.created_date).format("DD/MM/YY")}</td>
+                          <td className="px-4 py-3 font-medium text-slate-800">{m.product_name}</td>
+                          <td className="px-4 py-3 text-center"><span className={`text-xs font-medium px-2 py-1 rounded ${typeBg}`}>{typeLabel}</span></td>
+                          <td className="px-4 py-3 text-center text-slate-700">{m.quantity}</td>
+                          <td className="px-4 py-3 text-right font-semibold text-slate-700">${(m.total || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
+                          <td className="px-4 py-3 text-center text-slate-600">{m.stock_after || "—"}</td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="inventory">
           <Card className="border-0 shadow-sm overflow-hidden">
             <div className="p-4 border-b bg-emerald-50/50">
@@ -574,6 +629,114 @@ export default function Reports() {
               </table>
             </div>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="predict">
+          {(() => {
+            const lastNDays = 60;
+            const cutoffDate = moment().subtract(lastNDays, "days");
+            const recentMovements = movements.filter(m => moment(m.created_date).isSameOrAfter(cutoffDate) && m.type === "exit");
+            const productSalesFreq = {};
+            const productTrends = {};
+            
+            recentMovements.forEach(m => {
+              if (!productSalesFreq[m.product_id]) {
+                productSalesFreq[m.product_id] = { name: m.product_name, count: 0, avgQty: 0, totalQty: 0, lastSale: moment(m.created_date) };
+              }
+              productSalesFreq[m.product_id].count += 1;
+              productSalesFreq[m.product_id].totalQty += m.quantity;
+              const sale = moment(m.created_date);
+              if (sale.isAfter(productSalesFreq[m.product_id].lastSale)) {
+                productSalesFreq[m.product_id].lastSale = sale;
+              }
+            });
+
+            Object.keys(productSalesFreq).forEach(pid => {
+              const freq = productSalesFreq[pid];
+              freq.avgQty = freq.totalQty / freq.count;
+              freq.daysWithoutSale = moment().diff(freq.lastSale, "days");
+              freq.salesPerWeek = (freq.count / (lastNDays / 7)).toFixed(1);
+              const prod = products.find(p => p.id === pid);
+              if (prod) {
+                freq.currentStock = prod.stock;
+                const weeksUntilStockOut = freq.avgQty > 0 ? (prod.stock / (freq.avgQty * (freq.salesPerWeek / 7))).toFixed(1) : 999;
+                freq.alert = weeksUntilStockOut < 2 ? "🔴 URGENTE" : weeksUntilStockOut < 4 ? "🟡 PRONTO" : "🟢 OK";
+                freq.weeksUntilStockOut = weeksUntilStockOut;
+              }
+            });
+
+            const predictions = Object.values(productSalesFreq)
+              .sort((a, b) => parseFloat(a.weeksUntilStockOut) - parseFloat(b.weeksUntilStockOut))
+              .slice(0, 15);
+
+            return (
+              <Card className="border-0 shadow-sm p-6 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-slate-700 text-lg mb-2">Predicción Inteligente de Pedidos</h3>
+                  <p className="text-xs text-slate-400">Basado en últimos 60 días: frecuencia de ventas, cantidad promedio y stock actual</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="bg-red-50 border border-red-100 rounded-lg p-4">
+                    <p className="text-xs text-red-600 font-semibold">🔴 URGENTE (&lt; 2 sem.)</p>
+                    <p className="text-lg font-bold text-red-700">{predictions.filter(p => p.alert === "🔴 URGENTE").length}</p>
+                  </div>
+                  <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
+                    <p className="text-xs text-amber-600 font-semibold">🟡 PRONTO (2-4 sem.)</p>
+                    <p className="text-lg font-bold text-amber-700">{predictions.filter(p => p.alert === "🟡 PRONTO").length}</p>
+                  </div>
+                  <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-4">
+                    <p className="text-xs text-emerald-600 font-semibold">🟢 OK (> 4 sem.)</p>
+                    <p className="text-lg font-bold text-emerald-700">{predictions.filter(p => p.alert === "🟢 OK").length}</p>
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50/70">
+                      <tr>
+                        <th className="text-left px-4 py-3 text-slate-500 font-medium">Alerta</th>
+                        <th className="text-left px-4 py-3 text-slate-500 font-medium">Producto</th>
+                        <th className="text-center px-4 py-3 text-slate-500 font-medium">Stock Act.</th>
+                        <th className="text-center px-4 py-3 text-slate-500 font-medium">Promedio/Venta</th>
+                        <th className="text-center px-4 py-3 text-slate-500 font-medium">Ventas/Sem.</th>
+                        <th className="text-center px-4 py-3 text-slate-500 font-medium">Semanas Restantes</th>
+                        <th className="text-left px-4 py-3 text-slate-500 font-medium">Recomendación</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {predictions.length === 0 ? (
+                        <tr><td colSpan={7} className="text-center py-10 text-slate-400">Sin datos de ventas en los últimos 60 días</td></tr>
+                      ) : (
+                        predictions.map((p) => (
+                          <tr key={p.name} className={`border-t border-slate-100 ${p.alert === "🔴 URGENTE" ? "bg-red-50/50" : p.alert === "🟡 PRONTO" ? "bg-amber-50/50" : ""}`}>
+                            <td className="px-4 py-3 text-center text-xl font-bold">{p.alert.split(" ")[0]}</td>
+                            <td className="px-4 py-3 font-medium text-slate-800">{p.name}</td>
+                            <td className="px-4 py-3 text-center text-slate-700">{p.currentStock}</td>
+                            <td className="px-4 py-3 text-center text-slate-600">{p.avgQty.toFixed(0)} uds.</td>
+                            <td className="px-4 py-3 text-center text-slate-600">{p.salesPerWeek}</td>
+                            <td className="px-4 py-3 text-center font-semibold text-slate-800">{p.weeksUntilStockOut} sem.</td>
+                            <td className="px-4 py-3 text-xs text-slate-600">
+                              {p.alert === "🔴 URGENTE" && "Pedir YA - riesgo de agotamiento"}
+                              {p.alert === "🟡 PRONTO" && "Preparar solicitud en próximos días"}
+                              {p.alert === "🟢 OK" && "Monitorear, sin urgencia"}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-xs text-blue-800">
+                  <p className="font-semibold mb-2">💡 Cómo funciona:</p>
+                  <ul className="space-y-1 ml-4 list-disc">
+                    <li>Analiza salidas de los últimos 60 días</li>
+                    <li>Calcula promedio de unidades por venta</li>
+                    <li>Estima semanas hasta agotamiento del stock</li>
+                    <li>Usa el color para priorizar reordenaciones</li>
+                  </ul>
+                </div>
+              </Card>
+            );
+          })()}
         </TabsContent>
       </Tabs>
     </div>

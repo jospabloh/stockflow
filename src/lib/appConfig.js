@@ -2,11 +2,23 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "1.7.0";
+export const APP_VERSION = "1.8.0";
 
 export const RELEASE_DATE = "2026-04-01";
 
 export const CHANGELOG = [
+  {
+    version: "1.8.0",
+    date: "2026-04-01",
+    changes: [
+      "Nueva pestaña 'Movimientos de Stock' en Reportes disponible para Almacenistas: historial detallado con filtro por tipo",
+      "Nueva pestaña 'Predicción Inteligente de Pedidos' (solo Admin): alerta 🔴/🟡/🟢 por semanas de stock disponibles según historial de ventas",
+      "Almacenistas requieren razón obligatoria al eliminar categorías de catálogo",
+      "Settings ahora carga catálogos operativos para Almacenistas (no solo Admin)",
+      "Reportes: la pestaña por defecto para Almacenista ahora abre 'Movimientos de Stock'",
+      "Centro de Ayuda actualizado v2.4: artículos sobre reportes operativos, predicción de pedidos y eliminación con razón",
+    ],
+  },
   {
     version: "1.7.0",
     date: "2026-04-01",

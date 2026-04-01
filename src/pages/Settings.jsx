@@ -55,6 +55,8 @@ export default function Settings() {
   const [catFormOpen, setCatFormOpen] = useState(false);
   const [editingCat, setEditingCat] = useState(null);
   const [catForm, setCatForm] = useState({ name: "", description: "", color: "#6366f1", wholesale_min_qty: "" });
+  const [deleteCatId, setDeleteCatId] = useState(null);
+  const [deleteCatReason, setDeleteCatReason] = useState("");
   const [supFormOpen, setSupFormOpen] = useState(false);
   const [editingSup, setEditingSup] = useState(null);
   const [supForm, setSupForm] = useState({ name: "", contact_name: "", email: "", phone: "" });
@@ -68,10 +70,19 @@ export default function Settings() {
          setIsAdmin(u?.role === "admin");
          setCheckingAuth(false);
 
-         // Si no es admin, NO cargar nada de configuración (protección backend)
-         if (u?.role !== "admin") {
-           return;
-         }
+         // Si no es admin, cargar solo catálogos operativos (categorías, proveedores, formas de pago)
+          if (u?.role !== "admin") {
+            const [cats, sups, pms] = await Promise.all([
+              businessId ? base44.entities.Category.filter({ business_id: businessId }) : Promise.resolve([]),
+              businessId ? base44.entities.Supplier.filter({ business_id: businessId }) : Promise.resolve([]),
+              businessId ? base44.entities.PaymentMethod.filter({ business_id: businessId }) : Promise.resolve([]),
+            ]);
+            setCategories(cats);
+            setSuppliers(sups);
+            setPaymentMethods(pms || []);
+            setLoading(false);
+            return;
+          }
 
          // CRITICAL FIX: Filter ALL by business_id, never use list() without filtering
          const [sets, cats, sups, pms] = await Promise.all([
@@ -193,12 +204,22 @@ export default function Settings() {
   };
 
   const handleDeleteCategory = async (id) => {
-    const response = await base44.functions.invoke('deleteCategorySafe', { category_id: id });
+    if (!isAdmin && !deleteCatReason.trim()) {
+      toast.error("Debes proporcionar una razón para eliminar");
+      return;
+    }
+    const response = await base44.functions.invoke('deleteCategorySafe', { 
+      category_id: id,
+      deletion_reason: deleteCatReason || undefined
+    });
     if (!response.data.success) {
       toast.error(response.data.error || 'No se pudo eliminar');
       return;
     }
     setCategories(categories.filter((c) => c.id !== id));
+    setDeleteCatId(null);
+    setDeleteCatReason("");
+    toast.success("Categoría eliminada");
   };
 
   const handleSaveSupplier = async () => {
@@ -467,13 +488,13 @@ export default function Settings() {
                       {cat.wholesale_min_qty > 0 ? `${cat.wholesale_min_qty} uds.` : "—"}
                     </TableCell>
                     <TableCell className="text-center">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCat(cat); setCatForm({ name: cat.name, description: cat.description || "", color: cat.color || "#6366f1", wholesale_min_qty: cat.wholesale_min_qty ?? "" }); setCatFormOpen(true); }} {...createButtonProps('edit')}>
-                        <Pencil className="h-4 w-4 text-slate-400" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteCategory(cat.id)} {...createButtonProps('delete')}>
-                        <Trash2 className="h-4 w-4 text-slate-400" />
-                      </Button>
-                    </TableCell>
+                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCat(cat); setCatForm({ name: cat.name, description: cat.description || "", color: cat.color || "#6366f1", wholesale_min_qty: cat.wholesale_min_qty ?? "" }); setCatFormOpen(true); }} {...createButtonProps('edit')}>
+                         <Pencil className="h-4 w-4 text-slate-400" />
+                       </Button>
+                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteCatId(cat.id)} {...createButtonProps('delete')}>
+                         <Trash2 className="h-4 w-4 text-slate-400" />
+                       </Button>
+                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -1019,6 +1040,46 @@ export default function Settings() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
+
+      {/* Delete Category Dialog */}
+      {deleteCatId && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+              </div>
+              <div>
+                <p className="font-semibold text-slate-800">Eliminar categoría</p>
+                <p className="text-sm text-slate-500">Esta acción no se puede deshacer</p>
+              </div>
+            </div>
+            {!isAdmin && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <Label className="text-xs text-amber-800 font-medium block mb-2">Razón de eliminación *</Label>
+                <Textarea 
+                  placeholder="Explica por qué necesitas eliminar esta categoría..."
+                  value={deleteCatReason} 
+                  onChange={(e) => setDeleteCatReason(e.target.value)}
+                  rows={3}
+                  className="text-sm"
+                />
+                <p className="text-xs text-amber-600 mt-2">El admin revisará esta acción</p>
+              </div>
+            )}
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => { setDeleteCatId(null); setDeleteCatReason(""); }}>Cancelar</Button>
+              <Button 
+                className="bg-red-600 hover:bg-red-700" 
+                onClick={() => handleDeleteCategory(deleteCatId)}
+                disabled={!isAdmin && !deleteCatReason.trim()}
+              >
+                Eliminar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
+      );
+      }
