@@ -76,8 +76,13 @@ export default function Dashboard() {
 
   // Cotizaciones concretadas sin pagar
   const unpaidConverted = quotations.filter(q => q.status === "converted" && !q.paid);
-  const unpaidCount = unpaidConverted.length;
-  const unpaidTotal = unpaidConverted.reduce((sum, q) => sum + (q.total || 0), 0);
+  // Movimientos de salida directa sin pagar (sin quotation_id)
+  const unpaidDirectMovements = movements.filter(m => m.type === "exit" && !m.quotation_id && !m.paid);
+
+  const unpaidCount = unpaidConverted.length + unpaidDirectMovements.length;
+  const unpaidTotal =
+    unpaidConverted.reduce((sum, q) => sum + (q.total || 0), 0) +
+    unpaidDirectMovements.reduce((sum, m) => sum + (m.total || 0), 0);
 
   // Quotation semaphore counts
   const quotGreen = quotations.filter(q => q.status === "converted").length;
@@ -164,9 +169,13 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="font-semibold text-orange-800 dark:text-orange-300 text-sm">
-                    {unpaidCount} {unpaidCount === 1 ? "cotización concretada sin cobrar" : "cotizaciones concretadas sin cobrar"}
+                    {unpaidCount} {unpaidCount === 1 ? "venta sin cobrar" : "ventas sin cobrar"}
                   </p>
-                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">Toca para verlas en Cotizaciones</p>
+                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">
+                    {unpaidConverted.length > 0 && `${unpaidConverted.length} cotización(es)`}
+                    {unpaidConverted.length > 0 && unpaidDirectMovements.length > 0 && " · "}
+                    {unpaidDirectMovements.length > 0 && `${unpaidDirectMovements.length} movimiento(s) directo(s)`}
+                  </p>
                 </div>
               </div>
               <div className="text-right flex-shrink-0">

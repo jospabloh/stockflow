@@ -52,6 +52,11 @@
       "type": "string",
       "description": "ID de cotizaci\u00f3n relacionada"
     },
+    "paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Pago recibido efectivamente (solo aplica a salidas directas sin cotizaci\u00f3n)"
+    },
     "business_id": {
       "type": "string",
       "description": "ID del negocio al que pertenece"

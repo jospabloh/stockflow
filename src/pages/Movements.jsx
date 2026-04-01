@@ -23,6 +23,8 @@ import {
   Download,
   Trash2,
   Pencil,
+  CheckCircle2,
+  Clock,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -61,6 +63,7 @@ export default function Movements() {
   const [deletingMovement, setDeletingMovement] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [editingMovement, setEditingMovement] = useState(null);
+  const [confirmingPayment, setConfirmingPayment] = useState(null);
 
   const loadData = async (bId) => {
     if (!bId) return;
@@ -124,6 +127,18 @@ export default function Movements() {
     }
   };
 
+  const handleConfirmPayment = async () => {
+    if (!confirmingPayment) return;
+    try {
+      await base44.entities.Movement.update(confirmingPayment.id, { paid: true });
+      toast.success("Pago confirmado");
+      setConfirmingPayment(null);
+      loadData(businessId);
+    } catch (e) {
+      toast.error(`Error: ${e.message}`);
+    }
+  };
+
   const handleExportCSV = () => {
      // Helper para escapar valores CSV
      const escapeCSV = (value) => {
@@ -158,8 +173,32 @@ export default function Movements() {
     return <TableSkeleton rows={8} columns={7} />;
   }
 
+  // Salidas directas sin pagar (no vinculadas a cotización)
+  const unpaidDirectExits = movements.filter(m => m.type === "exit" && !m.quotation_id && !m.paid);
+  const unpaidDirectTotal = unpaidDirectExits.reduce((sum, m) => sum + (m.total || 0), 0);
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+
+      {/* Alerta de cobro pendiente */}
+      {unpaidDirectExits.length > 0 && (
+        <div className="flex items-center justify-between gap-4 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-3">
+            <Clock className="h-5 w-5 text-orange-500 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-orange-800 dark:text-orange-300">
+                {unpaidDirectExits.length} {unpaidDirectExits.length === 1 ? "salida directa sin cobrar" : "salidas directas sin cobrar"}
+              </p>
+              <p className="text-xs text-orange-600 dark:text-orange-400">Filtra por "Salidas" para gestionarlas</p>
+            </div>
+          </div>
+          <div className="text-right flex-shrink-0">
+            <p className="text-xs text-orange-600 dark:text-orange-400">Pendiente</p>
+            <p className="font-bold text-orange-700 dark:text-orange-300">${unpaidDirectTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-md w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -209,13 +248,14 @@ export default function Movements() {
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Forma de Pago</TableHead>
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Cliente</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Stock Después</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader">Pago</TableHead>
               {isAdmin && <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader" colSpan={2}>Acciones</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 9 : 8} className="text-center py-12 text-slate-400">
+                  <TableCell colSpan={isAdmin ? 10 : 9} className="text-center py-12 text-slate-400">
                     Sin movimientos registrados
                   </TableCell>
                 </TableRow>
@@ -246,6 +286,24 @@ export default function Movements() {
                       <TableCell className="text-slate-500 text-sm">{m.reference || "—"}</TableCell>
                       <TableCell className="text-slate-500 text-sm">{m.reason || "—"}</TableCell>
                       <TableCell className="text-right text-slate-600">{m.stock_after ?? "—"}</TableCell>
+                      <TableCell className="text-center">
+                        {m.type === "exit" && !m.quotation_id ? (
+                          m.paid ? (
+                            <span className="inline-flex items-center gap-1 text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-0.5 rounded-full font-medium">
+                              <CheckCircle2 className="h-3 w-3" /> Cobrado
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmingPayment(m)}
+                              className="inline-flex items-center gap-1 text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-0.5 rounded-full font-medium hover:bg-orange-200 transition-colors"
+                            >
+                              <Clock className="h-3 w-3" /> Pendiente
+                            </button>
+                          )
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
+                      </TableCell>
                       {isAdmin && (
                         <>
                           <TableCell className="text-center">
@@ -287,6 +345,26 @@ export default function Movements() {
         movement={editingMovement}
         onSaved={() => loadData(businessId)}
       />
+
+      {/* Confirmar pago */}
+      <AlertDialog open={!!confirmingPayment} onOpenChange={(o) => !o && setConfirmingPayment(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Confirmar pago recibido?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Estás marcando como cobrado el movimiento de <strong>{confirmingPayment?.product_name}</strong> por{" "}
+              <strong>${confirmingPayment?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong>{" "}
+              del cliente <strong>{confirmingPayment?.reason || "—"}</strong>. Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmPayment} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              Sí, marcar como cobrado
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!deletingMovement} onOpenChange={(o) => !o && setDeletingMovement(null)}>
         <AlertDialogContent>

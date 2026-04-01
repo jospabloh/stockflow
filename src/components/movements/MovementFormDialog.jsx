@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MobileSelect } from "@/components/ui/MobileSelect";
 import SearchableSelect from "@/components/ui/SearchableSelect";
-import { Save, ScanLine, Plus, Trash2 } from "lucide-react";
+import { Save, ScanLine, Plus, Trash2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps } from "@/lib/a11y";
@@ -51,6 +51,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   const [movType, setMovType] = useState("exit");
   const [paymentMethodId, setPaymentMethodId] = useState("");
   const [clientId, setClientId] = useState("");
+  const [isPaid, setIsPaid] = useState(false);
 
   // OB3: Lista de items (cada uno con producto + cantidad)
   const [items, setItems] = useState([{ product: null, quantity: 1 }]);
@@ -71,6 +72,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       setMovType("exit");
       setPaymentMethodId("");
       setClientId("");
+      setIsPaid(false);
       setItems([{ product: null, quantity: 1 }]);
       setBarcodeInput("");
       setBarcodeNotFound(false);
@@ -181,6 +183,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           business_id: businessId,
           reference: pmName,
           reason: clientName,
+          paid: movType === "exit" ? isPaid : true,
         });
         if (!movResp.data.success) {
           toast.error(`Error en "${product.name}": ${movResp.data.error}`);
@@ -352,6 +355,29 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
               }))}
             />
           </div>
+
+          {/* Confirmación de pago — solo para salidas */}
+          {movType === "exit" && (
+            <button
+              type="button"
+              onClick={() => setIsPaid(!isPaid)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${
+                isPaid
+                  ? "bg-emerald-50 border-emerald-400 dark:bg-emerald-950/30 dark:border-emerald-600"
+                  : "bg-orange-50 border-orange-300 dark:bg-orange-950/30 dark:border-orange-600"
+              }`}
+            >
+              <CheckCircle2 className={`h-5 w-5 flex-shrink-0 ${isPaid ? "text-emerald-600" : "text-orange-400"}`} />
+              <div className="text-left">
+                <p className={`text-sm font-semibold ${isPaid ? "text-emerald-800 dark:text-emerald-300" : "text-orange-800 dark:text-orange-300"}`}>
+                  {isPaid ? "Pago recibido ✓" : "Pago pendiente"}
+                </p>
+                <p className={`text-xs ${isPaid ? "text-emerald-600 dark:text-emerald-400" : "text-orange-600 dark:text-orange-400"}`}>
+                  {isPaid ? "El cliente ya pagó este movimiento" : "Toca para confirmar que el pago ya se recibió"}
+                </p>
+              </div>
+            </button>
+          )}
         </div>
 
         {/* OB4: resumen de qué falta */}
