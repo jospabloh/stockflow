@@ -213,25 +213,25 @@ export default function Dashboard() {
               <p className="text-sm text-slate-400 py-4 text-center">Sin ventas registradas hoy</p>
             ) : (
               <div className="space-y-3">
-                <div className="flex justify-between items-center bg-blue-50 rounded-lg px-4 py-2.5">
-                  <span className="text-sm text-slate-600">Monto vendido</span>
-                  <span className="font-bold text-blue-700">${todaySalesRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-950/40 rounded-lg px-4 py-2.5">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Monto vendido</span>
+                  <span className="font-bold text-blue-700 dark:text-blue-300">${todaySalesRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                 </div>
-                <div className="flex justify-between items-center bg-purple-50 rounded-lg px-4 py-2.5">
-                  <span className="text-sm text-slate-600">Cobrado</span>
-                  <span className="font-bold text-purple-700">${todayRealRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                <div className="flex justify-between items-center bg-purple-50 dark:bg-purple-950/40 rounded-lg px-4 py-2.5">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Cobrado</span>
+                  <span className="font-bold text-purple-700 dark:text-purple-300">${todayRealRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                 </div>
                 {isAdmin && (
                   <>
-                    <div className="flex justify-between items-center bg-slate-50 rounded-lg px-4 py-2.5">
-                      <span className="text-sm text-slate-600">Costo de lo vendido</span>
-                      <span className="font-bold text-slate-700">${todaySalesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                    <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 rounded-lg px-4 py-2.5">
+                      <span className="text-sm text-slate-600 dark:text-slate-400">Costo de lo vendido</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-200">${todaySalesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-emerald-50 rounded-lg px-4 py-2.5">
-                      <span className="text-sm text-slate-600">Ganancia bruta</span>
+                    <div className="flex justify-between items-center bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-4 py-2.5">
+                      <span className="text-sm text-slate-600 dark:text-slate-400">Ganancia bruta</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-emerald-700">${todayProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-                        <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">{todayMargin.toFixed(1)}%</Badge>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-300">${todayProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                        <Badge className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border-0 text-xs">{todayMargin.toFixed(1)}%</Badge>
                       </div>
                     </div>
                   </>
@@ -244,26 +244,26 @@ export default function Dashboard() {
         <Card className="border-0 shadow-sm p-5">
           <h3 className="font-semibold text-slate-700 mb-4">Semáforo de Cotizaciones</h3>
           <div className="space-y-3">
-            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=converted`)} className="w-full text-left flex justify-between items-center bg-emerald-50 rounded-lg px-4 py-2.5 hover:bg-emerald-100 transition-colors cursor-pointer">
+            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=converted`)} className="w-full text-left flex justify-between items-center bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-4 py-2.5 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" />
-                <span className="text-sm text-slate-600">Concretadas en venta</span>
+                <span className="text-sm text-slate-600 dark:text-slate-400">Concretadas en venta</span>
               </div>
-              <span className="font-bold text-emerald-700 text-lg">{quotGreen}</span>
+              <span className="font-bold text-emerald-700 dark:text-emerald-300 text-lg">{quotGreen}</span>
             </button>
-            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=active`)} className="w-full text-left flex justify-between items-center bg-amber-50 rounded-lg px-4 py-2.5 hover:bg-amber-100 transition-colors cursor-pointer">
+            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=active`)} className="w-full text-left flex justify-between items-center bg-amber-50 dark:bg-amber-950/40 rounded-lg px-4 py-2.5 hover:bg-amber-100 dark:hover:bg-amber-950/60 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-amber-400 inline-block" />
-                <span className="text-sm text-slate-600">Sin concretar (activas)</span>
+                <span className="text-sm text-slate-600 dark:text-slate-400">Sin concretar (activas)</span>
               </div>
-              <span className="font-bold text-amber-600 text-lg">{quotYellow}</span>
+              <span className="font-bold text-amber-400 dark:text-amber-300 text-lg">{quotYellow}</span>
             </button>
-            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=cancelled`)} className="w-full text-left flex justify-between items-center bg-red-50 rounded-lg px-4 py-2.5 hover:bg-red-100 transition-colors cursor-pointer">
+            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=cancelled`)} className="w-full text-left flex justify-between items-center bg-red-50 dark:bg-red-950/40 rounded-lg px-4 py-2.5 hover:bg-red-100 dark:hover:bg-red-950/60 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-red-500 inline-block" />
-                <span className="text-sm text-slate-600">Canceladas</span>
+                <span className="text-sm text-slate-600 dark:text-slate-400">Canceladas</span>
               </div>
-              <span className="font-bold text-red-600 text-lg">{quotRed}</span>
+              <span className="font-bold text-red-500 dark:text-red-300 text-lg">{quotRed}</span>
             </button>
           </div>
         </Card>
