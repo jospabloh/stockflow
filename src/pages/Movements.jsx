@@ -22,6 +22,7 @@ import {
   SlidersHorizontal,
   Download,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -35,6 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import moment from "moment";
 import MovementFormDialog from "@/components/movements/MovementFormDialog";
+import MovementEditDialog from "@/components/movements/MovementEditDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import { createButtonProps } from "@/lib/a11y";
 import { toast } from "sonner";
@@ -58,6 +60,7 @@ export default function Movements() {
   const [businessId, setBusinessId] = useState(null);
   const [deletingMovement, setDeletingMovement] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [editingMovement, setEditingMovement] = useState(null);
 
   const loadData = async (bId) => {
     if (!bId) return;
@@ -206,7 +209,7 @@ export default function Movements() {
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Forma de Pago</TableHead>
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Cliente</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Stock Después</TableHead>
-              {isAdmin && <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader">Acciones</TableHead>}
+              {isAdmin && <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader" colSpan={2}>Acciones</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -244,17 +247,30 @@ export default function Movements() {
                       <TableCell className="text-slate-500 text-sm">{m.reason || "—"}</TableCell>
                       <TableCell className="text-right text-slate-600">{m.stock_after ?? "—"}</TableCell>
                       {isAdmin && (
-                        <TableCell className="text-center">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30"
-                            onClick={(e) => { e.stopPropagation(); setDeletingMovement(m); }}
-                            aria-label="Eliminar movimiento"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                        <>
+                          <TableCell className="text-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/30"
+                              onClick={(e) => { e.stopPropagation(); setEditingMovement(m); }}
+                              aria-label="Editar movimiento"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30"
+                              onClick={(e) => { e.stopPropagation(); setDeletingMovement(m); }}
+                              aria-label="Eliminar movimiento"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </>
                       )}
                       </TableRow>
                   );
@@ -264,6 +280,13 @@ export default function Movements() {
           </Table>
         </div>
       </div>
+
+      <MovementEditDialog
+        open={!!editingMovement}
+        onOpenChange={(o) => !o && setEditingMovement(null)}
+        movement={editingMovement}
+        onSaved={() => loadData(businessId)}
+      />
 
       <AlertDialog open={!!deletingMovement} onOpenChange={(o) => !o && setDeletingMovement(null)}>
         <AlertDialogContent>
