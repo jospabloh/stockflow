@@ -13,6 +13,7 @@ import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps } from "@/lib/a11y";
 import { calculatePrice, computeCategoryQtyMap } from "@/lib/pricingEngine";
+import ProductSearchInput from "@/components/movements/ProductSearchInput";
 
 
 
@@ -392,13 +393,10 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                 <div key={idx} className="grid grid-cols-12 gap-2 items-start bg-card border border-border rounded-xl p-3">
                   <div className="col-span-12 md:col-span-4">
                     <Label className="text-xs text-foreground mb-1.5 block" htmlFor={`product-${idx}`}>Producto</Label>
-                    <SelectWrapper
-                      id={`product-${idx}`}
-                      value={item.product_id}
-                      onValueChange={(v) => updateItem(idx, "product_id", v)}
-                      placeholder="Seleccionar"
-                      options={products.map((p) => ({ value: p.id, label: p.name }))}
-                      aria-label={`Producto ${idx + 1}`}
+                    <ProductSearchInput
+                      products={products}
+                      selectedProduct={products.find(p => p.id === item.product_id) || null}
+                      onSelect={(pid) => updateItem(idx, "product_id", pid)}
                     />
                   </div>
                   <div className="col-span-4 md:col-span-2">

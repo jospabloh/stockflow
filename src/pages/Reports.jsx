@@ -304,15 +304,18 @@ export default function Reports() {
             </Card>
           </div>
 
-          {/* Table */}
-          <Card className="border-0 shadow-sm overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="font-semibold text-slate-700">Detalle de Ventas Concretadas</h3>
+          {/* Table: Ventas por Cotización */}
+          <Card className="border-0 shadow-sm overflow-hidden mb-6">
+            <div className="flex items-center justify-between p-4 border-b bg-indigo-50/50">
+              <div>
+                <h3 className="font-semibold text-slate-700">Ventas por Cotización</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Ventas concretadas a través del flujo de cotización</p>
+              </div>
               <Button variant="outline" size="sm" onClick={() => handleExportCSV(filteredQuotations.map(q => ({
                 folio: q.folio, cliente: q.client_name, fecha: moment(q.created_date).format("DD/MM/YYYY"),
                 total: q.total, pagado: q.paid ? "Sí" : "No", forma_pago: q.payment_method || "—",
                 entregado: q.delivered ? "Sí" : "No"
-              })), "ventas")}>
+              })), "ventas_cotizaciones")}>
                 <Download className="h-4 w-4 mr-1" /> CSV
               </Button>
             </div>
@@ -359,6 +362,63 @@ export default function Reports() {
               </table>
             </div>
           </Card>
+
+          {/* Table: Ventas Directas (movimientos sin cotización) */}
+          {(() => {
+            const directExits = filteredMovements.filter(m => m.type === "exit" && !m.quotation_id);
+            const totalDirect = directExits.reduce((s, m) => s + (m.total || 0), 0);
+            return (
+              <Card className="border-0 shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between p-4 border-b bg-cyan-50/50">
+                  <div>
+                    <h3 className="font-semibold text-slate-700">Ventas Directas (sin cotización)</h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Movimientos de salida registrados directamente — Total: <span className="font-semibold text-cyan-700">${totalDirect.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => handleExportCSV(directExits.map(m => ({
+                    producto: m.product_name, fecha: moment(m.created_date).format("DD/MM/YYYY"),
+                    cantidad: m.quantity, precio_unitario: m.unit_price, total: m.total,
+                    cliente: m.reason || "—", forma_pago: m.reference || "—"
+                  })), "ventas_directas")}>
+                    <Download className="h-4 w-4 mr-1" /> CSV
+                  </Button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50/70">
+                      <tr>
+                        <th className="text-left px-4 py-3 text-slate-500 font-medium">Producto</th>
+                        <th className="text-left px-4 py-3 text-slate-500 font-medium">Cliente</th>
+                        <th className="text-left px-4 py-3 text-slate-500 font-medium">Fecha</th>
+                        <th className="text-center px-4 py-3 text-slate-500 font-medium">Cantidad</th>
+                        <th className="text-right px-4 py-3 text-slate-500 font-medium">Precio Unit.</th>
+                        <th className="text-right px-4 py-3 text-slate-500 font-medium">Total</th>
+                        <th className="text-left px-4 py-3 text-slate-500 font-medium">Forma de Pago</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {directExits.length === 0 ? (
+                        <tr><td colSpan={7} className="text-center py-10 text-slate-400">Sin ventas directas en el período seleccionado</td></tr>
+                      ) : (
+                        directExits.map((m) => (
+                          <tr key={m.id} className="border-t border-slate-100 hover:bg-slate-50/50">
+                            <td className="px-4 py-3 font-medium text-slate-800">{m.product_name}</td>
+                            <td className="px-4 py-3 text-slate-600">{m.reason || "—"}</td>
+                            <td className="px-4 py-3 text-slate-500">{moment(m.created_date).format("DD/MM/YY")}</td>
+                            <td className="px-4 py-3 text-center text-slate-700">{m.quantity}</td>
+                            <td className="px-4 py-3 text-right text-slate-600">${(m.unit_price || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
+                            <td className="px-4 py-3 text-right font-semibold text-slate-700">${(m.total || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
+                            <td className="px-4 py-3 text-slate-600">{m.reference || "—"}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            );
+          })()}
         </TabsContent>
 
         <TabsContent value="sales">
