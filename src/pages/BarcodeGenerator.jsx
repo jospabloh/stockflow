@@ -17,25 +17,36 @@ export default function BarcodeGeneratorPage() {
   const productId = searchParams.get("productId");
 
   useEffect(() => {
-    if (productId) {
-      base44.entities.Product.filter({ id: productId }).then(([prod]) => {
-        setProduct(prod);
-      });
+    if (productId && businessId) {
+      base44.entities.Product.filter({ id: productId, business_id: businessId })
+        .then((products) => {
+          if (products.length > 0) {
+            setProduct(products[0]);
+          }
+        })
+        .catch(err => {
+          console.error("Error loading product:", err);
+          toast.error("Error al cargar el producto");
+        });
     }
-  }, [productId]);
+  }, [productId, businessId]);
 
   const handleSave = async (barcode) => {
-    if (!product) return;
+    if (!product || !product.id) {
+      toast.error("Producto no identificado");
+      return;
+    }
 
     setSaving(true);
     try {
       await base44.entities.Product.update(product.id, {
         barcode,
       });
+      setProduct({ ...product, barcode });
       toast.success("Código de barras guardado exitosamente");
     } catch (err) {
       console.error("Error saving barcode:", err);
-      toast.error("Error al guardar el código de barras");
+      toast.error("Error al guardar: " + (err.message || "intenta nuevamente"));
     } finally {
       setSaving(false);
     }
