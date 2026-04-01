@@ -2,11 +2,20 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "1.5.0";
+export const APP_VERSION = "1.6.0";
 
 export const RELEASE_DATE = "2026-04-01";
 
 export const CHANGELOG = [
+  {
+    version: "1.6.0",
+    date: "2026-04-01",
+    changes: [
+      "Cálculo automático de impuestos en movimientos: el total incluye el IVA (tax_rate) del producto",
+      "Etiqueta actualizada en Dashboard: 'Cobrado' en lugar de 'Venta real (menos pendiente)'",
+      "Visibilidad por rol en Dashboard: almacenista ve 'Monto vendido' y 'Cobrado'; admin ve además 'Costo de lo vendido' y 'Ganancia bruta'",
+    ],
+  },
   {
     version: "1.5.0",
     date: "2026-04-01",
