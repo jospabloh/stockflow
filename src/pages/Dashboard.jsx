@@ -52,14 +52,17 @@ export default function Dashboard() {
   const today = new Date().toDateString();
   const todayMovements = movements.filter((m) => new Date(m.created_date).toDateString() === today);
 
-  // Ventas del día: cotizaciones convertidas creadas hoy
+  // Ventas del día = cotizaciones convertidas hoy + movimientos de salida directos (sin quotation_id)
   const todayConvertedQuotations = quotations.filter(
     (q) => q.status === "converted" && new Date(q.created_date).toDateString() === today
   );
-  const todaySalesRevenue = todayConvertedQuotations.reduce((sum, q) => sum + (q.total || 0), 0);
-
-  // Costo: sumar cost_price de los movimientos de salida de hoy vinculados a esas cotizaciones
   const todayExits = todayMovements.filter((m) => m.type === "exit");
+  const todayDirectExits = todayExits.filter((m) => !m.quotation_id); // salidas manuales, no de cotizaciones
+
+  const todaySalesFromQuotations = todayConvertedQuotations.reduce((sum, q) => sum + (q.total || 0), 0);
+  const todaySalesFromDirectExits = todayDirectExits.reduce((sum, m) => sum + (m.total || 0), 0);
+  const todaySalesRevenue = todaySalesFromQuotations + todaySalesFromDirectExits;
+
   const productLookup = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
   const todaySalesCost = todayExits.reduce((sum, m) => {
     const costUnit = (m.cost_price != null && m.cost_price > 0)
@@ -69,6 +72,7 @@ export default function Dashboard() {
   }, 0);
   const todayProfit = todaySalesRevenue - todaySalesCost;
   const todayMargin = todaySalesRevenue > 0 ? (todayProfit / todaySalesRevenue) * 100 : 0;
+  const todaySalesCount = todayConvertedQuotations.length + todayDirectExits.length;
 
   // Quotation semaphore counts
   const quotGreen = quotations.filter(q => q.status === "converted").length;
@@ -147,7 +151,7 @@ export default function Dashboard() {
           <h3 className="font-semibold text-slate-700 mb-4 flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-indigo-500" /> Ventas del Día
           </h3>
-            {todayConvertedQuotations.length === 0 ? (
+            {todaySalesCount === 0 ? (
               <p className="text-sm text-slate-400 py-4 text-center">Sin ventas registradas hoy</p>
             ) : (
               <div className="space-y-3">

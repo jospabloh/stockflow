@@ -305,34 +305,30 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                 onBlur={() => setTimeout(() => setShowClientSuggestions(false), 150)}
                 placeholder="Buscar o escribir cliente..."
               />
-              {showClientSuggestions && (clientSearch || form.client_name) && (
+              {showClientSuggestions && clientSearch && (
                 <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
-                  {clients
-                    .filter(c => {
-                      const q = (clientSearch || form.client_name).toLowerCase();
-                      return c.name.toLowerCase().includes(q) || (c.business_name || "").toLowerCase().includes(q);
-                    })
-                    .map(c => (
+                  {(() => {
+                    const q = clientSearch.toLowerCase();
+                    const filtered = clients.filter(c =>
+                      c.name.toLowerCase().includes(q) || (c.business_name || "").toLowerCase().includes(q)
+                    );
+                    if (filtered.length === 0) {
+                      return <p className="text-sm text-slate-400 px-3 py-2">Sin coincidencias — se guardará como nuevo</p>;
+                    }
+                    return filtered.map(c => (
                       <button
                         key={c.id}
                         type="button"
                         className="w-full text-left px-3 py-2 hover:bg-indigo-50 text-sm border-b border-slate-50 last:border-0"
                         onMouseDown={() => {
-                          setForm(prev => ({ ...prev, client_id: c.id, client_name: c.name, client_email: c.email || "", client_phone: c.phone || "" }));
+                          setForm(prev => ({ ...prev, client_id: c.id, client_name: c.business_name || c.name, client_email: c.email || "", client_phone: c.phone || "" }));
                           setSelectedClient(c);
                           setClientSearch("");
                           setShowClientSuggestions(false);
                         }}
                       >
-                        {/* OB6: mostrar nombre negocio prominente */}
-                        {c.business_name ? (
-                          <>
-                            <p className="font-medium text-foreground">{c.business_name}</p>
-                            <p className="text-xs text-muted-foreground">{c.name}</p>
-                          </>
-                        ) : (
-                          <p className="font-medium text-foreground">{c.name}</p>
-                        )}
+                        <p className="font-medium text-foreground">{c.business_name || c.name}</p>
+                        {c.business_name && <p className="text-xs text-muted-foreground">{c.name}</p>}
                         {(c.email || c.phone) && (
                           <p className="text-xs text-slate-400">{[c.email, c.phone].filter(Boolean).join(" · ")}</p>
                         )}
@@ -342,10 +338,8 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                           </p>
                         )}
                       </button>
-                    ))}
-                  {clients.filter(c => c.name.toLowerCase().includes((clientSearch || form.client_name).toLowerCase())).length === 0 && (
-                    <p className="text-sm text-slate-400 px-3 py-2">Sin coincidencias — se guardará como nuevo</p>
-                  )}
+                    ));
+                  })()}
                 </div>
               )}
               {selectedClient && (selectedClient.force_purchase_all_products || selectedClient.force_wholesale_all_products) && (
