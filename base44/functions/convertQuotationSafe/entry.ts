@@ -52,52 +52,32 @@ Deno.serve(async (req) => {
       itemsWithStock.push({ ...item, product });
     }
 
-    // PHASE 2: Prepare movements and product updates
-    const movementsToCreate = itemsWithStock.map(item => ({
-      product_id: item.product_id,
-      product_name: item.product_name,
-      type: 'exit',
-      quantity: item.quantity,
-      unit_price: item.unit_price,
-      total: item.total,
-      stock_after: (item.product.stock || 0) - item.quantity,
-      reference: `Venta ${quotation.folio}`,
-      reason: `Venta a ${quotation.client_name}`,
-      quotation_id: quotation.id,
-      business_id: user.business_id,
-    }));
-
-    const productsToUpdate = itemsWithStock.map(item => ({
-      id: item.product.id,
-      newStock: (item.product.stock || 0) - item.quantity,
-    }));
-
-    // PHASE 3: Execute operations
+    // PHASE 2: Create movements — stock update is handled automatically by syncProductStock automation
     try {
-      // Create movements
-      for (const mov of movementsToCreate) {
-        await base44.entities.Movement.create(mov);
-      }
-
-      // Update product stock using safe function
-      for (const prod of productsToUpdate) {
-        await base44.asServiceRole.functions.invoke('updateProductStockSafe', {
-          product_id: prod.id,
-          new_stock: prod.newStock,
-          business_id: user.business_id
+      for (const item of itemsWithStock) {
+        await base44.asServiceRole.entities.Movement.create({
+          product_id: item.product_id,
+          product_name: item.product_name,
+          type: 'exit',
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          cost_price: item.product.purchase_price ?? 0,
+          total: item.total,
+          stock_after: (item.product.stock || 0) - item.quantity,
+          reference: `Venta ${quotation.folio}`,
+          reason: `Venta a ${quotation.client_name}`,
+          quotation_id: quotation.id,
+          business_id: user.business_id,
         });
       }
 
-      // Update quotation status with whitelist
+      // Update quotation status
       await base44.asServiceRole.entities.Quotation.update(quotation.id, {
         status: 'converted',
         payment_method: payment_method.trim()
       });
 
-      return Response.json({
-        success: true,
-        quotation_id
-      });
+      return Response.json({ success: true, quotation_id });
     } catch (error) {
       return Response.json({ error: error.message || 'Conversion failed' }, { status: 500 });
     }

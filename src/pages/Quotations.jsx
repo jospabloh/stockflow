@@ -130,47 +130,6 @@ export default function Quotations() {
       return;
     }
 
-    // FASE 1: Validar stock ANTES de cualquier operación (captura estado actual)
-    // CRITICAL FIX: Add business_id filter for cross-tenant safety
-    if (convertQuotation.business_id !== businessId) {
-      setConvertError("No tienes permiso para convertir esta cotización");
-      return;
-    }
-    const itemsWithStock = [];
-    for (const item of (convertQuotation.items || [])) {
-      const prods = await base44.entities.Product.filter({ id: item.product_id, business_id: businessId });
-      const product = prods[0];
-      if (!product) {
-        setConvertError(`Producto "${item.product_name}" ya no existe. Edita la cotización.`);
-        return;
-      }
-      if (item.quantity > (product.stock || 0)) {
-        setConvertError(`Stock insuficiente para "${item.product_name}": disponible ${product.stock}, solicitado ${item.quantity}.`);
-        return;
-      }
-      itemsWithStock.push({ ...item, product });
-    }
-
-    // FASE 2: Preparar todas las operaciones sin ejecutarlas aún
-    const movementsToCreate = itemsWithStock.map(item => ({
-      product_id: item.product_id,
-      product_name: item.product_name,
-      type: "exit",
-      quantity: item.quantity,
-      unit_price: item.unit_price,
-      total: item.total,
-      stock_after: (item.product.stock || 0) - item.quantity,
-      reference: `Venta ${convertQuotation.folio}`,
-      reason: `Venta a ${convertQuotation.client_name}`,
-      quotation_id: convertQuotation.id,
-      business_id: convertQuotation.business_id,
-    }));
-
-    const productsToUpdate = itemsWithStock.map(item => ({
-      id: item.product.id,
-      newStock: (item.product.stock || 0) - item.quantity,
-    }));
-
     // CRITICAL: Use backend-validated safe function for conversion
     try {
       const response = await base44.functions.invoke('convertQuotationSafe', {
