@@ -22,6 +22,8 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
     : null;
 
   const businessName = settings?.business_name || "Mi Empresa";
+  const primaryColor = settings?.primary_color || "#4F46E5";
+  const footerText = settings?.quotation_footer || "Este documento es una cotización y no representa una factura fiscal.";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -38,7 +40,7 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
         {/* Preview body */}
         <div className="p-6 space-y-5 text-sm">
           {/* Header */}
-          <div className="bg-indigo-600 rounded-xl p-5 text-white flex justify-between items-start">
+          <div className="rounded-xl p-5 text-white flex justify-between items-start" style={{ backgroundColor: primaryColor }}>
             <div>
               <p className="text-xl font-bold">{businessName}</p>
               {settings?.address && <p className="text-indigo-200 text-xs mt-1">{settings.address}</p>}
@@ -83,7 +85,7 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
           <div className="rounded-lg overflow-hidden border border-slate-200">
             <table className="w-full text-xs">
               <thead>
-                <tr className="bg-indigo-600 text-white">
+                <tr className="text-white" style={{ backgroundColor: primaryColor }}>
                   <th className="px-3 py-2 text-left w-8">#</th>
                   <th className="px-3 py-2 text-left">Descripción</th>
                   <th className="px-3 py-2 text-center w-16">IVA</th>
@@ -143,7 +145,7 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
                   <span>${fmt(quotation.tax)}</span>
                 </div>
               )}
-              <div className="flex justify-between bg-indigo-600 text-white font-bold text-sm px-3 py-2 rounded-lg">
+              <div className="flex justify-between text-white font-bold text-sm px-3 py-2 rounded-lg" style={{ backgroundColor: primaryColor }}>
                 <span>TOTAL</span>
                 <span>${fmt(quotation.total)}</span>
               </div>
@@ -167,8 +169,8 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
           )}
 
           {/* Footer */}
-          <div className="bg-indigo-600 rounded-lg px-4 py-2 text-center text-white text-xs">
-            <p>Este documento es una cotización y no representa una factura fiscal.</p>
+          <div className="rounded-lg px-4 py-2 text-center text-white text-xs" style={{ backgroundColor: primaryColor }}>
+            <p>{footerText}</p>
             <p>{businessName} · Gracias por su preferencia</p>
           </div>
         </div>
