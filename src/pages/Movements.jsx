@@ -94,8 +94,10 @@ export default function Movements() {
   }, [location.search]);
 
   const filtered = movements.filter((m) => {
-    const matchSearch = m.product_name?.toLowerCase().includes(search.toLowerCase()) ||
-      m.reference?.toLowerCase().includes(search.toLowerCase());
+    const s = search.toLowerCase();
+    const matchSearch = m.product_name?.toLowerCase().includes(s) ||
+      m.reference?.toLowerCase().includes(s) ||
+      m.reason?.toLowerCase().includes(s);
     const matchType = typeFilter === "all" || m.type === typeFilter;
     return matchSearch && matchType;
   });
@@ -129,11 +131,12 @@ export default function Movements() {
        return str;
      };
 
-     const headers = ["Fecha", "Producto", "Tipo", "Cantidad", "Precio Unit.", "Total", "Referencia"];
+     const headers = ["Fecha", "Producto", "Tipo", "Cantidad", "Precio Unit.", "Total", "Forma de Pago", "Cliente"];
      const rows = filtered.map((m) => [
        moment.utc(m.created_date).local().format("DD/MM/YYYY HH:mm"),
        m.product_name, typeConfig[m.type]?.label || m.type,
-       m.quantity, m.unit_price || 0, m.total || 0, m.reference || "",
+       m.quantity, m.unit_price || 0, m.total || 0,
+       m.reference || "", m.reason || "",
      ]);
 
      // Escapar todos los valores
@@ -200,7 +203,8 @@ export default function Movements() {
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Tipo</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Cantidad</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Total</TableHead>
-              <TableHead className="font-semibold text-muted-foreground" role="columnheader">Referencia / Motivo</TableHead>
+              <TableHead className="font-semibold text-muted-foreground" role="columnheader">Forma de Pago</TableHead>
+              <TableHead className="font-semibold text-muted-foreground" role="columnheader">Cliente</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Stock Después</TableHead>
               {isAdmin && <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader">Acciones</TableHead>}
               </TableRow>
@@ -208,7 +212,7 @@ export default function Movements() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 8 : 7} className="text-center py-12 text-slate-400">
+                  <TableCell colSpan={isAdmin ? 9 : 8} className="text-center py-12 text-slate-400">
                     Sin movimientos registrados
                   </TableCell>
                 </TableRow>
@@ -236,10 +240,8 @@ export default function Movements() {
                       <TableCell className="text-right text-slate-700">
                         ${m.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "0.00"}
                       </TableCell>
-                      <TableCell className="text-slate-500 text-sm">
-                        <div>{m.reference || "—"}</div>
-                        {m.reason && <div className="text-xs text-slate-400 mt-0.5">{m.reason}</div>}
-                      </TableCell>
+                      <TableCell className="text-slate-500 text-sm">{m.reference || "—"}</TableCell>
+                      <TableCell className="text-slate-500 text-sm">{m.reason || "—"}</TableCell>
                       <TableCell className="text-right text-slate-600">{m.stock_after ?? "—"}</TableCell>
                       {isAdmin && (
                         <TableCell className="text-center">

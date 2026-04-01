@@ -26,19 +26,23 @@
     },
     "unit_price": {
       "type": "number",
-      "description": "Precio unitario en este movimiento"
+      "description": "Precio unitario de venta en este movimiento"
+    },
+    "cost_price": {
+      "type": "number",
+      "description": "Precio de compra/costo unitario en el momento del movimiento"
     },
     "total": {
       "type": "number",
-      "description": "Total del movimiento"
+      "description": "Total del movimiento (cantidad \u00d7 precio venta)"
     },
     "reason": {
       "type": "string",
-      "description": "Motivo o referencia"
+      "description": "Cliente del movimiento"
     },
     "reference": {
       "type": "string",
-      "description": "N\u00famero de factura, orden, etc."
+      "description": "Forma de pago"
     },
     "stock_after": {
       "type": "number",

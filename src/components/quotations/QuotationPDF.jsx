@@ -4,14 +4,31 @@ function fmt(n) {
   return (n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function hexToRgb(hex) {
+  const clean = (hex || "").replace("#", "");
+  if (clean.length !== 6) return [79, 70, 229];
+  return [
+    parseInt(clean.substring(0, 2), 16),
+    parseInt(clean.substring(2, 4), 16),
+    parseInt(clean.substring(4, 6), 16),
+  ];
+}
+
+// Determina si el color es oscuro para saber si usar texto blanco o negro
+function isDark(rgb) {
+  const [r, g, b] = rgb;
+  return (0.299 * r + 0.587 * g + 0.114 * b) < 140;
+}
+
 export function generateQuotationPDF(quotation, settings) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = 210;
   const margin = 18;
   const contentW = W - margin * 2;
 
-  // Colors
-  const primary = [79, 70, 229]; // indigo-600
+  // OB9: usar color primario configurado en el negocio
+  const primary = hexToRgb(settings?.primary_color);
+  const headerTextColor = isDark(primary) ? [255, 255, 255] : [30, 41, 59];
   const lightGray = [248, 250, 252];
   const darkText = [30, 41, 59];
   const mutedText = [100, 116, 139];
@@ -25,11 +42,12 @@ export function generateQuotationPDF(quotation, settings) {
   const businessName = settings?.business_name || "Mi Empresa";
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(...headerTextColor);
   doc.text(businessName, margin, 16);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
+  doc.setTextColor(...headerTextColor);
   if (settings?.address) doc.text(settings.address, margin, 22);
   if (settings?.phone) doc.text(`Tel: ${settings.phone}`, margin, 27);
   if (settings?.rfc) doc.text(`RFC: ${settings.rfc}`, margin, 32);
@@ -37,7 +55,7 @@ export function generateQuotationPDF(quotation, settings) {
   // COTIZACIÓN label
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(...headerTextColor);
   doc.text("COTIZACIÓN", W - margin, 16, { align: "right" });
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
@@ -219,7 +237,8 @@ export function generateQuotationPDF(quotation, settings) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(255, 255, 255);
-  doc.text("Este documento es una cotización y no representa una factura fiscal.", W / 2, pageH - 8, { align: "center" });
+  const footerText = settings?.quotation_footer || "Este documento es una cotización y no representa una factura fiscal.";
+  doc.text(footerText, W / 2, pageH - 8, { align: "center" });
   doc.text(`${businessName} · Gracias por su preferencia`, W / 2, pageH - 4, { align: "center" });
 
   doc.save(`Cotizacion-${quotation.folio || "sin-folio"}.pdf`);

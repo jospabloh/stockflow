@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { product_id, product_name, type, quantity, unit_price, total, reason, reference, stock_after, quotation_id, business_id } = body;
+    const { product_id, product_name, type, quantity, unit_price, cost_price, total, reason, reference, stock_after, quotation_id, business_id } = body;
 
     // VALIDATION: business_id required
     if (!business_id) {
@@ -41,6 +41,7 @@ Deno.serve(async (req) => {
       type,
       quantity,
       unit_price,
+      cost_price: cost_price ?? null,
       total,
       reason,
       reference,

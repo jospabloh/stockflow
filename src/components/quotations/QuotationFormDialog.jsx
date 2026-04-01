@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, Save, ScanLine, AlertTriangle, Info } from "lucide-react";
+import { toast } from "sonner";
 import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps } from "@/lib/a11y";
@@ -237,29 +238,36 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   };
 
   const handleSave = async () => {
+    // OB8: Validar antes de intentar guardar y mostrar error claro
+    if (!form.client_name?.trim()) {
+      toast.error("⚠️ El nombre del cliente es requerido");
+      return;
+    }
+    if (form.items.length === 0) {
+      toast.error("⚠️ Agrega al menos un producto a la cotización");
+      return;
+    }
+    const overStock = form.items.find(i => i.available_stock !== undefined && i.quantity > i.available_stock);
+    if (overStock) {
+      toast.error(`⚠️ Stock insuficiente para "${overStock.product_name}": disponible ${overStock.available_stock}, solicitado ${overStock.quantity}`);
+      return;
+    }
+
     setSaving(true);
     try {
       const folio = quotation?.folio || await generateFolio();
       const data = { ...form, subtotal, tax: taxAmount, total, folio };
       if (quotation) {
-        const validation = await fetch('/api/functions/validateBusinessOwnership', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ entity_name: 'Quotation', record_id: quotation.id, operation: 'update' })
-        });
-        const validResult = await validation.json();
-        if (!validResult.valid) {
-          alert("⚠️ No tienes permiso para modificar esta cotización");
-          return;
-        }
         const response = await base44.functions.invoke('updateQuotationSafe', { quotation_id: quotation.id, updates: data });
         if (!response.data.success) {
+          toast.error(`⚠️ No se pudo guardar: ${response.data.error || "Error desconocido"}`);
           setSaving(false);
           return;
         }
       } else {
         const response = await base44.functions.invoke('createQuotationSafe', { ...data, business_id: businessId });
         if (!response.data.success) {
+          toast.error(`⚠️ No se pudo guardar: ${response.data.error || "Error desconocido"}`);
           setSaving(false);
           return;
         }
@@ -267,7 +275,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       onSaved();
       onOpenChange(false);
     } catch (error) {
-      // keep dialog open on error
+      toast.error(`⚠️ Error inesperado: ${error.message || "Intenta nuevamente"}`);
     } finally {
       setSaving(false);
     }
@@ -298,9 +306,12 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                 placeholder="Buscar o escribir cliente..."
               />
               {showClientSuggestions && (clientSearch || form.client_name) && (
-                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
                   {clients
-                    .filter(c => c.name.toLowerCase().includes((clientSearch || form.client_name).toLowerCase()))
+                    .filter(c => {
+                      const q = (clientSearch || form.client_name).toLowerCase();
+                      return c.name.toLowerCase().includes(q) || (c.business_name || "").toLowerCase().includes(q);
+                    })
                     .map(c => (
                       <button
                         key={c.id}
@@ -313,9 +324,14 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                           setShowClientSuggestions(false);
                         }}
                       >
-                        <p className="font-medium text-slate-700">{c.name}</p>
-                        {c.business_name && (
-                          <p className="text-xs text-indigo-500 font-medium">{c.business_name}</p>
+                        {/* OB6: mostrar nombre negocio prominente */}
+                        {c.business_name ? (
+                          <>
+                            <p className="font-medium text-foreground">{c.business_name}</p>
+                            <p className="text-xs text-muted-foreground">{c.name}</p>
+                          </>
+                        ) : (
+                          <p className="font-medium text-foreground">{c.name}</p>
                         )}
                         {(c.email || c.phone) && (
                           <p className="text-xs text-slate-400">{[c.email, c.phone].filter(Boolean).join(" · ")}</p>

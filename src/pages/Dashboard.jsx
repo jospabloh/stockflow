@@ -55,10 +55,15 @@ export default function Dashboard() {
 
   // Today's sales breakdown
   const todayExits = todayMovements.filter((m) => m.type === "exit");
+  // OB10: total = cantidad × precio_venta (ya guardado en m.total)
   const todaySalesRevenue = todayExits.reduce((sum, m) => sum + (m.total || 0), 0);
-  // CORREGIDO: Usar unit_price del movimiento (costo histórico), no el precio actual del producto
+  // OB10: costo real = cost_price del movimiento (histórico), fallback a purchase_price actual del producto
+  const productLookup = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
   const todaySalesCost = todayExits.reduce((sum, m) => {
-    return sum + ((m.quantity || 0) * (m.unit_price || 0));
+    const costUnit = (m.cost_price != null && m.cost_price > 0)
+      ? m.cost_price
+      : (productLookup[m.product_id]?.purchase_price ?? 0);
+    return sum + ((m.quantity || 0) * costUnit);
   }, 0);
   const todayProfit = todaySalesRevenue - todaySalesCost;
   const todayMargin = todaySalesRevenue > 0 ? (todayProfit / todaySalesRevenue) * 100 : 0;
