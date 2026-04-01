@@ -164,14 +164,17 @@ export default function Reports() {
   const movementTypes = ["entry", "exit", "return", "adjustment"];
   const quotationStatuses = ["draft", "sent", "accepted", "converted", "cancelled"];
 
-  // Ventas reales = cotizaciones convertidas en el período
+  // Ventas reales = cotizaciones convertidas en el período + salidas directas (sin quotation_id)
   const convertedInRange = quotations.filter((q) => {
     const date = moment(q.created_date);
     return q.status === "converted" &&
       date.isSameOrAfter(dateFrom) &&
       date.isSameOrBefore(moment(dateTo).endOf("day"));
   });
-  const totalSalesValue = convertedInRange.reduce((sum, q) => sum + (q.total || 0), 0);
+  const directExitsInRange = filteredMovements.filter((m) => m.type === "exit" && !m.quotation_id);
+  const totalSalesFromQuotations = convertedInRange.reduce((sum, q) => sum + (q.total || 0), 0);
+  const totalSalesFromDirectExits = directExitsInRange.reduce((sum, m) => sum + (m.total || 0), 0);
+  const totalSalesValue = totalSalesFromQuotations + totalSalesFromDirectExits;
   const totalPurchaseValue = filteredMovements
     .filter((m) => m.type === "entry")
     .reduce((sum, m) => sum + (m.total || 0), 0);
@@ -208,10 +211,15 @@ export default function Reports() {
             <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
           </div>
           <div className="flex gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-emerald-500" />
-              <span className="text-slate-500">Ventas (cotizaciones):</span>
-              <span className="font-bold text-emerald-700">${totalSalesValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-emerald-500" />
+                <span className="text-slate-500">Total ventas:</span>
+                <span className="font-bold text-emerald-700">${totalSalesValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+              </div>
+              <p className="text-[11px] text-slate-400 ml-6">
+                Cot: ${totalSalesFromQuotations.toLocaleString("es-MX", { minimumFractionDigits: 2 })} · Directas: ${totalSalesFromDirectExits.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+              </p>
             </div>
             {isAdmin && (
               <div className="flex items-center gap-2">
