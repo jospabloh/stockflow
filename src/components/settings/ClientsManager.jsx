@@ -176,11 +176,11 @@ export default function ClientsManager() {
       </Table>
 
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-h-[90vh] flex flex-col">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl flex flex-col max-h-[min(90vh,700px)] sm:max-h-[min(90vh,800px)] p-0">
+          <DialogHeader className="px-6 pt-6 pb-3 shrink-0 border-b border-border">
             <DialogTitle>{editing ? "Editar Cliente" : "Nuevo Cliente"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 pt-2 overflow-y-auto flex-1 pr-1">
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Nombre *</Label>
@@ -266,12 +266,12 @@ export default function ClientsManager() {
               )}
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setFormOpen(false)} disabled={saving}>Cancelar</Button>
-              <Button onClick={handleSave} disabled={!form.name?.trim() || !form.phone?.trim() || saving} className="bg-indigo-600 hover:bg-indigo-700">
-                {saving ? "Guardando..." : "Guardar"}
-              </Button>
-            </div>
+          </div>
+          <div className="flex justify-end gap-3 px-6 py-4 border-t border-border shrink-0 bg-card">
+            <Button variant="outline" onClick={() => setFormOpen(false)} disabled={saving}>Cancelar</Button>
+            <Button onClick={handleSave} disabled={!form.name?.trim() || !form.phone?.trim() || saving} className="bg-indigo-600 hover:bg-indigo-700">
+              {saving ? "Guardando..." : "Guardar"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

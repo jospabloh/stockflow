@@ -284,12 +284,12 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl flex flex-col max-h-[min(90vh,750px)] sm:max-h-[min(90vh,850px)] p-0">
+        <DialogHeader className="px-6 pt-6 pb-3 shrink-0 border-b border-border">
           <DialogTitle>{quotation ? "Editar Cotización" : "Nueva Cotización"}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-5 pt-2">
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           {/* Client info */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
@@ -492,8 +492,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
             </div>
           </div>
         </div>
-
-        <div className="flex justify-end gap-3 pt-4">
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-border shrink-0 bg-card">
           <Button variant="outline" onClick={() => onOpenChange(false)} {...createButtonProps('cancel')}>Cancelar</Button>
           <Button
             onClick={handleSave}

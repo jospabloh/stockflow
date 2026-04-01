@@ -219,12 +219,12 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg flex flex-col max-h-[calc(100vh-80px)] p-0">
-        <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
+      <DialogContent className="max-w-2xl flex flex-col max-h-[min(90vh,600px)] p-0 sm:max-h-[min(90vh,700px)]">
+        <DialogHeader className="px-6 pt-6 pb-2 shrink-0 border-b border-border">
           <DialogTitle>Registrar Movimiento</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6 py-2 space-y-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {/* Barcode scanner */}
           <div className="space-y-2">
             <Label className="text-foreground mb-1.5 block">Escanear producto</Label>

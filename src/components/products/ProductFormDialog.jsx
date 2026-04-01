@@ -210,11 +210,12 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
       />
     )}
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl flex flex-col max-h-[min(90vh,700px)] sm:max-h-[min(90vh,800px)] p-0">
+        <DialogHeader className="px-6 pt-6 pb-3 shrink-0 border-b border-border">
           <DialogTitle>{product ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <Label>Nombre *</Label>
             <Input value={form.name} onChange={(e) => updateField("name", e.target.value)} placeholder="Nombre del producto" />
@@ -332,7 +333,8 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
             <Textarea value={form.description} onChange={(e) => updateField("description", e.target.value)} placeholder="Descripción..." rows={3} />
           </div>
         </div>
-        <div className="flex justify-end gap-3 pt-4">
+        </div>
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-border shrink-0 bg-card">
           <Button variant="outline" onClick={() => onOpenChange(false)} {...createButtonProps('cancel')}>
             <X className="h-4 w-4 mr-1" /> Cancelar
           </Button>
