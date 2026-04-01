@@ -218,7 +218,7 @@ export default function Dashboard() {
                   <span className="font-bold text-blue-700">${todaySalesRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between items-center bg-purple-50 rounded-lg px-4 py-2.5">
-                  <span className="text-sm text-slate-600">Venta real (menos pendiente)</span>
+                  <span className="text-sm text-slate-600">Cobrado</span>
                   <span className="font-bold text-purple-700">${todayRealRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                 </div>
                 {isAdmin && (
