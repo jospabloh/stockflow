@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing productId or businessId' }, { status: 400 });
     }
 
-    // Get all products to check uniqueness
+    // Get all products from user's business to check uniqueness
     const allProducts = await base44.entities.Product.filter({ business_id: businessId });
 
     // Generate EAN-13 format: 750 + 9 random digits + 1 checksum
