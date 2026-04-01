@@ -164,9 +164,14 @@ export default function Reports() {
   const movementTypes = ["entry", "exit", "return", "adjustment"];
   const quotationStatuses = ["draft", "sent", "accepted", "converted", "cancelled"];
 
-  const totalSalesValue = filteredMovements
-    .filter((m) => m.type === "exit")
-    .reduce((sum, m) => sum + (m.total || 0), 0);
+  // Ventas reales = cotizaciones convertidas en el período
+  const convertedInRange = quotations.filter((q) => {
+    const date = moment(q.created_date);
+    return q.status === "converted" &&
+      date.isSameOrAfter(dateFrom) &&
+      date.isSameOrBefore(moment(dateTo).endOf("day"));
+  });
+  const totalSalesValue = convertedInRange.reduce((sum, q) => sum + (q.total || 0), 0);
   const totalPurchaseValue = filteredMovements
     .filter((m) => m.type === "entry")
     .reduce((sum, m) => sum + (m.total || 0), 0);
@@ -205,7 +210,7 @@ export default function Reports() {
           <div className="flex gap-4 text-sm">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-emerald-500" />
-              <span className="text-slate-500">Ventas:</span>
+              <span className="text-slate-500">Ventas (cotizaciones):</span>
               <span className="font-bold text-emerald-700">${totalSalesValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
             {isAdmin && (

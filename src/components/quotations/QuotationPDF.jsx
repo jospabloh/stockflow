@@ -20,7 +20,7 @@ function isDark(rgb) {
   return (0.299 * r + 0.587 * g + 0.114 * b) < 140;
 }
 
-export function generateQuotationPDF(quotation, settings) {
+export async function generateQuotationPDF(quotation, settings) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = 210;
   const margin = 18;
@@ -38,12 +38,26 @@ export function generateQuotationPDF(quotation, settings) {
   doc.setFillColor(...primary);
   doc.rect(0, 0, W, 38, "F");
 
-  // Business name
+  // Logo (si existe)
   const businessName = settings?.business_name || "Mi Empresa";
+  let logoEndX = margin; // donde termina el logo, para saber desde dónde poner texto
+
+  if (settings?.logo_url) {
+    try {
+      const img = await loadImageAsDataURL(settings.logo_url);
+      const logoH = 28;
+      const logoW = 28;
+      doc.addImage(img, "PNG", margin, 5, logoW, logoH);
+      logoEndX = margin + logoW + 4;
+    } catch {
+      logoEndX = margin;
+    }
+  }
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(...headerTextColor);
-  doc.text(businessName, margin, 16);
+  doc.text(businessName, logoEndX, 16);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
@@ -242,4 +256,21 @@ export function generateQuotationPDF(quotation, settings) {
   doc.text(`${businessName} · Gracias por su preferencia`, W / 2, pageH - 4, { align: "center" });
 
   doc.save(`Cotizacion-${quotation.folio || "sin-folio"}.pdf`);
+}
+
+// Helper: carga una URL de imagen como data URL (maneja CORS via canvas)
+function loadImageAsDataURL(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      canvas.getContext("2d").drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
 }

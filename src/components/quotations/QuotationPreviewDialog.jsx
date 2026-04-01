@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FileDown, Truck, CheckCircle2, DollarSign } from "lucide-react";
@@ -9,7 +9,17 @@ function fmt(n) {
 }
 
 export default function QuotationPreviewDialog({ quotation, settings, open, onOpenChange }) {
+  const [downloading, setDownloading] = useState(false);
   if (!quotation) return null;
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      await generateQuotationPDF(quotation, settings);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const dateStr = new Date(quotation.created_date || Date.now()).toLocaleDateString("es-MX", {
     day: "2-digit", month: "long", year: "numeric",
@@ -31,8 +41,8 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
         <DialogHeader className="px-6 pt-5 pb-3 border-b flex flex-row items-center justify-between">
           <DialogTitle className="text-lg font-semibold">Vista previa — {quotation.folio}</DialogTitle>
           <div className="flex gap-2">
-            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={() => generateQuotationPDF(quotation, settings)}>
-              <FileDown className="h-4 w-4 mr-1" /> Descargar PDF
+            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={handleDownload} disabled={downloading}>
+              <FileDown className="h-4 w-4 mr-1" /> {downloading ? "Generando..." : "Descargar PDF"}
             </Button>
           </div>
         </DialogHeader>
@@ -41,11 +51,16 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
         <div className="p-6 space-y-5 text-sm">
           {/* Header */}
           <div className="rounded-xl p-5 text-white flex justify-between items-start" style={{ backgroundColor: primaryColor }}>
-            <div>
-              <p className="text-xl font-bold">{businessName}</p>
-              {settings?.address && <p className="text-indigo-200 text-xs mt-1">{settings.address}</p>}
-              {settings?.phone && <p className="text-indigo-200 text-xs">Tel: {settings.phone}</p>}
-              {settings?.rfc && <p className="text-indigo-200 text-xs">RFC: {settings.rfc}</p>}
+            <div className="flex items-start gap-3">
+              {settings?.logo_url && (
+                <img src={settings.logo_url} alt="Logo" className="h-14 w-14 object-contain rounded-lg bg-white/10 p-1 shrink-0" />
+              )}
+              <div>
+                <p className="text-xl font-bold">{businessName}</p>
+                {settings?.address && <p className="text-white/75 text-xs mt-1">{settings.address}</p>}
+                {settings?.phone && <p className="text-white/75 text-xs">Tel: {settings.phone}</p>}
+                {settings?.rfc && <p className="text-white/75 text-xs">RFC: {settings.rfc}</p>}
+              </div>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold tracking-wide">COTIZACIÓN</p>
@@ -169,9 +184,9 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
           )}
 
           {/* Footer */}
-          <div className="rounded-lg px-4 py-2 text-center text-white text-xs" style={{ backgroundColor: primaryColor }}>
+          <div className="rounded-lg px-4 py-3 text-center text-white text-xs space-y-1" style={{ backgroundColor: primaryColor }}>
             <p>{footerText}</p>
-            <p>{businessName} · Gracias por su preferencia</p>
+            <p className="opacity-75">{businessName} · Gracias por su preferencia</p>
           </div>
         </div>
       </DialogContent>
