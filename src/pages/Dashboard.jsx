@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Package, ArrowLeftRight, DollarSign, AlertTriangle, TrendingUp } from "lucide-react";
+import { Package, ArrowLeftRight, DollarSign, AlertTriangle, TrendingUp, Clock } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import LowStockAlert from "@/components/dashboard/LowStockAlert";
 import RecentMovements from "@/components/dashboard/RecentMovements";
@@ -74,6 +74,11 @@ export default function Dashboard() {
   const todayMargin = todaySalesRevenue > 0 ? (todayProfit / todaySalesRevenue) * 100 : 0;
   const todaySalesCount = todayConvertedQuotations.length + todayDirectExits.length;
 
+  // Cotizaciones concretadas sin pagar
+  const unpaidConverted = quotations.filter(q => q.status === "converted" && !q.paid);
+  const unpaidCount = unpaidConverted.length;
+  const unpaidTotal = unpaidConverted.reduce((sum, q) => sum + (q.total || 0), 0);
+
   // Quotation semaphore counts
   const quotGreen = quotations.filter(q => q.status === "converted").length;
   const quotYellow = quotations.filter(q => ["draft", "sent", "accepted"].includes(q.status)).length;
@@ -144,6 +149,36 @@ export default function Dashboard() {
           href={createPageUrl("Products") + "?filter=low_stock"}
         />
       </div>
+
+      {/* Cobro pendiente — cotizaciones concretadas sin pagar */}
+      {unpaidCount > 0 && (
+        <button
+          onClick={() => navigate(`${createPageUrl("Quotations")}?status=converted`)}
+          className="w-full text-left"
+        >
+          <Card className="border-0 shadow-sm p-4 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center flex-shrink-0">
+                  <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-orange-800 dark:text-orange-300 text-sm">
+                    {unpaidCount} {unpaidCount === 1 ? "cotización concretada sin cobrar" : "cotizaciones concretadas sin cobrar"}
+                  </p>
+                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">Toca para verlas en Cotizaciones</p>
+                </div>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-xs text-orange-600 dark:text-orange-400">Pendiente por cobrar</p>
+                <p className="font-bold text-orange-700 dark:text-orange-300 text-lg">
+                  ${unpaidTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+            </div>
+          </Card>
+        </button>
+      )}
 
       {/* Today's Sales Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
