@@ -6,13 +6,13 @@ import BarcodeGenerator from "@/components/barcode/BarcodeGenerator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Check } from "lucide-react";
+import { toast } from "sonner";
 
 export default function BarcodeGeneratorPage() {
   const [searchParams] = useSearchParams();
   const { businessId } = useBusinessContext();
   const [product, setProduct] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   const productId = searchParams.get("productId");
 
@@ -32,10 +32,10 @@ export default function BarcodeGeneratorPage() {
       await base44.entities.Product.update(product.id, {
         barcode,
       });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      toast.success("Código de barras guardado exitosamente");
     } catch (err) {
       console.error("Error saving barcode:", err);
+      toast.error("Error al guardar el código de barras");
     } finally {
       setSaving(false);
     }
@@ -76,15 +76,8 @@ export default function BarcodeGeneratorPage() {
             productName={product.name}
             businessId={businessId}
             onSave={handleSave}
+            isSaving={saving}
           />
-
-          {/* Feedback */}
-          {saved && (
-            <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-              <Check className="h-5 w-5" />
-              <p className="font-medium">Código de barras guardado exitosamente</p>
-            </div>
-          )}
         </div>
       ) : (
         <Card className="border-0 shadow-sm">

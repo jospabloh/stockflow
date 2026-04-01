@@ -94,7 +94,7 @@ function BarcodeDisplay({ barcode }) {
   );
 }
 
-export default function BarcodeGenerator({ productId, productName, businessId, onSave }) {
+export default function BarcodeGenerator({ productId, productName, businessId, onSave, isSaving = false }) {
   const [barcode, setBarcode] = useState("");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -200,8 +200,13 @@ export default function BarcodeGenerator({ productId, productName, businessId, o
                 Descargar PDF
               </Button>
               {onSave && (
-                <Button onClick={() => onSave(barcode)} className="flex-1">
-                  Guardar en Producto
+                <Button 
+                  onClick={() => onSave(barcode)} 
+                  className="flex-1"
+                  disabled={isSaving}
+                >
+                  {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                  {isSaving ? "Guardando..." : "Guardar en Producto"}
                 </Button>
               )}
             </div>
