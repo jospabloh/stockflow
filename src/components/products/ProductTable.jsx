@@ -9,11 +9,13 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Pencil, Trash2, AlertTriangle, Barcode } from "lucide-react";
 import { createButtonProps } from "@/lib/a11y";
+import { useNavigate } from "react-router-dom";
 import VirtualizedProductTable from "@/components/tables/VirtualizedProductTable";
 
 export default function ProductTable({ products, categories, onEdit, onDelete, isAdmin }) {
+  const navigate = useNavigate();
   // Use virtualized table for desktop, card layout for mobile
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
@@ -65,6 +67,17 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
         </TableCell>
         <TableCell className="text-center">
           <div className="flex items-center justify-center gap-1">
+            {!product.barcode && (
+              <Button 
+                 variant="ghost" 
+                 size="icon" 
+                 className="h-8 w-8" 
+                 onClick={() => navigate(`/BarcodeGenerator?productId=${product.id}`)}
+                 title="Generar código de barras"
+               >
+                 <Barcode className="h-4 w-4 text-slate-400" />
+               </Button>
+            )}
             {isAdmin && (
               <>
                 <Button 
@@ -121,28 +134,41 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
           </div>
           <span className="font-bold text-foreground">${(product.retail_sale_price ?? product.sale_price ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
         </div>
-        {isAdmin && (
-          <div className="flex items-center justify-end gap-1 border-t border-border pt-2">
+        <div className="flex items-center justify-end gap-1 border-t border-border pt-2 flex-wrap">
+          {!product.barcode && (
             <Button 
               variant="ghost" 
               size="sm" 
               className="h-11 px-3" 
-              onClick={() => onEdit(product)}
-              {...createButtonProps('edit')}
+              onClick={() => navigate(`/BarcodeGenerator?productId=${product.id}`)}
+              title="Generar código de barras"
             >
-              <Pencil className="h-4 w-4 text-muted-foreground mr-1" /> Editar
+              <Barcode className="h-4 w-4 text-muted-foreground mr-1" /> Código
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-11 px-3 text-red-400 hover:text-red-600" 
-              onClick={() => onDelete(product)}
-              {...createButtonProps('delete')}
-            >
-              <Trash2 className="h-4 w-4 mr-1" /> Eliminar
-            </Button>
-          </div>
-        )}
+          )}
+          {isAdmin && (
+            <>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-11 px-3" 
+                onClick={() => onEdit(product)}
+                {...createButtonProps('edit')}
+              >
+                <Pencil className="h-4 w-4 text-muted-foreground mr-1" /> Editar
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-11 px-3 text-red-400 hover:text-red-600" 
+                onClick={() => onDelete(product)}
+                {...createButtonProps('delete')}
+              >
+                <Trash2 className="h-4 w-4 mr-1" /> Eliminar
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     );
   };
