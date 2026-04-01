@@ -54,6 +54,7 @@ export default function Movements() {
   const navigate = useNavigate();
   const location = useLocation();
   const [movements, setMovements] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [canCreateMovement, setCanCreateMovement] = useState(false);
@@ -67,8 +68,12 @@ export default function Movements() {
 
   const loadData = async (bId) => {
     if (!bId) return;
-    base44.entities.Movement.filter({ business_id: bId }, "-created_date", 200).then((movs) => {
+    Promise.all([
+      base44.entities.Movement.filter({ business_id: bId }, "-created_date", 1000),
+      base44.entities.Product.filter({ business_id: bId }, "-created_date", 500),
+    ]).then(([movs, prods]) => {
       setMovements(movs);
+      setProducts(prods);
       setLoading(false);
     });
   };
@@ -98,6 +103,17 @@ export default function Movements() {
       setTypeFilter(type);
     }
   }, [location.search]);
+
+  const getProductTaxRate = (productId) => {
+    const prod = products.find(p => p.id === productId);
+    return prod?.tax_rate || 0;
+  };
+
+  const getTotalWithTax = (m) => {
+    const taxRate = getProductTaxRate(m.product_id);
+    const baseTotal = m.quantity * (m.unit_price || 0);
+    return baseTotal * (1 + taxRate / 100);
+  };
 
   const filtered = movements.filter((m) => {
     const s = search.toLowerCase();
@@ -153,7 +169,7 @@ export default function Movements() {
      const rows = filtered.map((m) => [
        moment.utc(m.created_date).local().format("DD/MM/YYYY HH:mm"),
        m.product_name, typeConfig[m.type]?.label || m.type,
-       m.quantity, m.unit_price || 0, m.total || 0,
+       m.quantity, m.unit_price || 0, getTotalWithTax(m),
        m.reference || "", m.reason || "",
      ]);
 
@@ -175,7 +191,7 @@ export default function Movements() {
 
   // Salidas directas sin pagar (no vinculadas a cotización)
   const unpaidDirectExits = movements.filter(m => m.type === "exit" && !m.quotation_id && !m.paid);
-  const unpaidDirectTotal = unpaidDirectExits.reduce((sum, m) => sum + (m.total || 0), 0);
+  const unpaidDirectTotal = unpaidDirectExits.reduce((sum, m) => sum + getTotalWithTax(m), 0);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -286,7 +302,7 @@ export default function Movements() {
                       </TableCell>
                       <TableCell className="text-right font-semibold text-slate-800">
                         <div className="space-y-0.5">
-                          <div>${m.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "0.00"}</div>
+                          <div>${getTotalWithTax(m).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</div>
                         </div>
                       </TableCell>
                       <TableCell className="text-slate-500 text-sm">{m.reference || "—"}</TableCell>
@@ -359,7 +375,7 @@ export default function Movements() {
             <AlertDialogTitle>¿Confirmar pago recibido?</AlertDialogTitle>
             <AlertDialogDescription>
               Estás marcando como cobrado el movimiento de <strong>{confirmingPayment?.product_name}</strong> por{" "}
-              <strong>${confirmingPayment?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong>{" "}
+              <strong>${(confirmingPayment ? getTotalWithTax(confirmingPayment) : 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong>{" "}
               del cliente <strong>{confirmingPayment?.reason || "—"}</strong>. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
