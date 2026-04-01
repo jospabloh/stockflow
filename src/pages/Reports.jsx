@@ -666,6 +666,7 @@ export default function Reports() {
             });
 
             const predictions = Object.values(productSalesFreq)
+              .filter(p => p.alert) // Solo incluir productos con alert asignada
               .sort((a, b) => parseFloat(a.weeksUntilStockOut) - parseFloat(b.weeksUntilStockOut))
               .slice(0, 15);
 
@@ -685,7 +686,7 @@ export default function Reports() {
                     <p className="text-lg font-bold text-amber-700">{predictions.filter(p => p.alert === "🟡 PRONTO").length}</p>
                   </div>
                   <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-4">
-                    <p className="text-xs text-emerald-600 font-semibold">🟢 OK (> 4 sem.)</p>
+                    <p className="text-xs text-emerald-600 font-semibold">🟢 OK (&gt; 4 sem.)</p>
                     <p className="text-lg font-bold text-emerald-700">{predictions.filter(p => p.alert === "🟢 OK").length}</p>
                   </div>
                 </div>
