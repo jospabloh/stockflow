@@ -144,14 +144,12 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         });
       }
 
-      // Check if response indicates failure
       if (response.data.success === false) {
         toast.error(`Error: ${response.data.error || 'No se pudo guardar'}`);
-        setSaving(false);
         return;
       }
 
-      // Success path
+      // Crear movimiento inicial si es nuevo producto con stock
       if (!product && response.data.product && form.stock > 0) {
         await base44.entities.Movement.create({
           product_id: response.data.product.id,
@@ -168,10 +166,10 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
       }
 
       toast.success(product ? "✓ Producto actualizado" : "✓ Producto creado");
-      onSaved({ ...form, id: product?.id || response.data.product_id, _optimistic: true });
       onOpenChange(false);
-      onSaved({ _reconcile: true });
+      setTimeout(() => onSaved({ _reconcile: true }), 300);
     } catch (error) {
+      console.error("Save error:", error);
       toast.error(`Error: ${error.message || 'No se pudo guardar el producto'}`);
     } finally {
       setSaving(false);
