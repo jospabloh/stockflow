@@ -136,15 +136,21 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           product_id: product.id,
           updates: payload
         });
-        if (!response.data.success) {
-          toast.error(`Error: ${response.data.error}`);
+        console.log("Update response:", response);
+        if (!response?.data?.success) {
+          const errorMsg = response?.data?.error || 'Error desconocido al actualizar';
+          toast.error(`Error: ${errorMsg}`);
+          setSaving(false);
           return;
         }
         toast.success("✓ Producto actualizado");
       } else {
         const response = await base44.functions.invoke('createProductSafe', { ...payload, business_id: businessId });
-        if (!response.data.success) {
-          toast.error(`Error: ${response.data.error}`);
+        console.log("Create response:", response);
+        if (!response?.data?.success) {
+          const errorMsg = response?.data?.error || 'Error desconocido al crear';
+          toast.error(`Error: ${errorMsg}`);
+          setSaving(false);
           return;
         }
         const created = response.data.product;
@@ -168,6 +174,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
       onOpenChange(false);
       onSaved({ _reconcile: true });
     } catch (error) {
+      console.error("Save error:", error);
       toast.error(`Error: ${error.message || 'No se pudo guardar el producto'}`);
       onSaved({ _error: error.message });
     } finally {
