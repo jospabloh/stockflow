@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import UnpaidDetailModal from "@/components/dashboard/UnpaidDetailModal";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [unpaidModalOpen, setUnpaidModalOpen] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(async (u) => {
@@ -33,12 +35,12 @@ export default function Dashboard() {
       setIsAdmin(admin);
       const [prods, movs] = await Promise.all([
         base44.entities.Product.filter({ business_id: bId }, "-created_date", 500),
-        base44.entities.Movement.filter({ business_id: bId }, "-created_date", 200),
+        base44.entities.Movement.filter({ business_id: bId }, "-created_date", 1000),
       ]);
       setProducts(prods);
       setMovements(movs);
       // Cargar cotizaciones para todos (para ventas del día)
-      const quots = await base44.entities.Quotation.filter({ business_id: bId }, "-created_date", 200).catch(() => []);
+      const quots = await base44.entities.Quotation.filter({ business_id: bId }, "-created_date", 1000).catch(() => []);
       setQuotations(quots);
       setLoading(false);
     }).catch(() => setLoading(false));
@@ -156,9 +158,15 @@ export default function Dashboard() {
       </div>
 
       {/* Cobro pendiente — cotizaciones concretadas sin pagar */}
+      <UnpaidDetailModal
+        open={unpaidModalOpen}
+        onOpenChange={setUnpaidModalOpen}
+        unpaidConverted={unpaidConverted}
+        unpaidDirectMovements={unpaidDirectMovements}
+      />
       {unpaidCount > 0 && (
         <button
-          onClick={() => navigate(`${createPageUrl("Quotations")}?status=converted`)}
+          onClick={() => setUnpaidModalOpen(true)}
           className="w-full text-left"
         >
           <Card className="border-0 shadow-sm p-4 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
