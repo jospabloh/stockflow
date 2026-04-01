@@ -104,11 +104,22 @@ export default function BarcodeGenerator({ productId, productName, businessId, o
   const generateBarcode = async () => {
     setLoading(true);
     try {
-      const res = await base44.functions.invoke("generateUniqueBarcode", {
-        productId,
-        businessId,
-      });
-      setBarcode(res.data.barcode);
+      // Generate barcode locally without consuming API credits
+      function calculateEAN13Checksum(code) {
+        let sum = 0;
+        for (let i = 0; i < code.length; i++) {
+          const digit = parseInt(code[i]);
+          sum += (i % 2 === 0 ? digit : digit * 3);
+        }
+        return ((10 - (sum % 10)) % 10).toString();
+      }
+
+      const randomPart = Math.floor(Math.random() * 9999999999).toString().padStart(9, "0");
+      const baseCode = "750" + randomPart;
+      const checksum = calculateEAN13Checksum(baseCode);
+      const newBarcode = baseCode + checksum;
+      
+      setBarcode(newBarcode);
       toast.success("Código de barras generado exitosamente");
     } catch (err) {
       console.error("Error generating barcode:", err);
