@@ -108,11 +108,13 @@ export default function ClientsManager() {
     toast.success("Cliente eliminado");
   };
 
-  const filtered = clients.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    (c.business_name || "").toLowerCase().includes(search.toLowerCase()) ||
-    (c.email || "").toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = clients
+    .filter(c =>
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      (c.business_name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (c.email || "").toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => (a.business_name || a.name).localeCompare(b.business_name || b.name, "es"));
 
   return (
     <Card className="border-0 shadow-sm p-6">
@@ -131,8 +133,8 @@ export default function ClientsManager() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nombre</TableHead>
             <TableHead>Nombre Negocio</TableHead>
+            <TableHead>Nombre Contacto</TableHead>
             <TableHead>Giro</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Teléfono</TableHead>
@@ -144,8 +146,8 @@ export default function ClientsManager() {
         <TableBody>
           {filtered.map(c => (
             <TableRow key={c.id}>
-              <TableCell className="font-medium">{c.name}</TableCell>
-              <TableCell className="text-slate-500">{c.business_name || "—"}</TableCell>
+              <TableCell className="font-medium">{c.business_name || "—"}</TableCell>
+              <TableCell className="text-slate-500">{c.name}</TableCell>
               <TableCell className="text-slate-500">{c.giro || "—"}</TableCell>
               <TableCell className="text-slate-500">{c.email || "—"}</TableCell>
               <TableCell className="text-slate-500">{c.phone || "—"}</TableCell>
