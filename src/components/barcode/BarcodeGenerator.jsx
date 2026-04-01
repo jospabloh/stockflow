@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Download, Copy, Loader2 } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { toast } from "sonner";
 
 // CODE128 Barcode Generator - Standard Implementation
 class Code128Encoder {
@@ -108,8 +109,10 @@ export default function BarcodeGenerator({ productId, productName, businessId, o
         businessId,
       });
       setBarcode(res.data.barcode);
+      toast.success("Código de barras generado exitosamente");
     } catch (err) {
       console.error("Error generating barcode:", err);
+      toast.error("Error al generar código: " + (err.message || "intenta nuevamente"));
     } finally {
       setLoading(false);
     }
@@ -139,7 +142,7 @@ export default function BarcodeGenerator({ productId, productName, businessId, o
   return (
     <Card className="border-0 shadow-sm">
       <CardHeader>
-        <CardTitle className="text-lg">Generar Código de Barras</CardTitle>
+        <CardTitle className="text-lg">Código de Barras</CardTitle>
         {productName && <p className="text-sm text-muted-foreground mt-1">{productName}</p>}
       </CardHeader>
       <CardContent className="space-y-6">

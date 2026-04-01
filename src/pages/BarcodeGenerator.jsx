@@ -81,14 +81,16 @@ export default function BarcodeGeneratorPage() {
             </CardContent>
           </Card>
 
-          {/* Generator */}
-          <BarcodeGenerator
-            productId={product.id}
-            productName={product.name}
-            businessId={businessId}
-            onSave={handleSave}
-            isSaving={saving}
-          />
+          {/* Generator - only show if no barcode */}
+          {!product.barcode && (
+            <BarcodeGenerator
+              productId={product.id}
+              productName={product.name}
+              businessId={businessId}
+              onSave={handleSave}
+              isSaving={saving}
+            />
+          )}
         </div>
       ) : (
         <Card className="border-0 shadow-sm">
