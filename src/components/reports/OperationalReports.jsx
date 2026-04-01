@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Download, CheckCircle2, AlertCircle } from "lucide-react";
 import { MobileSelect } from "@/components/ui/MobileSelect";
 import moment from "moment";
@@ -17,13 +16,10 @@ export default function OperationalReports({
   const [qClientFilter, setQClientFilter] = useState("all");
   const [qPaymentFilter, setQPaymentFilter] = useState("all");
   const [qPaidFilter, setQPaidFilter] = useState("all");
-  const [movTypeFilter, setMovTypeFilter] = useState("all");
 
   const filteredMovements = movements.filter((m) => {
     const date = moment(m.created_date);
-    const inRange = date.isSameOrAfter(dateFrom) && date.isSameOrBefore(moment(dateTo).endOf("day"));
-    const typeMatch = movTypeFilter === "all" || m.type === movTypeFilter;
-    return inRange && typeMatch;
+    return date.isSameOrAfter(dateFrom) && date.isSameOrBefore(moment(dateTo).endOf("day"));
   });
 
   const filteredQuotations = quotations.filter((q) => {
@@ -59,15 +55,9 @@ export default function OperationalReports({
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="quotations" className="space-y-6">
-        <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1">
-          <TabsTrigger value="quotations">Cotizaciones/Ventas</TabsTrigger>
-          <TabsTrigger value="movements">Movimientos de Stock</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="quotations">
-          {/* Filters */}
-          <Card className="border-0 shadow-sm p-4 mb-4">
+      <div className="space-y-6">
+        {/* Filters */}
+        <Card className="border-0 shadow-sm p-4 mb-4">
             <div className="flex flex-wrap gap-3 items-end">
               <div className="min-w-[160px]">
                 <label className="text-xs text-slate-500 mb-1 block">Estado</label>
@@ -96,10 +86,10 @@ export default function OperationalReports({
                 Limpiar
               </Button>
             </div>
-          </Card>
+            </Card>
 
-          {/* Summary cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            {/* Summary cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
             <Card className="border-0 shadow-sm p-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center">
@@ -136,10 +126,10 @@ export default function OperationalReports({
                 </div>
               </div>
             </Card>
-          </div>
+            </div>
 
-          {/* Table: Ventas por Cotización */}
-          <Card className="border-0 shadow-sm overflow-hidden mb-6">
+            {/* Table: Ventas por Cotización */}
+            <Card className="border-0 shadow-sm overflow-hidden mb-6">
             <div className="flex items-center justify-between p-4 border-b bg-indigo-50/50">
               <div>
                 <h3 className="font-semibold text-slate-700">Ventas por Cotización</h3>
@@ -203,10 +193,10 @@ export default function OperationalReports({
                 </tbody>
               </table>
             </div>
-          </Card>
+            </Card>
 
-          {/* Table: Ventas Directas */}
-          {(() => {
+            {/* Table: Ventas Directas */}
+            {(() => {
             const directExits = filteredMovements.filter(m => m.type === "exit" && !m.quotation_id);
             const totalDirect = directExits.reduce((s, m) => s + (m.total || 0), 0);
             return (
@@ -259,63 +249,9 @@ export default function OperationalReports({
                   </table>
                 </div>
               </Card>
-            );
-          })()}
-        </TabsContent>
-
-        <TabsContent value="movements">
-          <Card className="border-0 shadow-sm overflow-hidden">
-            <div className="p-4 border-b bg-cyan-50/50">
-              <h3 className="font-semibold text-slate-700">Movimientos de Stock</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Historial de entradas, salidas, devoluciones y ajustes</p>
-            </div>
-            <div className="p-4 mb-4">
-              <label className="text-xs text-slate-500 mb-2 block">Tipo de movimiento</label>
-              <MobileSelect value={movTypeFilter} onValueChange={setMovTypeFilter} options={[
-                { value: "all", label: "Todos" },
-                { value: "entry", label: "Entrada (Compra)" },
-                { value: "exit", label: "Salida (Venta)" },
-                { value: "return", label: "Devolución" },
-                { value: "adjustment", label: "Ajuste" }
-              ]} />
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50/70">
-                  <tr>
-                    <th className="text-left px-4 py-3 text-slate-500 font-medium">Fecha</th>
-                    <th className="text-left px-4 py-3 text-slate-500 font-medium">Producto</th>
-                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Tipo</th>
-                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Cantidad</th>
-                    <th className="text-right px-4 py-3 text-slate-500 font-medium">Total</th>
-                    <th className="text-center px-4 py-3 text-slate-500 font-medium">Stock Resultante</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredMovements.length === 0 ? (
-                    <tr><td colSpan={6} className="text-center py-10 text-slate-400">Sin movimientos en el período seleccionado</td></tr>
-                  ) : (
-                    filteredMovements.map((m) => {
-                      const typeLabel = m.type === "entry" ? "Entrada" : m.type === "exit" ? "Salida" : m.type === "return" ? "Devolución" : "Ajuste";
-                      const typeBg = m.type === "entry" ? "bg-emerald-100 text-emerald-700" : m.type === "exit" ? "bg-cyan-100 text-cyan-700" : m.type === "return" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-700";
-                      return (
-                        <tr key={m.id} className="border-t border-slate-100 hover:bg-slate-50/50">
-                          <td className="px-4 py-3 text-slate-500 text-xs">{moment(m.created_date).format("DD/MM/YY")}</td>
-                          <td className="px-4 py-3 font-medium text-slate-800">{m.product_name}</td>
-                          <td className="px-4 py-3 text-center"><span className={`text-xs font-medium px-2 py-1 rounded ${typeBg}`}>{typeLabel}</span></td>
-                          <td className="px-4 py-3 text-center text-slate-700">{m.quantity}</td>
-                          <td className="px-4 py-3 text-right font-semibold text-slate-700">${(m.total || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
-                          <td className="px-4 py-3 text-center text-slate-600">{m.stock_after || "—"}</td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-}
+              );
+              })()}
+              </div>
+          </div>
+          );
+          }
