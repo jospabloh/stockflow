@@ -149,7 +149,7 @@ export default function Movements() {
        return str;
      };
 
-     const headers = ["Fecha", "Producto", "Tipo", "Cantidad", "Precio Unit.", "Total", "Forma de Pago", "Cliente"];
+     const headers = ["Fecha", "Producto", "Tipo", "Cantidad", "Precio Unit.", "Total (c/impuestos)", "Forma de Pago", "Cliente"];
      const rows = filtered.map((m) => [
        moment.utc(m.created_date).local().format("DD/MM/YYYY HH:mm"),
        m.product_name, typeConfig[m.type]?.label || m.type,
@@ -244,7 +244,8 @@ export default function Movements() {
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Producto</TableHead>
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Tipo</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Cantidad</TableHead>
-              <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Total</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Precio Unit.</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Total (c/impuestos)</TableHead>
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Forma de Pago</TableHead>
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Cliente</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Stock Después</TableHead>
@@ -281,6 +282,9 @@ export default function Movements() {
                         </span>
                       </TableCell>
                       <TableCell className="text-right text-slate-700">
+                        ${(m.unit_price || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold text-slate-800">
                         ${m.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "0.00"}
                       </TableCell>
                       <TableCell className="text-slate-500 text-sm">{m.reference || "—"}</TableCell>
