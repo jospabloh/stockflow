@@ -132,7 +132,8 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
     setSaving(true);
     const pmName = paymentMethods.find(p => p.id === paymentMethodId)?.name || "";
-    const clientName = clients.find(c => c.id === clientId)?.name || "";
+    const clientObj = clients.find(c => c.id === clientId);
+    const clientName = clientObj?.business_name || clientObj?.name || "";
 
     const validItems = items.filter(i => i.product && i.quantity > 0);
 
