@@ -323,35 +323,34 @@ export default function Settings() {
     );
   }
 
-  if (!isAdmin) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <div className="h-14 w-14 rounded-full bg-red-50 flex items-center justify-center">
-          <Key className="h-6 w-6 text-red-400" />
-        </div>
-        <p className="text-slate-600 font-medium">Acceso restringido</p>
-        <p className="text-sm text-slate-400">Solo los administradores pueden acceder a la configuración.</p>
-      </div>
-    );
-  }
+  // Almacenistas solo ven: Clientes, Categorías, Productos, Proveedores, Formas de Pago
+  const allowedTabsForStaff = ['clients', 'categories', 'suppliers', 'payments', 'products'];
+  const defaultTab = isAdmin ? 'business' : 'clients';
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <Tabs defaultValue="business" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1 select-none">
-          <TabsTrigger value="business"><Building2 className="h-4 w-4 mr-1" /> Negocio</TabsTrigger>
+          {/* Admin: todas las pestañas */}
+          {isAdmin && (
+            <>
+              <TabsTrigger value="business"><Building2 className="h-4 w-4 mr-1" /> Negocio</TabsTrigger>
+              <TabsTrigger value="sat"><FileText className="h-4 w-4 mr-1" /> Facturación</TabsTrigger>
+              <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>
+              <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>
+              <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>
+            </>
+          )}
+          
+          {/* Todos ven estas pestañas (admin + almacenistas) */}
           <TabsTrigger value="categories"><Palette className="h-4 w-4 mr-1" /> Categorías</TabsTrigger>
           <TabsTrigger value="suppliers"><Users className="h-4 w-4 mr-1" /> Proveedores</TabsTrigger>
-          <TabsTrigger value="sat"><FileText className="h-4 w-4 mr-1" /> Facturación</TabsTrigger>
           <TabsTrigger value="payments"><FileText className="h-4 w-4 mr-1" /> Pagos</TabsTrigger>
           <TabsTrigger value="clients"><Users className="h-4 w-4 mr-1" /> Clientes</TabsTrigger>
-          <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>
-          <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>
-          <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>
         </TabsList>
 
-        {/* Business Settings */}
-        <TabsContent value="business">
+        {/* Business Settings — Admin only */}
+        {isAdmin && <TabsContent value="business">
           <Card className="border-0 shadow-sm p-6 space-y-6">
             <h3 className="font-semibold text-slate-700 text-lg">Información del Negocio</h3>
             {(!settings?.rfc || settings?.business_name === "Mi Negocio" || !settings?.business_name) && (
@@ -437,10 +436,10 @@ export default function Settings() {
               </Button>
             </div>
           </Card>
-        </TabsContent>
+          </TabsContent>}
 
-        {/* Categories */}
-        <TabsContent value="categories">
+          {/* Categories */}
+          <TabsContent value="categories">
           <Card className="border-0 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-700 text-lg">Categorías</h3>
@@ -577,103 +576,8 @@ export default function Settings() {
           <ClientsManager />
         </TabsContent>
 
-        {/* Team / Invite Code */}
-        <TabsContent value="team">
-          <Card className="border-0 shadow-sm p-6 space-y-6">
-            <h3 className="font-semibold text-slate-700 text-lg">Equipo y Acceso</h3>
-            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 space-y-3">
-              <p className="text-sm text-slate-600">Comparte este código con tu equipo para que puedan unirse a tu negocio en StockFlow.</p>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 bg-white border border-indigo-200 rounded-xl px-4 py-3 font-mono text-2xl tracking-widest text-indigo-700 font-bold text-center">
-                  {business?.invite_code || "—"}
-                </div>
-                <button
-                  onClick={() => {
-                    if (business?.invite_code) {
-                      navigator.clipboard.writeText(business.invite_code);
-                      toast.success("Código copiado");
-                    }
-                  }}
-                  className="h-12 w-12 flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex-shrink-0"
-                  title="Copiar código"
-                >
-                  <Copy className="h-5 w-5" />
-                </button>
-              </div>
-              <p className="text-xs text-slate-400">Al registrarse, los usuarios seleccionan "Unirme a un equipo" e ingresan este código.</p>
-              {/* Toggle activo + renovar código */}
-              <div className="flex items-center justify-between pt-2 border-t border-indigo-100">
-                <div className="flex items-center gap-3">
-                  <Switch
-                    checked={business?.invite_code_active !== false}
-                    onCheckedChange={handleToggleInviteCode}
-                  />
-                  <span className="text-sm text-slate-600">
-                    {business?.invite_code_active !== false ? "Código activo — acepta nuevos miembros" : "Código desactivado"}
-                  </span>
-                </div>
-                <button
-                  onClick={handleRotateInviteCode}
-                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors"
-                  title="Generar nuevo código (invalida el anterior)"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  Renovar
-                </button>
-              </div>
-            </div>
-            <div className="bg-slate-50 rounded-xl p-4 space-y-2">
-              <p className="text-sm font-semibold text-slate-700">Guía de roles</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
-                <div className="bg-white rounded-lg p-3 border border-slate-200">
-                  <span className="font-semibold text-indigo-700">admin</span> — Acceso total: configura, crea, edita, elimina todo.
-                </div>
-                <div className="bg-white rounded-lg p-3 border border-slate-200">
-                  <span className="font-semibold text-amber-700">almacenista</span> — Productos, movimientos de inventario y cotizaciones (rol de vendedor incluido).
-                </div>
-              </div>
-
-            </div>
-          </Card>
-        </TabsContent>
-
-        {/* Import */}
-        <TabsContent value="import">
-          <ImportProducts />
-        </TabsContent>
-
-        {/* Account */}
-        <TabsContent value="account">
-          <Card className="border-0 shadow-sm p-6 space-y-6">
-            <h3 className="font-semibold text-slate-700 text-lg">Gestión de Cuenta</h3>
-            <div className="border border-red-200 rounded-xl p-5 space-y-3 bg-red-50/50">
-              <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                  <UserX className="h-5 w-5 text-red-500" />
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-800">Eliminar mi cuenta</p>
-                  <p className="text-sm text-slate-500 mt-0.5">
-                    Esta acción es <strong>permanente e irreversible</strong>. Se cerrará tu sesión y perderás acceso a StockFlow. Los datos del negocio no se eliminan automáticamente.
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                className="border-red-300 text-red-600 hover:bg-red-100 hover:border-red-400 select-none"
-                onClick={() => {
-                  setConfirmDeleteAccount(true);
-                  setConfirmDeleteStep(0);
-                }}
-              >
-                <Trash2 className="h-4 w-4 mr-1" /> Eliminar mi cuenta
-              </Button>
-            </div>
-          </Card>
-        </TabsContent>
-
-        {/* Facturación */}
-        <TabsContent value="sat">
+        {/* Facturación — Admin only */}
+        {isAdmin && <TabsContent value="sat">
           <Card className="border-0 shadow-sm overflow-hidden">
             {/* Under construction game section */}
             <div className="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 p-8 flex flex-col items-center justify-center min-h-[360px] overflow-hidden">
@@ -809,10 +713,104 @@ export default function Settings() {
             )}
             </div>
           </Card>
-        </TabsContent>
-      </Tabs>
+          </TabsContent>}
 
-      {/* Delete Account Modal — Multi-step Flow */}
+          {/* Team — Admin only */}
+          {isAdmin && <TabsContent value="team">
+          <Card className="border-0 shadow-sm p-6 space-y-6">
+            <h3 className="font-semibold text-slate-700 text-lg">Equipo y Acceso</h3>
+            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 space-y-3">
+              <p className="text-sm text-slate-600">Comparte este código con tu equipo para que puedan unirse a tu negocio en StockFlow.</p>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 bg-white border border-indigo-200 rounded-xl px-4 py-3 font-mono text-2xl tracking-widest text-indigo-700 font-bold text-center">
+                  {business?.invite_code || "—"}
+                </div>
+                <button
+                  onClick={() => {
+                    if (business?.invite_code) {
+                      navigator.clipboard.writeText(business.invite_code);
+                      toast.success("Código copiado");
+                    }
+                  }}
+                  className="h-12 w-12 flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex-shrink-0"
+                  title="Copiar código"
+                >
+                  <Copy className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="text-xs text-slate-400">Al registrarse, los usuarios seleccionan "Unirme a un equipo" e ingresan este código.</p>
+              {/* Toggle activo + renovar código */}
+              <div className="flex items-center justify-between pt-2 border-t border-indigo-100">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={business?.invite_code_active !== false}
+                    onCheckedChange={handleToggleInviteCode}
+                  />
+                  <span className="text-sm text-slate-600">
+                    {business?.invite_code_active !== false ? "Código activo — acepta nuevos miembros" : "Código desactivado"}
+                  </span>
+                </div>
+                <button
+                  onClick={handleRotateInviteCode}
+                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                  title="Generar nuevo código (invalida el anterior)"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Renovar
+                </button>
+              </div>
+            </div>
+            <div className="bg-slate-50 rounded-xl p-4 space-y-2">
+              <p className="text-sm font-semibold text-slate-700">Guía de roles</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+                <div className="bg-white rounded-lg p-3 border border-slate-200">
+                  <span className="font-semibold text-indigo-700">admin</span> — Acceso total: configura, crea, edita, elimina todo.
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-slate-200">
+                  <span className="font-semibold text-amber-700">almacenista</span> — Productos, movimientos de inventario y cotizaciones (rol de vendedor incluido).
+                </div>
+              </div>
+            </div>
+          </Card>
+          </TabsContent>}
+
+          {/* Import — Admin only */}
+          {isAdmin && <TabsContent value="import">
+          <ImportProducts />
+          </TabsContent>}
+
+          {/* Account — All users */}
+          <TabsContent value="account">
+          <Card className="border-0 shadow-sm p-6 space-y-6">
+            <h3 className="font-semibold text-slate-700 text-lg">Gestión de Cuenta</h3>
+            <div className="border border-red-200 rounded-xl p-5 space-y-3 bg-red-50/50">
+              <div className="flex items-start gap-3">
+                <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <UserX className="h-5 w-5 text-red-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-800">Eliminar mi cuenta</p>
+                  <p className="text-sm text-slate-500 mt-0.5">
+                    Esta acción es <strong>permanente e irreversible</strong>. Se cerrará tu sesión y perderás acceso a StockFlow. Los datos del negocio no se eliminan automáticamente.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-100 hover:border-red-400 select-none"
+                onClick={() => {
+                  setConfirmDeleteAccount(true);
+                  setConfirmDeleteStep(0);
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-1" /> Eliminar mi cuenta
+              </Button>
+            </div>
+          </Card>
+          </TabsContent>
+          </Tabs>
+
+          {/* Delete Account Modal — Multi-step Flow */}
       {confirmDeleteAccount && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full space-y-4">

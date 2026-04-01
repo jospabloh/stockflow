@@ -227,13 +227,20 @@ export default function Reports() {
         </div>
       </Card>
 
-      <Tabs defaultValue="quotations" className="space-y-6">
+      <Tabs defaultValue={isAdmin ? "quotations" : "quotations"} className="space-y-6">
         <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1">
+          {/* Todos ven Cotizaciones/Ventas */}
           <TabsTrigger value="quotations">Cotizaciones/Ventas</TabsTrigger>
-          <TabsTrigger value="sales">Más Vendidos</TabsTrigger>
-          <TabsTrigger value="low">Baja Rotación</TabsTrigger>
-          <TabsTrigger value="trend">Tendencia</TabsTrigger>
-          {isAdmin && <TabsTrigger value="inventory">Inventario Actual</TabsTrigger>}
+          
+          {/* Solo admin ve los reportes analíticos */}
+          {isAdmin && (
+            <>
+              <TabsTrigger value="sales">Más Vendidos</TabsTrigger>
+              <TabsTrigger value="low">Baja Rotación</TabsTrigger>
+              <TabsTrigger value="trend">Tendencia</TabsTrigger>
+              <TabsTrigger value="inventory">Inventario Actual</TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         <TabsContent value="quotations">
