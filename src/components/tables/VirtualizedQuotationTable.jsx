@@ -167,7 +167,7 @@ export default function VirtualizedQuotationTable({
               <DropdownMenuItem onClick={() => onDownloadPDF(q)}>
                 <FileDown className="h-3 w-3 mr-2" /> PDF
               </DropdownMenuItem>
-              {(q.status === "sent" || q.status === "accepted") && (
+              {(q.status === "draft" || q.status === "sent" || q.status === "accepted") && (
                 <DropdownMenuItem
                   onClick={() => {
                     if (isExpired(q)) {
