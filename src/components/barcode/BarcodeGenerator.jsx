@@ -62,8 +62,9 @@ class Code128Encoder {
 
   toSVG(text, barHeight = 80) {
     const barcode = this.getBarcode(text);
-    const moduleWidth = 1;
-    let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${barcode.length * moduleWidth}" height="${barHeight}">`;
+    const moduleWidth = 2;
+    const width = barcode.length * moduleWidth;
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${barHeight}" viewBox="0 0 ${width} ${barHeight}">`;
     svg += `<rect width="100%" height="100%" fill="white"/>`;
     
     let x = 0;
@@ -121,17 +122,18 @@ export default function BarcodeGenerator({ productId, productName, businessId, o
   };
 
   const downloadPDF = async () => {
-    if (!barcodeRef.current) return;
+   if (!barcodeRef.current) return;
 
-    const canvas = await html2canvas(barcodeRef.current, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "A6");
+   const canvas = await html2canvas(barcodeRef.current, { scale: 3, backgroundColor: "#ffffff" });
+   const imgData = canvas.toDataURL("image/png");
+   const pdf = new jsPDF("p", "mm", "A6");
 
-    const imgWidth = 100;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    pdf.addImage(imgData, "PNG", 5, 5, imgWidth, imgHeight);
+   const imgWidth = 85;
+   const imgHeight = (canvas.height * imgWidth) / canvas.width;
+   const yOffset = (148 - imgHeight) / 2;
+   pdf.addImage(imgData, "PNG", 10, yOffset, imgWidth, imgHeight);
 
-    pdf.save(`barcode-${barcode}.pdf`);
+   pdf.save(`barcode-${barcode}.pdf`);
   };
 
   return (
@@ -156,12 +158,15 @@ export default function BarcodeGenerator({ productId, productName, businessId, o
             {/* Barcode Preview */}
             <div
               ref={barcodeRef}
-              className="flex flex-col items-center justify-center bg-white p-6 rounded-lg border-2 border-slate-200"
+              className="flex flex-col items-center justify-center bg-white p-8 rounded-lg border-2 border-slate-200"
+              style={{ minHeight: '200px' }}
             >
               {/* Generated SVG Barcode */}
-              <BarcodeDisplay barcode={barcode} />
-              <p className="text-sm font-mono text-slate-700 mt-3">{barcode}</p>
-              {productName && <p className="text-xs text-slate-500 mt-2 text-center">{productName}</p>}
+              <div className="w-full flex justify-center mb-4">
+                <BarcodeDisplay barcode={barcode} />
+              </div>
+              <p className="text-base font-mono font-bold text-slate-900">{barcode}</p>
+              {productName && <p className="text-xs text-slate-600 mt-3 text-center max-w-xs">{productName}</p>}
             </div>
 
             {/* Barcode Text */}
