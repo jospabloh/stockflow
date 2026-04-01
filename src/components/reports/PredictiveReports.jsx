@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Download, TrendingUp } from "lucide-react";
+import { Download } from "lucide-react";
 import { MobileSelect } from "@/components/ui/MobileSelect";
 import {
   BarChart,
@@ -16,6 +16,10 @@ import {
   Line,
 } from "recharts";
 import moment from "moment";
+import DepletionRiskReport from "@/components/reports/DepletionRiskReport";
+import ReorderSuggestionReport from "@/components/reports/ReorderSuggestionReport";
+import CollectionsRiskReport from "@/components/reports/CollectionsRiskReport";
+import AnomaliesReport from "@/components/reports/AnomaliesReport";
 
 export default function PredictiveReports({
   products,
@@ -115,6 +119,10 @@ export default function PredictiveReports({
           <TabsTrigger value="sales">Más Vendidos</TabsTrigger>
           <TabsTrigger value="low">Baja Rotación</TabsTrigger>
           <TabsTrigger value="trend">Tendencia</TabsTrigger>
+          <TabsTrigger value="depletion">Riesgo Agotamiento</TabsTrigger>
+          <TabsTrigger value="reorder">Sugerencia Resurtido</TabsTrigger>
+          <TabsTrigger value="collections">Riesgo Cobranza</TabsTrigger>
+          <TabsTrigger value="anomalies">Discrepancias</TabsTrigger>
         </TabsList>
 
         {/* Análisis Dinámico / Pivot */}
@@ -226,6 +234,46 @@ export default function PredictiveReports({
               </LineChart>
             </ResponsiveContainer>
           </Card>
+        </TabsContent>
+
+        {/* Riesgo de Agotamiento */}
+        <TabsContent value="depletion">
+          <DepletionRiskReport
+            products={products}
+            movements={movements}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+          />
+        </TabsContent>
+
+        {/* Sugerencia de Resurtido */}
+        <TabsContent value="reorder">
+          <ReorderSuggestionReport
+            products={products}
+            movements={movements}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+          />
+        </TabsContent>
+
+        {/* Riesgo de Cobranza */}
+        <TabsContent value="collections">
+          <CollectionsRiskReport
+            quotations={quotations}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+          />
+        </TabsContent>
+
+        {/* Discrepancias / Anomalías */}
+        <TabsContent value="anomalies">
+          <AnomaliesReport
+            products={products}
+            movements={movements}
+            quotations={quotations}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+          />
         </TabsContent>
       </Tabs>
     </div>
