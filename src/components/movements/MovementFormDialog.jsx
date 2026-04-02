@@ -18,11 +18,11 @@ import { createButtonProps } from "@/lib/a11y";
 import { calculatePrice } from "@/lib/pricingEngine";
 import ProductSearchInput from "./ProductSearchInput";
 
-const TYPES = [
+const ALL_TYPES = [
   { value: "entry", label: "Entrada (Compra)" },
   { value: "exit", label: "Salida (Venta)" },
   { value: "return", label: "Devolución" },
-  { value: "adjustment", label: "Ajuste" },
+  { value: "adjustment", label: "Ajuste (solo admin)" },
 ];
 
 // Calcula precio para un producto según tipo y categorías
@@ -37,7 +37,8 @@ function calcPrice(product, type, quantity, categories) {
 }
 
 export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
-  const { businessId } = useBusinessContext();
+  const { businessId, user } = useBusinessContext();
+  const isAdmin = user?.role === "admin";
   const barcodeRef = useRef(null);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -119,18 +120,20 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
     }, 0);
   }, [items, movType, categories]);
 
-  const canSave = items.some(i => i.product) && paymentMethodId && clientId && !saving;
+  const isAdjustment = movType === "adjustment";
+  const needsParty = !isAdjustment; // entrada/salida/devolución requieren forma de pago y cliente/proveedor
+  const canSave = items.some(i => i.product) && (!needsParty || (paymentMethodId && clientId)) && !saving;
 
   const handleSave = async () => {
     if (!items.some(i => i.product)) {
       toast.error("Selecciona al menos un producto");
       return;
     }
-    if (!paymentMethodId) {
+    if (needsParty && !paymentMethodId) {
       toast.error("⚠️ Selecciona la forma de pago");
       return;
     }
-    if (!clientId) {
+    if (needsParty && !clientId) {
       toast.error(movType === "entry" ? "⚠️ Selecciona el proveedor" : "⚠️ Selecciona el cliente");
       return;
     }
@@ -141,7 +144,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
     if (movType === "entry") {
       const sup = suppliers.find(s => s.id === clientId);
       clientName = sup?.name || "";
-    } else {
+    } else if (!isAdjustment) {
       const clientObj = clients.find(c => c.id === clientId);
       clientName = clientObj?.business_name || clientObj?.name || "";
     }
@@ -262,7 +265,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
               value={movType}
               onValueChange={(val) => { setMovType(val); setClientId(""); }}
               placeholder="Tipo"
-              options={TYPES.map((t) => ({ value: t.value, label: t.label }))}
+              options={ALL_TYPES.filter(t => t.value !== "adjustment" || isAdmin).map((t) => ({ value: t.value, label: t.label }))}
             />
           </div>
 
@@ -339,35 +342,39 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
             </p>
           </div>
 
-          {/* Forma de pago */}
-          <div>
-            <Label className="text-foreground mb-1.5 block">Forma de pago *</Label>
-            <SearchableSelect
-              value={paymentMethodId}
-              onValueChange={setPaymentMethodId}
-              placeholder="Seleccionar forma de pago"
-              options={paymentMethods.map((pm) => ({ value: pm.id, label: pm.name }))}
-            />
-            {paymentMethods.length === 0 && (
-              <p className="text-xs text-muted-foreground mt-1">No hay formas de pago. Agrégalas en Configuración → Pagos.</p>
-            )}
-          </div>
+          {/* Forma de pago — oculto en ajuste */}
+          {!isAdjustment && (
+            <div>
+              <Label className="text-foreground mb-1.5 block">Forma de pago *</Label>
+              <SearchableSelect
+                value={paymentMethodId}
+                onValueChange={setPaymentMethodId}
+                placeholder="Seleccionar forma de pago"
+                options={paymentMethods.map((pm) => ({ value: pm.id, label: pm.name }))}
+              />
+              {paymentMethods.length === 0 && (
+                <p className="text-xs text-muted-foreground mt-1">No hay formas de pago. Agrégalas en Configuración → Pagos.</p>
+              )}
+            </div>
+          )}
 
-          {/* Cliente / Proveedor según tipo */}
-          <div>
-            <Label className="text-foreground mb-1.5 block">
-              {movType === "entry" ? "Proveedor *" : "Cliente *"}
-            </Label>
-            <SearchableSelect
-              value={clientId}
-              onValueChange={setClientId}
-              placeholder={movType === "entry" ? "Seleccionar proveedor" : "Seleccionar cliente"}
-              options={movType === "entry"
-                ? suppliers.map((s) => ({ value: s.id, label: s.name }))
-                : clients.map((c) => ({ value: c.id, label: c.name, searchLabel: c.business_name || c.name }))
-              }
-            />
-          </div>
+          {/* Cliente / Proveedor según tipo — oculto en ajuste */}
+          {!isAdjustment && (
+            <div>
+              <Label className="text-foreground mb-1.5 block">
+                {movType === "entry" ? "Proveedor *" : "Cliente *"}
+              </Label>
+              <SearchableSelect
+                value={clientId}
+                onValueChange={setClientId}
+                placeholder={movType === "entry" ? "Seleccionar proveedor" : "Seleccionar cliente"}
+                options={movType === "entry"
+                  ? suppliers.map((s) => ({ value: s.id, label: s.name }))
+                  : clients.map((c) => ({ value: c.id, label: c.name, searchLabel: c.business_name || c.name }))
+                }
+              />
+            </div>
+          )}
 
           {/* Confirmación de pago — solo para salidas */}
           {movType === "exit" && (
@@ -394,11 +401,11 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         </div>
 
         {/* OB4: resumen de qué falta */}
-        {(!items.some(i => i.product) || !paymentMethodId || !clientId) && (
+        {(!items.some(i => i.product) || (needsParty && (!paymentMethodId || !clientId))) && (
           <div className="px-6 pb-2 shrink-0 space-y-0.5">
             {!items.some(i => i.product) && <p className="text-xs text-red-500">• Selecciona al menos un producto</p>}
-            {!paymentMethodId && paymentMethods.length > 0 && <p className="text-xs text-red-500">• Selecciona la forma de pago</p>}
-            {!clientId && <p className="text-xs text-red-500">• Selecciona el {movType === "entry" ? "proveedor" : "cliente"}</p>}
+            {needsParty && !paymentMethodId && paymentMethods.length > 0 && <p className="text-xs text-red-500">• Selecciona la forma de pago</p>}
+            {needsParty && !clientId && <p className="text-xs text-red-500">• Selecciona el {movType === "entry" ? "proveedor" : "cliente"}</p>}
           </div>
         )}
 
