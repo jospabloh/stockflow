@@ -63,15 +63,14 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       Promise.all([
         base44.entities.Product.filter({ status: "active", business_id: businessId }),
         base44.entities.Category.filter({ business_id: businessId }),
-        base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }),
-        base44.entities.Client.filter({ business_id: businessId, status: "active" }),
-        base44.entities.Supplier.filter({ business_id: businessId }),
-      ]).then(([prods, cats, pms, cls, sups]) => {
+        base44.functions.invoke('getBusinessCatalogs', {}),
+      ]).then(([prods, cats, catalogsRes]) => {
         setProducts(prods);
         setCategories(cats);
-        setPaymentMethods(pms);
-        setClients(cls);
-        setSuppliers(sups);
+        const catalogs = catalogsRes?.data || {};
+        setPaymentMethods(catalogs.paymentMethods || []);
+        setClients(catalogs.clients || []);
+        setSuppliers(catalogs.suppliers || []);
       });
       setMovType("exit");
       setPaymentMethodId("");
