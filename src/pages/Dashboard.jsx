@@ -168,20 +168,20 @@ export default function Dashboard() {
     };
   }, [periodMovements, periodQuotations, products]);
 
-  // Cotizaciones concretadas sin pagar EN EL PERÍODO
-  const unpaidConverted = periodQuotations.filter(q => q.status === "converted" && !q.paid);
-  // Movimientos de salida directa sin pagar (sin quotation_id) EN EL PERÍODO
-  const unpaidDirectMovements = periodMovements.filter(m => m.type === "exit" && !m.quotation_id && !m.paid);
+  // Cotizaciones concretadas sin pagar — GLOBAL (NO filtradas por período)
+  const unpaidConverted = quotations.filter(q => q.status === "converted" && !q.paid);
+  // Movimientos de salida directa sin pagar (sin quotation_id) — GLOBAL (NO filtradas por período)
+  const unpaidDirectMovements = movements.filter(m => m.type === "exit" && !m.quotation_id && !m.paid);
 
   const unpaidCount = unpaidConverted.length + unpaidDirectMovements.length;
   const unpaidTotal =
     unpaidConverted.reduce((sum, q) => sum + (q.total || 0), 0) +
     unpaidDirectMovements.reduce((sum, m) => sum + (m.total || 0), 0);
 
-  // Quotation semaphore counts EN EL PERÍODO
-  const quotGreen = periodQuotations.filter(q => q.status === "converted").length;
-  const quotYellow = periodQuotations.filter(q => ["draft", "sent", "accepted"].includes(q.status)).length;
-  const quotRed = periodQuotations.filter(q => q.status === "cancelled").length;
+  // Quotation semaphore counts — GLOBAL (NO filtrado por período, para visibilidad de todo)
+  const quotGreen = quotations.filter(q => q.status === "converted").length;
+  const quotYellow = quotations.filter(q => ["draft", "sent", "accepted"].includes(q.status)).length;
+  const quotRed = quotations.filter(q => q.status === "cancelled").length;
 
   // Chart data: movements per day (dinámico según período)
   const chartData = useMemo(() => {
