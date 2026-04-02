@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 
 const BusinessContext = createContext(null);
@@ -8,82 +8,32 @@ export function BusinessProvider({ children }) {
   const [businessId, setBusinessId] = useState(null);
   const [businessName, setBusinessName] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [businessNameLocked, setBusinessNameLocked] = useState(false); // MITIGATION: don't display until exact match confirmed
-  const lastUserEmailRef = useRef(null);
-  const lastBusinessIdRef = useRef(null);
 
-  const loadUser = useCallback(async () => {
-    try {
-      const u = await base44.auth.me();
-      setUser(u);
-      const bid = u?.business_id || null;
-      
-      // CRITICAL: Always reload business name if business_id changed
-      if (bid !== lastBusinessIdRef.current) {
-        console.log(`[BusinessContext] business_id changed: ${lastBusinessIdRef.current} → ${bid}`);
-        lastBusinessIdRef.current = bid;
-      }
-      
-      setBusinessId(bid);
-      
-      // Load business name if businessId exists
-      if (bid) {
-        try {
-          // RLS restricts Business reads to records where id == user.business_id,
-          // so list() returns exactly the user's own business record.
+  useEffect(() => {
+    async function load() {
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+        const bid = u?.business_id || null;
+        setBusinessId(bid);
+        if (bid) {
           const businesses = await base44.entities.Business.list();
-          const biz = businesses?.find(b => b.id === bid) ?? businesses?.[0];
-          if (biz?.name) {
-            setBusinessName(biz.name);
-            setBusinessNameLocked(true);
-            console.log(`[BusinessContext] ✓ Business name: "${biz.name}" (ID: ${biz.id})`);
-          } else {
-            setBusinessName(null);
-            setBusinessNameLocked(false);
-          }
-        } catch (e) {
-          console.log("[BusinessContext] Error loading business name:", e.message);
-          setBusinessName(null);
-          setBusinessNameLocked(false);
+          const biz = businesses?.[0];
+          if (biz?.name) setBusinessName(biz.name);
         }
-      } else {
-        console.log(`[BusinessContext] No business_id for user ${u?.email}`);
-        setBusinessName(null);
-        setBusinessNameLocked(false);
+      } catch (err) {
+        // not logged in or no business
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.log("[BusinessContext] Error loading user:", err.message);
-      setUser(null);
-      setBusinessId(null);
-      setBusinessName(null);
-    } finally {
-      setIsLoading(false);
     }
+    load();
   }, []);
 
-  // Load on mount
-  useEffect(() => {
-    loadUser();
-  }, [loadUser]);
-
-  // Detect user changes and reload context
-  useEffect(() => {
-    if (user?.email && user.email !== lastUserEmailRef.current) {
-      console.log(`[BusinessContext] User changed from ${lastUserEmailRef.current} to ${user.email}, reloading context`);
-      lastUserEmailRef.current = user.email;
-      loadUser();
-    }
-  }, [user?.email, loadUser]);
-
-
-
-  const refreshBusiness = useCallback(() => {
-    console.log("[BusinessContext] Manual refresh triggered");
-    loadUser();
-  }, [loadUser]);
+  const refreshBusiness = () => window.location.reload();
 
   return (
-    <BusinessContext.Provider value={{ user, businessId, businessName, businessNameLocked, isLoading, refreshBusiness }}>
+    <BusinessContext.Provider value={{ user, businessId, businessName, isLoading, refreshBusiness }}>
       {children}
     </BusinessContext.Provider>
   );
