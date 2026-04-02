@@ -18,7 +18,7 @@ export function BusinessProvider({ children }) {
         setBusinessId(bid);
         if (bid) {
           const businesses = await base44.entities.Business.list();
-          const biz = businesses?.[0];
+          const biz = businesses?.find(b => b.id === bid) || businesses?.[0];
           if (biz?.name) setBusinessName(biz.name);
         }
       } catch (err) {
