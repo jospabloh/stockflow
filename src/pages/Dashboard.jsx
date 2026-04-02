@@ -57,25 +57,28 @@ export default function Dashboard() {
   const convertUTCToLocalDate = (isoString) => {
     const utcDate = new Date(isoString);
     // México City siempre está en UTC-6 (sin cambio de horario)
-    // Convertimos a milisegundos sumando 6 horas (6 * 60 * 60 * 1000)
-    const mexicoDate = new Date(utcDate.getTime() + (6 * 60 * 60 * 1000));
+    // Para convertir UTC a local, restamos 6 horas (-6 * 60 * 60 * 1000)
+    const mexicoDate = new Date(utcDate.getTime() - (6 * 60 * 60 * 1000));
     return mexicoDate;
   };
 
-  // Función para obtener rango de fechas según período (timezone local)
+  // Función para obtener rango de fechas según período (México City timezone UTC-6)
   const getDateRange = (period) => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const date = now.getDate();
-    const dayOfWeek = now.getDay();
+    // Obtener la fecha actual en México City (UTC-6)
+    const utcNow = new Date();
+    const mexicoNow = new Date(utcNow.getTime() - (6 * 60 * 60 * 1000));
+    
+    const year = mexicoNow.getUTCFullYear();
+    const month = mexicoNow.getUTCMonth();
+    const date = mexicoNow.getUTCDate();
+    const dayOfWeek = mexicoNow.getUTCDay();
     
     let start, end;
     
     switch (period) {
       case "day":
-        start = new Date(year, month, date, 0, 0, 0, 0);
-        end = new Date(year, month, date, 23, 59, 59, 999);
+        start = new Date(Date.UTC(year, month, date, 0, 0, 0, 0));
+        end = new Date(Date.UTC(year, month, date, 23, 59, 59, 999));
         break;
       case "week":
         const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
@@ -132,11 +135,13 @@ export default function Dashboard() {
   const salesData = useMemo(() => {
     const periodConvertedQuotations = periodQuotations.filter((q) => q.status === "converted");
     const periodExits = periodMovements.filter((m) => m.type === "exit");
-    const periodDirectExits = periodExits.filter((m) => !m.quotation_id);
+    const periodDirectExits = periodExits.filter((m) => m && !m.quotation_id);
 
     const salesFromQuotations = periodConvertedQuotations.reduce((sum, q) => sum + (q.total || 0), 0);
     const salesFromDirectExits = periodDirectExits.reduce((sum, m) => sum + (m.total || 0), 0);
     const salesRevenue = salesFromQuotations + salesFromDirectExits;
+    
+
     
     const unpaidQuotations = periodConvertedQuotations.filter(q => !q.paid).reduce((sum, q) => sum + (q.total || 0), 0);
     const unpaidDirectExits = periodDirectExits.filter(m => !m.paid).reduce((sum, m) => sum + (m.total || 0), 0);
