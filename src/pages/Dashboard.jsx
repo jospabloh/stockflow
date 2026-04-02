@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Package, ArrowLeftRight, DollarSign, AlertTriangle, TrendingUp, Clock } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import LowStockAlert from "@/components/dashboard/LowStockAlert";
 import RecentMovements from "@/components/dashboard/RecentMovements";
+import SalesFilterToggle from "@/components/dashboard/SalesFilterToggle";
 import {
   BarChart,
   Bar,
@@ -27,6 +28,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [unpaidModalOpen, setUnpaidModalOpen] = useState(false);
+  const [salesPeriod, setSalesPeriod] = useState("day");
 
   useEffect(() => {
     base44.auth.me().then(async (u) => {
@@ -51,36 +53,89 @@ export default function Dashboard() {
   const totalValue = activeProducts.reduce((sum, p) => sum + (p.stock || 0) * (p.purchase_price || 0), 0);
   const lowStockProducts = activeProducts.filter((p) => p.stock <= (p.min_stock || 5));
 
+  // Función para obtener rango de fechas según período
+  const getDateRange = (period) => {
+    const end = new Date();
+    const start = new Date();
+    
+    switch (period) {
+      case "day":
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "week":
+        const day = start.getDay();
+        start.setDate(start.getDate() - day);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "month":
+        start.setDate(1);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "year":
+        start.setMonth(0, 1);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      default:
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+    }
+    return { start, end };
+  };
+
+  // Calcular ventas según período
+  const salesData = useMemo(() => {
+    const { start, end } = getDateRange(salesPeriod);
+    
+    const periodMovements = movements.filter((m) => {
+      const mDate = new Date(m.created_date);
+      return mDate >= start && mDate <= end;
+    });
+
+    const periodConvertedQuotations = quotations.filter(
+      (q) => q.status === "converted" && new Date(q.created_date) >= start && new Date(q.created_date) <= end
+    );
+    
+    const periodExits = periodMovements.filter((m) => m.type === "exit");
+    const periodDirectExits = periodExits.filter((m) => !m.quotation_id);
+
+    const salesFromQuotations = periodConvertedQuotations.reduce((sum, q) => sum + (q.total || 0), 0);
+    const salesFromDirectExits = periodDirectExits.reduce((sum, m) => sum + (m.total || 0), 0);
+    const salesRevenue = salesFromQuotations + salesFromDirectExits;
+    
+    const unpaidQuotations = periodConvertedQuotations.filter(q => !q.paid).reduce((sum, q) => sum + (q.total || 0), 0);
+    const unpaidDirectExits = periodDirectExits.filter(m => !m.paid).reduce((sum, m) => sum + (m.total || 0), 0);
+    const unpaidTotal = unpaidQuotations + unpaidDirectExits;
+    const realRevenue = salesRevenue - unpaidTotal;
+
+    const productLookup = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
+    const salesCost = periodExits.reduce((sum, m) => {
+      const costUnit = (m.cost_price != null && m.cost_price > 0)
+        ? m.cost_price
+        : (productLookup[m.product_id]?.purchase_price ?? 0);
+      return sum + ((m.quantity || 0) * costUnit);
+    }, 0);
+    
+    const profit = salesRevenue - salesCost;
+    const margin = salesRevenue > 0 ? (profit / salesRevenue) * 100 : 0;
+    const salesCount = periodConvertedQuotations.length + periodDirectExits.length;
+
+    return {
+      salesRevenue,
+      realRevenue,
+      salesCost,
+      profit,
+      margin,
+      salesCount,
+      periodMovements,
+    };
+  }, [salesPeriod, movements, quotations, products]);
+
   const today = new Date().toDateString();
   const todayMovements = movements.filter((m) => new Date(m.created_date).toDateString() === today);
-
-  // Ventas del día = cotizaciones convertidas hoy + movimientos de salida directos (sin quotation_id)
-  const todayConvertedQuotations = quotations.filter(
-    (q) => q.status === "converted" && new Date(q.created_date).toDateString() === today
-  );
-  const todayExits = todayMovements.filter((m) => m.type === "exit");
-  const todayDirectExits = todayExits.filter((m) => !m.quotation_id); // salidas manuales, no de cotizaciones
-
-  const todaySalesFromQuotations = todayConvertedQuotations.reduce((sum, q) => sum + (q.total || 0), 0);
-  const todaySalesFromDirectExits = todayDirectExits.reduce((sum, m) => sum + (m.total || 0), 0);
-  const todaySalesRevenue = todaySalesFromQuotations + todaySalesFromDirectExits;
-  
-  // Venta real = ventas - pendiente de pago (cotizaciones no pagadas + movimientos directos no pagados)
-  const todayUnpaidQuotations = todayConvertedQuotations.filter(q => !q.paid).reduce((sum, q) => sum + (q.total || 0), 0);
-  const todayUnpaidDirectExits = todayDirectExits.filter(m => !m.paid).reduce((sum, m) => sum + (m.total || 0), 0);
-  const todayUnpaidTotal = todayUnpaidQuotations + todayUnpaidDirectExits;
-  const todayRealRevenue = todaySalesRevenue - todayUnpaidTotal;
-
-  const productLookup = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
-  const todaySalesCost = todayExits.reduce((sum, m) => {
-    const costUnit = (m.cost_price != null && m.cost_price > 0)
-      ? m.cost_price
-      : (productLookup[m.product_id]?.purchase_price ?? 0);
-    return sum + ((m.quantity || 0) * costUnit);
-  }, 0);
-  const todayProfit = todaySalesRevenue - todaySalesCost;
-  const todayMargin = todaySalesRevenue > 0 ? (todayProfit / todaySalesRevenue) * 100 : 0;
-  const todaySalesCount = todayConvertedQuotations.length + todayDirectExits.length;
 
   // Cotizaciones concretadas sin pagar
   const unpaidConverted = quotations.filter(q => q.status === "converted" && !q.paid);
@@ -203,35 +258,38 @@ export default function Dashboard() {
         </button>
       )}
 
-      {/* Today's Sales Breakdown */}
+      {/* Sales Breakdown with Period Toggle */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="border-0 shadow-sm p-5 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-0.5" onClick={() => navigate(`${createPageUrl("Movements")}?type=exit`)}>
-          <h3 className="font-semibold text-slate-700 mb-4 flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-indigo-500" /> Ventas del Día
-          </h3>
-            {todaySalesCount === 0 ? (
-              <p className="text-sm text-slate-400 py-4 text-center">Sin ventas registradas hoy</p>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-slate-700 flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-indigo-500" /> Ventas
+            </h3>
+            <SalesFilterToggle period={salesPeriod} onPeriodChange={setSalesPeriod} />
+          </div>
+            {salesData.salesCount === 0 ? (
+              <p className="text-sm text-slate-400 py-4 text-center">Sin ventas registradas en este período</p>
             ) : (
               <div className="space-y-3">
                 <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-950/40 rounded-lg px-4 py-2.5">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Monto vendido</span>
-                  <span className="font-bold text-blue-700 dark:text-blue-300">${todaySalesRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                  <span className="font-bold text-blue-700 dark:text-blue-300">${salesData.salesRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between items-center bg-purple-50 dark:bg-purple-950/40 rounded-lg px-4 py-2.5">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Cobrado</span>
-                  <span className="font-bold text-purple-700 dark:text-purple-300">${todayRealRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                  <span className="font-bold text-purple-700 dark:text-purple-300">${salesData.realRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                 </div>
                 {isAdmin && (
                   <>
                     <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 rounded-lg px-4 py-2.5">
                       <span className="text-sm text-slate-600 dark:text-slate-400">Costo de lo vendido</span>
-                      <span className="font-bold text-slate-700 dark:text-slate-200">${todaySalesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-200">${salesData.salesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between items-center bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-4 py-2.5">
                       <span className="text-sm text-slate-600 dark:text-slate-400">Ganancia bruta</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-emerald-700 dark:text-emerald-300">${todayProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-                        <Badge className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border-0 text-xs">{todayMargin.toFixed(1)}%</Badge>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-300">${salesData.profit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                        <Badge className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border-0 text-xs">{salesData.margin.toFixed(1)}%</Badge>
                       </div>
                     </div>
                   </>
