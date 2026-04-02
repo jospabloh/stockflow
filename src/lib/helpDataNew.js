@@ -1,8 +1,44 @@
-// Nuevos artículos de ayuda para v2.0.0
-// Capa Predictiva/Inteligente de Reportes con 8 reportes determinísticos para Admin/Owner
-// + Reportes operacionales para Almacenistas + mejoras de RBAC
+// Nuevos artículos de ayuda para v2.1.0
+// Fix nombre del negocio en sidebar + datos de prueba para ACACIA OWNER SANDBOX
 
 export const newHelpArticles = [
+    {
+      id: "release-2-1-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.1.0 — Nombre del Negocio y Datos de Prueba",
+      keywords: ["versión", "2.1.0", "negocio", "sidebar", "nombre", "datos", "prueba", "acacia"],
+      related_ids: ["settings-business"],
+      content: `## 🆕 Versión 2.1.0 — 2 de abril de 2026
+
+### ✅ Cambios de esta versión
+
+#### 🏢 Nombre del Negocio en el Sidebar
+Se corrigió un problema donde el nombre del negocio no aparecía debajo de "StockFlow" en la barra lateral.
+
+**Causa raíz:** El sistema intentaba obtener el nombre vía una función backend que no pasaba correctamente el token de sesión del usuario.
+
+**Solución:** Ahora se obtiene directamente con el SDK autenticado del usuario, que ya tiene permisos para leer el registro de su propio negocio gracias al RLS configurado.
+
+También se eliminó un duplicado visual: el nombre del negocio ahora aparece **una sola vez** como subtítulo de "StockFlow".
+
+---
+
+#### 🗄️ Datos de Prueba ACACIA OWNER SANDBOX
+
+Se realizó un reset completo y carga de datos representativos:
+
+| Entidad | Cantidad |
+|---|---|
+| Categorías | 4 (Electrónica, Abarrotes, Papelería, Herramientas) |
+| Proveedores | 2 |
+| Clientes | 4 |
+| Productos | 10 con SKU, barcode EAN-13, precios menudeo/mayoreo |
+| Movimientos | 12 (entradas y salidas, 3 productos en stock bajo) |
+| Cotizaciones | 4 (draft, sent, accepted, converted) |
+| Caja Chica | 4 movimientos (fondo inicial + ingresos + egreso) |
+`
+    },
     {
       id: "reports-movement-stock",
       category: "Reportes",

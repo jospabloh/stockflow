@@ -2,11 +2,20 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.0.0";
+export const APP_VERSION = "2.1.0";
 
-export const RELEASE_DATE = "2026-04-01";
+export const RELEASE_DATE = "2026-04-02";
 
 export const CHANGELOG = [
+  {
+    version: "2.1.0",
+    date: "2026-04-02",
+    changes: [
+      "Corrección: nombre del negocio ahora se muestra correctamente en la barra lateral (se resolvía con SDK autenticado en lugar de backend function)",
+      "Eliminado duplicado del nombre del negocio en el sidebar — ahora aparece una sola vez bajo 'StockFlow'",
+      "Reset y carga de datos de prueba para ACACIA OWNER SANDBOX: 10 productos, 4 categorías, 2 proveedores, 4 clientes, 12 movimientos, 4 cotizaciones y 4 movimientos de caja chica",
+    ],
+  },
   {
     version: "2.0.0",
     date: "2026-04-01",
