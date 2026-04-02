@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileSelect } from "@/components/ui/MobileSelect";
-import { Save, X, ScanBarcode, Wand2, Camera, Plus } from "lucide-react";
+import { Save, X, ScanBarcode, Wand2, Camera, Plus, Barcode, Loader2 } from "lucide-react";
 import BarcodeCameraScanner from "./BarcodeCameraScanner";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps } from "@/lib/a11y";
@@ -32,6 +32,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
     status: "active", tax_rate: 16,
   });
   const [saving, setSaving] = useState(false);
+  const [generatingBarcode, setGeneratingBarcode] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [showNewCatDialog, setShowNewCatDialog] = useState(false);
@@ -200,6 +201,37 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
     setShowNewSupDialog(false);
   };
 
+  const handleGenerateBarcodeInForm = async () => {
+    if (!product?.id) {
+      // Nuevo producto: generar localmente
+      function calcEAN13(code) {
+        let sum = 0;
+        for (let i = 0; i < code.length; i++) {
+          sum += parseInt(code[i]) * (i % 2 === 0 ? 1 : 3);
+        }
+        return ((10 - (sum % 10)) % 10).toString();
+      }
+      const rand = Math.floor(Math.random() * 9999999999).toString().padStart(9, "0");
+      const base = "290" + rand;
+      updateField("barcode", base + calcEAN13(base));
+      return;
+    }
+    setGeneratingBarcode(true);
+    try {
+      const response = await base44.functions.invoke('generateBarcodeSafe', { product_id: product.id });
+      if (response.data?.success) {
+        updateField("barcode", response.data.barcode);
+        toast.success(`Código generado: ${response.data.barcode}`);
+      } else {
+        toast.error(response.data?.error || 'No se pudo generar el código');
+      }
+    } catch (error) {
+      toast.error(`Error: ${error.message}`);
+    } finally {
+      setGeneratingBarcode(false);
+    }
+  };
+
   const canSave = form.name && (Number(form.retail_sale_price) >= 0) && form.name.trim();
 
   return (
@@ -243,6 +275,11 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
                 />
                 <ScanBarcode className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${scanning ? "text-emerald-500 animate-pulse" : "text-slate-300"}`} />
               </div>
+              {!form.barcode && (
+                <Button type="button" variant="outline" size="icon" onClick={handleGenerateBarcodeInForm} disabled={generatingBarcode} title="Generar código automático">
+                  {generatingBarcode ? <Loader2 className="h-4 w-4 animate-spin" /> : <Barcode className="h-4 w-4 text-indigo-500" />}
+                </Button>
+              )}
               <Button type="button" variant={isMobile ? "default" : "outline"} size="icon" onClick={() => setShowCamera(true)} title="Escanear con cámara" className={isMobile ? "bg-indigo-600 hover:bg-indigo-700" : ""}>
                 <Camera className="h-4 w-4" />
               </Button>
