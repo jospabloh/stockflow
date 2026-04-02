@@ -43,6 +43,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   const [categories, setCategories] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [clients, setClients] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [barcodeNotFound, setBarcodeNotFound] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState("");
   const [saving, setSaving] = useState(false);
@@ -63,11 +64,13 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         base44.entities.Category.filter({ business_id: businessId }),
         base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }),
         base44.entities.Client.filter({ business_id: businessId, status: "active" }),
-      ]).then(([prods, cats, pms, cls]) => {
+        base44.entities.Supplier.filter({ business_id: businessId }),
+      ]).then(([prods, cats, pms, cls, sups]) => {
         setProducts(prods);
         setCategories(cats);
         setPaymentMethods(pms);
         setClients(cls);
+        setSuppliers(sups);
       });
       setMovType("exit");
       setPaymentMethodId("");
@@ -128,14 +131,20 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       return;
     }
     if (!clientId) {
-      toast.error("⚠️ Selecciona el cliente");
+      toast.error(movType === "entry" ? "⚠️ Selecciona el proveedor" : "⚠️ Selecciona el cliente");
       return;
     }
 
     setSaving(true);
     const pmName = paymentMethods.find(p => p.id === paymentMethodId)?.name || "";
-    const clientObj = clients.find(c => c.id === clientId);
-    const clientName = clientObj?.business_name || clientObj?.name || "";
+    let clientName = "";
+    if (movType === "entry") {
+      const sup = suppliers.find(s => s.id === clientId);
+      clientName = sup?.name || "";
+    } else {
+      const clientObj = clients.find(c => c.id === clientId);
+      clientName = clientObj?.business_name || clientObj?.name || "";
+    }
 
     const validItems = items.filter(i => i.product && i.quantity > 0);
 
@@ -251,7 +260,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
             <Label className="text-foreground mb-1.5 block">Tipo de movimiento *</Label>
             <MobileSelect
               value={movType}
-              onValueChange={setMovType}
+              onValueChange={(val) => { setMovType(val); setClientId(""); }}
               placeholder="Tipo"
               options={TYPES.map((t) => ({ value: t.value, label: t.label }))}
             />
@@ -344,18 +353,19 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
             )}
           </div>
 
-          {/* Cliente */}
+          {/* Cliente / Proveedor según tipo */}
           <div>
-            <Label className="text-foreground mb-1.5 block">Cliente *</Label>
+            <Label className="text-foreground mb-1.5 block">
+              {movType === "entry" ? "Proveedor *" : "Cliente *"}
+            </Label>
             <SearchableSelect
               value={clientId}
               onValueChange={setClientId}
-              placeholder="Seleccionar cliente"
-              options={clients.map((c) => ({
-                value: c.id,
-                label: c.name,
-                searchLabel: c.business_name || c.name,
-              }))}
+              placeholder={movType === "entry" ? "Seleccionar proveedor" : "Seleccionar cliente"}
+              options={movType === "entry"
+                ? suppliers.map((s) => ({ value: s.id, label: s.name }))
+                : clients.map((c) => ({ value: c.id, label: c.name, searchLabel: c.business_name || c.name }))
+              }
             />
           </div>
 
@@ -388,7 +398,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           <div className="px-6 pb-2 shrink-0 space-y-0.5">
             {!items.some(i => i.product) && <p className="text-xs text-red-500">• Selecciona al menos un producto</p>}
             {!paymentMethodId && paymentMethods.length > 0 && <p className="text-xs text-red-500">• Selecciona la forma de pago</p>}
-            {!clientId && <p className="text-xs text-red-500">• Selecciona el cliente</p>}
+            {!clientId && <p className="text-xs text-red-500">• Selecciona el {movType === "entry" ? "proveedor" : "cliente"}</p>}
           </div>
         )}
 
