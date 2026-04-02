@@ -373,8 +373,8 @@ export default function Dashboard() {
          <h3 className="font-semibold text-slate-700 flex items-center gap-2 mb-4">
            <TrendingUp className="h-4 w-4 text-indigo-500" /> Ventas
          </h3>
-            {salesData.salesCount === 0 ? (
-              <p className="text-sm text-slate-400 py-4 text-center">Sin ventas registradas en este período</p>
+            {salesData.salesRevenue === 0 ? (
+             <p className="text-sm text-slate-400 py-4 text-center">Sin ventas registradas en este período</p>
             ) : (
               <div className="space-y-3">
                 <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-950/40 rounded-lg px-4 py-2.5">
