@@ -32,7 +32,7 @@ export function BusinessProvider({ children }) {
           // RLS restricts Business reads to records where id == user.business_id,
           // so list() returns exactly the user's own business record.
           const businesses = await base44.entities.Business.list();
-          const biz = businesses?.find(b => b.id === bid) || businesses?.[0];
+          const biz = businesses?.find(b => b.id === bid) ?? businesses?.[0];
           if (biz?.name) {
             setBusinessName(biz.name);
             setBusinessNameLocked(true);
@@ -75,13 +75,7 @@ export function BusinessProvider({ children }) {
     }
   }, [user?.email, loadUser]);
 
-  // CRITICAL FIX: Detect business_id changes and reload immediately
-  useEffect(() => {
-    if (businessId && businessId !== lastBusinessIdRef.current) {
-      console.log(`[BusinessContext] business_id changed to ${businessId}, reloading business name`);
-      loadUser();
-    }
-  }, [businessId, loadUser]);
+
 
   const refreshBusiness = useCallback(() => {
     console.log("[BusinessContext] Manual refresh triggered");
