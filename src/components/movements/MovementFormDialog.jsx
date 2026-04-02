@@ -345,11 +345,11 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           {/* Forma de pago — oculto en ajuste */}
           {!isAdjustment && (
             <div>
-              <Label className="text-foreground mb-1.5 block">Forma de pago *</Label>
+              <Label className="text-foreground mb-1.5 block">{movType === "return" ? "Método de reembolso *" : "Forma de pago *"}</Label>
               <SearchableSelect
                 value={paymentMethodId}
                 onValueChange={setPaymentMethodId}
-                placeholder="Seleccionar forma de pago"
+                placeholder={movType === "return" ? "Seleccionar método de reembolso" : "Seleccionar forma de pago"}
                 options={paymentMethods.map((pm) => ({ value: pm.id, label: pm.name }))}
               />
               {paymentMethods.length === 0 && (
@@ -404,7 +404,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         {(!items.some(i => i.product) || (needsParty && (!paymentMethodId || !clientId))) && (
           <div className="px-6 pb-2 shrink-0 space-y-0.5">
             {!items.some(i => i.product) && <p className="text-xs text-red-500">• Selecciona al menos un producto</p>}
-            {needsParty && !paymentMethodId && paymentMethods.length > 0 && <p className="text-xs text-red-500">• Selecciona la forma de pago</p>}
+            {needsParty && !paymentMethodId && paymentMethods.length > 0 && <p className="text-xs text-red-500">• Selecciona {movType === "return" ? "el método de reembolso" : "la forma de pago"}</p>}
             {needsParty && !clientId && <p className="text-xs text-red-500">• Selecciona el {movType === "entry" ? "proveedor" : "cliente"}</p>}
           </div>
         )}
