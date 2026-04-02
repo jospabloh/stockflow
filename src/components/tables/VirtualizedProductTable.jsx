@@ -1,15 +1,35 @@
-import React, { useMemo } from "react";
+import React, { useState } from "react";
 import { FixedSizeList as List } from "react-window";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Pencil, Trash2, AlertTriangle, Barcode, Loader2 } from "lucide-react";
 import { createButtonProps } from "@/lib/a11y";
+import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 
 const ITEM_HEIGHT = 60;
 const HEADER_HEIGHT = 52;
 
-export default function VirtualizedProductTable({ products, categories, onEdit, onDelete, isAdmin }) {
+export default function VirtualizedProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated }) {
+  const [generatingId, setGeneratingId] = useState(null);
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || "—";
+
+  const handleGenerateBarcode = async (product) => {
+    setGeneratingId(product.id);
+    try {
+      const response = await base44.functions.invoke('generateBarcodeSafe', { product_id: product.id });
+      if (response.data?.success) {
+        toast.success(`Código generado: ${response.data.barcode}`);
+        onBarcodeGenerated?.();
+      } else {
+        toast.error(response.data?.error || 'No se pudo generar el código');
+      }
+    } catch (error) {
+      toast.error(`Error: ${error.message}`);
+    } finally {
+      setGeneratingId(null);
+    }
+  };
 
   const ProductRow = ({ index, style }) => {
     const product = products[index];
@@ -54,7 +74,21 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
             {product.status === "active" ? "Activo" : "Inactivo"}
           </Badge>
         </div>
-        <div className="w-20 text-center flex items-center justify-center gap-1">
+        <div className="w-24 text-center flex items-center justify-center gap-1">
+          {!product.barcode && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => handleGenerateBarcode(product)}
+              title="Generar código de barras"
+              disabled={generatingId === product.id}
+            >
+              {generatingId === product.id
+                ? <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-400" />
+                : <Barcode className="h-3.5 w-3.5 text-slate-400" />}
+            </Button>
+          )}
           {isAdmin && (
             <>
               <Button 
@@ -101,7 +135,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
         <div className="w-24 text-right">Precio Menudeo</div>
         <div className="w-32 text-right">Stock</div>
         <div className="w-16 text-center">Estado</div>
-        <div className="w-20 text-center">Acciones</div>
+        <div className="w-24 text-center">Acciones</div>
       </div>
 
       {/* Virtualized List */}

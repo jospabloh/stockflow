@@ -199,6 +199,7 @@ export default function Products() {
         onEdit={handleEdit}
         onDelete={setDeleteProduct}
         isAdmin={isAdmin}
+        onBarcodeGenerated={() => loadData(businessId)}
       />
 
       {/* Delete confirmation */}

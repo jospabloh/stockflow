@@ -9,18 +9,39 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, AlertTriangle, Barcode } from "lucide-react";
+import { Pencil, Trash2, AlertTriangle, Barcode, Loader2 } from "lucide-react";
 import { createButtonProps } from "@/lib/a11y";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 import VirtualizedProductTable from "@/components/tables/VirtualizedProductTable";
 
-export default function ProductTable({ products, categories, onEdit, onDelete, isAdmin }) {
+export default function ProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated }) {
   const navigate = useNavigate();
+  const [generatingId, setGeneratingId] = useState(null);
+
+  const handleGenerateBarcode = async (product) => {
+    setGeneratingId(product.id);
+    try {
+      const response = await base44.functions.invoke('generateBarcodeSafe', { product_id: product.id });
+      if (response.data?.success) {
+        toast.success(`Código generado: ${response.data.barcode}`);
+        onBarcodeGenerated?.();
+      } else {
+        toast.error(response.data?.error || 'No se pudo generar el código');
+      }
+    } catch (error) {
+      toast.error(`Error: ${error.message}`);
+    } finally {
+      setGeneratingId(null);
+    }
+  };
   // Use virtualized table for desktop, card layout for mobile
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   if (!isMobile && products.length > 20) {
-    return <VirtualizedProductTable products={products} categories={categories} onEdit={onEdit} onDelete={onDelete} isAdmin={isAdmin} />;
+    return <VirtualizedProductTable products={products} categories={categories} onEdit={onEdit} onDelete={onDelete} isAdmin={isAdmin} onBarcodeGenerated={onBarcodeGenerated} />;
   }
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || "—";
 
@@ -72,10 +93,13 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
                  variant="ghost" 
                  size="icon" 
                  className="h-8 w-8" 
-                 onClick={() => navigate(`/BarcodeGenerator?productId=${product.id}`)}
+                 onClick={() => handleGenerateBarcode(product)}
                  title="Generar código de barras"
+                 disabled={generatingId === product.id}
                >
-                 <Barcode className="h-4 w-4 text-slate-400" />
+                 {generatingId === product.id
+                   ? <Loader2 className="h-4 w-4 animate-spin text-indigo-400" />
+                   : <Barcode className="h-4 w-4 text-slate-400" />}
                </Button>
             )}
             {isAdmin && (
@@ -140,10 +164,14 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
               variant="ghost" 
               size="sm" 
               className="h-11 px-3" 
-              onClick={() => navigate(`/BarcodeGenerator?productId=${product.id}`)}
+              onClick={() => handleGenerateBarcode(product)}
               title="Generar código de barras"
+              disabled={generatingId === product.id}
             >
-              <Barcode className="h-4 w-4 text-muted-foreground mr-1" /> Código
+              {generatingId === product.id
+                ? <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                : <Barcode className="h-4 w-4 text-muted-foreground mr-1" />}
+              Código
             </Button>
           )}
           {isAdmin && (
