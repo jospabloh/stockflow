@@ -425,14 +425,12 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                     <p className="h-9 flex items-center font-bold text-foreground text-sm">${(item.total || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
                   </div>
                   <div className="col-span-1 hidden md:flex flex-col items-center justify-start pt-6">
-                    <button
-                      type="button"
-                      onClick={() => updateItem(idx, "tax_rate", item.tax_rate > 0 ? 0 : 16)}
-                      className={`text-xs font-bold px-1.5 py-0.5 rounded ${item.tax_rate > 0 ? "bg-amber-100 text-amber-700" : "bg-slate-200 text-slate-400"}`}
-                      title="Clic para cambiar IVA del ítem"
+                    <span
+                      className={`text-xs font-bold px-1.5 py-0.5 rounded cursor-default ${item.tax_rate > 0 ? "bg-amber-100 text-amber-700" : "bg-slate-200 text-slate-400"}`}
+                      title={item.tax_rate > 0 ? "IVA 16% — definido en el producto" : "IVA 0% — definido en el producto"}
                     >
                       {item.tax_rate > 0 ? "IVA" : "0%"}
-                    </button>
+                    </span>
                   </div>
                   <div className="col-span-1 flex items-start pt-5">
                     <Button variant="ghost" size="icon" className="h-8 w-8" type="button" onClick={() => removeItem(idx)}>
