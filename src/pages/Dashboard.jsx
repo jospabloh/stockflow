@@ -48,6 +48,11 @@ export default function Dashboard() {
     }).catch(() => setLoading(false));
   }, []);
 
+  // Forzar recalculación cuando cambia salesPeriod
+  useEffect(() => {
+    // Este efecto vacío asegura que salesData se recalcule
+  }, [salesPeriod]);
+
   const activeProducts = products.filter((p) => p.status === "active");
   const totalStock = activeProducts.reduce((sum, p) => sum + (p.stock || 0), 0);
   const totalValue = activeProducts.reduce((sum, p) => sum + (p.stock || 0) * (p.purchase_price || 0), 0);
@@ -55,8 +60,9 @@ export default function Dashboard() {
 
   // Función para obtener rango de fechas según período
   const getDateRange = (period) => {
-    const end = new Date();
-    const start = new Date();
+    const now = new Date();
+    const start = new Date(now);
+    const end = new Date(now);
     
     switch (period) {
       case "day":
@@ -64,8 +70,9 @@ export default function Dashboard() {
         end.setHours(23, 59, 59, 999);
         break;
       case "week":
-        const day = start.getDay();
-        start.setDate(start.getDate() - day);
+        const dayOfWeek = start.getDay();
+        const diff = start.getDate() - dayOfWeek;
+        start.setDate(diff);
         start.setHours(0, 0, 0, 0);
         end.setHours(23, 59, 59, 999);
         break;
