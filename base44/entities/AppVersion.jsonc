@@ -1,0 +1,40 @@
+{
+  "name": "AppVersion",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Versi\u00f3n actual de la aplicaci\u00f3n (ej: 1.0.0)"
+    },
+    "release_notes": {
+      "type": "string",
+      "description": "Notas de la versi\u00f3n"
+    },
+    "released_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha de liberaci\u00f3n"
+    }
+  },
+  "required": [
+    "version"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
