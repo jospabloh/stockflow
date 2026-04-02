@@ -29,13 +29,14 @@ export function BusinessProvider({ children }) {
       // Load business name if businessId exists
       if (bid) {
         try {
-          // Use SDK directly — user is authenticated and Business RLS allows read where id == user.business_id
-          const businesses = await base44.entities.Business.filter({ id: bid });
-          const biz = businesses?.[0];
+          // RLS restricts Business reads to records where id == user.business_id,
+          // so list() returns exactly the user's own business record.
+          const businesses = await base44.entities.Business.list();
+          const biz = businesses?.find(b => b.id === bid) || businesses?.[0];
           if (biz?.name) {
             setBusinessName(biz.name);
             setBusinessNameLocked(true);
-            console.log(`[BusinessContext] ✓ Business name: "${biz.name}" (ID: ${bid})`);
+            console.log(`[BusinessContext] ✓ Business name: "${biz.name}" (ID: ${biz.id})`);
           } else {
             setBusinessName(null);
             setBusinessNameLocked(false);
