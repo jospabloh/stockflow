@@ -157,11 +157,7 @@ export default function Layout({ children, currentPageName }) {
               <p className="text-xs text-muted-foreground">{businessName || "Control de stock"}</p>
             </div>
           </div>
-          {businessName && businessNameLocked && (
-            <div className="text-xs text-muted-foreground bg-slate-50 dark:bg-slate-900 px-2 py-1.5 rounded-lg">
-              <span className="font-medium text-foreground">{businessName}</span>
-            </div>
-          )}
+
         </div>
 
         {/* Navigation */}
