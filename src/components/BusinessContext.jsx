@@ -29,21 +29,14 @@ export function BusinessProvider({ children }) {
       // Load business name if businessId exists
       if (bid) {
         try {
-          // Use backend function to fetch business without RLS restrictions
-          // This prevents infinite loop when user doesn't own the business record
-          const response = await fetch('/api/functions/getBusinessName', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ business_id: bid })
-          });
-          const result = await response.json();
-          
-          if (result.success && result.business_name) {
-            setBusinessName(result.business_name);
+          // Use SDK directly — user is authenticated and Business RLS allows read where id == user.business_id
+          const businesses = await base44.entities.Business.filter({ id: bid });
+          const biz = businesses?.[0];
+          if (biz?.name) {
+            setBusinessName(biz.name);
             setBusinessNameLocked(true);
-            console.log(`[BusinessContext] ✓ [LOCKED] Business name verified: "${result.business_name}" (ID: ${bid}) for user ${u?.email}`);
+            console.log(`[BusinessContext] ✓ Business name: "${biz.name}" (ID: ${bid})`);
           } else {
-            console.log(`[BusinessContext] ✗ Could not load business name for ID ${bid}: ${result.error}`);
             setBusinessName(null);
             setBusinessNameLocked(false);
           }
