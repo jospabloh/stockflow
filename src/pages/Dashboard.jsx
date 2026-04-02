@@ -62,6 +62,15 @@ export default function Dashboard() {
     return mexicoDate;
   };
 
+  // Helper: Convert date to YYYY-MM-DD string in Mexico timezone
+  const getDateStringMexico = (isoString) => {
+    const localDate = convertUTCToLocalDate(isoString);
+    const year = localDate.getUTCFullYear();
+    const month = String(localDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(localDate.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Función para obtener rango de fechas según período (México City timezone UTC-6)
   const getDateRange = (period) => {
     // Obtener la fecha actual en México City (UTC-6)
@@ -73,53 +82,60 @@ export default function Dashboard() {
     const date = mexicoNow.getUTCDate();
     const dayOfWeek = mexicoNow.getUTCDay();
     
-    let start, end;
+    let startDate, endDate;
     
     switch (period) {
       case "day":
-        start = new Date(Date.UTC(year, month, date, 0, 0, 0, 0));
-        end = new Date(Date.UTC(year, month, date, 23, 59, 59, 999));
+        startDate = new Date(year, month, date);
+        endDate = new Date(year, month, date);
         break;
       case "week":
         const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        const weekStart = new Date(year, month, date - daysFromMonday);
-        start = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate(), 0, 0, 0, 0);
-        end = new Date(year, month, date, 23, 59, 59, 999);
+        startDate = new Date(year, month, date - daysFromMonday);
+        endDate = new Date(year, month, date);
         break;
       case "month":
-        start = new Date(year, month, 1, 0, 0, 0, 0);
-        end = new Date(year, month, date, 23, 59, 59, 999);
+        startDate = new Date(year, month, 1);
+        endDate = new Date(year, month, date);
         break;
       case "year":
-        start = new Date(year, 0, 1, 0, 0, 0, 0);
-        end = new Date(year, month, date, 23, 59, 59, 999);
+        startDate = new Date(year, 0, 1);
+        endDate = new Date(year, month, date);
         break;
       default:
-        start = new Date(year, month, date, 0, 0, 0, 0);
-        end = new Date(year, month, date, 23, 59, 59, 999);
+        startDate = new Date(year, month, date);
+        endDate = new Date(year, month, date);
     }
     
-    return { start, end };
+    // Convert to YYYY-MM-DD strings
+    const formatDateStr = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+    
+    return { startStr: formatDateStr(startDate), endStr: formatDateStr(endDate) };
   };
 
   // Calcular datos según período GLOBAL
-  const { start: periodStart, end: periodEnd } = useMemo(() => getDateRange(salesPeriod), [salesPeriod]);
+  const { startStr: periodStartStr, endStr: periodEndStr } = useMemo(() => getDateRange(salesPeriod), [salesPeriod]);
 
-  // Filtrar todos los datos por período
+  // Filtrar todos los datos por período (usando date strings)
   const periodMovements = useMemo(() => 
     movements.filter((m) => {
-      const localDate = convertUTCToLocalDate(m.created_date);
-      return localDate >= periodStart && localDate <= periodEnd;
+      const dateStr = getDateStringMexico(m.created_date);
+      return dateStr >= periodStartStr && dateStr <= periodEndStr;
     }),
-    [movements, periodStart, periodEnd]
+    [movements, periodStartStr, periodEndStr]
   );
 
   const periodQuotations = useMemo(() =>
     quotations.filter((q) => {
-      const localDate = convertUTCToLocalDate(q.created_date);
-      return localDate >= periodStart && localDate <= periodEnd;
+      const dateStr = getDateStringMexico(q.created_date);
+      return dateStr >= periodStartStr && dateStr <= periodEndStr;
     }),
-    [quotations, periodStart, periodEnd]
+    [quotations, periodStartStr, periodEndStr]
   );
 
   // Stats dinámicos (NO filtrados, pero sí periódicos para ciertas métricas)
