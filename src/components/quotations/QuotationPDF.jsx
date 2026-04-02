@@ -62,9 +62,9 @@ export async function generateQuotationPDF(quotation, settings) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...headerTextColor);
-  if (settings?.address) doc.text(settings.address, margin, 22);
-  if (settings?.phone) doc.text(`Tel: ${settings.phone}`, margin, 27);
-  if (settings?.rfc) doc.text(`RFC: ${settings.rfc}`, margin, 32);
+  if (settings?.address) doc.text(settings.address, logoEndX, 22);
+  if (settings?.phone) doc.text(`Tel: ${settings.phone}`, logoEndX, 27);
+  if (settings?.rfc) doc.text(`RFC: ${settings.rfc}`, logoEndX, 32);
 
   // COTIZACIÓN label
   doc.setFont("helvetica", "bold");
