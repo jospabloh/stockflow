@@ -58,38 +58,43 @@ export default function Dashboard() {
   const totalValue = activeProducts.reduce((sum, p) => sum + (p.stock || 0) * (p.purchase_price || 0), 0);
   const lowStockProducts = activeProducts.filter((p) => p.stock <= (p.min_stock || 5));
 
-  // Función para obtener rango de fechas según período
+  // Función para obtener rango de fechas según período (con timezone correcto)
   const getDateRange = (period) => {
     const now = new Date();
-    const start = new Date(now);
-    const end = new Date(now);
+    // Convertir a strings de fecha en timezone local para comparación correcta
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const date = now.getDate();
+    const dayOfWeek = now.getDay();
+    
+    let start, end;
     
     switch (period) {
       case "day":
-        start.setHours(0, 0, 0, 0);
-        end.setHours(23, 59, 59, 999);
+        start = new Date(year, month, date, 0, 0, 0, 0);
+        end = new Date(year, month, date, 23, 59, 59, 999);
         break;
       case "week":
-        const dayOfWeek = start.getDay();
-        const diff = start.getDate() - dayOfWeek;
-        start.setDate(diff);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(23, 59, 59, 999);
+        // Lunes = 0, Domingo = 6 en getDay() pero en día de semana estándar Lunes es 1
+        const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const weekStart = new Date(year, month, date - daysFromMonday);
+        start = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate(), 0, 0, 0, 0);
+        end = new Date(year, month, date, 23, 59, 59, 999);
         break;
       case "month":
-        start.setDate(1);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(23, 59, 59, 999);
+        start = new Date(year, month, 1, 0, 0, 0, 0);
+        end = new Date(year, month, date, 23, 59, 59, 999);
         break;
       case "year":
-        start.setMonth(0, 1);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(23, 59, 59, 999);
+        start = new Date(year, 0, 1, 0, 0, 0, 0);
+        end = new Date(year, month, date, 23, 59, 59, 999);
         break;
       default:
-        start.setHours(0, 0, 0, 0);
-        end.setHours(23, 59, 59, 999);
+        start = new Date(year, month, date, 0, 0, 0, 0);
+        end = new Date(year, month, date, 23, 59, 59, 999);
     }
+    
+    console.log(`📅 Período: ${period} | Start: ${start.toISOString()} | End: ${end.toISOString()}`);
     return { start, end };
   };
 
@@ -98,13 +103,18 @@ export default function Dashboard() {
     const { start, end } = getDateRange(salesPeriod);
     
     const periodMovements = movements.filter((m) => {
-      const mDate = new Date(m.created_date);
-      return mDate >= start && mDate <= end;
+      // Convertir ISO string a local time para comparación correcta
+      const utcDate = new Date(m.created_date);
+      const localDate = new Date(utcDate.getTime() + utcDate.getTimezoneOffset() * 60000);
+      console.log(`🔍 Movement ${m.id}: UTC=${utcDate.toISOString()} Local=${localDate.toISOString()} In Range=${localDate >= start && localDate <= end}`);
+      return localDate >= start && localDate <= end;
     });
 
-    const periodConvertedQuotations = quotations.filter(
-      (q) => q.status === "converted" && new Date(q.created_date) >= start && new Date(q.created_date) <= end
-    );
+    const periodConvertedQuotations = quotations.filter((q) => {
+      const utcDate = new Date(q.created_date);
+      const localDate = new Date(utcDate.getTime() + utcDate.getTimezoneOffset() * 60000);
+      return q.status === "converted" && localDate >= start && localDate <= end;
+    });
     
     const periodExits = periodMovements.filter((m) => m.type === "exit");
     const periodDirectExits = periodExits.filter((m) => !m.quotation_id);
