@@ -293,8 +293,12 @@ export default function Movements() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-semibold">
-                        <span className={m.type === "exit" ? "text-rose-600" : "text-emerald-600"}>
-                          {m.type === "exit" ? "-" : "+"}{m.quantity}
+                        <span className={
+                          m.type === "exit" ? "text-rose-600" :
+                          m.type === "adjustment" ? "text-blue-600" :
+                          "text-emerald-600"
+                        }>
+                          {m.type === "exit" ? "-" : m.type === "adjustment" ? "=" : "+"}{m.quantity}
                         </span>
                       </TableCell>
                       <TableCell className="text-right text-slate-600 text-sm">
@@ -305,8 +309,8 @@ export default function Movements() {
                           <div>${getTotalWithTax(m).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-slate-500 text-sm">{m.reference || "—"}</TableCell>
-                      <TableCell className="text-slate-500 text-sm">{m.reason || "—"}</TableCell>
+                      <TableCell className="text-slate-500 text-sm">{m.type === "adjustment" ? <span className="text-blue-500 text-xs font-medium">Ajuste admin</span> : (m.reference || "—")}</TableCell>
+                      <TableCell className="text-slate-500 text-sm">{m.type === "adjustment" ? <span className="text-muted-foreground text-xs">Stock = {m.stock_after}</span> : (m.reason || "—")}</TableCell>
                       <TableCell className="text-right text-slate-600">{m.stock_after ?? "—"}</TableCell>
                       <TableCell className="text-center">
                         {m.type === "exit" && !m.quotation_id ? (
