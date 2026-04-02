@@ -53,10 +53,14 @@ export default function Dashboard() {
     // Este efecto vacío asegura que salesData se recalcule
   }, [salesPeriod]);
 
-  const activeProducts = products.filter((p) => p.status === "active");
-  const totalStock = activeProducts.reduce((sum, p) => sum + (p.stock || 0), 0);
-  const totalValue = activeProducts.reduce((sum, p) => sum + (p.stock || 0) * (p.purchase_price || 0), 0);
-  const lowStockProducts = activeProducts.filter((p) => p.stock <= (p.min_stock || 5));
+  // Función centralizada para convertir UTC a timezone México (UTC-6, FIJO sin daylight saving)
+  const convertUTCToLocalDate = (isoString) => {
+    const utcDate = new Date(isoString);
+    // México City siempre está en UTC-6 (sin cambio de horario)
+    // Convertimos a milisegundos sumando 6 horas (6 * 60 * 60 * 1000)
+    const mexicoDate = new Date(utcDate.getTime() + (6 * 60 * 60 * 1000));
+    return mexicoDate;
+  };
 
   // Función para obtener rango de fechas según período (timezone local)
   const getDateRange = (period) => {
@@ -92,32 +96,41 @@ export default function Dashboard() {
         end = new Date(year, month, date, 23, 59, 59, 999);
     }
     
-
-    
     return { start, end };
   };
 
+  // Calcular datos según período GLOBAL
+  const { start: periodStart, end: periodEnd } = useMemo(() => getDateRange(salesPeriod), [salesPeriod]);
+
+  // Filtrar todos los datos por período
+  const periodMovements = useMemo(() => 
+    movements.filter((m) => {
+      const localDate = convertUTCToLocalDate(m.created_date);
+      return localDate >= periodStart && localDate <= periodEnd;
+    }),
+    [movements, periodStart, periodEnd]
+  );
+
+  const periodQuotations = useMemo(() =>
+    quotations.filter((q) => {
+      const localDate = convertUTCToLocalDate(q.created_date);
+      return localDate >= periodStart && localDate <= periodEnd;
+    }),
+    [quotations, periodStart, periodEnd]
+  );
+
+  // Stats dinámicos (NO filtrados, pero sí periódicos para ciertas métricas)
+  const activeProducts = products.filter((p) => p.status === "active");
+  const totalStock = activeProducts.reduce((sum, p) => sum + (p.stock || 0), 0);
+  const totalValue = activeProducts.reduce((sum, p) => sum + (p.stock || 0) * (p.purchase_price || 0), 0);
+  const lowStockProducts = activeProducts.filter((p) => p.stock <= (p.min_stock || 5));
+
+  // Movimientos en período
+  const periodMovementsCount = periodMovements.length;
+
   // Calcular ventas según período
   const salesData = useMemo(() => {
-    const { start, end } = getDateRange(salesPeriod);
-    
-    // Convertir UTC a timezone local (México City es UTC-6)
-    const convertUTCToLocalDate = (isoString) => {
-      const utcDate = new Date(isoString);
-      const mexicoCityOffset = -6 * 60; // UTC-6 en minutos
-      return new Date(utcDate.getTime() + (mexicoCityOffset + utcDate.getTimezoneOffset()) * 60000);
-    };
-
-    const periodMovements = movements.filter((m) => {
-      const localDate = convertUTCToLocalDate(m.created_date);
-      return localDate >= start && localDate <= end;
-    });
-
-    const periodConvertedQuotations = quotations.filter((q) => {
-      const localDate = convertUTCToLocalDate(q.created_date);
-      return q.status === "converted" && localDate >= start && localDate <= end;
-    });
-    
+    const periodConvertedQuotations = periodQuotations.filter((q) => q.status === "converted");
     const periodExits = periodMovements.filter((m) => m.type === "exit");
     const periodDirectExits = periodExits.filter((m) => !m.quotation_id);
 
@@ -149,45 +162,111 @@ export default function Dashboard() {
       profit,
       margin,
       salesCount,
-      periodMovements,
+      periodExits,
+      periodDirectExits,
+      periodConvertedQuotations,
     };
-  }, [salesPeriod, movements, quotations, products]);
+  }, [periodMovements, periodQuotations, products]);
 
-  const today = new Date().toDateString();
-  const todayMovements = movements.filter((m) => new Date(m.created_date).toDateString() === today);
-
-  // Cotizaciones concretadas sin pagar
-  const unpaidConverted = quotations.filter(q => q.status === "converted" && !q.paid);
-  // Movimientos de salida directa sin pagar (sin quotation_id)
-  const unpaidDirectMovements = movements.filter(m => m.type === "exit" && !m.quotation_id && !m.paid);
+  // Cotizaciones concretadas sin pagar EN EL PERÍODO
+  const unpaidConverted = periodQuotations.filter(q => q.status === "converted" && !q.paid);
+  // Movimientos de salida directa sin pagar (sin quotation_id) EN EL PERÍODO
+  const unpaidDirectMovements = periodMovements.filter(m => m.type === "exit" && !m.quotation_id && !m.paid);
 
   const unpaidCount = unpaidConverted.length + unpaidDirectMovements.length;
   const unpaidTotal =
     unpaidConverted.reduce((sum, q) => sum + (q.total || 0), 0) +
     unpaidDirectMovements.reduce((sum, m) => sum + (m.total || 0), 0);
 
-  // Quotation semaphore counts
-  const quotGreen = quotations.filter(q => q.status === "converted").length;
-  const quotYellow = quotations.filter(q => ["draft", "sent", "accepted"].includes(q.status)).length;
-  const quotRed = quotations.filter(q => q.status === "cancelled").length;
+  // Quotation semaphore counts EN EL PERÍODO
+  const quotGreen = periodQuotations.filter(q => q.status === "converted").length;
+  const quotYellow = periodQuotations.filter(q => ["draft", "sent", "accepted"].includes(q.status)).length;
+  const quotRed = periodQuotations.filter(q => q.status === "cancelled").length;
 
-  // Chart data: movements per day (last 7 days)
-  const chartData = [];
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    const dateStr = date.toDateString();
-    const dayMovements = movements.filter(
-      (m) => new Date(m.created_date).toDateString() === dateStr
-    );
-    const entries = dayMovements.filter((m) => m.type === "entry").reduce((s, m) => s + m.quantity, 0);
-    const exits = dayMovements.filter((m) => m.type === "exit").reduce((s, m) => s + m.quantity, 0);
-    chartData.push({
-      day: date.toLocaleDateString("es-MX", { weekday: "short" }),
-      Entradas: entries,
-      Salidas: exits,
-    });
-  }
+  // Chart data: movements per day (dinámico según período)
+  const chartData = useMemo(() => {
+    const data = [];
+    
+    if (salesPeriod === "day") {
+      // Para un día, mostrar horas
+      for (let h = 0; h < 24; h += 4) {
+        const hourMovements = periodMovements.filter((m) => {
+          const d = convertUTCToLocalDate(m.created_date);
+          return d.getHours() >= h && d.getHours() < (h + 4);
+        });
+        const entries = hourMovements.filter(m => m.type === "entry").reduce((s, m) => s + m.quantity, 0);
+        const exits = hourMovements.filter(m => m.type === "exit").reduce((s, m) => s + m.quantity, 0);
+        data.push({
+          day: `${String(h).padStart(2, '0')}:00`,
+          Entradas: entries,
+          Salidas: exits,
+        });
+      }
+    } else if (salesPeriod === "week") {
+      // Para una semana, mostrar días
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+        const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+        const dayMovements = periodMovements.filter((m) => {
+          const d = convertUTCToLocalDate(m.created_date);
+          return d >= dayStart && d <= dayEnd;
+        });
+        const entries = dayMovements.filter(m => m.type === "entry").reduce((s, m) => s + m.quantity, 0);
+        const exits = dayMovements.filter(m => m.type === "exit").reduce((s, m) => s + m.quantity, 0);
+        data.push({
+          day: date.toLocaleDateString("es-MX", { weekday: "short" }),
+          Entradas: entries,
+          Salidas: exits,
+        });
+      }
+    } else if (salesPeriod === "month") {
+      // Para un mes, mostrar semanas
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      let weekStart = new Date(monthStart);
+      let week = 1;
+      while (weekStart <= monthEnd) {
+        const weekEndDate = new Date(weekStart);
+        weekEndDate.setDate(weekEndDate.getDate() + 6);
+        const weekMovements = periodMovements.filter((m) => {
+          const d = convertUTCToLocalDate(m.created_date);
+          return d >= weekStart && d <= weekEndDate;
+        });
+        const entries = weekMovements.filter(m => m.type === "entry").reduce((s, m) => s + m.quantity, 0);
+        const exits = weekMovements.filter(m => m.type === "exit").reduce((s, m) => s + m.quantity, 0);
+        data.push({
+          day: `Sem ${week}`,
+          Entradas: entries,
+          Salidas: exits,
+        });
+        weekStart.setDate(weekStart.getDate() + 7);
+        week++;
+      }
+    } else {
+      // Para un año, mostrar meses
+      const now = new Date();
+      for (let m = 0; m < 12; m++) {
+        const monthStart = new Date(now.getFullYear(), m, 1);
+        const monthEnd = new Date(now.getFullYear(), m + 1, 0);
+        const monthMovements = periodMovements.filter((mov) => {
+          const d = convertUTCToLocalDate(mov.created_date);
+          return d >= monthStart && d <= monthEnd;
+        });
+        const entries = monthMovements.filter(mov => mov.type === "entry").reduce((s, mov) => s + mov.quantity, 0);
+        const exits = monthMovements.filter(mov => mov.type === "exit").reduce((s, mov) => s + mov.quantity, 0);
+        data.push({
+          day: monthStart.toLocaleDateString("es-MX", { month: "short" }),
+          Entradas: entries,
+          Salidas: exits,
+        });
+      }
+    }
+    
+    return data;
+  }, [salesPeriod, periodMovements]);
 
   if (loading) {
     return (
@@ -198,7 +277,18 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* FILTRO GLOBAL EN TOP */}
+      <div className="sticky top-0 z-10 bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-indigo-950/30 dark:to-cyan-950/30 backdrop-blur-sm border-b border-indigo-200 dark:border-indigo-900 rounded-lg p-4 mb-2">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">Período de análisis</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Todos los datos se filtran por este período</p>
+          </div>
+          <SalesFilterToggle period={salesPeriod} onPeriodChange={setSalesPeriod} />
+        </div>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -220,9 +310,9 @@ export default function Dashboard() {
           />
         )}
         <StatCard
-          title="Movimientos Hoy"
-          value={todayMovements.length}
-          subtitle="Entradas y salidas"
+          title="Movimientos"
+          value={periodMovementsCount}
+          subtitle={`${["day", "week", "month", "year"].includes(salesPeriod) ? { day: "Hoy", week: "Esta semana", month: "Este mes", year: "Este año" }[salesPeriod] : "En período"}`}
           icon={ArrowLeftRight}
           color="cyan"
           href={createPageUrl("Movements")}
@@ -277,17 +367,12 @@ export default function Dashboard() {
         </button>
       )}
 
-      {/* Sales Breakdown with Period Toggle */}
+      {/* Sales Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="border-0 shadow-sm p-5 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-0.5" onClick={() => navigate(`${createPageUrl("Movements")}?type=exit`)}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-slate-700 flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-indigo-500" /> Ventas
-            </h3>
-            <div onClick={(e) => e.stopPropagation()}>
-              <SalesFilterToggle period={salesPeriod} onPeriodChange={setSalesPeriod} />
-            </div>
-          </div>
+       <Card className="border-0 shadow-sm p-5 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-0.5" onClick={() => navigate(`${createPageUrl("Movements")}?type=exit`)}>
+         <h3 className="font-semibold text-slate-700 flex items-center gap-2 mb-4">
+           <TrendingUp className="h-4 w-4 text-indigo-500" /> Ventas
+         </h3>
             {salesData.salesCount === 0 ? (
               <p className="text-sm text-slate-400 py-4 text-center">Sin ventas registradas en este período</p>
             ) : (
