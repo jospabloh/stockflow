@@ -82,8 +82,21 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'No se pudo generar un código único tras 20 intentos' }, { status: 500 });
     }
 
-    // Save barcode to product
-    const updated = await base44.entities.Product.update(product.id, { barcode });
+    // Save barcode to product — pass all existing fields to avoid schema validation errors on legacy products
+    const updatePayload = {
+      ...product,
+      barcode,
+      // Normalize legacy field name
+      retail_sale_price: product.retail_sale_price ?? product.sale_price ?? 0,
+    };
+    // Remove computed/readonly fields that shouldn't be sent
+    delete updatePayload.id;
+    delete updatePayload.created_date;
+    delete updatePayload.updated_date;
+    delete updatePayload.created_by;
+    delete updatePayload.sale_price; // remove legacy field
+
+    const updated = await base44.entities.Product.update(product.id, updatePayload);
 
     return Response.json({ success: true, barcode, product: updated });
   } catch (error) {
