@@ -10,6 +10,11 @@ export default function SalesFilterToggle({ period, onPeriodChange }) {
     { value: "year", label: "Año" },
   ];
 
+  const handlePeriodChange = (newPeriod) => {
+    console.log("🔄 Cambio de período:", period, "→", newPeriod);
+    onPeriodChange(newPeriod);
+  };
+
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <Calendar className="h-4 w-4 text-slate-500" />
@@ -18,7 +23,7 @@ export default function SalesFilterToggle({ period, onPeriodChange }) {
           key={p.value}
           size="sm"
           variant={period === p.value ? "default" : "outline"}
-          onClick={() => onPeriodChange(p.value)}
+          onClick={() => handlePeriodChange(p.value)}
           className="text-xs"
         >
           {p.label}
