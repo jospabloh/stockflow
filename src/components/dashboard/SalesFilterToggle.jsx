@@ -11,7 +11,6 @@ export default function SalesFilterToggle({ period, onPeriodChange }) {
   ];
 
   const handlePeriodChange = (newPeriod) => {
-    console.log("🔄 Cambio de período:", period, "→", newPeriod);
     onPeriodChange(newPeriod);
   };
 

@@ -58,10 +58,9 @@ export default function Dashboard() {
   const totalValue = activeProducts.reduce((sum, p) => sum + (p.stock || 0) * (p.purchase_price || 0), 0);
   const lowStockProducts = activeProducts.filter((p) => p.stock <= (p.min_stock || 5));
 
-  // Función para obtener rango de fechas según período (con timezone correcto)
+  // Función para obtener rango de fechas según período (timezone local)
   const getDateRange = (period) => {
     const now = new Date();
-    // Convertir a strings de fecha en timezone local para comparación correcta
     const year = now.getFullYear();
     const month = now.getMonth();
     const date = now.getDate();
@@ -75,7 +74,6 @@ export default function Dashboard() {
         end = new Date(year, month, date, 23, 59, 59, 999);
         break;
       case "week":
-        // Lunes = 0, Domingo = 6 en getDay() pero en día de semana estándar Lunes es 1
         const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
         const weekStart = new Date(year, month, date - daysFromMonday);
         start = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate(), 0, 0, 0, 0);
@@ -94,7 +92,8 @@ export default function Dashboard() {
         end = new Date(year, month, date, 23, 59, 59, 999);
     }
     
-    console.log(`📅 Período: ${period} | Start: ${start.toISOString()} | End: ${end.toISOString()}`);
+
+    
     return { start, end };
   };
 
@@ -102,17 +101,20 @@ export default function Dashboard() {
   const salesData = useMemo(() => {
     const { start, end } = getDateRange(salesPeriod);
     
+    // Convertir UTC a timezone local (México City es UTC-6)
+    const convertUTCToLocalDate = (isoString) => {
+      const utcDate = new Date(isoString);
+      const mexicoCityOffset = -6 * 60; // UTC-6 en minutos
+      return new Date(utcDate.getTime() + (mexicoCityOffset + utcDate.getTimezoneOffset()) * 60000);
+    };
+
     const periodMovements = movements.filter((m) => {
-      // Convertir ISO string a local time para comparación correcta
-      const utcDate = new Date(m.created_date);
-      const localDate = new Date(utcDate.getTime() + utcDate.getTimezoneOffset() * 60000);
-      console.log(`🔍 Movement ${m.id}: UTC=${utcDate.toISOString()} Local=${localDate.toISOString()} In Range=${localDate >= start && localDate <= end}`);
+      const localDate = convertUTCToLocalDate(m.created_date);
       return localDate >= start && localDate <= end;
     });
 
     const periodConvertedQuotations = quotations.filter((q) => {
-      const utcDate = new Date(q.created_date);
-      const localDate = new Date(utcDate.getTime() + utcDate.getTimezoneOffset() * 60000);
+      const localDate = convertUTCToLocalDate(q.created_date);
       return q.status === "converted" && localDate >= start && localDate <= end;
     });
     
