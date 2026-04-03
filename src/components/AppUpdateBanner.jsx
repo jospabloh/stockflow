@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { X, Download, AlertCircle } from "lucide-react";
+import { X, Download } from "lucide-react";
+import { APP_VERSION } from "@/lib/appConfig";
 
-const CURRENT_VERSION = "1.0.0";
+const CURRENT_VERSION = APP_VERSION;
 const DISMISS_KEY = "app_update_banner_dismissed_version";
 const LAST_CHECK_KEY = "app_update_last_check";
 const CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutos
