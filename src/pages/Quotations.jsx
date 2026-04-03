@@ -36,6 +36,7 @@ import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import { generateQuotationPDF } from "@/components/quotations/QuotationPDF";
 import QuotationPreviewDialog from "@/components/quotations/QuotationPreviewDialog";
+import PartialReturnDialog from "@/components/quotations/PartialReturnDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import { createButtonProps } from "@/lib/a11y";
 import VirtualizedQuotationTable from "@/components/tables/VirtualizedQuotationTable";
@@ -71,6 +72,7 @@ export default function Quotations() {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [payMarkDelivered, setPayMarkDelivered] = useState(false);
   const [previewQuotation, setPreviewQuotation] = useState(null);
+  const [returnQuotation, setReturnQuotation] = useState(null);
   const [settings, setSettings] = useState(null);
   const [businessId, setBusinessId] = useState(null);
 
@@ -255,6 +257,7 @@ export default function Quotations() {
           setCancelQuotation(q);
           setCancelReason("");
         }}
+        onPartialReturn={(q) => setReturnQuotation(q)}
         onPay={(q) => {
           setPayQuotation(q);
           setPaymentMethod(q.payment_method || "");
@@ -283,6 +286,13 @@ export default function Quotations() {
         }}
         onDeliveredChange={() => {}}
         isExpired={isExpired}
+      />
+
+      <PartialReturnDialog
+        open={!!returnQuotation}
+        onOpenChange={(v) => !v && setReturnQuotation(null)}
+        quotation={returnQuotation}
+        onSaved={() => loadData(businessId)}
       />
 
       <QuotationPreviewDialog

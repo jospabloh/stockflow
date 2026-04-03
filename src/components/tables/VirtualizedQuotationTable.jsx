@@ -8,7 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2, ChevronDown } from "lucide-react";
+import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2, ChevronDown, RotateCcw } from "lucide-react";
 import { createButtonProps } from "@/lib/a11y";
 import moment from "moment";
 
@@ -23,6 +23,7 @@ export default function VirtualizedQuotationTable({
   onConvert,
   onCancel,
   onPay,
+  onPartialReturn,
   onInvoiceStatusChange,
   onInRouteChange,
   onDeliveredChange,
@@ -210,6 +211,11 @@ export default function VirtualizedQuotationTable({
               {q.status === "converted" && !q.paid && (
                 <DropdownMenuItem onClick={() => onPay(q)}>
                   <DollarSign className="h-3 w-3 mr-2" /> Pago
+                </DropdownMenuItem>
+              )}
+              {q.status === "converted" && onPartialReturn && (
+                <DropdownMenuItem onClick={() => onPartialReturn(q)} className="text-orange-600 focus:text-orange-600">
+                  <RotateCcw className="h-3 w-3 mr-2" /> Devolución parcial
                 </DropdownMenuItem>
               )}
               {q.status !== "cancelled" && (
