@@ -1,32 +1,56 @@
-// Nuevos artículos de ayuda para v2.1.0
-// Fix nombre del negocio en sidebar + datos de prueba para ACACIA OWNER SANDBOX
+// Artículos de ayuda — última versión: v2.2.0
+// Corrección IVA cotizaciones (precio IVA-inclusive) + folio desde 0001
 
 export const newHelpArticles = [
     {
-      id: "release-2-1-0",
+      id: "release-2-2-0",
       category: "Novedades",
       role: "admin",
-      title: "🆕 v2.1.0 — Nombre del Negocio y Datos de Prueba",
-      keywords: ["versión", "2.1.0", "negocio", "sidebar", "nombre", "datos", "prueba", "acacia"],
-      related_ids: ["settings-business"],
-      content: `## 🆕 Versión 2.1.0 — 2 de abril de 2026
+      title: "🆕 v2.2.0 — Corrección de IVA y Folios en Cotizaciones",
+      keywords: ["versión", "2.2.0", "iva", "impuesto", "cotización", "folio", "precio", "subtotal"],
+      related_ids: ["quotations-create", "quotations-states"],
+      content: `## 🆕 Versión 2.2.0 — 3 de abril de 2026
 
 ### ✅ Cambios de esta versión
 
-#### 🏢 Nombre del Negocio en el Sidebar
-Se corrigió un problema donde el nombre del negocio no aparecía debajo de "StockFlow" en la barra lateral.
+#### 🧾 Corrección de Cálculo de IVA (Precio IVA-Inclusive)
 
-**Causa raíz:** El sistema intentaba obtener el nombre vía una función backend que no pasaba correctamente el token de sesión del usuario.
+Se corrigió un error crítico en el cálculo de impuestos en cotizaciones.
 
-**Solución:** Ahora se obtiene directamente con el SDK autenticado del usuario, que ya tiene permisos para leer el registro de su propio negocio gracias al RLS configurado.
+**Problema:** El sistema calculaba el IVA sumándolo encima del precio del producto, lo que resultaba en un total incorrecto más alto al esperado.
 
-También se eliminó un duplicado visual: el nombre del negocio ahora aparece **una sola vez** como subtítulo de "StockFlow".
+**Causa raíz:** Los precios de los productos en Baristop **ya incluyen IVA**. El sistema estaba tratándolos como precios sin IVA y aplicando el 16% adicional (doble conteo).
+
+**Solución:** Ahora el IVA se **extrae** del precio inclusive:
+\`\`\`
+IVA = Precio × (tasa / (1 + tasa))
+Subtotal sin IVA = Precio − IVA
+Total = Precio (sin cambio)
+\`\`\`
+
+**Ejemplo COT-260403-0000:**
+| Producto | Precio | IVA (extraído) |
+|---|---|---|
+| Base Neutra 2kg | $550.00 | $0.00 (exento) |
+| Jarabe Crema Irlandesa 750ml | $239.00 | $32.97 (16%) |
+| **Total** | **$789.00** | **$32.97** |
 
 ---
 
-#### 🗄️ Datos de Prueba ACACIA OWNER SANDBOX
+#### 🔢 Corrección de Folio — Secuencia desde 0001
 
-Se realizó un reset completo y carga de datos representativos:
+Se corrigió un error donde el primer folio del día se generaba como \`COT-YYMMDD-0000\`.
+
+**Solución:** La secuencia ahora comienza correctamente desde \`0001\`.
+
+---
+
+### 📦 Versión Anterior — v2.1.0 (2 de abril de 2026)
+
+#### 🏢 Nombre del Negocio en el Sidebar
+Se corrigió que el nombre del negocio no aparecía debajo de "StockFlow" en la barra lateral.
+
+#### 🗄️ Datos de Prueba ACACIA OWNER SANDBOX
 
 | Entidad | Cantidad |
 |---|---|
