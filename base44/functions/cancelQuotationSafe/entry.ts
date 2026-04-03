@@ -29,30 +29,49 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // PHASE 1: If converted, revert stock
+    // PHASE 1: If converted, revert stock — net balance approach
+    // This handles cases where partial returns were already processed:
+    // We calculate net exits (exits - existing returns) per product and only restore that net amount.
     if (quotation.status === 'converted') {
       try {
-        const exitMovements = await base44.entities.Movement.filter({
+        // Fetch ALL movements linked to this quotation (exits AND existing returns)
+        const allMovements = await base44.entities.Movement.filter({
           quotation_id: quotation.id,
-          type: 'exit',
           business_id: user.business_id,
         });
 
-        for (const exitMov of exitMovements) {
-          const prods = await base44.entities.Product.filter({ id: exitMov.product_id, business_id: user.business_id });
+        // Build net quantity to restore per product
+        const netByProduct = {};
+        for (const mov of allMovements) {
+          if (!netByProduct[mov.product_id]) {
+            netByProduct[mov.product_id] = { quantity: 0, product_name: mov.product_name, unit_price: mov.unit_price };
+          }
+          if (mov.type === 'exit') {
+            netByProduct[mov.product_id].quantity += mov.quantity;
+          } else if (mov.type === 'return') {
+            // Already returned — subtract from what needs to be restored
+            netByProduct[mov.product_id].quantity -= mov.quantity;
+          }
+        }
+
+        // Restore only the net pending quantity per product
+        for (const [product_id, data] of Object.entries(netByProduct)) {
+          if (data.quantity <= 0) continue; // Already fully returned, skip
+
+          const prods = await base44.entities.Product.filter({ id: product_id, business_id: user.business_id });
           const product = prods[0];
 
           if (product) {
-            const restoredStock = (product.stock || 0) + exitMov.quantity;
+            const restoredStock = (product.stock || 0) + data.quantity;
 
             // Create return movement
             await base44.entities.Movement.create({
-              product_id: exitMov.product_id,
-              product_name: exitMov.product_name,
+              product_id: product_id,
+              product_name: data.product_name,
               type: 'return',
-              quantity: exitMov.quantity,
-              unit_price: exitMov.unit_price,
-              total: exitMov.total,
+              quantity: data.quantity,
+              unit_price: data.unit_price,
+              total: data.unit_price * data.quantity,
               stock_after: restoredStock,
               reference: `Cancelación ${quotation.folio}`,
               reason: `Cancelación: ${cancellation_reason || 'Sin motivo especificado'}`,
@@ -60,7 +79,7 @@ Deno.serve(async (req) => {
               business_id: user.business_id,
             });
 
-            // Update product stock using safe function
+            // Update product stock
             await base44.asServiceRole.functions.invoke('updateProductStockSafe', {
               product_id: product.id,
               new_stock: restoredStock,
@@ -69,11 +88,11 @@ Deno.serve(async (req) => {
           }
         }
       } catch (error) {
-        return Response.json({ error: 'Stock reversion failed' }, { status: 500 });
+        return Response.json({ error: 'Stock reversion failed: ' + error.message }, { status: 500 });
       }
     }
 
-    // PHASE 2: Mark quotation as cancelled with whitelist
+    // PHASE 2: Mark quotation as cancelled
     try {
       await base44.asServiceRole.entities.Quotation.update(quotation.id, {
         status: 'cancelled',
