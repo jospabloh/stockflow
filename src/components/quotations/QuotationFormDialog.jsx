@@ -218,10 +218,14 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     });
   };
 
-  const subtotal = form.items.reduce((sum, item) => sum + (item.total || 0), 0);
-  const taxableSubtotal = form.items.reduce((sum, item) => (item.tax_rate > 0 ? sum + (item.total || 0) : sum), 0);
-  const taxAmount = taxableSubtotal * 0.16;
-  const total = subtotal + taxAmount;
+  // Los precios ya incluyen IVA. El IVA se extrae del monto, no se suma encima.
+  // Total = suma de todos los items (precios IVA incluido)
+  // Subtotal = total / 1.16 para items gravados + total directo para exentos
+  // IVA = total - subtotal
+  const total = form.items.reduce((sum, item) => sum + (item.total || 0), 0);
+  const taxableTotal = form.items.reduce((sum, item) => (item.tax_rate > 0 ? sum + (item.total || 0) : sum), 0);
+  const taxAmount = taxableTotal - (taxableTotal / 1.16);
+  const subtotal = total - taxAmount;
 
   const generateFolio = async () => {
     const now = new Date();
@@ -448,19 +452,15 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           {/* Tax & totals */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3 text-sm">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Subtotal (todos los productos)</span>
+              <span className="text-muted-foreground">Subtotal (sin IVA)</span>
               <span className="font-semibold text-foreground">${subtotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
-            {taxableSubtotal > 0 && (
+            {taxAmount > 0 && (
               <div className="flex justify-between items-center text-muted-foreground">
-                <span>Base gravable (productos con IVA 16%)</span>
-                <span className="text-foreground">${taxableSubtotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                <span>IVA 16% (incluido en precio)</span>
+                <span className="text-foreground">${taxAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
               </div>
             )}
-            <div className="flex justify-between items-center border-t border-border pt-3">
-              <span className="text-muted-foreground">IVA 16%</span>
-              <span className="font-semibold text-foreground">${taxAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-            </div>
             <div className="flex justify-between items-center text-lg font-bold border-t border-border pt-3 bg-accent/10 -mx-4 px-4 py-3 rounded">
               <span className="text-foreground">Total</span>
               <span className="text-accent">${total.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>

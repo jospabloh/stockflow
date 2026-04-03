@@ -217,8 +217,8 @@ export async function generateQuotationPDF(quotation, settings) {
   };
 
   drawTotalRow("Subtotal", quotation.subtotal || 0);
-  if (quotation.tax > 0) {
-    drawTotalRow("IVA 16%", quotation.tax || 0);
+  if ((quotation.tax || 0) > 0) {
+    drawTotalRow("IVA 16% (incluido)", quotation.tax || 0);
   }
   drawTotalRow("TOTAL", quotation.total || 0, true, true);
 
