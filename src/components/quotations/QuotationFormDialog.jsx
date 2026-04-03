@@ -239,7 +239,8 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     const datePrefix = `COT-${yy}${mm}${dd}`;
     const all = await base44.entities.Quotation.filter({ business_id: businessId }, "-created_date", 2000);
     const todayCount = all.filter(q => q.folio && q.folio.startsWith(datePrefix)).length;
-    return `${datePrefix}-${String(todayCount).padStart(4, "0")}`;
+    return `${datePrefix}-${String(todayCount + 1).padStart(4, "0")}`;
+
   };
 
   const handleSave = async () => {
