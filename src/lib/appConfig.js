@@ -2,11 +2,29 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.1.0";
+export const APP_VERSION = "2.3.0";
 
-export const RELEASE_DATE = "2026-04-02";
+export const RELEASE_DATE = "2026-04-03";
 
 export const CHANGELOG = [
+  {
+    version: "2.3.0",
+    date: "2026-04-03",
+    changes: [
+      "Nueva función: Devolución Parcial en cotizaciones concretadas — selecciona productos y cantidades devueltas, restaura stock automáticamente y ajusta el total de la cotización",
+      "Flujo corregido: ya no es necesario cancelar + recrear cotizaciones para devoluciones parciales; para devolución total se usa 'Cancelar' con razón",
+      "Opción 'Devolución parcial' disponible en el menú ⋯ de cualquier cotización con estado Concretada",
+    ],
+  },
+  {
+    version: "2.2.0",
+    date: "2026-04-03",
+    changes: [
+      "Corrección crítica de IVA en cotizaciones: los precios ya incluyen IVA — ahora el sistema extrae el impuesto del total en lugar de sumarlo (evita doble conteo)",
+      "Corrección de folio: la secuencia de folios ahora comienza correctamente desde 0001 (antes empezaba en 0000)",
+      "Corrección manual aplicada a COT-260403-0000 para reflejar los valores correctos de IVA",
+    ],
+  },
   {
     version: "2.1.0",
     date: "2026-04-02",
