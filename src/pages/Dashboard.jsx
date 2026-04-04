@@ -155,9 +155,16 @@ export default function Dashboard() {
 
     const salesFromQuotations = periodConvertedQuotations.reduce((sum, q) => sum + (q.total || 0), 0);
     const salesFromDirectExits = periodDirectExits.reduce((sum, m) => sum + (m.total || 0), 0);
-    const salesRevenue = salesFromQuotations + salesFromDirectExits;
-    
+    // IDs de cotizaciones canceladas — sus exits NO deben contar en costo ni devoluciones en revenue
+    const cancelledQuotationIds = new Set(
+      quotations.filter(q => q.status === "cancelled").map(q => q.id)
+    );
 
+    // Descontar devoluciones parciales de cotizaciones convertidas activas
+    const periodReturnsRevenue = periodMovements.filter(m =>
+      m.type === "return" && m.quotation_id && !cancelledQuotationIds.has(m.quotation_id)
+    ).reduce((sum, m) => sum + (m.total || 0), 0);
+    const salesRevenue = salesFromQuotations + salesFromDirectExits - periodReturnsRevenue;
     
     const unpaidQuotations = periodConvertedQuotations.filter(q => !q.paid).reduce((sum, q) => sum + (q.total || 0), 0);
     const unpaidDirectExits = periodDirectExits.filter(m => !m.paid).reduce((sum, m) => sum + (m.total || 0), 0);
@@ -165,7 +172,19 @@ export default function Dashboard() {
     const realRevenue = salesRevenue - unpaidTotal;
 
     const productLookup = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
-    const salesCost = periodExits.reduce((sum, m) => {
+
+    // Exits válidos: sin cotización cancelada asociada
+    const validExits = periodExits.filter(m => !m.quotation_id || !cancelledQuotationIds.has(m.quotation_id));
+
+    // Returns del período — descontan el costo (devoluciones)
+    const periodReturns = periodMovements.filter(m => m.type === "return" && m.quotation_id && !cancelledQuotationIds.has(m.quotation_id));
+
+    const salesCost = validExits.reduce((sum, m) => {
+      const costUnit = (m.cost_price != null && m.cost_price > 0)
+        ? m.cost_price
+        : (productLookup[m.product_id]?.purchase_price ?? 0);
+      return sum + ((m.quantity || 0) * costUnit);
+    }, 0) - periodReturns.reduce((sum, m) => {
       const costUnit = (m.cost_price != null && m.cost_price > 0)
         ? m.cost_price
         : (productLookup[m.product_id]?.purchase_price ?? 0);
