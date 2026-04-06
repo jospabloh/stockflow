@@ -2,8 +2,8 @@ import { helpDataExtension } from './helpDataExtension.js';
 import { newHelpArticles } from './helpDataNew';
 
 export const localHelpData = {
-  version: "2.5",
-  last_updated: "2026-04-01",
+  version: "2.6",
+  last_updated: "2026-04-06",
   get articles() { return [..._baseArticles, ...helpDataExtension, ...newHelpArticles]; }
 };
 
@@ -1092,56 +1092,78 @@ Disponible en **cualquier estado** de la cotización. Genera un documento con:
       category: "Cotizaciones",
       role: "all",
       title: "❌ Cancelar o Anular una Cotización",
-      keywords: ["cancelar", "anular", "cancelación", "razón", "motivo", "revertir", "stock", "devolución", "anulación"],
+      keywords: ["cancelar", "anular", "cancelación", "razón", "motivo", "revertir", "stock", "devolución", "anulación", "rollback", "corrección"],
       related_ids: ["quotations-states", "quotations-convert"],
       content: `## ❌ Cancelar o Anular una Cotización
 
----
+    ---
 
-### Diferencia entre Cancelar y Anular
+    ### Diferencia entre Cancelar y Anular
 
-| Acción | Cuándo usar | Efecto en el stock |
-|---|---|---|
-| **Cancelar** | La cotización NO se convirtió en venta | Sin efecto (el stock no se había descontado) |
-| **Anular Venta** | La cotización SÍ fue convertida en venta | El stock **se revierte automáticamente** |
+    | Acción | Cuándo usar | Efecto en el stock |
+    |---|---|---|
+    | **Cancelar** | La cotización NO se convirtió en venta | Sin efecto (el stock no se había descontado) |
+    | **Anular Venta** | La cotización SÍ fue convertida en venta | El stock **se revierte automáticamente** |
 
----
+    ---
 
-### ❌ Cancelar una Cotización (no concretada)
+    ### ❌ Cancelar una Cotización (no concretada)
 
-Si la cotización está en estado Borrador, Enviada o Aceptada:
+    Si la cotización está en estado Borrador, Enviada o Aceptada:
 
-1. Menú de acciones (⋯) → **"Cancelar Cotización"**
-2. Escribe el **motivo de cancelación** (campo obligatorio)
-3. Confirma → la cotización queda en estado *Cancelada*
+    1. Menú de acciones (⋯) → **"Cancelar Cotización"**
+    2. Escribe el **motivo de cancelación** (campo obligatorio)
+    3. Confirma → la cotización queda en estado *Cancelada*
 
----
+    ---
 
-### 🔴 Anular una Venta (ya concretada)
+    ### 🔴 Anular una Venta (ya concretada)
 
-Si la cotización ya fue convertida en venta:
+    Si la cotización ya fue convertida en venta:
 
-1. Menú de acciones (⋯) → **"Anular Venta"**
-2. Escribe la **razón de anulación** (campo obligatorio)
-3. Confirma
+    1. Menú de acciones (⋯) → **"Anular Venta"**
+    2. Escribe la **razón de anulación** (campo obligatorio)
+    3. Confirma
 
-**Lo que ocurre automáticamente al anular:**
-- Se registran movimientos de **Devolución** por cada producto de la cotización
-- El stock regresa a los niveles previos a la venta
-- La cotización queda en estado *Cancelada* con la razón registrada
+    **Lo que ocurre automáticamente al anular:**
+    - Se registran movimientos de **Devolución** por cada producto de la cotización
+    - El stock regresa a los niveles previos a la venta
+    - La cotización queda en estado *Cancelada* con la razón registrada
 
----
+    ---
 
-### 💡 Cuándo usar cada opción
+    ### 🔧 Corrección de Cotizaciones Erradas (Admin)
 
-| Situación | Acción recomendada |
-|---|---|
-| El cliente no quiere el pedido antes de concretar | Cancelar |
-| Hubo un error en la cotización (productos, precios) | Cancelar y crear nueva |
-| La entrega no se realizó (ya estaba concretada) | Anular Venta |
-| Error en la conversión a venta | Anular Venta |
+    **Situación:** Una cotización fue creada con error pero no se guardó, o necesita ser eliminada/revertida completamente.
 
-> ⚠️ La anulación de ventas es una operación seria. Úsala solo cuando sea estrictamente necesario y siempre documenta el motivo correctamente.`
+    **Solución:** El Administrador puede usar la función backend *checkAndFixQuotation* para:
+
+    | Estado de la Cotización | Acción automática |
+    |---|---|
+    | **Borrador** | Se elimina completamente de la base de datos |
+    | **Concretada** | Se hace rollback: restaura stock, crea movimientos de devolución, marca como cancelada |
+
+    **Cómo funciona:**
+    - El Administrador proporciona el **folio exacto** de la cotización (ej: COT-260406-0001)
+    - El sistema verifica que la cotización pertenezca al negocio
+    - Ejecuta la corrección automáticamente
+    - Reporte con los productos restaurados y movimientos creados
+
+    > 💡 Esta función es útil cuando un cliente intenta guardar una cotización que no se guardó correctamente en la BD.
+
+    ---
+
+    ### 💡 Cuándo usar cada opción
+
+    | Situación | Acción recomendada |
+    |---|---|
+    | El cliente no quiere el pedido antes de concretar | Cancelar |
+    | Hubo un error en la cotización (productos, precios) | Cancelar y crear nueva |
+    | La entrega no se realizó (ya estaba concretada) | Anular Venta |
+    | Error en la conversión a venta | Anular Venta |
+    | Cotización errada que debe ser eliminada completamente | Contactar Admin para usar `checkAndFixQuotation` |
+
+    > ⚠️ La anulación de ventas es una operación seria. Úsala solo cuando sea estrictamente necesario y siempre documenta el motivo correctamente.`
     },
 
     // ═══════════════════════════════════════════════

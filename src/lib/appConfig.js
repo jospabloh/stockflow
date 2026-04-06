@@ -2,11 +2,20 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.3.0";
+export const APP_VERSION = "2.4.0";
 
-export const RELEASE_DATE = "2026-04-03";
+export const RELEASE_DATE = "2026-04-06";
 
 export const CHANGELOG = [
+  {
+    version: "2.4.0",
+    date: "2026-04-06",
+    changes: [
+      "Función de corrección de cotizaciones: nueva función backend `checkAndFixQuotation` para anular o eliminar cotizaciones erradas",
+      "Si la cotización está en Borrador → se elimina; si está Concretada → se hace rollback automático (restaura stock, crea movimientos de devolución)",
+      "Función lista para producción tras identificar que COT-260406-0002 no existía en BD (cliente no la había guardado)",
+    ],
+  },
   {
     version: "2.3.0",
     date: "2026-04-03",
