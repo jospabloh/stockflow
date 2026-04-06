@@ -2,11 +2,21 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.4.2";
+export const APP_VERSION = "2.4.3";
 
 export const RELEASE_DATE = "2026-04-06";
 
 export const CHANGELOG = [
+  {
+    version: "2.4.3",
+    date: "2026-04-06",
+    changes: [
+      "Corrección definitiva de cálculo de IVA en cotizaciones: productos con IVA 16% desglosan el impuesto contenido (÷1.16), productos Excento (IVA 0%) no se desglosan",
+      "Mejora de visibilidad: labels actualizados de 'IVA' a 'IVA 16%' y '0%' a 'Excento' para claridad",
+      "Indicador de configuración cliente: ahora muestra badge pequeño 'Compra' o 'Mayoreo' debajo del label de IVA cuando el cliente tiene configuración forzada",
+      "Total a pagar = suma directa (sin modificaciones), IVA desglosado solo para información, nunca se suma al total",
+    ],
+  },
   {
     version: "2.4.2",
     date: "2026-04-06",
