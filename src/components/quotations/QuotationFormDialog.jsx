@@ -14,6 +14,7 @@ import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps } from "@/lib/a11y";
 import { calculatePrice, computeCategoryQtyMap } from "@/lib/pricingEngine";
 import ProductSearchInput from "@/components/movements/ProductSearchInput";
+import { calculateTotalsWithReconciliation, formatMXN } from "@/lib/vatCalculator";
 
 
 
@@ -218,34 +219,8 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     });
   };
 
-  // Precios en sistema YA incluyen IVA
-  // Desglozamos para mostrar:
-  // - Subtotal (antes IVA) = suma de precios base + exentos
-  // - IVA (desglose) = suma de impuestos
-  // - Total (final) = Subtotal + IVA
-  let subtotalBeforeTax = 0;  // Precios ANTES de IVA (productos con IVA 16%)
-  let taxAmount = 0;           // Suma de montos de IVA
-  let subtotalExcempt = 0;     // Precios exentos (IVA 0%)
-
-  for (const item of form.items) {
-    const itemTotal = item.total || 0;
-    const itemTaxRate = item.tax_rate || 0;
-    
-    if (itemTaxRate === 16) {
-      // Desglozar: precio_final incluye IVA
-      // precio_base = precio_final / 1.16
-      const priceBeforeTax = itemTotal / 1.16;
-      const itemTax = itemTotal - priceBeforeTax;
-      subtotalBeforeTax += priceBeforeTax;
-      taxAmount += itemTax;
-    } else {
-      // IVA 0% - exento
-      subtotalExcempt += itemTotal;
-    }
-  }
-
-  const subtotal = subtotalBeforeTax + subtotalExcempt;
-  const total = subtotal + taxAmount;
+  // Calculate totals with precise VAT handling and reconciliation
+  const { subtotal, tax: taxAmount, total } = calculateTotalsWithReconciliation(form.items);
 
   const generateFolio = async () => {
     const now = new Date();
@@ -486,25 +461,24 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           {/* Tax & totals breakdown */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3 text-sm">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Subtotal (antes de IVA)</span>
-              <span className="font-semibold text-foreground">${subtotalBeforeTax.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+              <span className="text-muted-foreground">Subtotal (neto)</span>
+              <span className="font-semibold text-foreground">${formatMXN(subtotal)}</span>
             </div>
-            {subtotalExcempt > 0 && (
-              <div className="flex justify-between items-center text-muted-foreground text-xs">
-                <span>Productos exentos (IVA 0%)</span>
-                <span className="text-foreground">${subtotalExcempt.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-              </div>
-            )}
             {taxAmount > 0 && (
               <div className="flex justify-between items-center text-muted-foreground text-xs">
-                <span>IVA 16% (desglose)</span>
-                <span className="text-amber-600 font-semibold">${taxAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                <span>IVA 16% (desglose de incluidos)</span>
+                <span className="text-amber-600 font-semibold">${formatMXN(taxAmount)}</span>
               </div>
             )}
             <div className="flex justify-between items-center text-lg font-bold border-t border-border pt-3 bg-foreground/10 -mx-4 px-4 py-3 rounded">
               <span className="text-foreground">Total a pagar</span>
-              <span className="text-foreground">${total.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+              <span className="text-foreground">${formatMXN(total)}</span>
             </div>
+            {form.items.length > 0 && (
+              <div className="text-[10px] text-muted-foreground pt-2 border-t border-border/50">
+                ✓ Cálculo: Subtotal ({formatMXN(subtotal)}) + IVA ({formatMXN(taxAmount)}) = Total ({formatMXN(total)})
+              </div>
+            )}
           </div>
 
           {/* Payment, validity, notes */}

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { FileDown, Truck, CheckCircle2, DollarSign } from "lucide-react";
 import { generateQuotationPDF } from "./QuotationPDF";
+import { calculateLineVAT, formatMXN } from "@/lib/vatCalculator";
 
 function fmt(n) {
   return (n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -116,10 +117,9 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
               </thead>
               <tbody>
                 {(quotation.items || []).map((item, i) => {
-                  const hasIVA = (item.tax_rate ?? 16) > 0;
+                  const { vat: ivaAmount } = calculateLineVAT(item.total || 0, item.tax_rate);
+                  const hasIVA = (item.tax_rate ?? 16) === 16;
                   const totalPrice = item.total || 0;
-                  const priceBeforeTax = hasIVA ? totalPrice / 1.16 : totalPrice;
-                  const ivaAmount = hasIVA ? totalPrice - priceBeforeTax : 0;
 
                   return (
                     <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-slate-50"}>
@@ -164,20 +164,23 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
 
           {/* Totals */}
           <div className="flex justify-end">
-            <div className="w-64 space-y-1">
+            <div className="w-72 space-y-1">
               <div className="flex justify-between text-slate-600 text-xs py-1">
-                <span>Subtotal</span>
+                <span>Subtotal (neto)</span>
                 <span>${fmt(quotation.subtotal)}</span>
               </div>
               {quotation.tax > 0 && (
                 <div className="flex justify-between text-slate-600 text-xs py-1">
-                  <span>IVA 16%</span>
-                  <span>${fmt(quotation.tax)}</span>
+                  <span>IVA 16% (desglose)</span>
+                  <span className="text-amber-600 font-semibold">${fmt(quotation.tax)}</span>
                 </div>
               )}
               <div className="flex justify-between text-white font-bold text-sm px-3 py-2 rounded-lg" style={{ backgroundColor: primaryColor }}>
-                <span>TOTAL</span>
+                <span>TOTAL A PAGAR</span>
                 <span>${fmt(quotation.total)}</span>
+              </div>
+              <div className="text-[10px] text-slate-500 pt-1">
+                ✓ {fmt(quotation.subtotal)} + {fmt(quotation.tax)} = {fmt(quotation.total)}
               </div>
             </div>
           </div>

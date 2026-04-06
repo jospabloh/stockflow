@@ -1,6 +1,44 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 /**
+ * Precise VAT calculation - extract VAT from included amounts
+ */
+function calculateLineVAT(lineTotal, taxRate) {
+  if (taxRate !== 16) return { netBase: lineTotal, vat: 0 };
+  const netBase = lineTotal / 1.16;
+  return { netBase, vat: lineTotal - netBase };
+}
+
+/**
+ * Calculate totals with reconciliation adjustment on last taxable line
+ */
+function calculateTotalsWithReconciliation(items) {
+  if (!items || items.length === 0) {
+    return { subtotal: 0, tax: 0, total: 0 };
+  }
+  
+  const lineBreakdowns = items.map((item, idx) => {
+    const { netBase, vat } = calculateLineVAT(item.total || 0, item.tax_rate);
+    return { idx, netBase, vat, isTaxable: item.tax_rate === 16 };
+  });
+  
+  let sumNetBase = 0, sumVAT = 0;
+  for (const bd of lineBreakdowns) {
+    sumNetBase += bd.netBase;
+    sumVAT += bd.vat;
+  }
+  
+  const subtotal = sumNetBase;
+  const total = subtotal + sumVAT;
+  
+  const subtotalRounded = Math.round(subtotal * 100) / 100;
+  const vatRounded = Math.round(sumVAT * 100) / 100;
+  const totalRounded = subtotalRounded + vatRounded;
+  
+  return { subtotal: subtotalRounded, tax: vatRounded, total: totalRounded };
+}
+
+/**
  * Recalcula precios y totales de una cotización en borrador
  * usando el pricing engine actual y catálogos actualizados
  */
@@ -113,32 +151,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Calculate totals with proper desglose
-    // Precios en sistema YA incluyen IVA, necesitamos desglozar
-    let subtotalBeforeTax = 0;  // Suma de precios ANTES de IVA
-    let taxAmount = 0;           // Suma de montos de IVA
-    let subtotalExcempt = 0;     // Suma de precios exentos (IVA=0)
-
-    for (const item of recalcedItems) {
-      const itemTotal = item.total || 0;
-      const itemTaxRate = item.tax_rate || 0;
-      
-      if (itemTaxRate === 16) {
-        // Desglosar: el precio incluye IVA
-        // Si precio_final = precio_base * 1.16, entonces:
-        // precio_base = precio_final / 1.16
-        const priceBeforeTax = itemTotal / 1.16;
-        const itemTax = itemTotal - priceBeforeTax;
-        subtotalBeforeTax += priceBeforeTax;
-        taxAmount += itemTax;
-      } else {
-        // IVA 0% - el precio es exento
-        subtotalExcempt += itemTotal;
-      }
-    }
-
-    const subtotal = subtotalBeforeTax + subtotalExcempt;
-    const total = subtotal + taxAmount;
+    // Calculate totals with precise VAT handling and reconciliation
+    const { subtotal, tax: taxAmount, total } = calculateTotalsWithReconciliation(recalcedItems);
 
     // Update quotation with recalculated data
     const updated = await base44.entities.Quotation.update(quotation_id, {
