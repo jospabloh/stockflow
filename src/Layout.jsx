@@ -42,6 +42,7 @@ const navItems = [
   { name: "Cotizaciones", icon: FileText, page: "Quotations" },
   { name: "Caja Chica", icon: PiggyBank, page: "PettyCash" },
   { name: "Reportes", icon: BarChart3, page: "Reports" },
+  { name: "Catálogos", icon: Package, page: "Settings", submenu: true },
   { name: "Configuración", icon: Settings, page: "Settings" },
   { name: "Centro de Ayuda", icon: HelpCircle, page: "HelpCenter" },
   { name: "Acerca de", icon: HelpCircle, page: "About" },
@@ -164,6 +165,18 @@ export default function Layout({ children, currentPageName }) {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Navegación principal">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
+            // For submenu items, show as parent (don't navigate directly)
+            if (item.submenu) {
+              return (
+                <div key={item.page} className="space-y-1">
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200">
+                    <item.icon className="h-5 w-5" aria-hidden="true" />
+                    <span>{item.name}</span>
+                    <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground" aria-hidden="true" />
+                  </div>
+                </div>
+              );
+            }
             return (
               <Link
                 key={item.page}
