@@ -29,7 +29,10 @@ import {
   HelpCircle,
   Sun,
   Moon,
-  Monitor
+  Monitor,
+  ChevronDown,
+  Briefcase,
+  DollarSign
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -37,7 +40,13 @@ import { Badge } from "@/components/ui/badge";
 
 const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
-  { name: "Productos", icon: Package, page: "Products" },
+  {
+    name: "Catálogos",
+    icon: Briefcase,
+    submenu: [
+      { name: "Productos", icon: Package, page: "Products" },
+    ]
+  },
   { name: "Movimientos", icon: ArrowLeftRight, page: "Movements" },
   { name: "Cotizaciones", icon: FileText, page: "Quotations" },
   { name: "Caja Chica", icon: PiggyBank, page: "PettyCash" },
@@ -47,8 +56,21 @@ const navItems = [
   { name: "Acerca de", icon: HelpCircle, page: "About" },
 ];
 
+// Flat map para encontrar páginas y detectar si están en submenu
+const getPageFromNavItems = (pageName) => {
+  for (const item of navItems) {
+    if (item.page === pageName) return item;
+    if (item.submenu) {
+      const subItem = item.submenu.find(s => s.page === pageName);
+      if (subItem) return { ...subItem, parent: item };
+    }
+  }
+  return null;
+};
+
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [expandedSubmenu, setExpandedSubmenu] = useState(null);
   const [lowStockCount, setLowStockCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
@@ -62,6 +84,14 @@ export default function Layout({ children, currentPageName }) {
   const isRoot = location.pathname === "/" || location.pathname === "/Dashboard";
   const isChildRoute = /\/(Products|Movements|Quotations)\/(new|edit)/.test(location.pathname);
   const { theme, setTheme } = useTheme();
+
+  // Auto-expand "Catálogos" si estamos en una página hijo
+  useEffect(() => {
+    const current = getPageFromNavItems(currentPageName);
+    if (current?.parent?.name === "Catálogos") {
+      setExpandedSubmenu("Catálogos");
+    }
+  }, [currentPageName]);
 
   useEffect(() => {
     if (!businessId) return;
@@ -164,6 +194,55 @@ export default function Layout({ children, currentPageName }) {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Navegación principal">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
+            const hasSubmenu = item.submenu && item.submenu.length > 0;
+            const isSubmenuOpen = expandedSubmenu === item.name;
+            const currentInSubmenu = item.submenu?.some(s => s.page === currentPageName);
+
+            if (hasSubmenu) {
+              return (
+                <div key={item.name}>
+                  <button
+                    onClick={() => setExpandedSubmenu(isSubmenuOpen ? null : item.name)}
+                    aria-expanded={isSubmenuOpen}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                      ${currentInSubmenu || isSubmenuOpen
+                        ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm" 
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`}
+                  >
+                    <item.icon className={`h-5 w-5 ${currentInSubmenu || isSubmenuOpen ? "text-indigo-600" : ""}`} aria-hidden="true" />
+                    <span>{item.name}</span>
+                    <ChevronDown className={`h-4 w-4 ml-auto transition-transform ${isSubmenuOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+                  </button>
+                  {isSubmenuOpen && (
+                    <div className="mt-1 ml-2 border-l border-indigo-200 dark:border-indigo-800 pl-2 space-y-0.5">
+                      {item.submenu.map((subitem) => {
+                        const subIsActive = currentPageName === subitem.page;
+                        return (
+                          <Link
+                            key={subitem.page}
+                            to={createPageUrl(subitem.page)}
+                            onClick={() => setSidebarOpen(false)}
+                            aria-label={subitem.name}
+                            aria-current={subIsActive ? "page" : undefined}
+                            className={`flex items-center gap-3 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200
+                              ${subIsActive 
+                                ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400" 
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                              }`}
+                          >
+                            <subitem.icon className={`h-4 w-4 ${subIsActive ? "text-indigo-600" : ""}`} aria-hidden="true" />
+                            <span>{subitem.name}</span>
+                            {subIsActive && <ChevronRight className="h-3 w-3 ml-auto text-indigo-400" aria-hidden="true" />}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             return (
               <Link
                 key={item.page}
@@ -246,7 +325,10 @@ export default function Layout({ children, currentPageName }) {
             <Menu className="h-5 w-5" aria-hidden="true" />
           </Button>
           <h2 className="text-lg font-semibold text-foreground">
-            {navItems.find(n => n.page === currentPageName)?.name || currentPageName}
+            {(() => {
+              const current = getPageFromNavItems(currentPageName);
+              return current?.name || currentPageName;
+            })()}
           </h2>
           <div className="ml-auto flex items-center gap-2">
             {lowStockCount > 0 && (
