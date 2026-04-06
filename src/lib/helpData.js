@@ -1161,7 +1161,7 @@ Disponible en **cualquier estado** de la cotización. Genera un documento con:
     | Hubo un error en la cotización (productos, precios) | Cancelar y crear nueva |
     | La entrega no se realizó (ya estaba concretada) | Anular Venta |
     | Error en la conversión a venta | Anular Venta |
-    | Cotización errada que debe ser eliminada completamente | Contactar Admin para usar `checkAndFixQuotation` |
+    | Cotización errada que debe ser eliminada completamente | Contactar Admin para usar checkAndFixQuotation |
 
     > ⚠️ La anulación de ventas es una operación seria. Úsala solo cuando sea estrictamente necesario y siempre documenta el motivo correctamente.`
     },
