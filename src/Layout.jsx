@@ -50,7 +50,7 @@ const navItems = [
       { name: "Categorías", icon: Palette, page: "Categories" },
       { name: "Proveedores", icon: Users, page: "Suppliers" },
       { name: "Clientes", icon: Users, page: "Clients" },
-      { name: "Pagos", icon: DollarSign, page: "PaymentMethods" },
+      { name: "Tipo de pago", icon: DollarSign, page: "PaymentMethods" },
     ]
   },
   { name: "Movimientos", icon: ArrowLeftRight, page: "Movements" },
