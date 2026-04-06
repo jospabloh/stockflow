@@ -1248,9 +1248,8 @@ Además de los reportes estándar, tienes acceso a dos análisis financieros ava
 Los **10 productos con mayor porcentaje de margen de ganancia** de tu catálogo.
 
 **Fórmula:**
-\`\`\`
+
 Margen (%) = ((Precio Venta − Precio Compra) / Precio Compra) × 100
-\`\`\`
 
 **Ejemplo práctico:**
 - Producto: Cable HDMI
@@ -1272,9 +1271,8 @@ Margen (%) = ((Precio Venta − Precio Compra) / Precio Compra) × 100
 Gráfico circular *(donut)* que muestra cómo está distribuido el **valor de tu inventario** por categoría.
 
 **Fórmula por categoría:**
-\`\`\`
+
 Valor categoría = Suma de (Stock × Precio de Compra) de todos sus productos
-\`\`\`
 
 **Ejemplo:**
 | Categoría | Valor en inventario |
@@ -1423,7 +1421,7 @@ Ve a **Configuración → Equipo** para gestionar el acceso de tu personal.
 
 ### 📋 Código de Invitación
 
-Tu negocio tiene un **código único** (ej: \`AB12CD\`) para que nuevos usuarios se unan a tu equipo.
+Tu negocio tiene un **código único** (ej: AB12CD) para que nuevos usuarios se unan a tu equipo.
 
 **Cómo funciona el proceso de invitación:**
 
@@ -1592,9 +1590,7 @@ Si hay una diferencia entre el saldo del sistema y el efectivo físico:
 
 El saldo actual es la suma de todos los movimientos del negocio:
 
-\`\`\`
 Saldo = Fondo Inicial + Ingresos − Egresos ± Ajustes
-\`\`\`
 
 | Tipo de movimiento | Efecto |
 |---|---|
