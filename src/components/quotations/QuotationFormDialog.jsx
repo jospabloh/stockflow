@@ -219,18 +219,21 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   };
 
   // Los precios en los productos YA INCLUYEN IVA (son finales)
-  // Solo sumamos y desglosamos el IVA que está contenido
+  // Solo sumamos y desglosamos:
+  // - IVA 16%: extraer el impuesto incluido en el precio
+  // - IVA 0% (Excento): no hay impuesto que desglosar
   let subtotal = 0;
   let taxAmount = 0;
   for (const item of form.items) {
     const itemTotal = item.total || 0;
     const itemTaxRate = item.tax_rate || 0;
     subtotal += itemTotal;
-    // Desglose informativo: extraer el IVA incluido (solo si tax_rate > 0)
-    if (itemTaxRate > 0) {
-      const itemTaxOnly = (itemTotal / 1.16) * (itemTaxRate / 100);
+    // Desglose: solo productos con IVA 16%
+    if (itemTaxRate === 16) {
+      const itemTaxOnly = itemTotal * (16 / 116);
       taxAmount += itemTaxOnly;
     }
+    // IVA 0% (excento): no se desgloza nada
   }
   const total = subtotal;
 
