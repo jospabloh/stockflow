@@ -218,22 +218,22 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     });
   };
 
-  // Baristop: Los precios del catálogo son precios finales (con o sin IVA incluido)
-  // NO sumamos IVA adicional. Solo mostramos desglose si hay productos con IVA.
-  // item.total = quantity × unit_price (precio ya es final)
+  // Cálculo estándar: subtotal + IVA
+  // item.total = quantity × unit_price (precio base)
+  // Se suma IVA según el tax_rate definido en el producto
   let subtotal = 0;
   let taxAmount = 0;
   for (const item of form.items) {
     const itemTotal = item.total || 0;
     const itemTaxRate = item.tax_rate || 0;
     subtotal += itemTotal;
-    // Mostrar desglose informativo: si el precio tiene IVA, extraer el 16% del total
+    // Sumar IVA al monto total
     if (itemTaxRate > 0) {
-      const itemTaxOnly = itemTotal / 1.16 * (itemTaxRate / 100);
-      taxAmount += itemTaxOnly;
+      const itemTax = itemTotal * (itemTaxRate / 100);
+      taxAmount += itemTax;
     }
   }
-  const total = subtotal;
+  const total = subtotal + taxAmount;
 
   const generateFolio = async () => {
     const now = new Date();
