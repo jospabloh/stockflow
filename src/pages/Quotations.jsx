@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Search, MoreHorizontal, Pencil, ShoppingCart, FileDown, Truck, CheckCircle2, DollarSign, XCircle, AlertTriangle } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Pencil, ShoppingCart, FileDown, Truck, CheckCircle2, DollarSign, XCircle, AlertTriangle, RotateCcw } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import moment from "moment";
@@ -40,6 +40,7 @@ import PartialReturnDialog from "@/components/quotations/PartialReturnDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import { createButtonProps } from "@/lib/a11y";
 import VirtualizedQuotationTable from "@/components/tables/VirtualizedQuotationTable";
+import { calculatePrice, computeCategoryQtyMap } from "@/lib/pricingEngine";
 
 const statusConfig = {
   draft: { label: "Borrador", color: "bg-slate-100 text-slate-700", dot: "bg-slate-400", desc: "Cotización en edición" },
@@ -220,6 +221,74 @@ export default function Quotations() {
     navigate(`/Quotations/edit/${q.id}`);
   };
 
+  const handleRegenerate = async (q) => {
+    if (q.status !== "draft") return;
+    
+    try {
+      // Fetch updated products and client
+      const [products, client] = await Promise.all([
+        base44.entities.Product.filter({ business_id: businessId, status: "active" }),
+        q.client_id ? base44.entities.Client.filter({ id: q.client_id, business_id: businessId }).then(res => res[0]) : Promise.resolve(null)
+      ]);
+
+      // Build maps for quick lookup
+      const productMap = {};
+      const categoryMap = {};
+      for (const p of products) productMap[p.id] = p;
+      
+      const categories = await base44.entities.Category.filter({ business_id: businessId });
+      for (const c of categories) categoryMap[c.id] = c;
+
+      // Recalculate prices for each item
+      const catQtyMap = computeCategoryQtyMap(q.items, productMap);
+      const updatedItems = q.items.map(item => {
+        const product = productMap[item.product_id];
+        if (!product) return item;
+        
+        const category = categoryMap[product.category];
+        const categoryQty = catQtyMap[product.category || "__none__"] || 0;
+        const { price } = calculatePrice({
+          product, client, quantity: item.quantity, category, categoryQty
+        });
+
+        return { ...item, unit_price: price, total: item.quantity * price };
+      });
+
+      // Recalculate totals
+      let subtotal = 0;
+      let taxAmount = 0;
+      for (const item of updatedItems) {
+        const itemTotal = item.total || 0;
+        const itemTaxRate = item.tax_rate || 0;
+        subtotal += itemTotal;
+        if (itemTaxRate === 16) {
+          taxAmount += itemTotal * (16 / 116);
+        }
+      }
+      const total = subtotal;
+
+      // Update quotation
+      const response = await base44.functions.invoke('updateQuotationSafe', {
+        quotation_id: q.id,
+        updates: {
+          items: updatedItems,
+          subtotal,
+          tax: taxAmount,
+          total
+        }
+      });
+
+      if (response.data.success) {
+        toast.success("✓ Cotización re-generada con precios actualizados");
+        loadData(businessId);
+      } else {
+        toast.error(`Error: ${response.data.error || "No se pudo re-generar"}`);
+      }
+    } catch (error) {
+      toast.error(`Error al re-generar: ${error.message}`);
+    }
+  };
+
   if (loading) {
     return <TableSkeleton rows={8} columns={8} />;
   }
@@ -262,6 +331,7 @@ export default function Quotations() {
           setPayQuotation(q);
           setPaymentMethod(q.payment_method || "");
         }}
+        onRegenerate={handleRegenerate}
         onInvoiceStatusChange={async (q, val) => {
           const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
             quotation_id: q.id,

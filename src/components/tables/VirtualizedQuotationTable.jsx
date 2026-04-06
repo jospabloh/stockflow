@@ -28,6 +28,7 @@ export default function VirtualizedQuotationTable({
   onInRouteChange,
   onDeliveredChange,
   isExpired,
+  onRegenerate,
 }) {
   const QuotationRow = ({ index, style }) => {
     const q = quotations[index];
@@ -187,7 +188,17 @@ export default function VirtualizedQuotationTable({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="text-xs">
-              {(q.status === "draft" || q.status === "sent" || q.status === "accepted") && (
+              {q.status === "draft" && (
+                <>
+                  <DropdownMenuItem onClick={() => onEdit(q)}>
+                    <Pencil className="h-3 w-3 mr-2" /> Editar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onRegenerate(q)} className="text-indigo-600 focus:text-indigo-600">
+                    <RotateCcw className="h-3 w-3 mr-2" /> Re-generar
+                  </DropdownMenuItem>
+                </>
+              )}
+              {(q.status === "sent" || q.status === "accepted") && (
                 <DropdownMenuItem onClick={() => onEdit(q)}>
                   <Pencil className="h-3 w-3 mr-2" /> Editar
                 </DropdownMenuItem>
