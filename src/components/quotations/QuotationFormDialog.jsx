@@ -461,12 +461,12 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           {/* Tax & totals */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3 text-sm">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Total (precios finales)</span>
+              <span className="text-muted-foreground">Subtotal</span>
               <span className="font-semibold text-foreground">${subtotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
             {taxAmount > 0 && (
               <div className="flex justify-between items-center text-muted-foreground text-xs">
-                <span>Desglose IVA 16% incluido</span>
+                <span>IVA 16%</span>
                 <span className="text-foreground">${taxAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
               </div>
             )}
