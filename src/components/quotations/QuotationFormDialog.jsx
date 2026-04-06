@@ -220,12 +220,26 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
 
   // Los precios ya incluyen IVA. El IVA se extrae del monto, no se suma encima.
   // Total = suma de todos los items (precios IVA incluido)
-  // Subtotal = total / 1.16 para items gravados + total directo para exentos
-  // IVA = total - subtotal
+  // Para items con IVA: subtotal_item = total_item / 1.16
+  // Para items sin IVA: subtotal_item = total_item
+  // IVA = suma de (total_con_iva - subtotal) para cada item gravado
   const total = form.items.reduce((sum, item) => sum + (item.total || 0), 0);
-  const taxableTotal = form.items.reduce((sum, item) => (item.tax_rate > 0 ? sum + (item.total || 0) : sum), 0);
-  const taxAmount = taxableTotal - (taxableTotal / 1.16);
-  const subtotal = total - taxAmount;
+  
+  let subtotal = 0;
+  let taxAmount = 0;
+  for (const item of form.items) {
+    const itemTotal = item.total || 0;
+    if (item.tax_rate > 0) {
+      // Item con IVA: extraer el IVA del total
+      const itemSubtotal = itemTotal / 1.16;
+      const itemTax = itemTotal - itemSubtotal;
+      subtotal += itemSubtotal;
+      taxAmount += itemTax;
+    } else {
+      // Item sin IVA: el total es ya el subtotal
+      subtotal += itemTotal;
+    }
+  }
 
   const generateFolio = async () => {
     const now = new Date();
