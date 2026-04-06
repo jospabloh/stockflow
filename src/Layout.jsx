@@ -59,7 +59,7 @@ const navItems = [
   { name: "Reportes", icon: BarChart3, page: "Reports" },
   { name: "Configuración", icon: Settings, page: "Settings" },
   { name: "Centro de Ayuda", icon: HelpCircle, page: "HelpCenter" },
-  { name: "StockFlow", icon: HelpCircle, page: "About" },
+  { name: "Acerca de", icon: HelpCircle, page: "About" },
 ];
 
 // Flat map para encontrar páginas y detectar si están en submenu
