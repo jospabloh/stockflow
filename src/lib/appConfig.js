@@ -2,11 +2,19 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.4.0";
+export const APP_VERSION = "2.4.1";
 
 export const RELEASE_DATE = "2026-04-06";
 
 export const CHANGELOG = [
+  {
+    version: "2.4.1",
+    date: "2026-04-06",
+    changes: [
+      "Corrección crítica: cálculo de IVA en cotizaciones — los precios del motor de precios son SIN IVA, ahora se suma correctamente (subtotal + IVA = total) en lugar de extraer del total",
+      "Error detectado: cuando una cotización tenía múltiples items del mismo producto, el subtotal se calculaba erróneamente dividiendo el total por 1.16",
+    ],
+  },
   {
     version: "2.4.0",
     date: "2026-04-06",

@@ -218,28 +218,19 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     });
   };
 
-  // Los precios ya incluyen IVA. El IVA se extrae del monto, no se suma encima.
-  // Total = suma de todos los items (precios IVA incluido)
-  // Para items con IVA: subtotal_item = total_item / 1.16
-  // Para items sin IVA: subtotal_item = total_item
-  // IVA = suma de (total_con_iva - subtotal) para cada item gravado
-  const total = form.items.reduce((sum, item) => sum + (item.total || 0), 0);
-  
+  // Los precios del pricingEngine son SIN IVA.
+  // item.total = quantity × unit_price (sin IVA)
+  // Para mostrar: subtotal = suma sin IVA, IVA = suma de impuestos, total = subtotal + IVA
   let subtotal = 0;
   let taxAmount = 0;
   for (const item of form.items) {
-    const itemTotal = item.total || 0;
-    if (item.tax_rate > 0) {
-      // Item con IVA: extraer el IVA del total
-      const itemSubtotal = itemTotal / 1.16;
-      const itemTax = itemTotal - itemSubtotal;
-      subtotal += itemSubtotal;
-      taxAmount += itemTax;
-    } else {
-      // Item sin IVA: el total es ya el subtotal
-      subtotal += itemTotal;
-    }
+    const itemSubtotal = item.total || 0;
+    const itemTaxRate = item.tax_rate || 0;
+    const itemTax = itemTaxRate > 0 ? itemSubtotal * (itemTaxRate / 100) : 0;
+    subtotal += itemSubtotal;
+    taxAmount += itemTax;
   }
+  const total = subtotal + taxAmount;
 
   const generateFolio = async () => {
     const now = new Date();

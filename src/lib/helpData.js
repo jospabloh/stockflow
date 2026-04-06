@@ -889,6 +889,8 @@ En la página de **Movimientos**:
 
 Ve a **Cotizaciones → + Nueva Cotización** para iniciar una nueva propuesta comercial.
 
+> **v2.4.1**: Corrección de cálculo de IVA — subtotal y total ahora se calculan correctamente cuando hay múltiples productos: **Subtotal (sin IVA) + IVA 16% = Total final**
+
 ---
 
 ### 👤 Paso 1 — Información del Cliente
