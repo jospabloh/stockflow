@@ -470,9 +470,9 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                 <span className="text-foreground">${taxAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
               </div>
             )}
-            <div className="flex justify-between items-center text-lg font-bold border-t border-border pt-3 bg-foreground/10 -mx-4 px-4 py-3 rounded text-foreground">
-              <span>Total a pagar</span>
-              <span>${total.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+            <div className="flex justify-between items-center text-lg font-bold border-t border-border pt-3 bg-foreground/10 -mx-4 px-4 py-3 rounded">
+              <span className="text-foreground">Total a pagar</span>
+              <span className="text-foreground">${total.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
 
