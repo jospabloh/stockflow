@@ -54,6 +54,9 @@ export async function generateQuotationPDF(quotation, settings) {
     }
   }
 
+  // Business info left side — max width to prevent overlap with quotation code on the right
+  const infoMaxW = W * 0.55;
+  
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(...headerTextColor);
@@ -62,7 +65,15 @@ export async function generateQuotationPDF(quotation, settings) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...headerTextColor);
-  if (settings?.address) doc.text(settings.address, logoEndX, 22);
+  // Wrap long address to prevent overlap with quotation code
+  if (settings?.address) {
+    const addressLines = doc.splitTextToSize(settings.address, infoMaxW - logoEndX - 2);
+    let currentY = 22;
+    addressLines.forEach((line) => {
+      doc.text(line, logoEndX, currentY);
+      currentY += 5;
+    });
+  }
   if (settings?.phone) doc.text(`Tel: ${settings.phone}`, logoEndX, 27);
   if (settings?.rfc) doc.text(`RFC: ${settings.rfc}`, logoEndX, 32);
 

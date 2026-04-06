@@ -6,20 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, Palette, Users, FileText, Plus, Trash2, Pencil, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw } from "lucide-react";
+import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { createButtonProps, createTableProps } from "@/lib/a11y";
+import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
-import ClientsManager from "@/components/settings/ClientsManager";
 import { useBusinessContext } from "@/components/BusinessContext";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -35,12 +26,6 @@ export default function Settings() {
   const [settings, setSettings] = useState(null);
   const [settingsId, setSettingsId] = useState(null);
   const [business, setBusiness] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [suppliers, setSuppliers] = useState([]);
-  const [paymentMethods, setPaymentMethods] = useState([]);
-  const [pmFormOpen, setPmFormOpen] = useState(false);
-  const [editingPm, setEditingPm] = useState(null);
-  const [pmForm, setPmForm] = useState({ name: "" });
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -51,16 +36,6 @@ export default function Settings() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [diagnosticBusinessId, setDiagnosticBusinessId] = useState(null);
 
-  // Category/Supplier form
-  const [catFormOpen, setCatFormOpen] = useState(false);
-  const [editingCat, setEditingCat] = useState(null);
-  const [catForm, setCatForm] = useState({ name: "", description: "", color: "#6366f1", wholesale_min_qty: "" });
-  const [deleteCatId, setDeleteCatId] = useState(null);
-  const [deleteCatReason, setDeleteCatReason] = useState("");
-  const [supFormOpen, setSupFormOpen] = useState(false);
-  const [editingSup, setEditingSup] = useState(null);
-  const [supForm, setSupForm] = useState({ name: "", contact_name: "", email: "", phone: "" });
-
   useEffect(() => {
      const checkAndLoadSettings = async () => {
        try {
@@ -70,41 +45,23 @@ export default function Settings() {
          setIsAdmin(u?.role === "admin");
          setCheckingAuth(false);
 
-         // Si no es admin, cargar solo catálogos operativos (categorías, proveedores, formas de pago)
-          if (u?.role !== "admin") {
-            const [cats, sups, pms] = await Promise.all([
-              businessId ? base44.entities.Category.filter({ business_id: businessId }) : Promise.resolve([]),
-              businessId ? base44.entities.Supplier.filter({ business_id: businessId }) : Promise.resolve([]),
-              businessId ? base44.entities.PaymentMethod.filter({ business_id: businessId }) : Promise.resolve([]),
-            ]);
-            setCategories(cats);
-            setSuppliers(sups);
-            setPaymentMethods(pms || []);
-            setLoading(false);
-            return;
-          }
+
 
          // CRITICAL FIX: Filter ALL by business_id, never use list() without filtering
-         const [sets, cats, sups, pms] = await Promise.all([
+         const [sets] = await Promise.all([
            businessId ? base44.entities.AppSettings.filter({ business_id: businessId }) : Promise.resolve([]),
-           businessId ? base44.entities.Category.filter({ business_id: businessId }) : Promise.resolve([]),
-           businessId ? base44.entities.Supplier.filter({ business_id: businessId }) : Promise.resolve([]),
-           businessId ? base44.entities.PaymentMethod.filter({ business_id: businessId }) : Promise.resolve([]),
            ]);
            if (sets.length > 0) {
          setSettings(sets[0]);
          setSettingsId(sets[0].id);
          setRfcSaved(!!sets[0].rfc);
-       } else {
+         } else {
          setSettings({
            business_name: "", logo_url: "", primary_color: "#4F46E5",
            secondary_color: "#06B6D4", tax_rate: 16, currency: "MXN",
            low_stock_email: "", quotation_footer: "", address: "", phone: "", rfc: "",
          });
-       }
-       setCategories(cats);
-       setSuppliers(sups);
-       setPaymentMethods(pms || []);
+         }
 
        // Load business entity for invite code
        if (businessId) {
@@ -162,136 +119,7 @@ export default function Settings() {
     }
   };
 
-  const handleSaveCategory = async () => {
-    if (!catForm.name.trim()) {
-      toast.error("El nombre de la categoría es requerido");
-      return;
-    }
-    try {
-      if (editingCat) {
-        const catUpdates = {
-          ...catForm,
-          wholesale_min_qty: catForm.wholesale_min_qty !== "" ? Number(catForm.wholesale_min_qty) : null,
-        };
-        const response = await base44.functions.invoke('updateCategorySafe', {
-          category_id: editingCat.id,
-          updates: catUpdates
-        });
-        if (!response.data.success) {
-          toast.error(`Error: ${response.data.error || 'No se pudo actualizar'}`);
-          return;
-        }
-        toast.success("✓ Categoría actualizada");
-      } else {
-        const newCat = {
-          ...catForm,
-          wholesale_min_qty: catForm.wholesale_min_qty !== "" ? Number(catForm.wholesale_min_qty) : undefined,
-          business_id: businessId,
-        };
-        await base44.entities.Category.create(newCat);
-        toast.success("✓ Categoría creada exitosamente");
-      }
-      // CRITICAL: Filter by business_id, never use list()
-      const cats = await base44.entities.Category.filter({ business_id: businessId });
-      setCategories(cats);
-      setCatFormOpen(false);
-      setEditingCat(null);
-      setCatForm({ name: "", description: "", color: "#6366f1", wholesale_min_qty: "" });
-    } catch (error) {
-      console.error("Save category error:", error);
-      toast.error(`Error al guardar categoría: ${error.message || 'Intenta de nuevo'}`);
-    }
-  };
 
-  const handleDeleteCategory = async (id) => {
-    if (!isAdmin && !deleteCatReason.trim()) {
-      toast.error("Debes proporcionar una razón para eliminar");
-      return;
-    }
-    const response = await base44.functions.invoke('deleteCategorySafe', { 
-      category_id: id,
-      deletion_reason: deleteCatReason || undefined
-    });
-    if (!response.data.success) {
-      toast.error(response.data.error || 'No se pudo eliminar');
-      return;
-    }
-    setCategories(categories.filter((c) => c.id !== id));
-    setDeleteCatId(null);
-    setDeleteCatReason("");
-    toast.success("Categoría eliminada");
-  };
-
-  const handleSaveSupplier = async () => {
-    if (!supForm.name.trim()) {
-      toast.error("El nombre del proveedor es requerido");
-      return;
-    }
-    try {
-      if (editingSup) {
-        const response = await base44.functions.invoke('updateSupplierSafe', {
-          supplier_id: editingSup.id,
-          updates: supForm
-        });
-        if (!response.data.success) {
-          toast.error(`Error: ${response.data.error || 'No se pudo actualizar'}`);
-          return;
-        }
-        toast.success("✓ Proveedor actualizado");
-      } else {
-        await base44.entities.Supplier.create({ ...supForm, business_id: businessId });
-        toast.success("✓ Proveedor creado exitosamente");
-      }
-      // CRITICAL: Filter by business_id, never use list()
-      const sups = await base44.entities.Supplier.filter({ business_id: businessId });
-      setSuppliers(sups);
-      setSupFormOpen(false);
-      setEditingSup(null);
-      setSupForm({ name: "", contact_name: "", email: "", phone: "" });
-    } catch (error) {
-      console.error("Save supplier error:", error);
-      toast.error(`Error al guardar proveedor: ${error.message || 'Intenta de nuevo'}`);
-    }
-  };
-
-  const handleSavePaymentMethod = async () => {
-    if (!pmForm.name.trim()) { toast.error("El nombre es requerido"); return; }
-    try {
-      if (editingPm) {
-        await base44.entities.PaymentMethod.update(editingPm.id, { name: pmForm.name });
-        toast.success("✓ Forma de pago actualizada");
-      } else {
-        await base44.entities.PaymentMethod.create({ name: pmForm.name, active: true, business_id: businessId });
-        toast.success("✓ Forma de pago creada");
-      }
-      const pms = await base44.entities.PaymentMethod.filter({ business_id: businessId });
-      setPaymentMethods(pms);
-      setPmFormOpen(false);
-      setEditingPm(null);
-      setPmForm({ name: "" });
-    } catch (error) {
-      toast.error(`Error: ${error.message}`);
-    }
-  };
-
-  const handleDeletePaymentMethod = async (id) => {
-    await base44.entities.PaymentMethod.delete(id);
-    setPaymentMethods(paymentMethods.filter(p => p.id !== id));
-  };
-
-  const handleTogglePaymentMethod = async (pm) => {
-    await base44.entities.PaymentMethod.update(pm.id, { active: !pm.active });
-    setPaymentMethods(paymentMethods.map(p => p.id === pm.id ? { ...p, active: !p.active } : p));
-  };
-
-  const handleDeleteSupplier = async (id) => {
-    const response = await base44.functions.invoke('deleteSupplierSafe', { supplier_id: id });
-    if (!response.data.success) {
-      toast.error(response.data.error || 'No se pudo eliminar');
-      return;
-    }
-    setSuppliers(suppliers.filter((s) => s.id !== id));
-  };
 
   const updateSettings = (field, value) => setSettings((prev) => ({ ...prev, [field]: value }));
 
@@ -364,10 +192,7 @@ export default function Settings() {
           )}
           
           {/* Todos ven estas pestañas (admin + almacenistas) */}
-          <TabsTrigger value="categories"><Palette className="h-4 w-4 mr-1" /> Categorías</TabsTrigger>
-          <TabsTrigger value="suppliers"><Users className="h-4 w-4 mr-1" /> Proveedores</TabsTrigger>
-          <TabsTrigger value="payments"><FileText className="h-4 w-4 mr-1" /> Pagos</TabsTrigger>
-          <TabsTrigger value="clients"><Users className="h-4 w-4 mr-1" /> Clientes</TabsTrigger>
+
         </TabsList>
 
         {/* Business Settings — Admin only */}
@@ -459,143 +284,7 @@ export default function Settings() {
           </Card>
           </TabsContent>}
 
-          {/* Categories */}
-          <TabsContent value="categories">
-          <Card className="border-0 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-700 text-lg">Categorías</h3>
-              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingCat(null); setCatForm({ name: "", description: "", color: "#6366f1" }); setCatFormOpen(true); }} {...createButtonProps('add')}>
-                <Plus className="h-4 w-4 mr-1" /> Nueva
-              </Button>
-            </div>
-            <Table {...createTableProps('categories-table')}>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Color</TableHead>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Descripción</TableHead>
-                  <TableHead className="text-right">Mín. Mayoreo</TableHead>
-                  <TableHead className="text-center">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {categories.map((cat) => (
-                  <TableRow key={cat.id}>
-                    <TableCell><div className="h-6 w-6 rounded-full" style={{ backgroundColor: cat.color || "#6366f1" }} /></TableCell>
-                    <TableCell className="font-medium">{cat.name}</TableCell>
-                    <TableCell className="text-slate-500">{cat.description || "—"}</TableCell>
-                    <TableCell className="text-right text-slate-500 text-sm">
-                      {cat.wholesale_min_qty > 0 ? `${cat.wholesale_min_qty} uds.` : "—"}
-                    </TableCell>
-                    <TableCell className="text-center">
-                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCat(cat); setCatForm({ name: cat.name, description: cat.description || "", color: cat.color || "#6366f1", wholesale_min_qty: cat.wholesale_min_qty ?? "" }); setCatFormOpen(true); }} {...createButtonProps('edit')}>
-                         <Pencil className="h-4 w-4 text-slate-400" />
-                       </Button>
-                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteCatId(cat.id)} {...createButtonProps('delete')}>
-                         <Trash2 className="h-4 w-4 text-slate-400" />
-                       </Button>
-                     </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
 
-        {/* Suppliers */}
-        <TabsContent value="suppliers">
-          <Card className="border-0 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-700 text-lg">Proveedores</h3>
-              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingSup(null); setSupForm({ name: "", contact_name: "", email: "", phone: "" }); setSupFormOpen(true); }} {...createButtonProps('add')}>
-                <Plus className="h-4 w-4 mr-1" /> Nuevo
-              </Button>
-            </div>
-            <Table {...createTableProps('suppliers-table')}>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Contacto</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Teléfono</TableHead>
-                  <TableHead className="text-center">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {suppliers.map((sup) => (
-                  <TableRow key={sup.id}>
-                    <TableCell className="font-medium">{sup.name}</TableCell>
-                    <TableCell className="text-slate-500">{sup.contact_name || "—"}</TableCell>
-                    <TableCell className="text-slate-500">{sup.email || "—"}</TableCell>
-                    <TableCell className="text-slate-500">{sup.phone || "—"}</TableCell>
-                    <TableCell className="text-center">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingSup(sup); setSupForm({ name: sup.name, contact_name: sup.contact_name || "", email: sup.email || "", phone: sup.phone || "" }); setSupFormOpen(true); }} {...createButtonProps('edit')}>
-                        <Pencil className="h-4 w-4 text-slate-400" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteSupplier(sup.id)} {...createButtonProps('delete')}>
-                        <Trash2 className="h-4 w-4 text-slate-400" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-
-        {/* Payment Methods */}
-        <TabsContent value="payments">
-          <Card className="border-0 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-semibold text-slate-700 text-lg">Formas de Pago</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Se usan en movimientos y cotizaciones</p>
-              </div>
-              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={() => { setEditingPm(null); setPmForm({ name: "" }); setPmFormOpen(true); }}>
-                <Plus className="h-4 w-4 mr-1" /> Nueva
-              </Button>
-            </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead className="text-center">Activa</TableHead>
-                  <TableHead className="text-center">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paymentMethods.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
-                      No hay formas de pago. Crea la primera.
-                    </TableCell>
-                  </TableRow>
-                )}
-                {paymentMethods.map((pm) => (
-                  <TableRow key={pm.id}>
-                    <TableCell className="font-medium">{pm.name}</TableCell>
-                    <TableCell className="text-center">
-                      <Switch checked={pm.active !== false} onCheckedChange={() => handleTogglePaymentMethod(pm)} />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingPm(pm); setPmForm({ name: pm.name }); setPmFormOpen(true); }}>
-                        <Pencil className="h-4 w-4 text-slate-400" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeletePaymentMethod(pm.id)}>
-                        <Trash2 className="h-4 w-4 text-slate-400" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-
-        {/* Clients */}
-        <TabsContent value="clients">
-          <ClientsManager />
-        </TabsContent>
 
         {/* Facturación — Admin only */}
         {isAdmin && <TabsContent value="sat">
@@ -942,144 +631,7 @@ export default function Settings() {
         </div>
       )}
 
-      {/* Category Dialog */}
-      <Dialog open={catFormOpen} onOpenChange={setCatFormOpen}>
-        <DialogContent className="pb-safe">
-          <DialogHeader>
-            <DialogTitle>{editingCat ? "Editar Categoría" : "Nueva Categoría"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div>
-              <Label>Nombre *</Label>
-              <Input value={catForm.name} onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} />
-            </div>
-            <div>
-              <Label>Descripción</Label>
-              <Input value={catForm.description} onChange={(e) => setCatForm({ ...catForm, description: e.target.value })} />
-            </div>
-            <div>
-              <Label>Color</Label>
-              <div className="flex gap-2">
-                <Input type="color" value={catForm.color} onChange={(e) => setCatForm({ ...catForm, color: e.target.value })} className="w-14 h-10 p-1" />
-                <Input value={catForm.color} onChange={(e) => setCatForm({ ...catForm, color: e.target.value })} />
-              </div>
-            </div>
-            <div>
-              <Label>Cantidad mínima para precio mayoreo</Label>
-              <Input
-                type="number" min={0} step="1"
-                value={catForm.wholesale_min_qty}
-                placeholder="Ej: 10 (dejar vacío para no aplicar)"
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setCatForm({ ...catForm, wholesale_min_qty: val === "" ? "" : Math.max(0, parseInt(val) || 0) });
-                }}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Si la cantidad total de productos de esta categoría en una cotización alcanza este mínimo, se aplica precio mayoreo automáticamente.
-              </p>
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setCatFormOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSaveCategory} disabled={!catForm.name} className="bg-indigo-600 hover:bg-indigo-700">Guardar</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* Payment Method Dialog */}
-      <Dialog open={pmFormOpen} onOpenChange={setPmFormOpen}>
-        <DialogContent className="pb-safe">
-          <DialogHeader>
-            <DialogTitle>{editingPm ? "Editar Forma de Pago" : "Nueva Forma de Pago"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div>
-              <Label>Nombre *</Label>
-              <Input
-                value={pmForm.name}
-                onChange={(e) => setPmForm({ name: e.target.value })}
-                placeholder="Ej: Efectivo, Transferencia, Tarjeta..."
-              />
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setPmFormOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSavePaymentMethod} disabled={!pmForm.name.trim()} className="bg-indigo-600 hover:bg-indigo-700">Guardar</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Supplier Dialog */}
-      <Dialog open={supFormOpen} onOpenChange={setSupFormOpen}>
-        <DialogContent className="pb-safe">
-          <DialogHeader>
-            <DialogTitle>{editingSup ? "Editar Proveedor" : "Nuevo Proveedor"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div>
-              <Label>Nombre *</Label>
-              <Input value={supForm.name} onChange={(e) => setSupForm({ ...supForm, name: e.target.value })} />
-            </div>
-            <div>
-              <Label>Contacto</Label>
-              <Input value={supForm.contact_name} onChange={(e) => setSupForm({ ...supForm, contact_name: e.target.value })} />
-            </div>
-            <div>
-              <Label>Email</Label>
-              <Input value={supForm.email} onChange={(e) => setSupForm({ ...supForm, email: e.target.value })} />
-            </div>
-            <div>
-              <Label>Teléfono</Label>
-              <Input value={supForm.phone} onChange={(e) => setSupForm({ ...supForm, phone: e.target.value })} />
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setSupFormOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSaveSupplier} disabled={!supForm.name} className="bg-indigo-600 hover:bg-indigo-700">Guardar</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Category Dialog */}
-      {deleteCatId && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="h-5 w-5 text-red-500" />
-              </div>
-              <div>
-                <p className="font-semibold text-slate-800">Eliminar categoría</p>
-                <p className="text-sm text-slate-500">Esta acción no se puede deshacer</p>
-              </div>
-            </div>
-            {!isAdmin && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <Label className="text-xs text-amber-800 font-medium block mb-2">Razón de eliminación *</Label>
-                <Textarea 
-                  placeholder="Explica por qué necesitas eliminar esta categoría..."
-                  value={deleteCatReason} 
-                  onChange={(e) => setDeleteCatReason(e.target.value)}
-                  rows={3}
-                  className="text-sm"
-                />
-                <p className="text-xs text-amber-600 mt-2">El admin revisará esta acción</p>
-              </div>
-            )}
-            <div className="flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => { setDeleteCatId(null); setDeleteCatReason(""); }}>Cancelar</Button>
-              <Button 
-                className="bg-red-600 hover:bg-red-700" 
-                onClick={() => handleDeleteCategory(deleteCatId)}
-                disabled={!isAdmin && !deleteCatReason.trim()}
-              >
-                Eliminar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
       </div>
       );
       }

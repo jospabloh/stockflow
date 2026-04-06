@@ -32,7 +32,9 @@ import {
   Monitor,
   ChevronDown,
   Briefcase,
-  DollarSign
+  DollarSign,
+  Palette,
+  Users
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -45,6 +47,10 @@ const navItems = [
     icon: Briefcase,
     submenu: [
       { name: "Productos", icon: Package, page: "Products" },
+      { name: "Categorías", icon: Palette, page: "Categories" },
+      { name: "Proveedores", icon: Users, page: "Suppliers" },
+      { name: "Clientes", icon: Users, page: "Clients" },
+      { name: "Pagos", icon: DollarSign, page: "PaymentMethods" },
     ]
   },
   { name: "Movimientos", icon: ArrowLeftRight, page: "Movements" },
@@ -53,7 +59,7 @@ const navItems = [
   { name: "Reportes", icon: BarChart3, page: "Reports" },
   { name: "Configuración", icon: Settings, page: "Settings" },
   { name: "Centro de Ayuda", icon: HelpCircle, page: "HelpCenter" },
-  { name: "Acerca de", icon: HelpCircle, page: "About" },
+  { name: "StockFlow", icon: HelpCircle, page: "About" },
 ];
 
 // Flat map para encontrar páginas y detectar si están en submenu

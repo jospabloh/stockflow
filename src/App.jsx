@@ -23,6 +23,10 @@ const QuotationNew = lazy(() => import('./pages/Quotations/QuotationNew'));
 const QuotationEdit = lazy(() => import('./pages/Quotations/QuotationEdit'));
 const PettyCash = lazy(() => import('./pages/PettyCash'));
 const BarcodeGenerator = lazy(() => import('./pages/BarcodeGenerator'));
+const Categories = lazy(() => import('./pages/Categories'));
+const Suppliers = lazy(() => import('./pages/Suppliers'));
+const Clients = lazy(() => import('./pages/Clients'));
+const PaymentMethods = lazy(() => import('./pages/PaymentMethods'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center">
@@ -90,6 +94,10 @@ const AuthenticatedApp = () => {
       <Route path="/Quotations/edit/:id" element={<LayoutWrapper currentPageName="Quotations"><Suspense fallback={<PageLoader />}><QuotationEdit /></Suspense></LayoutWrapper>} />
       <Route path="/PettyCash" element={<LayoutWrapper currentPageName="PettyCash"><Suspense fallback={<PageLoader />}><PettyCash /></Suspense></LayoutWrapper>} />
       <Route path="/BarcodeGenerator" element={<LayoutWrapper currentPageName="Products"><Suspense fallback={<PageLoader />}><BarcodeGenerator /></Suspense></LayoutWrapper>} />
+      <Route path="/Categories" element={<LayoutWrapper currentPageName="Categories"><Suspense fallback={<PageLoader />}><Categories /></Suspense></LayoutWrapper>} />
+      <Route path="/Suppliers" element={<LayoutWrapper currentPageName="Suppliers"><Suspense fallback={<PageLoader />}><Suppliers /></Suspense></LayoutWrapper>} />
+      <Route path="/Clients" element={<LayoutWrapper currentPageName="Clients"><Suspense fallback={<PageLoader />}><Clients /></Suspense></LayoutWrapper>} />
+      <Route path="/PaymentMethods" element={<LayoutWrapper currentPageName="PaymentMethods"><Suspense fallback={<PageLoader />}><PaymentMethods /></Suspense></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
