@@ -363,14 +363,7 @@ export default function Settings() {
             </>
           )}
           
-          {/* Catálogos — todos ven */}
-          <TabsTrigger value="catalogs" disabled className="cursor-not-allowed opacity-60"><Palette className="h-4 w-4 mr-1" /> Catálogos</TabsTrigger>
 
-          {/* Subpestañas de Catálogos (admin + almacenistas) */}
-          <TabsTrigger value="categories" className="text-xs"><Palette className="h-3 w-3 mr-1" /> Categorías</TabsTrigger>
-          <TabsTrigger value="suppliers"><Users className="h-4 w-4 mr-1" /> Proveedores</TabsTrigger>
-          <TabsTrigger value="payments"><FileText className="h-4 w-4 mr-1" /> Tipo Pago</TabsTrigger>
-          <TabsTrigger value="clients"><Users className="h-4 w-4 mr-1" /> Clientes</TabsTrigger>
         </TabsList>
 
         {/* Business Settings — Admin only */}
