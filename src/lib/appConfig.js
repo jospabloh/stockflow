@@ -2,11 +2,22 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.4.3";
+export const APP_VERSION = "2.4.4";
 
 export const RELEASE_DATE = "2026-04-06";
 
 export const CHANGELOG = [
+  {
+    version: "2.4.4",
+    date: "2026-04-06",
+    changes: [
+      "Nueva configuración de transporte para clientes con precio de compra forzado: +20 MXN por producto automáticamente",
+      "En formulario de cliente: mostrar '20 MXN transporte/producto' cuando force_purchase_all_products = true",
+      "En cotización: icono 🚚 en cada línea de producto cuando el cliente tiene transporte aplicado",
+      "Actualizado pricing engine: suma de +20 MXN por producto SOLO para clientes con force_purchase = true",
+      "Campo en UI cliente mejorado con alerta visual del transporte aplicado",
+    ],
+  },
   {
     version: "2.4.3",
     date: "2026-04-06",

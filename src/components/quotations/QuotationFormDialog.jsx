@@ -451,6 +451,9 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                         {selectedClient.force_purchase_all_products ? "Compra" : "Mayoreo"}
                       </span>
                     )}
+                    {selectedClient?.force_purchase_all_products && (
+                      <span className="text-lg mt-1" title="Transporte 20 MXN">🚚</span>
+                    )}
                   </div>
                   <div className="col-span-1 flex items-start pt-5">
                     <Button variant="ghost" size="icon" className="h-8 w-8" type="button" onClick={() => removeItem(idx)}>

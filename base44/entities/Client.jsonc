@@ -51,7 +51,7 @@
     "force_purchase_all_products": {
       "type": "boolean",
       "default": false,
-      "description": "Aplicar precio de compra en todos los productos y en cualquier cantidad"
+      "description": "Aplicar precio de compra en todos los productos y en cualquier cantidad; suma +20 MXN de transporte por producto"
     },
     "business_id": {
       "type": "string",

@@ -256,14 +256,19 @@ export default function ClientsManager() {
                   }}
                 />
                 <Label htmlFor="force_purchase" className="text-sm leading-snug cursor-pointer">
-                  Aplicar precio de compra en todos los productos y en cualquier cantidad
-                </Label>
-              </div>
-              {(form.force_wholesale_all_products || form.force_purchase_all_products) && (
-                <p className="text-xs text-indigo-600 font-medium">
-                  ⚡ {form.force_purchase_all_products ? "Precio de compra" : "Precio mayoreo"} activo para este cliente
-                </p>
-              )}
+                    Aplicar precio de compra en todos los productos y en cualquier cantidad
+                  </Label>
+                </div>
+                {(form.force_wholesale_all_products || form.force_purchase_all_products) && (
+                  <p className="text-xs text-indigo-600 font-medium">
+                    ⚡ {form.force_purchase_all_products ? "Precio de compra + 20 MXN transporte/producto" : "Precio mayoreo"} activo para este cliente
+                  </p>
+                )}
+                {form.force_purchase_all_products && (
+                  <div className="bg-amber-50 border border-amber-200 rounded p-2">
+                    <p className="text-xs text-amber-700">🚚 <strong>Transporte:</strong> 20 MXN por producto</p>
+                  </div>
+                )}
             </div>
 
           </div>
