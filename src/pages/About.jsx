@@ -21,7 +21,7 @@ export default function About() {
         <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg mx-auto">
           <Code className="h-8 w-8 text-white" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground">StockFlow</h1>
+        <h1 className="text-3xl font-bold text-foreground">Inventario StockFlow</h1>
         <p className="text-muted-foreground">Sistema integral de control de inventario</p>
         <div className="flex items-center justify-center gap-2 pt-1">
           <Badge className="bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 text-sm px-3 py-1">

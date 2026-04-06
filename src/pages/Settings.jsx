@@ -61,10 +61,6 @@ export default function Settings() {
   const [editingSup, setEditingSup] = useState(null);
   const [supForm, setSupForm] = useState({ name: "", contact_name: "", email: "", phone: "" });
 
-  // Read tab from URL params
-  const urlParams = new URLSearchParams(window.location.search);
-  const tabFromUrl = urlParams.get('tab');
-
   useEffect(() => {
      const checkAndLoadSettings = async () => {
        try {
@@ -350,7 +346,7 @@ export default function Settings() {
 
   // Almacenistas solo ven: Clientes, Categorías, Productos, Proveedores, Formas de Pago
   const allowedTabsForStaff = ['clients', 'categories', 'suppliers', 'payments', 'products'];
-  const defaultTab = tabFromUrl || (isAdmin ? 'business' : 'clients');
+  const defaultTab = isAdmin ? 'business' : 'clients';
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -364,16 +360,15 @@ export default function Settings() {
               <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>
               <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>
               <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>
-              </>
-              )}
-
-              {/* Catálogos — todos ven */}
-              <TabsTrigger value="categories"><Palette className="h-4 w-4 mr-1" /> Categorías</TabsTrigger>
-              <TabsTrigger value="suppliers"><Users className="h-4 w-4 mr-1" /> Proveedores</TabsTrigger>
-              <TabsTrigger value="payments"><FileText className="h-4 w-4 mr-1" /> Tipo Pago</TabsTrigger>
-              <TabsTrigger value="clients"><Users className="h-4 w-4 mr-1" /> Clientes</TabsTrigger>
-
-              </TabsList>
+            </>
+          )}
+          
+          {/* Todos ven estas pestañas (admin + almacenistas) */}
+          <TabsTrigger value="categories"><Palette className="h-4 w-4 mr-1" /> Categorías</TabsTrigger>
+          <TabsTrigger value="suppliers"><Users className="h-4 w-4 mr-1" /> Proveedores</TabsTrigger>
+          <TabsTrigger value="payments"><FileText className="h-4 w-4 mr-1" /> Pagos</TabsTrigger>
+          <TabsTrigger value="clients"><Users className="h-4 w-4 mr-1" /> Clientes</TabsTrigger>
+        </TabsList>
 
         {/* Business Settings — Admin only */}
         {isAdmin && <TabsContent value="business">
