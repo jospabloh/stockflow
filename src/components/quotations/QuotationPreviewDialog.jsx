@@ -96,35 +96,50 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
             </div>
           </div>
 
-          {/* Items table */}
+          {/* Info note: Precios incluyen IVA */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-[11px] text-blue-700"><strong>ℹ️ Nota:</strong> Los precios mostrados para productos con IVA ya incluyen el impuesto. Ver desglose en la columna de totales.</p>
+          </div>
+
+          {/* Items table with IVA breakdown */}
           <div className="rounded-lg overflow-hidden border border-slate-200">
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-white" style={{ backgroundColor: primaryColor }}>
                   <th className="px-3 py-2 text-left w-8">#</th>
                   <th className="px-3 py-2 text-left">Descripción</th>
+                  <th className="px-3 py-2 text-center w-12">Cant.</th>
+                  <th className="px-3 py-2 text-right w-20">Precio unit.</th>
                   <th className="px-3 py-2 text-center w-16">IVA</th>
-                  <th className="px-3 py-2 text-right w-16">Cant.</th>
-                  <th className="px-3 py-2 text-right w-24">Precio unit.</th>
-                  <th className="px-3 py-2 text-right w-24">Total</th>
+                  <th className="px-3 py-2 text-right w-20">Total</th>
                 </tr>
               </thead>
               <tbody>
-                {(quotation.items || []).map((item, i) => (
-                  <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-slate-50"}>
-                    <td className="px-3 py-2 text-slate-400">{i + 1}</td>
-                    <td className="px-3 py-2 text-slate-700">{item.product_name}</td>
-                    <td className="px-3 py-2 text-center">
-                      {(item.tax_rate ?? 16) > 0
-                        ? <span className="bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded text-[10px]">16%</span>
-                        : <span className="bg-slate-100 text-slate-400 font-bold px-1.5 py-0.5 rounded text-[10px]">Exento</span>
-                      }
-                    </td>
-                    <td className="px-3 py-2 text-right text-slate-700">{item.quantity}</td>
-                    <td className="px-3 py-2 text-right text-slate-700">${fmt(item.unit_price)}</td>
-                    <td className="px-3 py-2 text-right font-medium text-slate-800">${fmt(item.total)}</td>
-                  </tr>
-                ))}
+                {(quotation.items || []).map((item, i) => {
+                  const hasIVA = (item.tax_rate ?? 16) > 0;
+                  const totalPrice = item.total || 0;
+                  const priceBeforeTax = hasIVA ? totalPrice / 1.16 : totalPrice;
+                  const ivaAmount = hasIVA ? totalPrice - priceBeforeTax : 0;
+
+                  return (
+                    <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                      <td className="px-3 py-2 text-slate-400">{i + 1}</td>
+                      <td className="px-3 py-2 text-slate-700">{item.product_name}</td>
+                      <td className="px-3 py-2 text-center text-slate-700">{item.quantity}</td>
+                      <td className="px-3 py-2 text-right text-slate-700">${fmt(item.unit_price)}</td>
+                      <td className="px-3 py-2 text-center">
+                        {hasIVA ? (
+                          <span className="bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded text-[10px]">
+                            ${fmt(ivaAmount)}
+                          </span>
+                        ) : (
+                          <span className="bg-slate-100 text-slate-400 font-bold px-1.5 py-0.5 rounded text-[10px]">Exento</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-right font-medium text-slate-800">${fmt(totalPrice)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

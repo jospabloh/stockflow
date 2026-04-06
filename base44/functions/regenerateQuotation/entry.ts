@@ -113,22 +113,32 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Calculate totals
-    let subtotal = 0;
-    let taxAmount = 0;
+    // Calculate totals with proper desglose
+    // Precios en sistema YA incluyen IVA, necesitamos desglozar
+    let subtotalBeforeTax = 0;  // Suma de precios ANTES de IVA
+    let taxAmount = 0;           // Suma de montos de IVA
+    let subtotalExcempt = 0;     // Suma de precios exentos (IVA=0)
 
     for (const item of recalcedItems) {
       const itemTotal = item.total || 0;
       const itemTaxRate = item.tax_rate || 0;
-      subtotal += itemTotal;
-      // Desglose: solo productos con IVA 16%
+      
       if (itemTaxRate === 16) {
-        const itemTaxOnly = itemTotal * (16 / 116);
-        taxAmount += itemTaxOnly;
+        // Desglosar: el precio incluye IVA
+        // Si precio_final = precio_base * 1.16, entonces:
+        // precio_base = precio_final / 1.16
+        const priceBeforeTax = itemTotal / 1.16;
+        const itemTax = itemTotal - priceBeforeTax;
+        subtotalBeforeTax += priceBeforeTax;
+        taxAmount += itemTax;
+      } else {
+        // IVA 0% - el precio es exento
+        subtotalExcempt += itemTotal;
       }
     }
 
-    const total = subtotal;
+    const subtotal = subtotalBeforeTax + subtotalExcempt;
+    const total = subtotal + taxAmount;
 
     // Update quotation with recalculated data
     const updated = await base44.entities.Quotation.update(quotation_id, {

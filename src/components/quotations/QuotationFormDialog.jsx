@@ -218,24 +218,34 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     });
   };
 
-  // Los precios en los productos YA INCLUYEN IVA (son finales)
-  // Solo sumamos y desglosamos:
-  // - IVA 16%: extraer el impuesto incluido en el precio
-  // - IVA 0% (Excento): no hay impuesto que desglosar
-  let subtotal = 0;
-  let taxAmount = 0;
+  // Precios en sistema YA incluyen IVA
+  // Desglozamos para mostrar:
+  // - Subtotal (antes IVA) = suma de precios base + exentos
+  // - IVA (desglose) = suma de impuestos
+  // - Total (final) = Subtotal + IVA
+  let subtotalBeforeTax = 0;  // Precios ANTES de IVA (productos con IVA 16%)
+  let taxAmount = 0;           // Suma de montos de IVA
+  let subtotalExcempt = 0;     // Precios exentos (IVA 0%)
+
   for (const item of form.items) {
     const itemTotal = item.total || 0;
     const itemTaxRate = item.tax_rate || 0;
-    subtotal += itemTotal;
-    // Desglose: solo productos con IVA 16%
+    
     if (itemTaxRate === 16) {
-      const itemTaxOnly = itemTotal * (16 / 116);
-      taxAmount += itemTaxOnly;
+      // Desglozar: precio_final incluye IVA
+      // precio_base = precio_final / 1.16
+      const priceBeforeTax = itemTotal / 1.16;
+      const itemTax = itemTotal - priceBeforeTax;
+      subtotalBeforeTax += priceBeforeTax;
+      taxAmount += itemTax;
+    } else {
+      // IVA 0% - exento
+      subtotalExcempt += itemTotal;
     }
-    // IVA 0% (excento): no se desgloza nada
   }
-  const total = subtotal;
+
+  const subtotal = subtotalBeforeTax + subtotalExcempt;
+  const total = subtotal + taxAmount;
 
   const generateFolio = async () => {
     const now = new Date();
@@ -468,16 +478,27 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
             </div>
           </div>
 
-          {/* Tax & totals */}
+          {/* Info note */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-[11px] text-blue-700"><strong>ℹ️ Nota:</strong> Los precios de productos con IVA incluyen el impuesto. El subtotal se calcula restando el IVA de esos precios.</p>
+          </div>
+
+          {/* Tax & totals breakdown */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3 text-sm">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-semibold text-foreground">${subtotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+              <span className="text-muted-foreground">Subtotal (antes de IVA)</span>
+              <span className="font-semibold text-foreground">${subtotalBeforeTax.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
+            {subtotalExcempt > 0 && (
+              <div className="flex justify-between items-center text-muted-foreground text-xs">
+                <span>Productos exentos (IVA 0%)</span>
+                <span className="text-foreground">${subtotalExcempt.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+              </div>
+            )}
             {taxAmount > 0 && (
               <div className="flex justify-between items-center text-muted-foreground text-xs">
-                <span>IVA 16%</span>
-                <span className="text-foreground">${taxAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                <span>IVA 16% (desglose)</span>
+                <span className="text-amber-600 font-semibold">${taxAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
               </div>
             )}
             <div className="flex justify-between items-center text-lg font-bold border-t border-border pt-3 bg-foreground/10 -mx-4 px-4 py-3 rounded">
