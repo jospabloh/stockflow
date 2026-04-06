@@ -2,7 +2,7 @@ import { helpDataExtension } from './helpDataExtension.js';
 import { newHelpArticles } from './helpDataNew';
 
 export const localHelpData = {
-  version: "2.6",
+  version: "2.4.3",
   last_updated: "2026-04-06",
   get articles() { return [..._baseArticles, ...helpDataExtension, ...newHelpArticles]; }
 };
@@ -889,7 +889,7 @@ En la página de **Movimientos**:
 
 Ve a **Cotizaciones → + Nueva Cotización** para iniciar una nueva propuesta comercial.
 
-> **v2.4.1**: Corrección de cálculo de IVA — subtotal y total ahora se calculan correctamente cuando hay múltiples productos: **Subtotal (sin IVA) + IVA 16% = Total final**
+> **v2.4.3**: Los precios del catálogo **ya incluyen IVA**. El total = suma directa de precios finales, sin sumar IVA adicional. Se muestra desglose informativo del IVA contenido por cada producto.
 
 ---
 
@@ -912,8 +912,8 @@ Tienes dos métodos para añadir productos a la cotización:
 
 Por cada producto puedes ajustar:
 - **Cantidad** — el sistema muestra el stock disponible y alerta si se supera
-- **Precio unitario** — se toma del catálogo, pero es editable
-- **IVA** — puedes activar/desactivar el IVA por producto individualmente
+- **Precio unitario** — se toma del catálogo (precio final, con IVA incluido), pero es editable
+- **Labels visuales** — cada producto muestra **IVA 16%** o **Excento** (0%), y si el cliente tiene configuración forzada muestra **Compra** o **Mayoreo**
 
 ---
 
@@ -921,9 +921,11 @@ Por cada producto puedes ajustar:
 
 | Concepto | Cómo se calcula |
 |---|---|
-| **Subtotal** | Suma de (cantidad × precio) de todos los productos |
-| **IVA** | Calculado según la tasa de IVA de cada producto (0% o 16%) |
-| **Total** | Subtotal + IVA |
+| **Subtotal (Suma Directa)** | Suma de (cantidad × precio final) de todos los productos |
+| **IVA (Desglose informativo)** | Se extrae del total solo para visibilidad — **nunca se suma** al total |
+| **Total** | = Subtotal (suma directa, ya incluye IVA en los precios) |
+
+**Nota importante:** Los precios de los productos **ya incluyen IVA** (16% o 0% según el producto). El desglose de IVA es solo informativo.
 
 ---
 
