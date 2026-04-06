@@ -2,11 +2,26 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.4.4";
+export const APP_VERSION = "2.5.0";
 
 export const RELEASE_DATE = "2026-04-06";
 
 export const CHANGELOG = [
+  {
+    version: "2.5.0",
+    date: "2026-04-06",
+    changes: [
+      "🎯 Restructuración de navegación: nuevo menú padre 'Catálogos' en sidebar que agrupa 5 catálogos operativos",
+      "Catálogos submenu: Productos, Categorías, Proveedores, Clientes, Tipo de pago — cada uno como página independiente",
+      "Extracción de gestión de catálogos desde Configuración: Categorías, Proveedores, Clientes, Tipo de pago ahora son módulos autónomos y accesibles",
+      "Configuración simplificada: eliminadas pestañas de catálogos duplicadas, solo opciones de negocio, fiscales, equipo, importación e informes",
+      "Menú Acerca de renombrado correctamente: label en sidebar es 'Acerca de' (no StockFlow), página interna muestra 'StockFlow' como nombre de producto",
+      "Protección de layout en cotizaciones PDF: corrección de espacio de dirección larga para evitar colisiones con código de folio",
+      "Text wrapping mejorado: direcciones largas en cotizaciones se desglosan correctamente sin superponer números de folio",
+      "Responsive integrity validado: todas las nuevas páginas de catálogos funcionales en iPhone y Android sin botones ocultos",
+      "Integridad de datos preservada: CRUD de catálogos, permisos, business_id isolation, y tenant aislamiento completamente intactos",
+    ],
+  },
   {
     version: "2.4.4",
     date: "2026-04-06",

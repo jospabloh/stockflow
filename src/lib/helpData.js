@@ -2,7 +2,7 @@ import { helpDataExtension } from './helpDataExtension.js';
 import { newHelpArticles } from './helpDataNew';
 
 export const localHelpData = {
-  version: "2.4.4",
+  version: "2.5.0",
   last_updated: "2026-04-06",
   get articles() { return [..._baseArticles, ...helpDataExtension, ...newHelpArticles]; }
 };
@@ -1369,10 +1369,10 @@ Ve a **Configuración → Mi Negocio** para personalizar los datos de tu empresa
       role: "admin",
       title: "👥 Gestión de Clientes",
       keywords: ["clientes", "cliente", "rfc cliente", "directorio", "eliminar cliente", "editar cliente", "inactivo"],
-      related_ids: ["settings-business", "quotations-create"],
+      related_ids: ["catalog-navigation-menu", "settings-business", "quotations-create"],
       content: `## 👥 Gestión de Clientes
 
-Ve a **Configuración → Clientes** para administrar el directorio de clientes del negocio.
+    Ve a **Catálogos → Clientes** (desde v2.5.0) para administrar el directorio de clientes del negocio.
 
 ---
 
@@ -1467,18 +1467,81 @@ También puedes **regenerar el código** para invalidar el anterior y generar un
 - Cambia el código si sospechas que fue compartido sin autorización`
     },
     {
+      id: "catalog-navigation-menu",
+      category: "Primeros Pasos",
+      role: "all",
+      title: "📂 Nuevo Menú Catálogos — Navegación Reorganizada",
+      keywords: ["catálogos", "menú", "navegación", "productos", "categorías", "proveedores", "clientes", "tipo de pago", "restructuración"],
+      related_ids: ["products-create", "settings-business"],
+      content: `## 📂 Menú Catálogos — Cambios de v2.5.0
+
+    En **StockFlow v2.5.0** hemos reorganizado la navegación para hacer más accesible la gestión de tu catálogo.
+
+    ---
+
+    ### 🎯 Nuevo Menú Parent: "Catálogos"
+
+    En el sidebar izquierdo ahora encontrarás un nuevo menú expandible llamado **Catálogos** (icono: briefcase 💼) que agrupa 5 módulos operativos:
+
+    | Módulo | Descripción | Anterior |
+    |---|---|---|
+    | **Productos** | Gestión del catálogo de productos | Productos (sin cambios) |
+    | **Categorías** | Organizar productos por tipo/línea | Estaba en Configuración |
+    | **Proveedores** | Directorio de proveedores | Estaba en Configuración |
+    | **Clientes** | Directorio de clientes | Estaba en Configuración |
+    | **Tipo de pago** | Formas de pago (Efectivo, Transferencia, etc.) | Estaba en Configuración como "Pagos" |
+
+    ---
+
+    ### ✅ ¿Qué cambió?
+
+    **En el menú Catálogos:**
+    - Cada módulo ahora es una página **independiente y autónoma**
+    - Puedes acceder a cualquier módulo sin pasar por Configuración
+    - Los datos y funciones CRUD son exactamente iguales a antes — **sin pérdida de funcionalidad**
+    - Permisos, validaciones, y business_id isolation funcionan idénticos
+
+    **En Configuración:**
+    - Se eliminaron las pestañas duplicadas de Categorías, Proveedores, Clientes y Pagos
+    - Ahora Configuración solo contiene:
+    - **Mi Negocio** — datos fiscales, logo, RFC
+    - **Facturación** — para futuras opciones de factura
+    - **Equipo** — gestión de usuarios e invitaciones
+    - **Importar Productos** — importación masiva CSV/Excel
+
+    ---
+
+    ### 📱 Acceso en Dispositivos Móviles
+
+    El menú Catálogos funciona en iPhone y Android:
+    - Toca el icono **≡** (hamburguesa) para abrir el menú en móvil
+    - Toca **Catálogos** para expandir y ver las 5 opciones
+    - Todas las páginas son completamente responsivas
+
+    ---
+
+    ### 💡 Beneficios de la Reorganización
+
+    1. **Mejor acceso:** Menos clics para llegar a Categorías, Proveedores, etc.
+    2. **Interfaz más clara:** Configuración ahora contiene solo opciones de negocio
+    3. **Flujo más intuitivo:** Los datos del catálogo están agrupados juntos
+    4. **Sin cambios funcionales:** Todo funciona exactamente igual que antes`
+    },
+    {
       id: "settings-categories",
       category: "Configuración",
       role: "admin",
       title: "🏷️ Categorías y Proveedores",
       keywords: ["categoría", "proveedor", "clasificar", "organizar", "color", "catálogo", "crear categoría"],
-      related_ids: ["products-create", "settings-business"],
+      related_ids: ["catalog-navigation-menu", "products-create", "settings-business"],
       content: `## 🏷️ Categorías y Proveedores
 
----
+    > **v2.5.0**: Estas secciones se movieron de Configuración a menú Catálogos — ver **"Nuevo Menú Catálogos"** para detalles.
 
-### 🎨 Categorías
-> 📍 *Configuración → Categorías*
+    ---
+
+    ### 🎨 Categorías
+    > 📍 *Catálogos → Categorías* (antes: *Configuración → Categorías*)
 
 Organiza tu catálogo agrupando productos por tipo o línea de negocio.
 
