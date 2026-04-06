@@ -42,7 +42,19 @@ const navItems = [
   { name: "Cotizaciones", icon: FileText, page: "Quotations" },
   { name: "Caja Chica", icon: PiggyBank, page: "PettyCash" },
   { name: "Reportes", icon: BarChart3, page: "Reports" },
-  { name: "Catálogos", icon: Package, page: "Settings", submenu: true },
+  { 
+    name: "Catálogos", 
+    icon: Package, 
+    page: "Settings",
+    isGroup: true,
+    submenu: [
+      { name: "Productos", page: "Settings", tab: "products" },
+      { name: "Clientes", page: "Settings", tab: "clients" },
+      { name: "Categorías", page: "Settings", tab: "categories" },
+      { name: "Proveedores", page: "Settings", tab: "suppliers" },
+      { name: "Tipo de Pago", page: "Settings", tab: "payments" },
+    ]
+  },
   { name: "Configuración", icon: Settings, page: "Settings" },
   { name: "Centro de Ayuda", icon: HelpCircle, page: "HelpCenter" },
   { name: "Acerca de", icon: HelpCircle, page: "About" },
@@ -165,18 +177,31 @@ export default function Layout({ children, currentPageName }) {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Navegación principal">
           {navItems.map((item) => {
             const isActive = currentPageName === item.page;
-            // For submenu items, show as parent (don't navigate directly)
-            if (item.submenu) {
+            
+            // Render group with submenu items
+            if (item.isGroup && item.submenu) {
               return (
-                <div key={item.page} className="space-y-1">
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200">
+                <div key={item.name} className="space-y-1">
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground">
                     <item.icon className="h-5 w-5" aria-hidden="true" />
                     <span>{item.name}</span>
-                    <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground" aria-hidden="true" />
                   </div>
+                  {/* Submenu items */}
+                  {item.submenu.map((subitem) => (
+                    <Link
+                      key={subitem.tab}
+                      to={`${createPageUrl(subitem.page)}?tab=${subitem.tab}`}
+                      onClick={() => setSidebarOpen(false)}
+                      aria-label={subitem.name}
+                      className="flex items-center gap-3 px-7 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
+                    >
+                      <span>• {subitem.name}</span>
+                    </Link>
+                  ))}
                 </div>
               );
             }
+            
             return (
               <Link
                 key={item.page}
