@@ -218,19 +218,22 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     });
   };
 
-  // Los precios del pricingEngine son SIN IVA.
-  // item.total = quantity × unit_price (sin IVA)
-  // Para mostrar: subtotal = suma sin IVA, IVA = suma de impuestos, total = subtotal + IVA
+  // Baristop: Los precios del catálogo son precios finales (con o sin IVA incluido)
+  // NO sumamos IVA adicional. Solo mostramos desglose si hay productos con IVA.
+  // item.total = quantity × unit_price (precio ya es final)
   let subtotal = 0;
   let taxAmount = 0;
   for (const item of form.items) {
-    const itemSubtotal = item.total || 0;
+    const itemTotal = item.total || 0;
     const itemTaxRate = item.tax_rate || 0;
-    const itemTax = itemTaxRate > 0 ? itemSubtotal * (itemTaxRate / 100) : 0;
-    subtotal += itemSubtotal;
-    taxAmount += itemTax;
+    subtotal += itemTotal;
+    // Mostrar desglose informativo: si el precio tiene IVA, extraer el 16% del total
+    if (itemTaxRate > 0) {
+      const itemTaxOnly = itemTotal / 1.16 * (itemTaxRate / 100);
+      taxAmount += itemTaxOnly;
+    }
   }
-  const total = subtotal + taxAmount;
+  const total = subtotal;
 
   const generateFolio = async () => {
     const now = new Date();
@@ -458,18 +461,18 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           {/* Tax & totals */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3 text-sm">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Subtotal (sin IVA)</span>
+              <span className="text-muted-foreground">Total (precios finales)</span>
               <span className="font-semibold text-foreground">${subtotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
             {taxAmount > 0 && (
-              <div className="flex justify-between items-center text-muted-foreground">
-                <span>IVA 16% (incluido en precio)</span>
+              <div className="flex justify-between items-center text-muted-foreground text-xs">
+                <span>Desglose IVA 16% incluido</span>
                 <span className="text-foreground">${taxAmount.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
               </div>
             )}
-            <div className="flex justify-between items-center text-lg font-bold border-t border-border pt-3 bg-accent/10 -mx-4 px-4 py-3 rounded">
-              <span className="text-foreground">Total</span>
-              <span className="text-accent">${total.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+            <div className="flex justify-between items-center text-lg font-bold border-t border-border pt-3 bg-foreground/10 -mx-4 px-4 py-3 rounded text-foreground">
+              <span>Total a pagar</span>
+              <span>${total.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
 

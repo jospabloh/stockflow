@@ -2,17 +2,26 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.4.1";
+export const APP_VERSION = "2.4.2";
 
 export const RELEASE_DATE = "2026-04-06";
 
 export const CHANGELOG = [
   {
+    version: "2.4.2",
+    date: "2026-04-06",
+    changes: [
+      "🔥 Corrección crítica Baristop: los precios del catálogo son precios finales (con o sin IVA según aplique) — NO se suma IVA adicional en cotización",
+      "Cambio importante: el sistema solo muestra un desglose informativo del IVA incluido para visibilidad, pero el total = suma directa de precios sin añadir nada más",
+      "Feedback: Baristop confirma que todos los precios que dan de alta en el catálogo ya son sus precios finales, con o sin IVA",
+    ],
+  },
+  {
     version: "2.4.1",
     date: "2026-04-06",
     changes: [
-      "Corrección crítica: cálculo de IVA en cotizaciones — los precios del motor de precios son SIN IVA, ahora se suma correctamente (subtotal + IVA = total) en lugar de extraer del total",
-      "Error detectado: cuando una cotización tenía múltiples items del mismo producto, el subtotal se calculaba erróneamente dividiendo el total por 1.16",
+      "Intento anterior: cálculo de IVA en cotizaciones — causó doble conteo de impuestos en Baristop",
+      "Raíz del problema identificada: asumimos que los precios eran SIN IVA, cuando en realidad el cliente proporciona precios YA finales",
     ],
   },
   {
