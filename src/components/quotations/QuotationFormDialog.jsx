@@ -218,22 +218,21 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     });
   };
 
-  // Cálculo estándar: subtotal + IVA
-  // item.total = quantity × unit_price (precio base)
-  // Se suma IVA según el tax_rate definido en el producto
+  // Los precios en los productos YA INCLUYEN IVA (son finales)
+  // Solo sumamos y desglosamos el IVA que está contenido
   let subtotal = 0;
   let taxAmount = 0;
   for (const item of form.items) {
     const itemTotal = item.total || 0;
     const itemTaxRate = item.tax_rate || 0;
     subtotal += itemTotal;
-    // Sumar IVA al monto total
+    // Desglose informativo: extraer el IVA incluido (solo si tax_rate > 0)
     if (itemTaxRate > 0) {
-      const itemTax = itemTotal * (itemTaxRate / 100);
-      taxAmount += itemTax;
+      const itemTaxOnly = (itemTotal / 1.16) * (itemTaxRate / 100);
+      taxAmount += itemTaxOnly;
     }
   }
-  const total = subtotal + taxAmount;
+  const total = subtotal;
 
   const generateFolio = async () => {
     const now = new Date();
