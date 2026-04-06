@@ -1,0 +1,150 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+
+/**
+ * Recalcula precios y totales de una cotización en borrador
+ * usando el pricing engine actual y catálogos actualizados
+ */
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { quotation_id } = body;
+
+    if (!quotation_id) {
+      return Response.json({ error: 'quotation_id is required' }, { status: 400 });
+    }
+
+    // Fetch quotation
+    const quotations = await base44.entities.Quotation.filter({ id: quotation_id });
+    if (quotations.length === 0) {
+      return Response.json({ error: 'Quotation not found' }, { status: 404 });
+    }
+
+    const quotation = quotations[0];
+
+    // Validate ownership
+    if (quotation.business_id !== user.business_id) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Only allow regeneration of draft quotations
+    if (quotation.status !== 'draft') {
+      return Response.json({ error: 'Only draft quotations can be regenerated' }, { status: 400 });
+    }
+
+    // Fetch client
+    const clients = await base44.entities.Client.filter({ id: quotation.client_id });
+    const client = clients.length > 0 ? clients[0] : null;
+
+    // Fetch all products and categories for this business
+    const [products, categories] = await Promise.all([
+      base44.entities.Product.filter({ business_id: user.business_id }),
+      base44.entities.Category.filter({ business_id: user.business_id })
+    ]);
+
+    // Build maps for quick lookup
+    const productMap = {};
+    const categoryMap = {};
+    for (const p of products) productMap[p.id] = p;
+    for (const c of categories) categoryMap[c.id] = c;
+
+    // Compute category qty totals from original items
+    const categoryQtyMap = {};
+    for (const item of quotation.items) {
+      const product = productMap[item.product_id];
+      const catId = product?.category || '__none__';
+      categoryQtyMap[catId] = (categoryQtyMap[catId] || 0) + (Number(item.quantity) || 0);
+    }
+
+    // Recalculate each item's price using pricingEngine logic
+    const recalcedItems = [];
+    for (const item of quotation.items) {
+      const product = productMap[item.product_id];
+
+      if (!product) {
+        return Response.json({ error: `Product ${item.product_id} not found in catalog` }, { status: 404 });
+      }
+
+      const category = categoryMap[product.category];
+      const categoryQty = categoryQtyMap[product.category || '__none__'] || 0;
+      const quantity = Number(item.quantity) || 1;
+
+      // Apply pricing engine logic
+      let price = product.retail_sale_price ?? product.sale_price ?? 0;
+      let rule = 'retail';
+
+      // Rule 1: client force purchase price
+      if (client?.force_purchase_all_products) {
+        if (product.purchase_price != null && product.purchase_price >= 0) {
+          price = product.purchase_price + 20;
+          rule = 'client_purchase';
+        }
+      }
+      // Rule 2: client force wholesale price
+      else if (client?.force_wholesale_all_products) {
+        if (product.wholesale_sale_price != null && product.wholesale_sale_price >= 0) {
+          price = product.wholesale_sale_price;
+          rule = 'client_wholesale';
+        }
+      }
+      // Rule 3: category wholesale threshold
+      else if (category?.wholesale_min_qty > 0 && categoryQty >= category.wholesale_min_qty) {
+        if (product.wholesale_sale_price != null && product.wholesale_sale_price >= 0) {
+          price = product.wholesale_sale_price;
+          rule = 'wholesale_qty';
+        }
+      }
+
+      const total = quantity * Math.max(0, price);
+
+      recalcedItems.push({
+        product_id: item.product_id,
+        product_name: product.name,
+        quantity: quantity,
+        unit_price: Math.max(0, price),
+        total: total,
+        tax_rate: product.tax_rate ?? 16
+      });
+    }
+
+    // Calculate totals
+    let subtotal = 0;
+    let taxAmount = 0;
+
+    for (const item of recalcedItems) {
+      const itemTotal = item.total || 0;
+      const itemTaxRate = item.tax_rate || 0;
+      subtotal += itemTotal;
+      // Desglose: solo productos con IVA 16%
+      if (itemTaxRate === 16) {
+        const itemTaxOnly = itemTotal * (16 / 116);
+        taxAmount += itemTaxOnly;
+      }
+    }
+
+    const total = subtotal;
+
+    // Update quotation with recalculated data
+    const updated = await base44.entities.Quotation.update(quotation_id, {
+      items: recalcedItems,
+      subtotal: Math.round(subtotal * 100) / 100,
+      tax: Math.round(taxAmount * 100) / 100,
+      total: Math.round(total * 100) / 100
+    });
+
+    return Response.json({
+      success: true,
+      quotation_id,
+      quotation: updated,
+      message: 'Quotation regenerated successfully'
+    });
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});

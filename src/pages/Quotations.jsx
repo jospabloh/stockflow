@@ -225,57 +225,8 @@ export default function Quotations() {
     if (q.status !== "draft") return;
     
     try {
-      // Fetch updated products and client
-      const [products, client] = await Promise.all([
-        base44.entities.Product.filter({ business_id: businessId, status: "active" }),
-        q.client_id ? base44.entities.Client.filter({ id: q.client_id, business_id: businessId }).then(res => res[0]) : Promise.resolve(null)
-      ]);
-
-      // Build maps for quick lookup
-      const productMap = {};
-      const categoryMap = {};
-      for (const p of products) productMap[p.id] = p;
-      
-      const categories = await base44.entities.Category.filter({ business_id: businessId });
-      for (const c of categories) categoryMap[c.id] = c;
-
-      // Recalculate prices for each item
-      const catQtyMap = computeCategoryQtyMap(q.items, productMap);
-      const updatedItems = q.items.map(item => {
-        const product = productMap[item.product_id];
-        if (!product) return item;
-        
-        const category = categoryMap[product.category];
-        const categoryQty = catQtyMap[product.category || "__none__"] || 0;
-        const { price } = calculatePrice({
-          product, client, quantity: item.quantity, category, categoryQty
-        });
-
-        return { ...item, unit_price: price, total: item.quantity * price };
-      });
-
-      // Recalculate totals
-      let subtotal = 0;
-      let taxAmount = 0;
-      for (const item of updatedItems) {
-        const itemTotal = item.total || 0;
-        const itemTaxRate = item.tax_rate || 0;
-        subtotal += itemTotal;
-        if (itemTaxRate === 16) {
-          taxAmount += itemTotal * (16 / 116);
-        }
-      }
-      const total = subtotal;
-
-      // Update quotation
-      const response = await base44.functions.invoke('updateQuotationSafe', {
-        quotation_id: q.id,
-        updates: {
-          items: updatedItems,
-          subtotal,
-          tax: taxAmount,
-          total
-        }
+      const response = await base44.functions.invoke('regenerateQuotation', {
+        quotation_id: q.id
       });
 
       if (response.data.success) {
