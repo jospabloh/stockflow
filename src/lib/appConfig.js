@@ -11,9 +11,9 @@ export const CHANGELOG = [
     version: "2.4.2",
     date: "2026-04-06",
     changes: [
-      "🔥 Corrección crítica Baristop: los precios del catálogo son precios finales (con o sin IVA según aplique) — NO se suma IVA adicional en cotización",
+      "🔥 Corrección crítica: los precios del catálogo son precios finales (con o sin IVA según aplique) — NO se suma IVA adicional en cotización",
       "Cambio importante: el sistema solo muestra un desglose informativo del IVA incluido para visibilidad, pero el total = suma directa de precios sin añadir nada más",
-      "Feedback: Baristop confirma que todos los precios que dan de alta en el catálogo ya son sus precios finales, con o sin IVA",
+      "Mejora de contraste: total en cotizaciones ahora visible correctamente en tema claro y oscuro",
     ],
   },
   {
