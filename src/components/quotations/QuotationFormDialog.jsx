@@ -441,11 +441,16 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                   </div>
                   <div className="col-span-1 hidden md:flex flex-col items-center justify-start pt-6">
                     <span
-                      className={`text-xs font-bold px-1.5 py-0.5 rounded cursor-default ${item.tax_rate > 0 ? "bg-amber-100 text-amber-700" : "bg-slate-200 text-slate-400"}`}
-                      title={item.tax_rate > 0 ? "IVA 16% — definido en el producto" : "IVA 0% — definido en el producto"}
+                      className={`text-xs font-bold px-1.5 py-0.5 rounded cursor-default ${item.tax_rate === 16 ? "bg-amber-100 text-amber-700" : "bg-slate-200 text-slate-600"}`}
+                      title={item.tax_rate === 16 ? "IVA 16% — incluido en precio del producto" : "IVA 0% (Excento) — no incluye impuesto"}
                     >
-                      {item.tax_rate > 0 ? "IVA" : "0%"}
+                      {item.tax_rate === 16 ? "IVA 16%" : "Excento"}
                     </span>
+                    {selectedClient && (selectedClient.force_purchase_all_products || selectedClient.force_wholesale_all_products) && (
+                      <span className="text-[10px] text-indigo-500 font-semibold mt-1">
+                        {selectedClient.force_purchase_all_products ? "Compra" : "Mayoreo"}
+                      </span>
+                    )}
                   </div>
                   <div className="col-span-1 flex items-start pt-5">
                     <Button variant="ghost" size="icon" className="h-8 w-8" type="button" onClick={() => removeItem(idx)}>
