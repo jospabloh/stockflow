@@ -1,0 +1,86 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Baristop business ID
+    const baristop = { id: '69c575fa1beaf2c90214d3ee', name: 'Baristop Distribuidora' };
+
+    // Find quotation COT-260406-0002
+    const quotations = await base44.asServiceRole.entities.Quotation.filter({ business_id: baristop.id });
+    const quotation = quotations.find(q => q.folio === 'COT-260406-0002');
+    if (!quotation) {
+      return Response.json({ error: 'Quotation COT-260406-0002 not found' }, { status: 404 });
+    }
+
+    // Roseta Fico is the client name (no client_id in quotation, so use the name directly)
+    // Verify it's a purchase_price client scenario
+
+    // Get all products to access purchase_price
+    const products = await base44.asServiceRole.entities.Product.filter({ business_id: baristop.id });
+    const productMap = Object.fromEntries(products.map(p => [p.id, p]));
+
+    // Recalculate items with correct rule: purchase_price + 20 MXN (no additional IVA)
+    const recalcedItems = quotation.items.map(item => {
+      const product = productMap[item.product_id];
+      if (!product) {
+        return item;
+      }
+      // Rule for Roseta Fico (purchase price client): purchase_price + 20 (price already includes IVA)
+      const newUnitPrice = (product.purchase_price || 0) + 20;
+      const newTotal = item.quantity * newUnitPrice;
+      return { ...item, unit_price: newUnitPrice, total: newTotal };
+    });
+
+    // Recalculate totals (VAT extraction from included IVA)
+    let subtotal = 0;
+    let tax = 0;
+    recalcedItems.forEach(item => {
+      if (item.tax_rate === 16) {
+        const netBase = item.total / 1.16;
+        const itemTax = item.total - netBase;
+        subtotal += netBase;
+        tax += itemTax;
+      } else {
+        subtotal += item.total;
+      }
+    });
+
+    subtotal = Math.round(subtotal * 100) / 100;
+    tax = Math.round(tax * 100) / 100;
+    const total = Math.round((subtotal + tax) * 100) / 100;
+
+    // Update quotation
+    const updated = await base44.asServiceRole.entities.Quotation.update(quotation.id, {
+      items: recalcedItems,
+      subtotal,
+      tax,
+      total
+    });
+
+    // Get movements from same day to verify consistency
+    const movementsAll = await base44.asServiceRole.entities.Movement.filter({ business_id: baristop.id });
+    const quotationDate = new Date(quotation.created_date).toISOString().split('T')[0];
+    const dayMovements = movementsAll.filter(m => {
+      const mDate = new Date(m.created_date).toISOString().split('T')[0];
+      return mDate === quotationDate && m.quotation_id === quotation.id;
+    });
+
+    return Response.json({
+      success: true,
+      quotation: updated,
+      totals: { subtotal, tax, total },
+      dayMovements: dayMovements.length,
+      movementsTotalFromQuotation: dayMovements.reduce((sum, m) => sum + (m.total || 0), 0),
+      congruent: Math.abs(total - dayMovements.reduce((sum, m) => sum + (m.total || 0), 0)) < 0.01
+    });
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});
