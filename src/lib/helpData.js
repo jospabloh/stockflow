@@ -2,7 +2,7 @@ import { helpDataExtension } from './helpDataExtension.js';
 import { newHelpArticles } from './helpDataNew';
 
 export const localHelpData = {
-  version: "2.5.1",
+  version: "2.5.5",
   last_updated: "2026-04-07",
   get articles() { return [..._baseArticles, ...helpDataExtension, ...newHelpArticles]; }
 };
@@ -361,11 +361,30 @@ Ve a *Movimientos* y confirma que todas las entradas y salidas del día estén r
       category: "Dashboard",
       role: "admin",
       title: "📊 Dashboard — Vista del Administrador",
-      keywords: ["dashboard", "panel", "inicio", "métricas", "ventas", "ganancia", "estadísticas", "kpi", "valor inventario"],
+      keywords: ["dashboard", "panel", "inicio", "métricas", "ventas", "ganancia", "estadísticas", "kpi", "valor inventario", "cobranza", "filtro fechas"],
       related_ids: ["reports-admin", "products-inventory", "dashboard-almacenista"],
       content: `## 📊 Dashboard para Administradores
 
 El Dashboard te da una visión **financiera y operativa completa** del negocio en tiempo real.
+
+---
+
+### 🗓️ Filtro de Período (v2.5.5)
+
+En la parte superior del Dashboard puedes seleccionar el período de análisis:
+
+**Opciones predefinidas:**
+- **Día** — últimas 24 horas (desde medianoche)
+- **Semana** — últimos 7 días
+- **Mes** — mes actual
+- **Año** — año actual
+
+**Filtro personalizado:**
+- Haz clic en **"Personalizar"** para seleccionar un rango manual de fechas
+- Puedes especificar inicio y fin exactos
+- El rango personalizado se mantiene activo hasta que lo desactives
+
+> 💡 Todos los indicadores de ventas se recalculan automáticamente según el período seleccionado.
 
 ---
 
@@ -375,20 +394,49 @@ El Dashboard te da una visión **financiera y operativa completa** del negocio e
 |---|---|---|
 | **Productos Activos** | Conteo de productos + unidades totales en stock | Número de referencias que manejas |
 | **Valor Total** | Stock × precio de compra de todos los productos | Capital invertido en inventario *(solo Admin)* |
-| **Movimientos Hoy** | Entradas + salidas registradas en el día | Nivel de actividad del almacén hoy |
+| **Movimientos Período** | Entradas + salidas en el período seleccionado | Volumen de actividad en el período |
 | **Stock Bajo** | Productos con stock ≤ stock mínimo | Cuántos productos necesitan reabastecimiento |
 
 > 💡 Haz clic en la tarjeta de **Stock Bajo** para ir directamente a la lista de productos críticos.
 
 ---
 
-### 💰 Ventas del Día *(exclusivo Admin)*
+### 💰 Análisis de Ventas *(exclusivo Admin)* — Mejorado en v2.5.5
 
-Desglose completo de las salidas del inventario del día actual:
+Desglose detallado del flujo de dinero y cobranza en el período:
 
-- **Monto vendido** — suma de precios de venta de todas las salidas
-- **Costo de lo vendido** — suma de precios de compra *(solo Admin)*
-- **Ganancia bruta** — diferencia entre ventas y costos + porcentaje de margen *(solo Admin)*
+#### 1️⃣ **Vendido** (Total de ventas)
+Suma de precios finales de todos los movimientos de salida y cotizaciones convertidas.
+
+#### 2️⃣ **Pendiente de cobrar** (Diferencia)
+Automáticamente calculado: Vendido − Cobrado efectivamente.
+Muestra cuánto dinero aún no ha entrado.
+
+#### 3️⃣ **Cobrado efectivamente** (Dinero en caja)
+Solo las ventas marcadas como pagadas. Esto es dinero real que entró al negocio.
+
+#### 4️⃣ **Costo de lo entregado**
+Suma de precios de compra de todos los productos vendidos en el período.
+
+#### 5️⃣ **Ganancia/Pérdida Real** ⭐ *(nuevo)*
+**Fórmula:** Cobrado efectivamente − Costo de lo entregado
+
+**Interpretación:**
+- 🟢 **Positiva** (verde) = Ganancia real en el período
+- 🔴 **Negativa** (rojo) = Pérdida en el período (has cobrado menos de lo que te costó)
+
+Incluye una explicación integrada de cómo se calcula.
+
+---
+
+### 📦 Vendido x Entregar ⭐ *(nuevo en v2.5.5)*
+
+Muestra cotizaciones concretadas que aún **no han sido entregadas**:
+
+- **Monto en $** — valor total de las cotizaciones por entregar
+- **Cantidad de items** — número de productos en esas cotizaciones
+
+Este indicador te ayuda a hacer seguimiento de pedidos en tránsito.
 
 ---
 

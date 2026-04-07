@@ -1,5 +1,17 @@
 # Changelog — StockFlow
 
+## v2.5.5 (2026-04-07)
+
+### ✨ Dashboard: Análisis Financiero Mejorado
+- **Filtro de fechas personalizado**: Selecciona rango manual (Personalizar) además de períodos predefinidos
+- **Indicadores de cobranza**: Ahora diferencia entre "Vendido" → "Pendiente de cobrar" → "Cobrado efectivamente"
+- **Nuevo indicador**: "Vendido x entregar" muestra cotizaciones concretadas no entregadas ($ + cantidad de items)
+- **Ganancia/Pérdida Real**: Calcula cobrado efectivamente − costo de lo entregado (puede ser negativa para mostrar pérdidas)
+- **Explicación integrada**: Cada indicador incluye nota sobre cómo se calcula
+- **Corrección técnica**: Se eliminó referencia circular de `salesData` dentro de `useMemo`
+
+---
+
 ## v2.5.4 (2026-04-07)
 
 ### 🐛 Correcciones críticas
