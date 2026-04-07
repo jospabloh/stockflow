@@ -401,7 +401,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Bottom Tab Bar — mobile only */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-[60] bg-card border-t border-border flex lg:hidden select-none"
+        className="fixed bottom-0 left-0 right-0 z-[70] bg-card border-t border-border flex lg:hidden select-none pointer-events-auto"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         aria-label="Navegación principal"
         role="tablist"

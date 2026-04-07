@@ -2,11 +2,20 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.5.3";
+export const APP_VERSION = "2.5.4";
 
 export const RELEASE_DATE = "2026-04-07";
 
 export const CHANGELOG = [
+  {
+    version: "2.5.4",
+    date: "2026-04-07",
+    changes: [
+      "✨ Corrección crítica de navegación en mobile: la barra inferior de navegación ahora es siempre clickeable, incluso con preview de cotización abierto (z-index 70 + pointer-events-auto)",
+      "Dialog de cotización mejorado: scroll interno sin bloquear página, permite navegar a otros módulos sin cerrar manualmente",
+      "Navegación fluida: usuario puede cambiar entre Dashboard, Productos, Movimientos y Cotizaciones sin trabarse en preview",
+    ],
+  },
   {
     version: "2.5.3",
     date: "2026-04-07",
