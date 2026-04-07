@@ -2,11 +2,19 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.5.2";
+export const APP_VERSION = "2.5.3";
 
 export const RELEASE_DATE = "2026-04-07";
 
 export const CHANGELOG = [
+  {
+    version: "2.5.3",
+    date: "2026-04-07",
+    changes: [
+      "🔧 Corrección de scroll en tablas de Cotizaciones y Productos: el contenedor ahora permite hacer scroll correctamente en desktop (max-h 70vh con overflow-y-auto)",
+      "Header fijo en tablas: el encabezado de columnas permanece visible al hacer scroll gracias a sticky top-0 funcionando correctamente",
+    ],
+  },
   {
     version: "2.5.2",
     date: "2026-04-07",
