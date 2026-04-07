@@ -1,5 +1,4 @@
 import React from "react";
-import { FixedSizeList as List } from "react-window";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,8 +10,6 @@ import {
 import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2, ChevronDown, RotateCcw } from "lucide-react";
 import { createButtonProps } from "@/lib/a11y";
 import moment from "moment";
-
-const ITEM_HEIGHT = 72;
 
 export default function VirtualizedQuotationTable({
   quotations,
@@ -30,12 +27,11 @@ export default function VirtualizedQuotationTable({
   isExpired,
   onRegenerate,
 }) {
-  const QuotationRow = ({ index, style }) => {
-    const q = quotations[index];
+  const QuotationRow = ({ q }) => {
     const status = statusConfig[q.status] || statusConfig.draft;
 
     return (
-      <div style={style} className="flex items-center border-b border-border hover:bg-muted/40 transition-colors px-4 py-3">
+      <div className="flex items-center border-b border-border hover:bg-muted/40 transition-colors px-4 py-3">
         {/* Folio */}
         <div className="w-24">
           <button
@@ -264,10 +260,12 @@ export default function VirtualizedQuotationTable({
         <div className="w-12 text-center">Acciones</div>
       </div>
 
-      {/* Virtualized List */}
-      <List height={Math.min(quotations.length * ITEM_HEIGHT, 600)} itemCount={quotations.length} itemSize={ITEM_HEIGHT} width="100%">
-        {QuotationRow}
-      </List>
+      {/* Rows */}
+      <div className="overflow-y-auto max-h-[600px]">
+        {quotations.map((q) => (
+          <QuotationRow key={q.id} q={q} />
+        ))}
+      </div>
     </div>
   );
 }
