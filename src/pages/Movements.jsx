@@ -259,8 +259,7 @@ export default function Movements() {
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Producto</TableHead>
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Tipo</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Cantidad</TableHead>
-              <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Precio Unit.</TableHead>
-              <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Total (c/impuestos)</TableHead>
+              <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Total</TableHead>
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Forma de Pago</TableHead>
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Cliente</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Stock Después</TableHead>
@@ -271,7 +270,7 @@ export default function Movements() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 10 : 9} className="text-center py-12 text-slate-400">
+                  <TableCell colSpan={isAdmin ? 9 : 8} className="text-center py-12 text-slate-400">
                     Sin movimientos registrados
                   </TableCell>
                 </TableRow>
@@ -299,9 +298,6 @@ export default function Movements() {
                         }>
                           {m.type === "exit" ? "-" : m.type === "adjustment" ? "=" : "+"}{m.quantity}
                         </span>
-                      </TableCell>
-                      <TableCell className="text-right text-slate-600 text-sm">
-                        ${(m.unit_price || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                       </TableCell>
                       <TableCell className="text-right font-semibold text-slate-800">
                         ${getFinalTotal(m).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
