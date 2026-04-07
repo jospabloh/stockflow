@@ -37,12 +37,12 @@ export function calculatePrice({ product, client, quantity, category, categoryQt
   let origin = "Precio menudeo";
   let warning = null;
 
-  // Rule 1: client force purchase price (+ 20 MXN transport)
+  // Rule 1: client force purchase price
   if (client?.force_purchase_all_products) {
     if (purchase != null && purchase >= 0) {
-      price = purchase + 20; // Purchase price already includes VAT, add $20 transport
+      price = purchase;
       rule = "client_purchase";
-      origin = "Se aplicó precio de compra + $20 MXN transporte (cliente)";
+      origin = "Se aplicó precio de compra (cliente)";
     } else {
       price = retail;
       rule = "retail";
