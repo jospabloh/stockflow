@@ -10,7 +10,6 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BusinessProvider } from '@/components/BusinessContext';
 import { NavigationProvider } from '@/lib/NavigationContext';
-import AppUpdateBanner from '@/components/AppUpdateBanner';
 
 import BusinessSetup from './pages/BusinessSetup';
 
@@ -111,7 +110,6 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <BusinessProvider>
-            <AppUpdateBanner />
             <Router>
               <NavigationProvider>
                 <AuthenticatedApp />
