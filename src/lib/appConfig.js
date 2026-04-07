@@ -2,11 +2,20 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.5.4";
+export const APP_VERSION = "2.5.5";
 
 export const RELEASE_DATE = "2026-04-07";
 
 export const CHANGELOG = [
+  {
+    version: "2.5.5",
+    date: "2026-04-07",
+    changes: [
+      "🔄 Semáforo de cotizaciones ahora filtra a últimos 30 días: muestra conteo actualizado de cotizaciones concretadas, en ruta y entregadas de este período",
+      "🚨 Nueva alerta de Cobranza Vencida: identifica cotizaciones concretadas sin cobrar que están fuera de los 30 días y requieren seguimiento urgente",
+      "📊 Etiqueta añadida al semáforo: especifica 'En los últimos 30 días' para claridad en los datos mostrados",
+    ],
+  },
   {
     version: "2.5.4",
     date: "2026-04-07",

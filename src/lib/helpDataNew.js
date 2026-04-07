@@ -1,7 +1,70 @@
-// Artículos de ayuda — última versión: v2.2.0
-// Corrección IVA cotizaciones (precio IVA-inclusive) + folio desde 0001
+// Artículos de ayuda — última versión: v2.5.5
+// Semáforo de cotizaciones filtrado a 30 días + alerta de cobranza vencida
 
 export const newHelpArticles = [
+    {
+      id: "release-2-5-5",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.5.5 — Semáforo de Cotizaciones a 30 días + Alerta de Cobranza Vencida",
+      keywords: ["versión", "2.5.5", "semáforo", "cotizaciones", "cobranza", "vencida", "30 días", "dashboard"],
+      related_ids: ["quotations-overview", "dashboard-admin", "quotations-states"],
+      content: `## 🆕 Versión 2.5.5 — 7 de abril de 2026
+
+### ✅ Cambios de esta versión
+
+#### 📊 Semáforo de Cotizaciones — Filtro a Últimos 30 Días
+
+El semáforo en el Dashboard ahora muestra **solo las cotizaciones de los últimos 30 días**, no todo el histórico.
+
+**Cambio:** Antes mostraba todas las cotizaciones desde el inicio de los tiempos. Ahora es más relevante y actualizado.
+
+**Qué ves:**
+- 🟢 **Concretadas en venta** — Cotizaciones convertidas en los últimos 30 días
+- 🟡 **Sin concretar (activas)** — Borradores, enviadas o aceptadas del período
+- 🔴 **Canceladas** — Cotizaciones canceladas del período
+
+**Etiqueta visible:** "En los últimos 30 días" para que siempre sepas el rango de datos.
+
+---
+
+#### 🚨 Nueva Alerta: Cobranza Vencida
+
+Se agregó una **alerta roja prominente** en el Dashboard que advierte sobre:
+
+**Cotizaciones concretadas sin cobrar que están FUERA de los 30 días (vencidas).**
+
+**¿Por qué es importante?**
+- Estas son deudas **antiguas** que requieren seguimiento urgente
+- El sistema las detecta automáticamente y las separa de las ventas recientes
+- Se muestra el monto total pendiente para que priorices acciones de cobranza
+
+**Dónde aparece:** Justo arriba del "Análisis de Ventas", solo si existen deudas vencidas.
+
+**Qué hacer:** Haz clic en la alerta para ver todas las cotizaciones vencidas sin cobrar → toma acciones de cobranza.
+
+---
+
+### 💡 Caso de Uso Real
+
+Ejemplo: Es 7 de abril de 2026.
+
+- **Semáforo muestra:** Cotizaciones del 8 de marzo al 7 de abril
+- **Alerta vencida aparece si:** Hay cotizaciones convertidas sin cobrar del 7 de marzo o antes
+
+Así separas ventas recientes de deudas viejas que necesitan atención especial.
+
+---
+
+### 📦 Versión Anterior — v2.5.4 (7 de abril de 2026)
+
+#### 🎯 Corrección Crítica de Navegación Mobile
+Se corrigió la barra inferior de navegación para que sea siempre clickeable en dispositivos móviles, incluso cuando hay un preview de cotización abierto.
+
+#### 📜 Dialog Mejorado
+El dialog de cotización ahora permite scroll interno sin bloquear la navegación de la app — puedes cambiar entre módulos sin cerrar manualmente.
+`
+    },
     {
       id: "release-2-2-0",
       category: "Novedades",

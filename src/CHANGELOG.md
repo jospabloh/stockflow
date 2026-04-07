@@ -2,13 +2,21 @@
 
 ## v2.5.5 (2026-04-07)
 
-### ✨ Dashboard: Análisis Financiero Mejorado
-- **Filtro de fechas personalizado**: Selecciona rango manual (Personalizar) además de períodos predefinidos
-- **Indicadores de cobranza**: Ahora diferencia entre "Vendido" → "Pendiente de cobrar" → "Cobrado efectivamente"
-- **Nuevo indicador**: "Vendido x entregar" muestra cotizaciones concretadas no entregadas ($ + cantidad de items)
-- **Ganancia/Pérdida Real**: Calcula cobrado efectivamente − costo de lo entregado (puede ser negativa para mostrar pérdidas)
-- **Explicación integrada**: Cada indicador incluye nota sobre cómo se calcula
-- **Corrección técnica**: Se eliminó referencia circular de `salesData` dentro de `useMemo`
+### 🎯 Dashboard: Semáforo de Cotizaciones Mejorado
+- **Semáforo filtrado a 30 días**: Muestra solo cotizaciones de los últimos 30 días (más relevante y actualizado)
+  - 🟢 Concretadas en venta
+  - 🟡 Sin concretar (activas)
+  - 🔴 Canceladas
+- **Etiqueta visible**: "En los últimos 30 días" para claridad de período mostrado
+
+### 🚨 Nueva Alerta: Cobranza Vencida
+- **Detecta cotizaciones vencidas**: Identifica automáticamente cotizaciones concretadas sin cobrar fuera del rango de 30 días
+- **Monto total visible**: Muestra dinero pendiente de cobranza vencida
+- **Acceso directo**: Enlace para navegar a cotizaciones y tomar acciones de cobro
+- **Solo cuando es necesario**: La alerta solo aparece si existen deudas vencidas
+
+### 📝 Documentación Actualizada
+- Centro de Ayuda: Nuevo artículo sobre semáforo de cotizaciones a 30 días y alertas de cobranza
 
 ---
 

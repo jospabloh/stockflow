@@ -249,10 +249,25 @@ export default function Dashboard() {
     unpaidConverted.reduce((sum, q) => sum + (q.total || 0), 0) +
     unpaidDirectMovements.reduce((sum, m) => sum + (m.total || 0), 0);
 
-  // Quotation semaphore counts — GLOBAL (NO filtrado por período, para visibilidad de todo)
-  const quotGreen = quotations.filter(q => q.status === "converted").length;
-  const quotYellow = quotations.filter(q => ["draft", "sent", "accepted"].includes(q.status)).length;
-  const quotRed = quotations.filter(q => q.status === "cancelled").length;
+  // Quotation semaphore counts — Filtrado a últimos 30 días
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const thirtyDaysAgoStr = `${thirtyDaysAgo.getFullYear()}-${String(thirtyDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(thirtyDaysAgo.getDate()).padStart(2, '0')}`;
+  
+  const quotationsLast30Days = quotations.filter(q => {
+    const dateStr = getDateStringMexico(q.created_date);
+    return dateStr >= thirtyDaysAgoStr;
+  });
+  
+  const quotGreen = quotationsLast30Days.filter(q => q.status === "converted").length;
+  const quotYellow = quotationsLast30Days.filter(q => ["draft", "sent", "accepted"].includes(q.status)).length;
+  const quotRed = quotationsLast30Days.filter(q => q.status === "cancelled").length;
+  
+  // Alerta: Cotizaciones convertidas sin cobrar FUERA de 30 días (vencidas)
+  const overduePaidQuotations = quotations.filter(q => {
+    const dateStr = getDateStringMexico(q.created_date);
+    return dateStr < thirtyDaysAgoStr && q.status === "converted" && !q.paid;
+  });
 
   // Chart data: movements per day (dinámico según período)
   const chartData = useMemo(() => {
@@ -445,6 +460,27 @@ export default function Dashboard() {
         </button>
       )}
 
+      {/* Alerta de Cobranza Vencida */}
+      {overduePaidQuotations.length > 0 && (
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-red-900 dark:text-red-200 text-sm">Cobranza Vencida</h4>
+              <p className="text-xs text-red-800 dark:text-red-300 mt-1">
+                {overduePaidQuotations.length} {overduePaidQuotations.length === 1 ? 'cotización' : 'cotizaciones'} concretadas sin cobrar de hace más de 30 días. Requieren seguimiento urgente.
+              </p>
+              <p className="text-xs text-red-700 dark:text-red-400 mt-2">
+                Total: ${overduePaidQuotations.reduce((sum, q) => sum + (q.total || 0), 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+              </p>
+              <Link to={createPageUrl("Quotations")} className="text-red-600 dark:text-red-400 hover:underline text-xs font-medium mt-2 inline-block">
+                Ver cotizaciones →
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sales Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
        <Card className="border-0 shadow-sm p-5">
@@ -510,7 +546,10 @@ export default function Dashboard() {
 
         {/* Quotation Semaphore */}
         <Card className="border-0 shadow-sm p-5">
-          <h3 className="font-semibold text-slate-700 mb-4">Semáforo de Cotizaciones</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-slate-700">Semáforo de Cotizaciones</h3>
+            <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">En los últimos 30 días</span>
+          </div>
           <div className="space-y-3">
             <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=converted`)} className="w-full text-left flex justify-between items-center bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-4 py-2.5 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
