@@ -109,10 +109,9 @@ export default function Movements() {
     return prod?.tax_rate || 0;
   };
 
-  const getTotalWithTax = (m) => {
-    const taxRate = getProductTaxRate(m.product_id);
-    const baseTotal = m.quantity * (m.unit_price || 0);
-    return baseTotal * (1 + taxRate / 100);
+  const getFinalTotal = (m) => {
+    // El precio unitario YA incluye IVA, así que el total es directamente quantity × unit_price
+    return m.quantity * (m.unit_price || 0);
   };
 
   const filtered = movements.filter((m) => {
@@ -165,11 +164,11 @@ export default function Movements() {
        return str;
      };
 
-     const headers = ["Fecha", "Producto", "Tipo", "Cantidad", "Precio Unit.", "Total (c/impuestos)", "Forma de Pago", "Cliente"];
+     const headers = ["Fecha", "Producto", "Tipo", "Cantidad", "Precio Unit.", "Total", "Forma de Pago", "Cliente"];
      const rows = filtered.map((m) => [
        moment.utc(m.created_date).local().format("DD/MM/YYYY HH:mm"),
        m.product_name, typeConfig[m.type]?.label || m.type,
-       m.quantity, m.unit_price || 0, getTotalWithTax(m),
+       m.quantity, m.unit_price || 0, getFinalTotal(m),
        m.reference || "", m.reason || "",
      ]);
 
@@ -191,7 +190,7 @@ export default function Movements() {
 
   // Salidas directas sin pagar (no vinculadas a cotización)
   const unpaidDirectExits = movements.filter(m => m.type === "exit" && !m.quotation_id && !m.paid);
-  const unpaidDirectTotal = unpaidDirectExits.reduce((sum, m) => sum + getTotalWithTax(m), 0);
+  const unpaidDirectTotal = unpaidDirectExits.reduce((sum, m) => sum + getFinalTotal(m), 0);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -305,9 +304,7 @@ export default function Movements() {
                         ${(m.unit_price || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                       </TableCell>
                       <TableCell className="text-right font-semibold text-slate-800">
-                        <div className="space-y-0.5">
-                          <div>${getTotalWithTax(m).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</div>
-                        </div>
+                        ${getFinalTotal(m).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                       </TableCell>
                       <TableCell className="text-slate-500 text-sm">{m.type === "adjustment" ? <span className="text-blue-500 text-xs font-medium">Ajuste admin</span> : (m.reference || "—")}</TableCell>
                       <TableCell className="text-slate-500 text-sm">{m.type === "adjustment" ? <span className="text-muted-foreground text-xs">Stock = {m.stock_after}</span> : (m.reason || "—")}</TableCell>
@@ -379,7 +376,7 @@ export default function Movements() {
             <AlertDialogTitle>¿Confirmar pago recibido?</AlertDialogTitle>
             <AlertDialogDescription>
               Estás marcando como cobrado el movimiento de <strong>{confirmingPayment?.product_name}</strong> por{" "}
-              <strong>${(confirmingPayment ? getTotalWithTax(confirmingPayment) : 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong>{" "}
+              <strong>${(confirmingPayment ? getFinalTotal(confirmingPayment) : 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong>{" "}
               del cliente <strong>{confirmingPayment?.reason || "—"}</strong>. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
