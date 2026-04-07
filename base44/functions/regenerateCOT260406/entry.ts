@@ -19,8 +19,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Quotation COT-260406-0002 not found' }, { status: 404 });
     }
 
-    // Roseta Fico is the client name (no client_id in quotation, so use the name directly)
-    // Verify it's a purchase_price client scenario
+    // Get the client to check force_purchase_all_products flag
+    const client = await base44.asServiceRole.entities.Client.list().then(cs => cs.find(c => c.id === quotation.client_id));
+    const isForcePrice = client?.force_purchase_all_products === true;
 
     // Get all products to access purchase_price
     const products = await base44.asServiceRole.entities.Product.filter({ business_id: baristop.id });
@@ -57,8 +58,8 @@ Deno.serve(async (req) => {
     subtotal = Math.round(subtotal * 100) / 100;
     tax = Math.round(tax * 100) / 100;
     
-    // Transport fee: $20 per item only for purchase price clients
-    const transportFee = 20 * recalcedItems.length;
+    // Transport fee: $20 per item only for purchase price clients (force_purchase_all_products = true)
+    const transportFee = isForcePrice ? 20 * recalcedItems.length : 0;
     const total = Math.round((subtotal + tax + transportFee) * 100) / 100;
 
     // Update quotation
