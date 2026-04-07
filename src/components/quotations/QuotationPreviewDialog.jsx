@@ -175,6 +175,12 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                   <span className="text-amber-600 font-semibold">${fmt(quotation.tax)}</span>
                 </div>
               )}
+              {client?.force_purchase_all_products && quotation.items?.length > 0 && (
+                <div className="flex justify-between text-slate-600 text-xs py-1">
+                  <span>Transporte</span>
+                  <span>${fmt(20 * quotation.items.length)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-white font-bold text-sm px-3 py-2 rounded-lg" style={{ backgroundColor: primaryColor }}>
                 <span>TOTAL A PAGAR</span>
                 <span>${fmt(quotation.total)}</span>
