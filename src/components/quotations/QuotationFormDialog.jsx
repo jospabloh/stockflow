@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Save, ScanLine, AlertTriangle, Info } from "lucide-react";
+import { Plus, Trash2, Save, ScanLine, AlertTriangle, Info, Truck } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import { useBusinessContext } from "@/components/BusinessContext";
@@ -437,8 +438,17 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                       </span>
                     )}
                     {selectedClient?.force_purchase_all_products && (
-                      <span className="text-lg mt-1" title="Transporte 20 MXN">🚚</span>
-                    )}
+                       <TooltipProvider>
+                         <Tooltip>
+                           <TooltipTrigger asChild>
+                             <Truck className="h-4 w-4 text-indigo-500 mt-1 cursor-help" />
+                           </TooltipTrigger>
+                           <TooltipContent side="right" className="text-xs">
+                             Se aplica $20 MXN de transporte (cliente)
+                           </TooltipContent>
+                         </Tooltip>
+                       </TooltipProvider>
+                     )}
                   </div>
                   <div className="col-span-1 flex items-start pt-5">
                     <Button variant="ghost" size="icon" className="h-8 w-8" type="button" onClick={() => removeItem(idx)}>
