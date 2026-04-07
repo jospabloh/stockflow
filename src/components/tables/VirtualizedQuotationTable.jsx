@@ -369,7 +369,7 @@ export default function VirtualizedQuotationTable({
       </div>
 
       {/* Desktop: table */}
-      <div className="hidden lg:block bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+      <div className="hidden lg:block bg-card rounded-2xl shadow-sm border border-border overflow-y-auto max-h-[70vh]">
         {/* Header */}
         <div className="flex items-center px-4 py-3 bg-muted/40 border-b border-border text-[11px] font-semibold text-muted-foreground sticky top-0 z-10">
           <div className="w-24">Folio</div>
@@ -384,7 +384,7 @@ export default function VirtualizedQuotationTable({
         </div>
 
         {/* Rows */}
-        <div className="overflow-y-auto max-h-[600px]">
+        <div>
           {quotations.map((q) => (
             <QuotationRow key={q.id} q={q} {...commonProps} />
           ))}
