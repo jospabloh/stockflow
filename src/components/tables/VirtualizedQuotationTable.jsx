@@ -221,6 +221,118 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
   );
 }
 
+function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInRouteChange, isExpired, onRegenerate }) {
+  const status = statusConfig[q.status] || statusConfig.draft;
+  const expired = isExpired(q);
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+      {/* Top row: folio + status + actions */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => onPreview(q)}
+          className="font-mono text-sm font-bold text-indigo-600 hover:underline flex items-center gap-1"
+        >
+          {q.folio}
+          {q.delivered && !q.paid && <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />}
+        </button>
+        <div className="flex items-center gap-2">
+          {expired ? (
+            <Badge className="bg-red-100 text-red-700 border-0 text-xs">Vencida</Badge>
+          ) : (
+            <Badge className={`${status.color} border-0 text-xs`}>{status.label}</Badge>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="text-sm">
+              <DropdownMenuItem onClick={() => onPreview(q)}>
+                <FileDown className="h-3.5 w-3.5 mr-2" /> Ver cotización
+              </DropdownMenuItem>
+              {q.status === "draft" && (
+                <>
+                  <DropdownMenuItem onClick={() => onEdit(q)}>
+                    <Pencil className="h-3.5 w-3.5 mr-2" /> Editar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onRegenerate(q)} className="text-indigo-600">
+                    <RotateCcw className="h-3.5 w-3.5 mr-2" /> Re-generar
+                  </DropdownMenuItem>
+                </>
+              )}
+              {(q.status === "sent" || q.status === "accepted") && (
+                <DropdownMenuItem onClick={() => onEdit(q)}>
+                  <Pencil className="h-3.5 w-3.5 mr-2" /> Editar
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => onDownloadPDF(q)}>
+                <FileDown className="h-3.5 w-3.5 mr-2" /> PDF
+              </DropdownMenuItem>
+              {(q.status === "draft" || q.status === "sent" || q.status === "accepted") && (
+                <DropdownMenuItem onClick={() => { if (!expired) onConvert(q); }}>
+                  <ShoppingCart className="h-3.5 w-3.5 mr-2" /> Convertir en venta
+                </DropdownMenuItem>
+              )}
+              {q.status === "converted" && !q.paid && (
+                <DropdownMenuItem onClick={() => onPay(q)}>
+                  <DollarSign className="h-3.5 w-3.5 mr-2" /> Confirmar pago
+                </DropdownMenuItem>
+              )}
+              {q.status === "converted" && onPartialReturn && (
+                <DropdownMenuItem onClick={() => onPartialReturn(q)} className="text-orange-600">
+                  <RotateCcw className="h-3.5 w-3.5 mr-2" /> Devolución parcial
+                </DropdownMenuItem>
+              )}
+              {q.status !== "cancelled" && (
+                <DropdownMenuItem className="text-red-600" onClick={() => onCancel(q)}>
+                  <XCircle className="h-3.5 w-3.5 mr-2" /> {q.status === "converted" ? "Anular" : "Cancelar"}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      {/* Client + date */}
+      <div className="flex items-center justify-between">
+        <p className="font-medium text-foreground text-sm truncate max-w-[60%]">{q.client_name}</p>
+        <span className="text-muted-foreground text-xs">{moment(q.created_date).format("DD/MM/YY")}</span>
+      </div>
+
+      {/* Total + tracking */}
+      <div className="flex items-center justify-between">
+        <span className="font-bold text-foreground text-base">
+          ${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+        </span>
+        {q.status === "converted" && (
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => onInRouteChange(q, q.in_route && !q.delivered ? "none" : "in_route")}
+              className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-medium transition-colors ${q.in_route && !q.delivered ? "bg-blue-100 text-blue-700" : "bg-muted text-muted-foreground"}`}
+            >
+              <Truck className="h-3 w-3" /> Ruta
+            </button>
+            <button
+              onClick={() => onInRouteChange(q, q.delivered ? "none" : "delivered")}
+              className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-medium transition-colors ${q.delivered ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}
+            >
+              <CheckCircle2 className="h-3 w-3" /> Entregado
+            </button>
+            <button
+              onClick={() => { const isPaid = q.paid && q.payment_method && !["Por definir", "Pendiente de confirmar", ""].includes(q.payment_method); if (!isPaid) onPay(q); }}
+              className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-medium transition-colors ${q.paid && q.payment_method && !["Por definir", "Pendiente de confirmar", ""].includes(q.payment_method) ? "bg-green-100 text-green-700" : q.delivered && !q.paid ? "bg-red-100 text-red-700 animate-pulse" : "bg-muted text-muted-foreground"}`}
+            >
+              <DollarSign className="h-3 w-3" /> {q.paid ? "Pagado" : "Cobrar"}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function VirtualizedQuotationTable({
   quotations,
   statusConfig,
@@ -237,6 +349,8 @@ export default function VirtualizedQuotationTable({
   isExpired,
   onRegenerate,
 }) {
+  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInRouteChange, isExpired, onRegenerate };
+
   if (quotations.length === 0) {
     return (
       <div className="bg-card rounded-2xl shadow-sm border border-border p-12 text-center text-muted-foreground">
@@ -246,41 +360,36 @@ export default function VirtualizedQuotationTable({
   }
 
   return (
-    <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center px-4 py-3 bg-muted/40 border-b border-border text-[11px] font-semibold text-muted-foreground sticky top-0 z-10">
-        <div className="w-24">Folio</div>
-        <div className="flex-1">Cliente</div>
-        <div className="w-20 text-center">Fecha</div>
-        <div className="w-28 text-right">Total</div>
-        <div className="w-28">Estado</div>
-        <div className="w-24 text-center">Factura</div>
-        <div className="w-32 text-center">Seguimiento</div>
-        <div className="w-24 text-center">Pago</div>
-        <div className="w-12 text-center">Acciones</div>
-      </div>
-
-      {/* Rows */}
-      <div className="overflow-y-auto max-h-[600px]">
+    <>
+      {/* Mobile: card list */}
+      <div className="flex flex-col gap-3 lg:hidden">
         {quotations.map((q) => (
-          <QuotationRow
-            key={q.id}
-            q={q}
-            statusConfig={statusConfig}
-            onEdit={onEdit}
-            onPreview={onPreview}
-            onDownloadPDF={onDownloadPDF}
-            onConvert={onConvert}
-            onCancel={onCancel}
-            onPay={onPay}
-            onPartialReturn={onPartialReturn}
-            onInvoiceStatusChange={onInvoiceStatusChange}
-            onInRouteChange={onInRouteChange}
-            isExpired={isExpired}
-            onRegenerate={onRegenerate}
-          />
+          <QuotationCard key={q.id} q={q} {...commonProps} />
         ))}
       </div>
-    </div>
+
+      {/* Desktop: table */}
+      <div className="hidden lg:block bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center px-4 py-3 bg-muted/40 border-b border-border text-[11px] font-semibold text-muted-foreground sticky top-0 z-10">
+          <div className="w-24">Folio</div>
+          <div className="flex-1">Cliente</div>
+          <div className="w-20 text-center">Fecha</div>
+          <div className="w-28 text-right">Total</div>
+          <div className="w-28">Estado</div>
+          <div className="w-24 text-center">Factura</div>
+          <div className="w-32 text-center">Seguimiento</div>
+          <div className="w-24 text-center">Pago</div>
+          <div className="w-12 text-center">Acciones</div>
+        </div>
+
+        {/* Rows */}
+        <div className="overflow-y-auto max-h-[600px]">
+          {quotations.map((q) => (
+            <QuotationRow key={q.id} q={q} {...commonProps} />
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
