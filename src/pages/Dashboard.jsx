@@ -209,8 +209,8 @@ export default function Dashboard() {
     }, 0);
     
     // Ganancia REAL = lo cobrado - costo de lo entregado (puede ser negativa)
-    const actualProfit = salesData.realRevenue - salesCost;
-    const actualMargin = salesData.realRevenue > 0 ? (actualProfit / salesData.realRevenue) * 100 : 0;
+    const actualProfit = realRevenue - salesCost;
+    const actualMargin = realRevenue > 0 ? (actualProfit / realRevenue) * 100 : 0;
     
     // Ganancia POTENCIAL = lo vendido - costo de lo entregado (indicador de si la venta es buena)
     const potentialProfit = salesRevenue - salesCost;
