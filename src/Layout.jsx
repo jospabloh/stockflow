@@ -86,7 +86,7 @@ export default function Layout({ children, currentPageName }) {
   const { businessId, businessName, businessNameLocked, isLoading: bizLoading, user } = useBusinessContext();
   const { sessionStatus, reactivate } = useSessionManager(!!businessId);
   useRegionalConfig();
-  const { goBack, direction } = useNavigation();
+  const { goBack, direction, navigationStack } = useNavigation();
   const navigate = useNavigate();
   const location = useLocation();
   const isRoot = location.pathname === "/" || location.pathname === "/Dashboard";
@@ -299,11 +299,10 @@ export default function Layout({ children, currentPageName }) {
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-card/80 backdrop-blur-md border-b border-border px-4 lg:px-8 h-16 flex items-center gap-4 select-none">
           {/* Back button — mobile only, visible on child routes and non-root pages */}
-          {(!isRoot || isChildRoute) && (
+          {(!isRoot || isChildRoute) && navigationStack.length > 1 && (
             <Button
               variant="ghost"
               size="icon"
-              className={isRoot && !isChildRoute ? "hidden" : ""}
               onClick={goBack}
               aria-label="Regresar"
             >

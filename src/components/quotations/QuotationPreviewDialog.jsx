@@ -38,7 +38,7 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl p-0">
+      <DialogContent className="max-w-3xl p-0 max-h-[90vh] overflow-y-auto">
         <DialogHeader className="px-6 pt-5 pb-3 border-b flex flex-row items-center justify-between">
           <DialogTitle className="text-lg font-semibold">Vista previa — {quotation.folio}</DialogTitle>
           <div className="flex gap-2">
