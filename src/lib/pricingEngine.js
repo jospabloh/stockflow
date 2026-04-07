@@ -40,7 +40,7 @@ export function calculatePrice({ product, client, quantity, category, categoryQt
   // Rule 1: client force purchase price (+ 20 MXN transport)
   if (client?.force_purchase_all_products) {
     if (purchase != null && purchase >= 0) {
-      price = purchase + 20; // +$20 MXN transporte (el precio ya incluye IVA)
+      price = purchase + 20; // Purchase price already includes VAT, add $20 transport
       rule = "client_purchase";
       origin = "Se aplicó precio de compra + $20 MXN transporte (cliente)";
     } else {
