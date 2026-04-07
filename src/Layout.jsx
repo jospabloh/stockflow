@@ -12,6 +12,7 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { useSessionManager } from "@/hooks/useSessionManager";
+import { useRegionalConfig } from "@/hooks/useRegionalConfig";
 import SessionBanner from "@/components/SessionBanner";
 import {
   LayoutDashboard,
@@ -84,6 +85,7 @@ export default function Layout({ children, currentPageName }) {
   const mainRef = useRef(null);
   const { businessId, businessName, businessNameLocked, isLoading: bizLoading, user } = useBusinessContext();
   const { sessionStatus, reactivate } = useSessionManager(!!businessId);
+  useRegionalConfig();
   const { goBack, direction } = useNavigation();
   const navigate = useNavigate();
   const location = useLocation();

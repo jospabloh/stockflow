@@ -7,7 +7,7 @@ export default function ProductNew() {
 
   const handleSaved = (payload) => {
     if (!payload || payload._reconcile) {
-      navigate("/Products", { replace: true });
+      navigate(-1);
     }
   };
 

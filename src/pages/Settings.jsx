@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2 } from "lucide-react";
+import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
@@ -276,6 +276,58 @@ export default function Settings() {
                 <Textarea value={settings?.quotation_footer || ""} onChange={(e) => updateSettings("quotation_footer", e.target.value)} placeholder="Vigencia, condiciones..." rows={2} />
               </div>
             </div>
+
+            {/* Regional settings */}
+            <div className="border-t border-border pt-5 space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Globe className="h-4 w-4 text-indigo-500" />
+                <h4 className="font-semibold text-slate-700 text-sm">Región y Zona Horaria</h4>
+              </div>
+              <p className="text-xs text-muted-foreground">Configura la zona horaria y el formato regional para que filtros de fechas, reportes y calendarios usen los valores correctos para tu país.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Zona horaria</Label>
+                  <select
+                    className="w-full h-9 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    value={settings?.timezone || "America/Mexico_City"}
+                    onChange={(e) => { updateSettings("timezone", e.target.value); localStorage.setItem("sf_timezone", e.target.value); }}
+                  >
+                    <option value="America/Mexico_City">🇲🇽 México — Ciudad de México (CST/CDT)</option>
+                    <option value="America/Monterrey">🇲🇽 México — Monterrey (CST)</option>
+                    <option value="America/Tijuana">🇲🇽 México — Tijuana (PST/PDT)</option>
+                    <option value="America/Cancun">🇲🇽 México — Cancún (EST)</option>
+                    <option value="America/New_York">🇺🇸 EE.UU. — Nueva York (EST)</option>
+                    <option value="America/Chicago">🇺🇸 EE.UU. — Chicago (CST)</option>
+                    <option value="America/Los_Angeles">🇺🇸 EE.UU. — Los Ángeles (PST)</option>
+                    <option value="America/Bogota">🇨🇴 Colombia — Bogotá</option>
+                    <option value="America/Lima">🇵🇪 Perú — Lima</option>
+                    <option value="America/Santiago">🇨🇱 Chile — Santiago</option>
+                    <option value="America/Argentina/Buenos_Aires">🇦🇷 Argentina — Buenos Aires</option>
+                    <option value="America/Sao_Paulo">🇧🇷 Brasil — São Paulo</option>
+                    <option value="Europe/Madrid">🇪🇸 España — Madrid</option>
+                    <option value="UTC">🌐 UTC</option>
+                  </select>
+                </div>
+                <div>
+                  <Label>Formato regional (idioma y fechas)</Label>
+                  <select
+                    className="w-full h-9 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    value={settings?.locale || "es-MX"}
+                    onChange={(e) => { updateSettings("locale", e.target.value); localStorage.setItem("sf_locale", e.target.value); }}
+                  >
+                    <option value="es-MX">Español — México (DD/MM/AAAA)</option>
+                    <option value="es-CO">Español — Colombia</option>
+                    <option value="es-PE">Español — Perú</option>
+                    <option value="es-CL">Español — Chile</option>
+                    <option value="es-AR">Español — Argentina</option>
+                    <option value="es-ES">Español — España</option>
+                    <option value="pt-BR">Português — Brasil</option>
+                    <option value="en-US">English — United States (MM/DD/YYYY)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div className="flex justify-end">
               <Button onClick={handleSaveSettings} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
                 <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Guardar"}

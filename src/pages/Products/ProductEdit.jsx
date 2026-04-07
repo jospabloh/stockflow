@@ -16,7 +16,7 @@ export default function ProductEdit() {
 
   const handleSaved = (payload) => {
     if (!payload || payload._reconcile) {
-      navigate("/Products", { replace: true });
+      navigate(-1);
     }
   };
 

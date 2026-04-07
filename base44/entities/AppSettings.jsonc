@@ -51,6 +51,16 @@
       "description": "RFC del negocio",
       "pattern": "^[A-Z&\u00d1]{3,4}[0-9]{6}[A-Z0-9]{3}$"
     },
+    "timezone": {
+      "type": "string",
+      "description": "Zona horaria del negocio (ej: America/Mexico_City)",
+      "default": "America/Mexico_City"
+    },
+    "locale": {
+      "type": "string",
+      "description": "Configuraci\u00f3n regional (ej: es-MX)",
+      "default": "es-MX"
+    },
     "business_id": {
       "type": "string",
       "description": "ID del negocio al que pertenece"

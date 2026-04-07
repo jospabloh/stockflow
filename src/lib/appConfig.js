@@ -2,11 +2,23 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.5.0";
+export const APP_VERSION = "2.5.1";
 
-export const RELEASE_DATE = "2026-04-06";
+export const RELEASE_DATE = "2026-04-07";
 
 export const CHANGELOG = [
+  {
+    version: "2.5.1",
+    date: "2026-04-07",
+    changes: [
+      "🔧 Corrección de navegación post-guardado: guardar un producto, movimiento o cotización ya no redirige al dashboard — el usuario regresa a la pantalla anterior con contexto, filtros y posición de scroll preservados",
+      "🌍 Configuración regional y zona horaria: nueva sección 'Región y Zona Horaria' en Configuración → Negocio para seleccionar tu país/zona horaria",
+      "Zona horaria configurable: 14 opciones incluyendo México (CDMx, Monterrey, Tijuana, Cancún), EE.UU., Colombia, Perú, Chile, Argentina, Brasil, España y UTC",
+      "Formato regional configurable: 8 opciones de idioma/fecha (es-MX, es-CO, es-AR, pt-BR, en-US, etc.)",
+      "Nueva librería dateUtils.js: todas las fechas del sistema (filtros 'hoy', semana, mes, rangos) se calculan usando la zona horaria configurada",
+      "Botones de diálogo mobile mejorados: corregido safe area en iOS para que acciones de formularios nunca queden ocultas bajo la barra de navegación inferior",
+    ],
+  },
   {
     version: "2.5.0",
     date: "2026-04-06",
