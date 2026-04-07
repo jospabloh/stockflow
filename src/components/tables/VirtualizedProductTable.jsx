@@ -125,7 +125,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
   }
 
   return (
-    <div className="bg-card rounded-2xl shadow-sm border border-border overflow-y-auto max-h-[70vh]">
+    <div className="bg-card rounded-2xl shadow-sm border border-border">
       {/* Header */}
       <div className="flex items-center px-4 py-3 bg-muted/40 border-b border-border text-xs font-semibold text-muted-foreground sticky top-0 z-10">
         <div className="flex-1 min-w-0">Producto</div>
@@ -139,7 +139,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
       </div>
 
       {/* Virtualized List */}
-      <List height={Math.min(products.length * ITEM_HEIGHT, 560)} itemCount={products.length} itemSize={ITEM_HEIGHT} width="100%">
+      <List height={500} itemCount={products.length} itemSize={ITEM_HEIGHT} width="100%">
         {ProductRow}
       </List>
     </div>
