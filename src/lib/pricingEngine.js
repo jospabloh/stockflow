@@ -40,9 +40,10 @@ export function calculatePrice({ product, client, quantity, category, categoryQt
   // Rule 1: client force purchase price (+ 20 MXN transport)
   if (client?.force_purchase_all_products) {
     if (purchase != null && purchase >= 0) {
-      price = purchase + 20; // +20 MXN transporte
+      // Suma $20 MXN y aplica IVA 16% (igual que otros precios que ya incluyen IVA)
+      price = (purchase + 20) * 1.16;
       rule = "client_purchase";
-      origin = "Se aplicó precio de compra + 20 MXN transporte (cliente)";
+      origin = "Se aplicó precio de compra + $20 MXN transporte (cliente), con IVA 16% incluido";
     } else {
       price = retail;
       rule = "retail";
