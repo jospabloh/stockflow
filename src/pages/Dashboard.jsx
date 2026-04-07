@@ -202,8 +202,8 @@ export default function Dashboard() {
       return sum + ((m.quantity || 0) * costUnit);
     }, 0);
     
-    const profit = salesRevenue - salesCost;
-    const margin = salesRevenue > 0 ? (profit / salesRevenue) * 100 : 0;
+    const profit = Math.max(0, salesRevenue - salesCost);
+    const margin = salesRevenue > 0 ? ((salesRevenue - salesCost) / salesRevenue) * 100 : 0;
     const salesCount = periodConvertedQuotations.length + periodDirectExits.length;
 
     return {
@@ -442,11 +442,11 @@ export default function Dashboard() {
                       <span className="text-sm text-slate-600 dark:text-slate-400">Costo de lo vendido</span>
                       <span className="font-bold text-slate-700 dark:text-slate-200">${salesData.salesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-4 py-2.5">
+                    <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 ${salesData.margin < 0 ? "bg-red-50 dark:bg-red-950/40" : "bg-emerald-50 dark:bg-emerald-950/40"}`}>
                       <span className="text-sm text-slate-600 dark:text-slate-400">Ganancia bruta</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-emerald-700 dark:text-emerald-300">${salesData.profit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-                        <Badge className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border-0 text-xs">{salesData.margin.toFixed(1)}%</Badge>
+                        <span className={`font-bold ${salesData.margin < 0 ? "text-red-700 dark:text-red-300" : "text-emerald-700 dark:text-emerald-300"}`}>${Math.max(0, salesData.salesRevenue - salesData.salesCost).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                        <Badge className={`border-0 text-xs ${salesData.margin < 0 ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300" : "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300"}`}>{salesData.margin.toFixed(1)}%</Badge>
                       </div>
                     </div>
                   </>
