@@ -7,7 +7,7 @@ export default function MovementNew() {
 
   const handleSaved = (payload) => {
     if (!payload || payload._reconcile) {
-      navigate("/Movements", { replace: true });
+      navigate(-1);
     }
   };
 

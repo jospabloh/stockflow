@@ -7,7 +7,7 @@ export default function QuotationNew() {
 
   const handleSaved = (payload) => {
     if (!payload || payload._reconcile) {
-      navigate("/Quotations", { replace: true });
+      navigate(-1);
     }
   };
 
