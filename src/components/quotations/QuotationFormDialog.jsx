@@ -221,7 +221,26 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   };
 
   // Calculate totals with precise VAT handling and reconciliation
-  const { subtotal, tax: taxAmount, total } = calculateTotalsWithReconciliation(form.items);
+  const baseCalc = calculateTotalsWithReconciliation(form.items);
+  const [totalsWithTransport, setTotalsWithTransport] = React.useState({ subtotal: baseCalc.subtotal, tax: baseCalc.tax, transportFee: 0, total: baseCalc.total });
+
+  // Recalculate with transport when items or client changes
+  React.useEffect(() => {
+    if (form.items.length === 0) {
+      setTotalsWithTransport({ subtotal: 0, tax: 0, transportFee: 0, total: 0 });
+      return;
+    }
+    base44.functions.invoke('calculateQuotationWithTransport', {
+      items: form.items,
+      client_id: selectedClient?.id || null
+    }).then(res => {
+      setTotalsWithTransport(res.data);
+    }).catch(() => {
+      setTotalsWithTransport({ subtotal: baseCalc.subtotal, tax: baseCalc.tax, transportFee: 0, total: baseCalc.total });
+    });
+  }, [form.items, selectedClient?.id]);
+
+  const { subtotal, tax: taxAmount, transportFee, total } = totalsWithTransport;
 
   const generateFolio = async () => {
     const now = new Date();
@@ -480,13 +499,19 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                 <span className="text-amber-600 font-semibold">${formatMXN(taxAmount)}</span>
               </div>
             )}
+            {transportFee > 0 && (
+              <div className="flex justify-between items-center text-muted-foreground text-xs">
+                <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-indigo-500" /> Transporte ({form.items.length} × $20)</span>
+                <span className="text-indigo-600 font-semibold">${formatMXN(transportFee)}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center text-lg font-bold border-t border-border pt-3 bg-foreground/10 -mx-4 px-4 py-3 rounded">
               <span className="text-foreground">Total a pagar</span>
               <span className="text-foreground">${formatMXN(total)}</span>
             </div>
             {form.items.length > 0 && (
               <div className="text-[10px] text-muted-foreground pt-2 border-t border-border/50">
-                ✓ Cálculo: Subtotal ({formatMXN(subtotal)}) + IVA ({formatMXN(taxAmount)}) = Total ({formatMXN(total)})
+                ✓ Cálculo: {formatMXN(subtotal)} + {formatMXN(taxAmount)}{transportFee > 0 ? ` + ${formatMXN(transportFee)}` : ''} = {formatMXN(total)}
               </div>
             )}
           </div>
