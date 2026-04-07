@@ -11,7 +11,7 @@ function fmt(n) {
 
 export default function QuotationPreviewDialog({ quotation, settings, open, onOpenChange }) {
   const [downloading, setDownloading] = useState(false);
-  if (!quotation) return null;
+  if (!open || !quotation) return null;
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -38,7 +38,7 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="max-w-3xl p-0 overflow-hidden flex flex-col" style={{ maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - 80px)" }}>
         <DialogHeader className="px-6 pt-5 pb-3 border-b flex flex-row items-center justify-between">
           <DialogTitle className="text-lg font-semibold">Vista previa — {quotation.folio}</DialogTitle>
           <div className="flex gap-2">
@@ -49,7 +49,7 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
         </DialogHeader>
 
         {/* Preview body */}
-        <div className="p-6 space-y-5 text-sm">
+        <div className="p-4 md:p-6 space-y-5 text-sm overflow-y-auto flex-1">
           {/* Header */}
           <div className="rounded-xl p-5 text-white flex justify-between items-start" style={{ backgroundColor: primaryColor }}>
             <div className="flex items-start gap-3">
@@ -103,8 +103,8 @@ export default function QuotationPreviewDialog({ quotation, settings, open, onOp
           </div>
 
           {/* Items table with IVA breakdown */}
-          <div className="rounded-lg overflow-hidden border border-slate-200">
-            <table className="w-full text-xs">
+          <div className="rounded-lg overflow-x-auto border border-slate-200">
+            <table className="w-full min-w-[480px] text-xs">
               <thead>
                 <tr className="text-white" style={{ backgroundColor: primaryColor }}>
                   <th className="px-3 py-2 text-left w-8">#</th>
