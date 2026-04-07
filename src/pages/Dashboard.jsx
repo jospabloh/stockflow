@@ -20,50 +20,60 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import UnpaidDetailModal from "@/components/dashboard/UnpaidDetailModal";
 
-// Función para obtener rango de fechas según período (México City timezone UTC-6)
+// Función para obtener rango de fechas según período (México City timezone, respeta DST)
 function getDateRange(period) {
-  const utcNow = new Date();
-  const mexicoNow = new Date(utcNow.getTime() - (6 * 60 * 60 * 1000));
+  const now = new Date();
+  const TZ = 'America/Mexico_City';
 
-  const year = mexicoNow.getUTCFullYear();
-  const month = mexicoNow.getUTCMonth();
-  const date = mexicoNow.getUTCDate();
-  const dayOfWeek = mexicoNow.getUTCDay();
+  // Obtener año, mes, día y día-de-semana en timezone México
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: TZ,
+    year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short'
+  }).formatToParts(now);
 
-  const formatDateStr = (d) => {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  };
+  const p = {};
+  parts.forEach(({ type, value }) => { p[type] = value; });
 
-  let startDate, endDate;
+  const year = parseInt(p.year);
+  const month = parseInt(p.month) - 1; // 0-indexed
+  const day = parseInt(p.day);
+  // weekday: Sun, Mon, Tue, Wed, Thu, Fri, Sat
+  const weekdayMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  const dow = weekdayMap[p.weekday] ?? 0;
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const fmt = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+  const today = fmt(year, month, day);
+
+  let startStr, endStr;
 
   switch (period) {
     case "day":
-      startDate = new Date(year, month, date);
-      endDate = new Date(year, month, date);
+      startStr = today;
+      endStr = today;
       break;
     case "week": {
-      const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-      startDate = new Date(year, month, date - daysFromMonday);
-      endDate = new Date(year, month, date);
+      // Lunes de esta semana
+      const daysFromMonday = dow === 0 ? 6 : dow - 1;
+      const mondayDate = new Date(year, month, day - daysFromMonday);
+      startStr = fmt(mondayDate.getFullYear(), mondayDate.getMonth(), mondayDate.getDate());
+      endStr = today;
       break;
     }
     case "month":
-      startDate = new Date(year, month, 1);
-      endDate = new Date(year, month, date);
+      startStr = fmt(year, month, 1);
+      endStr = today;
       break;
     case "year":
-      startDate = new Date(year, 0, 1);
-      endDate = new Date(year, month, date);
+      startStr = fmt(year, 0, 1);
+      endStr = today;
       break;
     default:
-      startDate = new Date(year, month, date);
-      endDate = new Date(year, month, date);
+      startStr = today;
+      endStr = today;
   }
 
-  return { startStr: formatDateStr(startDate), endStr: formatDateStr(endDate) };
+  return { startStr, endStr };
 }
 
 export default function Dashboard() {
