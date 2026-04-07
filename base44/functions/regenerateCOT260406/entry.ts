@@ -26,14 +26,14 @@ Deno.serve(async (req) => {
     const products = await base44.asServiceRole.entities.Product.filter({ business_id: baristop.id });
     const productMap = Object.fromEntries(products.map(p => [p.id, p]));
 
-    // Recalculate items with correct rule: purchase_price + 20 MXN (no additional IVA)
+    // Recalculate items: price is purchase_price (which includes VAT)
+    // Transport is applied to total only, not to unit price
     const recalcedItems = quotation.items.map(item => {
       const product = productMap[item.product_id];
       if (!product) {
         return item;
       }
-      // Rule for Roseta Fico (purchase price client): purchase_price + 20 (price already includes IVA)
-      const newUnitPrice = (product.purchase_price || 0) + 20;
+      const newUnitPrice = product.purchase_price || 0;
       const newTotal = item.quantity * newUnitPrice;
       return { ...item, unit_price: newUnitPrice, total: newTotal };
     });
@@ -56,7 +56,10 @@ Deno.serve(async (req) => {
     // Final rounding with precision
     subtotal = Math.round(subtotal * 100) / 100;
     tax = Math.round(tax * 100) / 100;
-    const total = Math.round((subtotal + tax) * 100) / 100;
+    
+    // Transport fee: $20 per item only for purchase price clients
+    const transportFee = 20 * recalcedItems.length;
+    const total = Math.round((subtotal + tax + transportFee) * 100) / 100;
 
     // Update quotation
     const updated = await base44.asServiceRole.entities.Quotation.update(quotation.id, {
