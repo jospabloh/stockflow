@@ -2,11 +2,20 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.5.1";
+export const APP_VERSION = "2.5.2";
 
 export const RELEASE_DATE = "2026-04-07";
 
 export const CHANGELOG = [
+  {
+    version: "2.5.2",
+    date: "2026-04-07",
+    changes: [
+      "🗓️ Corrección del filtro de período 'Semana' en Dashboard: ahora muestra correctamente el rango desde el lunes de la semana actual hasta hoy (ej. 01/04/2026 – 07/04/2026)",
+      "🌍 Zona horaria corregida: el cálculo de semana usa Intl.DateTimeFormat con America/Mexico_City respetando horario de verano (CDT = UTC-5 en verano, CST = UTC-6 en invierno)",
+      "El indicador de rango de fechas en el toggle de período ahora siempre refleja el rango correcto para cada período seleccionado",
+    ],
+  },
   {
     version: "2.5.1",
     date: "2026-04-07",
