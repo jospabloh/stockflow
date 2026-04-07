@@ -9,14 +9,14 @@ function fmt(n) {
   return (n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export default function QuotationPreviewDialog({ quotation, settings, open, onOpenChange }) {
+export default function QuotationPreviewDialog({ quotation, settings, client, open, onOpenChange }) {
   const [downloading, setDownloading] = useState(false);
   if (!open || !quotation) return null;
 
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      await generateQuotationPDF(quotation, settings);
+      await generateQuotationPDF(quotation, settings, client);
     } finally {
       setDownloading(false);
     }

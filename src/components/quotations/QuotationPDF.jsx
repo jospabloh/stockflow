@@ -20,7 +20,7 @@ function isDark(rgb) {
   return (0.299 * r + 0.587 * g + 0.114 * b) < 140;
 }
 
-export async function generateQuotationPDF(quotation, settings) {
+export async function generateQuotationPDF(quotation, settings, client) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = 210;
   const margin = 18;
@@ -230,6 +230,11 @@ export async function generateQuotationPDF(quotation, settings) {
   drawTotalRow("Subtotal", quotation.subtotal || 0);
   if ((quotation.tax || 0) > 0) {
     drawTotalRow("IVA 16% (incluido)", quotation.tax || 0);
+  }
+  // Show transport cost breakdown only for clients with force_purchase_all_products
+  if (client?.force_purchase_all_products && quotation.items?.length > 0) {
+    const transportTotal = 20 * (quotation.items?.length || 0);
+    drawTotalRow("Transporte", transportTotal);
   }
   drawTotalRow("TOTAL", quotation.total || 0, true, true);
 
