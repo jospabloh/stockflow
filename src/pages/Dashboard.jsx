@@ -325,7 +325,7 @@ export default function Dashboard() {
             <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">Período de análisis</p>
             <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Todos los datos se filtran por este período</p>
           </div>
-          <SalesFilterToggle period={salesPeriod} onPeriodChange={setSalesPeriod} />
+          <SalesFilterToggle period={salesPeriod} onPeriodChange={setSalesPeriod} startStr={periodStartStr} endStr={periodEndStr} />
         </div>
       </div>
 
