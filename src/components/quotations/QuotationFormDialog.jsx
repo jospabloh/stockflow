@@ -284,7 +284,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl flex flex-col max-h-[min(90vh,750px)] sm:max-h-[min(90vh,850px)] p-0">
+      <DialogContent className="max-w-4xl flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-3 shrink-0 border-b border-border">
           <DialogTitle>{quotation ? "Editar Cotización" : "Nueva Cotización"}</DialogTitle>
         </DialogHeader>

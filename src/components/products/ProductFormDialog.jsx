@@ -243,7 +243,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
       />
     )}
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl flex flex-col max-h-[min(90vh,700px)] sm:max-h-[min(90vh,800px)] p-0">
+      <DialogContent className="max-w-2xl flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-3 shrink-0 border-b border-border">
           <DialogTitle>{product ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
         </DialogHeader>

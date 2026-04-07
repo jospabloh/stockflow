@@ -105,6 +105,43 @@ header p, nav p, aside p { user-select: text; -webkit-user-select: text; }
   background: #94a3b8;
 }
 
+/* =====================================================
+   MOBILE SAFE AREA — Dialog / Modal positioning
+   Accounts for iOS home indicator, bottom nav bar,
+   and browser chrome so action buttons are never cut off.
+   ===================================================== */
+
+/* Bottom nav bar height used as offset for dialogs */
+:root {
+  --bottom-nav-h: 64px; /* matches the lg:hidden bottom tab bar */
+}
+
+@media (min-width: 1024px) {
+  :root { --bottom-nav-h: 0px; }
+}
+
+.dialog-content-mobile {
+  /* Position vertically centered but clamped away from the bottom nav + safe area */
+  top: max(env(safe-area-inset-top, 0px) + 16px, 5%);
+  transform: translateX(-50%);
+  max-height: calc(
+    100dvh
+    - max(env(safe-area-inset-top, 0px), 16px)
+    - var(--bottom-nav-h)
+    - env(safe-area-inset-bottom, 0px)
+    - 32px
+  );
+}
+
+/* On desktop (no bottom nav) keep centred */
+@media (min-width: 1024px) {
+  .dialog-content-mobile {
+    top: 50%;
+    transform: translate(-50%, -50%);
+    max-height: calc(100dvh - 80px);
+  }
+}
+
 /* Print styles */
 @media print {
   .no-print { display: none !important; }

@@ -230,7 +230,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl flex flex-col max-h-[min(90vh,600px)] p-0 sm:max-h-[min(90vh,700px)]">
+      <DialogContent className="max-w-2xl flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-2 shrink-0 border-b border-border">
           <DialogTitle>Registrar Movimiento</DialogTitle>
         </DialogHeader>

@@ -370,7 +370,7 @@ export default function Layout({ children, currentPageName }) {
           <motion.main
             key={location.pathname}
             ref={mainRef}
-            className="flex-1 p-4 lg:p-8 pb-24 lg:pb-8 overflow-y-auto"
+            className="flex-1 p-4 lg:p-8 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-8 overflow-y-auto"
             initial={{ opacity: 0, x: direction === 'back' ? -30 : 30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: direction === 'back' ? 30 : -30 }}
