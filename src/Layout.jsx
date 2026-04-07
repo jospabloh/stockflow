@@ -187,9 +187,7 @@ export default function Layout({ children, currentPageName }) {
         {/* Logo area */}
         <div className="p-6 border-b border-border space-y-3">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-200">
-              <Package className="h-5 w-5 text-white" />
-            </div>
+            <img src="https://media.base44.com/images/public/69af971d0fdb362c9ae52ed3/5032b5555_StockFlow_logo.png" alt="StockFlow" className="h-10 w-10 object-contain" />
             <div>
               <h1 className="font-bold text-foreground text-lg tracking-tight">StockFlow</h1>
               <p className="text-xs text-muted-foreground">{businessName || "Control de stock"}</p>

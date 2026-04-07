@@ -112,15 +112,13 @@ export default function BusinessSetup() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/40 flex flex-col items-center justify-center p-4">
       {/* Logo */}
-      <div className="flex items-center gap-3 mb-10">
-        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-200">
-          <Package className="h-6 w-6 text-white" />
-        </div>
-        <div>
-          <h1 className="font-bold text-slate-800 text-2xl tracking-tight">StockFlow</h1>
-          <p className="text-xs text-slate-400">Control de inventario</p>
-        </div>
-      </div>
+       <div className="flex items-center gap-3 mb-10">
+         <img src="https://media.base44.com/images/public/69af971d0fdb362c9ae52ed3/5032b5555_StockFlow_logo.png" alt="StockFlow" className="h-12 w-12 object-contain" />
+         <div>
+           <h1 className="font-bold text-slate-800 text-2xl tracking-tight">StockFlow</h1>
+           <p className="text-xs text-slate-400">Control de inventario</p>
+         </div>
+       </div>
 
       <div className="w-full max-w-md">
         {!mode && (

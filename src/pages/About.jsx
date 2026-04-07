@@ -18,10 +18,10 @@ export default function About() {
   return (
     <div className="space-y-6 max-w-2xl mx-auto py-6">
       <div className="text-center space-y-2 mb-8">
-        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg mx-auto">
-          <Package className="h-8 w-8 text-white" />
-        </div>
-        <h1 className="text-3xl font-bold text-foreground">StockFlow</h1>
+         <div className="flex justify-center mx-auto">
+           <img src="https://media.base44.com/images/public/69af971d0fdb362c9ae52ed3/5032b5555_StockFlow_logo.png" alt="StockFlow" className="h-16 w-16 object-contain" />
+         </div>
+         <h1 className="text-3xl font-bold text-foreground">StockFlow</h1>
         <p className="text-muted-foreground">Sistema integral de control de inventario</p>
         <div className="flex items-center justify-center gap-2 pt-1">
           <Badge className="bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 text-sm px-3 py-1">
