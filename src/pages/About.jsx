@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Code, Users, Tag, CheckCircle2, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Heart, Package, Users, Tag, CheckCircle2, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { APP_VERSION, RELEASE_DATE, CHANGELOG } from "@/lib/appConfig";
 
 export default function About() {
@@ -19,7 +19,7 @@ export default function About() {
     <div className="space-y-6 max-w-2xl mx-auto py-6">
       <div className="text-center space-y-2 mb-8">
         <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg mx-auto">
-          <Code className="h-8 w-8 text-white" />
+          <Package className="h-8 w-8 text-white" />
         </div>
         <h1 className="text-3xl font-bold text-foreground">StockFlow</h1>
         <p className="text-muted-foreground">Sistema integral de control de inventario</p>
