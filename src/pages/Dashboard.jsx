@@ -85,6 +85,7 @@ export default function Dashboard() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [unpaidModalOpen, setUnpaidModalOpen] = useState(false);
   const [salesPeriod, setSalesPeriod] = useState("day");
+  const [customDateRange, setCustomDateRange] = useState({ start: null, end: null });
 
   useEffect(() => {
     base44.auth.me().then(async (u) => {
@@ -129,8 +130,13 @@ export default function Dashboard() {
 
 
 
-  // Calcular datos según período GLOBAL
-  const { startStr: periodStartStr, endStr: periodEndStr } = useMemo(() => getDateRange(salesPeriod), [salesPeriod]);
+  // Calcular datos según período GLOBAL (usar custom range si está definido)
+  const { startStr: periodStartStr, endStr: periodEndStr } = useMemo(() => {
+    if (customDateRange.start && customDateRange.end) {
+      return { startStr: customDateRange.start, endStr: customDateRange.end };
+    }
+    return getDateRange(salesPeriod);
+  }, [salesPeriod, customDateRange]);
 
   // Filtrar todos los datos por período (usando date strings)
   const periodMovements = useMemo(() => 
@@ -202,16 +208,23 @@ export default function Dashboard() {
       return sum + ((m.quantity || 0) * costUnit);
     }, 0);
     
-    const profit = Math.max(0, salesRevenue - salesCost);
-    const margin = salesRevenue > 0 ? ((salesRevenue - salesCost) / salesRevenue) * 100 : 0;
+    // Ganancia REAL = lo cobrado - costo de lo entregado (puede ser negativa)
+    const actualProfit = salesData.realRevenue - salesCost;
+    const actualMargin = salesData.realRevenue > 0 ? (actualProfit / salesData.realRevenue) * 100 : 0;
+    
+    // Ganancia POTENCIAL = lo vendido - costo de lo entregado (indicador de si la venta es buena)
+    const potentialProfit = salesRevenue - salesCost;
+    const potentialMargin = salesRevenue > 0 ? (potentialProfit / salesRevenue) * 100 : 0;
     const salesCount = periodConvertedQuotations.length + periodDirectExits.length;
 
     return {
       salesRevenue,
       realRevenue,
       salesCost,
-      profit,
-      margin,
+      actualProfit,
+      actualMargin,
+      potentialProfit,
+      potentialMargin,
       salesCount,
       periodExits,
       periodDirectExits,
@@ -336,7 +349,14 @@ export default function Dashboard() {
             <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">Período de análisis</p>
             <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Todos los datos se filtran por este período</p>
           </div>
-          <SalesFilterToggle period={salesPeriod} onPeriodChange={setSalesPeriod} startStr={periodStartStr} endStr={periodEndStr} />
+          <SalesFilterToggle 
+            period={salesPeriod} 
+            onPeriodChange={setSalesPeriod} 
+            startStr={periodStartStr} 
+            endStr={periodEndStr}
+            customDateRange={customDateRange}
+            onCustomDateRangeChange={setCustomDateRange}
+          />
         </div>
       </div>
 
@@ -420,40 +440,55 @@ export default function Dashboard() {
 
       {/* Sales Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-       <Card className="border-0 shadow-sm p-5 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-0.5" onClick={() => navigate(`${createPageUrl("Movements")}?type=exit`)}>
+       <Card className="border-0 shadow-sm p-5">
          <h3 className="font-semibold text-slate-700 flex items-center gap-2 mb-4">
-           <TrendingUp className="h-4 w-4 text-indigo-500" /> Ventas
+           <TrendingUp className="h-4 w-4 text-indigo-500" /> Análisis de Ventas
          </h3>
             {salesData.salesRevenue === 0 ? (
-             <p className="text-sm text-slate-400 py-4 text-center">Sin ventas registradas en este período</p>
+             <p className="text-sm text-slate-400 py-4 text-center">Sin movimientos en este período</p>
             ) : (
               <div className="space-y-3">
                 <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-950/40 rounded-lg px-4 py-2.5">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">Monto vendido</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Vendido</span>
                   <span className="font-bold text-blue-700 dark:text-blue-300">${salesData.salesRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                 </div>
+                <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-800 rounded-lg px-4 py-2.5 text-xs text-slate-500">
+                  <span>↳ Pendiente de cobrar</span>
+                  <span className="font-semibold">${(salesData.salesRevenue - salesData.realRevenue).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                </div>
                 <div className="flex justify-between items-center bg-purple-50 dark:bg-purple-950/40 rounded-lg px-4 py-2.5">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">Cobrado</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Cobrado efectivamente</span>
                   <span className="font-bold text-purple-700 dark:text-purple-300">${salesData.realRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                 </div>
                 {isAdmin && (
                   <>
                     <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 rounded-lg px-4 py-2.5">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Costo de lo vendido</span>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">Costo de lo entregado</span>
                       <span className="font-bold text-slate-700 dark:text-slate-200">${salesData.salesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                     </div>
-                    <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 ${salesData.margin < 0 ? "bg-red-50 dark:bg-red-950/40" : "bg-emerald-50 dark:bg-emerald-950/40"}`}>
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Ganancia bruta</span>
+                    <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 border-t-2 ${salesData.actualMargin >= 0 ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900" : "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900"}`}>
+                      <span className={`text-sm font-semibold ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>Ganancia/Pérdida Real</span>
                       <div className="flex items-center gap-2">
-                        <span className={`font-bold ${salesData.margin < 0 ? "text-red-700 dark:text-red-300" : "text-emerald-700 dark:text-emerald-300"}`}>${Math.max(0, salesData.salesRevenue - salesData.salesCost).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-                        <Badge className={`border-0 text-xs ${salesData.margin < 0 ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300" : "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300"}`}>{salesData.margin.toFixed(1)}%</Badge>
+                        <span className={`font-bold text-lg ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
+                          {salesData.actualMargin >= 0 ? "+" : ""}{salesData.actualProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                        </span>
+                        <Badge className={`border-0 text-xs font-semibold ${salesData.actualMargin >= 0 ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300" : "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"}`}>
+                          {salesData.actualMargin >= 0 ? "+" : ""}{salesData.actualMargin.toFixed(1)}%
+                        </Badge>
                       </div>
+                    </div>
+                    <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800">
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                        <strong>¿Cómo se calcula?</strong><br/>
+                        <span className="text-slate-500">Ganancia Real = Cobrado efectivamente − Costo de lo entregado</span><br/>
+                        <span className="text-slate-500">Puede ser positiva (ganancia) o negativa (pérdida) según si has cobrado menos de lo que te costó.</span>
+                      </p>
                     </div>
                   </>
                 )}
               </div>
             )}
-        </Card>
+       </Card>
 
         {/* Quotation Semaphore */}
         <Card className="border-0 shadow-sm p-5">
