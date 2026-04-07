@@ -43,8 +43,9 @@ Deno.serve(async (req) => {
     let tax = 0;
     recalcedItems.forEach(item => {
       if (item.tax_rate === 16) {
-        const netBase = item.total / 1.16;
-        const itemTax = item.total - netBase;
+        // Extract VAT from inclusive price: base = total / 1.16, tax = total - base
+        const netBase = Math.round((item.total / 1.16) * 100) / 100;
+        const itemTax = Math.round((item.total - netBase) * 100) / 100;
         subtotal += netBase;
         tax += itemTax;
       } else {
@@ -52,6 +53,7 @@ Deno.serve(async (req) => {
       }
     });
 
+    // Final rounding with precision
     subtotal = Math.round(subtotal * 100) / 100;
     tax = Math.round(tax * 100) / 100;
     const total = Math.round((subtotal + tax) * 100) / 100;
