@@ -188,6 +188,11 @@ export default function Dashboard() {
     const unpaidTotal = unpaidQuotations + unpaidDirectExits;
     const realRevenue = salesRevenue - unpaidTotal;
 
+    // Vendido x entregar: cotizaciones convertidas no entregadas
+    const undeliveredQuotations = periodConvertedQuotations.filter(q => !q.delivered);
+    const undeliveredTotal = undeliveredQuotations.reduce((sum, q) => sum + (q.total || 0), 0);
+    const undeliveredItems = undeliveredQuotations.reduce((sum, q) => sum + (q.items?.length || 0), 0);
+
     const productLookup = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
 
     // Exits válidos: sin cotización cancelada asociada
@@ -229,6 +234,8 @@ export default function Dashboard() {
       periodExits,
       periodDirectExits,
       periodConvertedQuotations,
+      undeliveredTotal,
+      undeliveredItems,
     };
   }, [periodMovements, periodQuotations, products]);
 
@@ -460,6 +467,17 @@ export default function Dashboard() {
                   <span className="text-sm text-slate-600 dark:text-slate-400">Cobrado efectivamente</span>
                   <span className="font-bold text-purple-700 dark:text-purple-300">${salesData.realRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                 </div>
+                {salesData.undeliveredTotal > 0 && (
+                  <div className="flex justify-between items-center bg-cyan-50 dark:bg-cyan-950/40 rounded-lg px-4 py-2.5 border border-cyan-200 dark:border-cyan-800">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">Vendido x entregar</span>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <span className="font-bold text-cyan-700 dark:text-cyan-300 block">${salesData.undeliveredTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                        <span className="text-[10px] text-cyan-600 dark:text-cyan-400">{salesData.undeliveredItems} {salesData.undeliveredItems === 1 ? 'item' : 'items'}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {isAdmin && (
                   <>
                     <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 rounded-lg px-4 py-2.5">
