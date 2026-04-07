@@ -73,6 +73,7 @@ export default function Quotations() {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [payMarkDelivered, setPayMarkDelivered] = useState(false);
   const [previewQuotation, setPreviewQuotation] = useState(null);
+  const [previewClient, setPreviewClient] = useState(null);
   const [returnQuotation, setReturnQuotation] = useState(null);
   const [settings, setSettings] = useState(null);
   const [businessId, setBusinessId] = useState(null);
@@ -266,8 +267,23 @@ export default function Quotations() {
         quotations={filtered}
         statusConfig={statusConfig}
         onEdit={handleEdit}
-        onPreview={setPreviewQuotation}
-        onDownloadPDF={(q) => generateQuotationPDF(q, settings)}
+        onPreview={async (q) => {
+          setPreviewQuotation(q);
+          if (q.client_id) {
+            base44.entities.Client.list().then(cs => {
+              const client = cs.find(c => c.id === q.client_id);
+              setPreviewClient(client || null);
+            }).catch(() => setPreviewClient(null));
+          }
+        }}
+        onDownloadPDF={async (q) => {
+          let client = null;
+          if (q.client_id) {
+            const clients = await base44.entities.Client.list();
+            client = clients.find(c => c.id === q.client_id);
+          }
+          generateQuotationPDF(q, settings, client);
+        }}
         onConvert={(q) => {
           setConvertQuotation(q);
           setConvertPaymentMethod(q.payment_method || "");
@@ -319,8 +335,14 @@ export default function Quotations() {
       <QuotationPreviewDialog
         quotation={previewQuotation}
         settings={settings}
+        client={previewClient}
         open={!!previewQuotation}
-        onOpenChange={(v) => !v && setPreviewQuotation(null)}
+        onOpenChange={(v) => {
+          if (!v) {
+            setPreviewQuotation(null);
+            setPreviewClient(null);
+          }
+        }}
       />
 
       {/* Cancel dialog */}
