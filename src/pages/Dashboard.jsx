@@ -20,6 +20,52 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import UnpaidDetailModal from "@/components/dashboard/UnpaidDetailModal";
 
+// Función para obtener rango de fechas según período (México City timezone UTC-6)
+function getDateRange(period) {
+  const utcNow = new Date();
+  const mexicoNow = new Date(utcNow.getTime() - (6 * 60 * 60 * 1000));
+
+  const year = mexicoNow.getUTCFullYear();
+  const month = mexicoNow.getUTCMonth();
+  const date = mexicoNow.getUTCDate();
+  const dayOfWeek = mexicoNow.getUTCDay();
+
+  const formatDateStr = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  let startDate, endDate;
+
+  switch (period) {
+    case "day":
+      startDate = new Date(year, month, date);
+      endDate = new Date(year, month, date);
+      break;
+    case "week": {
+      const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      startDate = new Date(year, month, date - daysFromMonday);
+      endDate = new Date(year, month, date);
+      break;
+    }
+    case "month":
+      startDate = new Date(year, month, 1);
+      endDate = new Date(year, month, date);
+      break;
+    case "year":
+      startDate = new Date(year, 0, 1);
+      endDate = new Date(year, month, date);
+      break;
+    default:
+      startDate = new Date(year, month, date);
+      endDate = new Date(year, month, date);
+  }
+
+  return { startStr: formatDateStr(startDate), endStr: formatDateStr(endDate) };
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
@@ -71,52 +117,7 @@ export default function Dashboard() {
     return `${year}-${month}-${day}`;
   };
 
-  // Función para obtener rango de fechas según período (México City timezone UTC-6)
-  const getDateRange = (period) => {
-    // Obtener la fecha actual en México City (UTC-6)
-    const utcNow = new Date();
-    const mexicoNow = new Date(utcNow.getTime() - (6 * 60 * 60 * 1000));
-    
-    const year = mexicoNow.getUTCFullYear();
-    const month = mexicoNow.getUTCMonth();
-    const date = mexicoNow.getUTCDate();
-    const dayOfWeek = mexicoNow.getUTCDay();
-    
-    let startDate, endDate;
-    
-    switch (period) {
-      case "day":
-        startDate = new Date(year, month, date);
-        endDate = new Date(year, month, date);
-        break;
-      case "week":
-        const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        startDate = new Date(year, month, date - daysFromMonday);
-        endDate = new Date(year, month, date);
-        break;
-      case "month":
-        startDate = new Date(year, month, 1);
-        endDate = new Date(year, month, date);
-        break;
-      case "year":
-        startDate = new Date(year, 0, 1);
-        endDate = new Date(year, month, date);
-        break;
-      default:
-        startDate = new Date(year, month, date);
-        endDate = new Date(year, month, date);
-    }
-    
-    // Convert to YYYY-MM-DD strings
-    const formatDateStr = (d) => {
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
-    };
-    
-    return { startStr: formatDateStr(startDate), endStr: formatDateStr(endDate) };
-  };
+
 
   // Calcular datos según período GLOBAL
   const { startStr: periodStartStr, endStr: periodEndStr } = useMemo(() => getDateRange(salesPeriod), [salesPeriod]);
