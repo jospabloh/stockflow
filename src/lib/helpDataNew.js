@@ -1,7 +1,68 @@
-// Artículos de ayuda — última versión: v2.5.5
-// Semáforo de cotizaciones filtrado a 30 días + alerta de cobranza vencida
+// Artículos de ayuda — última versión: v2.5.6
+// Idle timeout inteligente: la sesión solo expira por inactividad real
 
 export const newHelpArticles = [
+    {
+      id: "release-2-5-6",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.5.6 — Sesión Inteligente: Timeout Solo por Inactividad",
+      keywords: ["versión", "2.5.6", "sesión", "inactividad", "timeout", "idle", "seguridad", "expirar"],
+      related_ids: ["dashboard-admin"],
+      content: `## 🆕 Versión 2.5.6 — 8 de abril de 2026
+
+### ✅ Cambios de esta versión
+
+#### 🔒 Gestión de Sesión por Inactividad Real (Idle Timeout)
+
+**Problema resuelto:** Antes, la sesión podía cerrarse inesperadamente mientras el usuario estaba trabajando activamente en la app.
+
+**Ahora:** La sesión **nunca expira mientras estés navegando o usando la app**. El conteo de inactividad solo inicia cuando dejas de interactuar completamente.
+
+---
+
+#### ⏱️ Cómo Funciona el Nuevo Sistema
+
+| Acción | Resultado |
+|---|---|
+| El usuario hace click, escribe, hace scroll | Timer de inactividad se **reinicia** — sesión segura |
+| El usuario deja la app abierta sin usar por **20 minutos** | Aparece aviso de inactividad |
+| El usuario hace click en "Seguir trabajando" | Sesión renovada, timer reiniciado |
+| El usuario ignora el aviso por **2 minutos más** | Se muestra pantalla de sesión expirada |
+
+---
+
+#### 🛡️ Heartbeat Inteligente
+
+El sistema ya no envía actualizaciones de sesión cuando la app está inactiva. Solo mantiene la sesión viva mientras el usuario está trabajando activamente.
+
+**Beneficio:** Menos llamadas innecesarias al servidor y mayor precisión en el cierre de sesión.
+
+---
+
+#### 🔔 Los Dos Avisos de Sesión
+
+**1. Aviso de inactividad (20 min):**
+- Aparece un modal con cuenta regresiva de 2 minutos
+- Botón "Seguir trabajando" para renovar la sesión inmediatamente
+- Si se ignora, se cierra la sesión automáticamente
+
+**2. Sesión expirada:**
+- Aparece cuando se agota el tiempo tras el aviso
+- Opciones: "Seguir trabajando" (redirige al login y regresa) o "Salir"
+- Todos los datos guardados están seguros
+
+---
+
+### 📦 Versión Anterior — v2.5.5 (7 de abril de 2026)
+
+#### 📊 Semáforo de Cotizaciones a 30 Días
+El semáforo en el Dashboard ahora muestra solo las cotizaciones de los últimos 30 días para mayor relevancia.
+
+#### 🚨 Alerta de Cobranza Vencida
+Nueva alerta que detecta automáticamente cotizaciones convertidas sin cobrar fuera del período de 30 días.
+`
+    },
     {
       id: "release-2-5-5",
       category: "Novedades",
@@ -17,8 +78,6 @@ export const newHelpArticles = [
 
 El semáforo en el Dashboard ahora muestra **solo las cotizaciones de los últimos 30 días**, no todo el histórico.
 
-**Cambio:** Antes mostraba todas las cotizaciones desde el inicio de los tiempos. Ahora es más relevante y actualizado.
-
 **Qué ves:**
 - 🟢 **Concretadas en venta** — Cotizaciones convertidas en los últimos 30 días
 - 🟡 **Sin concretar (activas)** — Borradores, enviadas o aceptadas del período
@@ -30,39 +89,19 @@ El semáforo en el Dashboard ahora muestra **solo las cotizaciones de los últim
 
 #### 🚨 Nueva Alerta: Cobranza Vencida
 
-Se agregó una **alerta roja prominente** en el Dashboard que advierte sobre:
-
-**Cotizaciones concretadas sin cobrar que están FUERA de los 30 días (vencidas).**
-
-**¿Por qué es importante?**
-- Estas son deudas **antiguas** que requieren seguimiento urgente
-- El sistema las detecta automáticamente y las separa de las ventas recientes
-- Se muestra el monto total pendiente para que priorices acciones de cobranza
+Alerta roja en el Dashboard para cotizaciones concretadas sin cobrar fuera de los 30 días.
 
 **Dónde aparece:** Justo arriba del "Análisis de Ventas", solo si existen deudas vencidas.
-
-**Qué hacer:** Haz clic en la alerta para ver todas las cotizaciones vencidas sin cobrar → toma acciones de cobranza.
-
----
-
-### 💡 Caso de Uso Real
-
-Ejemplo: Es 7 de abril de 2026.
-
-- **Semáforo muestra:** Cotizaciones del 8 de marzo al 7 de abril
-- **Alerta vencida aparece si:** Hay cotizaciones convertidas sin cobrar del 7 de marzo o antes
-
-Así separas ventas recientes de deudas viejas que necesitan atención especial.
 
 ---
 
 ### 📦 Versión Anterior — v2.5.4 (7 de abril de 2026)
 
 #### 🎯 Corrección Crítica de Navegación Mobile
-Se corrigió la barra inferior de navegación para que sea siempre clickeable en dispositivos móviles, incluso cuando hay un preview de cotización abierto.
+Se corrigió la barra inferior de navegación para que sea siempre clickeable en dispositivos móviles.
 
 #### 📜 Dialog Mejorado
-El dialog de cotización ahora permite scroll interno sin bloquear la navegación de la app — puedes cambiar entre módulos sin cerrar manualmente.
+El dialog de cotización ahora permite scroll interno sin bloquear la navegación de la app.
 `
     },
     {

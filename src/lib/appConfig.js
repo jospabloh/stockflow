@@ -2,11 +2,21 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.5.5";
+export const APP_VERSION = "2.5.6";
 
-export const RELEASE_DATE = "2026-04-07";
+export const RELEASE_DATE = "2026-04-08";
 
 export const CHANGELOG = [
+  {
+    version: "2.5.6",
+    date: "2026-04-08",
+    changes: [
+      "🔒 Gestión de sesión basada en inactividad real (Idle Timeout): la sesión ya no expira mientras el usuario esté navegando o trabajando activamente",
+      "⏱️ Aviso de inactividad: tras 20 minutos sin actividad aparece un aviso con cuenta regresiva de 2 minutos antes de cerrar la sesión",
+      "✅ El usuario puede retomar la sesión con un clic — si ignora el aviso, se muestra el diálogo de sesión expirada con opción de renovar o salir",
+      "🛡️ Heartbeat de sesión inteligente: solo se envía mientras el usuario está activo — sin llamadas innecesarias cuando la app está en segundo plano",
+    ],
+  },
   {
     version: "2.5.5",
     date: "2026-04-07",
