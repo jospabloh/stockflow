@@ -65,17 +65,17 @@ export async function generateQuotationPDF(quotation, settings, client) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...headerTextColor);
-  // Wrap long address to prevent overlap with quotation code
+  // Wrap long address to prevent overlap with quotation code — use dynamic Y
+  let infoY = 22;
   if (settings?.address) {
     const addressLines = doc.splitTextToSize(settings.address, infoMaxW - logoEndX - 2);
-    let currentY = 22;
     addressLines.forEach((line) => {
-      doc.text(line, logoEndX, currentY);
-      currentY += 5;
+      doc.text(line, logoEndX, infoY);
+      infoY += 4.5;
     });
   }
-  if (settings?.phone) doc.text(`Tel: ${settings.phone}`, logoEndX, 27);
-  if (settings?.rfc) doc.text(`RFC: ${settings.rfc}`, logoEndX, 32);
+  if (settings?.phone) { doc.text(`Tel: ${settings.phone}`, logoEndX, infoY); infoY += 4.5; }
+  if (settings?.rfc) { doc.text(`RFC: ${settings.rfc}`, logoEndX, infoY); }
 
   // COTIZACIÓN label
   doc.setFont("helvetica", "bold");
