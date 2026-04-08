@@ -14,6 +14,7 @@ import { useBusinessContext } from "@/components/BusinessContext";
 import { useSessionManager } from "@/hooks/useSessionManager";
 import { useRegionalConfig } from "@/hooks/useRegionalConfig";
 import SessionBanner from "@/components/SessionBanner";
+import SessionExpiredDialog from "@/components/SessionExpiredDialog";
 import {
   LayoutDashboard,
   Package,
@@ -84,7 +85,7 @@ export default function Layout({ children, currentPageName }) {
   const touchStartY = useRef(0);
   const mainRef = useRef(null);
   const { businessId, businessName, businessNameLocked, isLoading: bizLoading, user } = useBusinessContext();
-  const { sessionStatus, reactivate } = useSessionManager(!!businessId);
+  const { sessionStatus, reactivate, sessionExpired } = useSessionManager(!!businessId);
   useRegionalConfig();
   const { goBack, direction, navigationStack } = useNavigation();
   const navigate = useNavigate();
@@ -363,6 +364,9 @@ export default function Layout({ children, currentPageName }) {
         {sessionStatus === 'passive' && (
           <SessionBanner onReactivate={reactivate} />
         )}
+
+        {/* Session expired dialog */}
+        <SessionExpiredDialog open={sessionExpired} />
 
         {/* Page content with framer-motion animations */}
         <AnimatePresence mode="wait">

@@ -30,6 +30,12 @@ function getOrCreateDeviceId() {
 
 export function useSessionManager(enabled = true) {
   const [sessionStatus, setSessionStatus] = useState(null); // 'active' | 'passive' | 'revoked'
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  const isAuthError = (e) => {
+    const msg = e?.message || e?.response?.data?.message || '';
+    return msg.includes('auth_required') || msg.includes('private') || (e?.status === 403) || (e?.response?.status === 403);
+  };
 
   const initSession = useCallback(async () => {
     try {
@@ -39,8 +45,8 @@ export function useSessionManager(enabled = true) {
       const { status, session_id } = res.data;
       setSessionStatus(status);
       if (session_id) localStorage.setItem('sf_session_id', session_id);
-    } catch (_e) {
-      // Fallo silencioso — no bloquear la app
+    } catch (e) {
+      if (isAuthError(e)) setSessionExpired(true);
     }
   }, []);
 
@@ -52,7 +58,9 @@ export function useSessionManager(enabled = true) {
       const { status, session_id } = res.data;
       setSessionStatus(status);
       if (session_id) localStorage.setItem('sf_session_id', session_id);
-    } catch (_e) {}
+    } catch (e) {
+      if (isAuthError(e)) setSessionExpired(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -68,11 +76,13 @@ export function useSessionManager(enabled = true) {
         if (!session_id) return;
         const res = await base44.functions.invoke('sessionHeartbeat', { session_id });
         setSessionStatus(res.data.status);
-      } catch (_e) {}
+      } catch (e) {
+        if (isAuthError(e)) setSessionExpired(true);
+      }
     }, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [enabled, initSession]);
 
-  return { sessionStatus, reactivate };
+  return { sessionStatus, reactivate, sessionExpired };
 }
