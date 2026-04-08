@@ -15,6 +15,7 @@ import { useSessionManager } from "@/hooks/useSessionManager";
 import { useRegionalConfig } from "@/hooks/useRegionalConfig";
 import SessionBanner from "@/components/SessionBanner";
 import SessionExpiredDialog from "@/components/SessionExpiredDialog";
+import IdleWarningDialog from "@/components/IdleWarningDialog";
 import {
   LayoutDashboard,
   Package,
@@ -85,7 +86,7 @@ export default function Layout({ children, currentPageName }) {
   const touchStartY = useRef(0);
   const mainRef = useRef(null);
   const { businessId, businessName, businessNameLocked, isLoading: bizLoading, user } = useBusinessContext();
-  const { sessionStatus, reactivate, sessionExpired } = useSessionManager(!!businessId);
+  const { sessionStatus, reactivate, sessionExpired, idleState, continueSession } = useSessionManager(!!businessId);
   useRegionalConfig();
   const { goBack, direction, navigationStack } = useNavigation();
   const navigate = useNavigate();
@@ -364,6 +365,9 @@ export default function Layout({ children, currentPageName }) {
         {sessionStatus === 'passive' && (
           <SessionBanner onReactivate={reactivate} />
         )}
+
+        {/* Idle warning dialog */}
+        <IdleWarningDialog open={idleState === 'idle_warning'} onContinue={continueSession} />
 
         {/* Session expired dialog */}
         <SessionExpiredDialog open={sessionExpired} />
