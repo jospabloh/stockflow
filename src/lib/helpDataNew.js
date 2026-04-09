@@ -3,6 +3,33 @@
 
 export const newHelpArticles = [
     {
+      id: "release-2-6-1",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.6.1 — Corrección Crítica: Página en Blanco al Guardar Cotización",
+      keywords: ["versión", "2.6.1", "cotización", "guardar", "navegación", "página en blanco", "historial", "confetti"],
+      related_ids: ["quotations-overview", "quotations-create"],
+      content: `## 🆕 Versión 2.6.1 — 9 de abril de 2026
+
+### ✅ Cambio de esta versión
+
+#### 🧭 Corrección Crítica: Página en Blanco al Guardar una Cotización Nueva
+
+**Problema resuelto:** Al guardar exitosamente una cotización nueva, la app cerraba el formulario y guardaba correctamente en la base de datos ✅, pero luego **navegaba a una página en blanco** sin feedback visible y sin forma de regresar.
+
+**Causa raíz:** El flujo post-guardado ejecutaba **dos** \`navigate(-1)\` encadenados — uno al cerrar el diálogo y otro al ejecutar \`onSaved()\`. El segundo regresaba un paso más atrás del esperado, llegando a una pantalla inválida.
+
+**Solución:** Navegación explícita a \`/Quotations\` con \`replace: true\`, eliminando el segundo navigate redundante. El usuario siempre termina en la lista de cotizaciones con confetti y toast visibles.
+
+---
+
+### 📦 Versión Anterior — v2.6.0 (9 de abril de 2026)
+
+#### 🔒 Errores 403 ya no cierran la sesión
+Los errores de validación de permisos en el backend ya no se clasifican erróneamente como expiración de sesión.
+`
+    },
+    {
       id: "release-2-5-9",
       category: "Novedades",
       role: "admin",
