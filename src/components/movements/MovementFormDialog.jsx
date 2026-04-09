@@ -25,15 +25,15 @@ const ALL_TYPES = [
   { value: "adjustment", label: "Ajuste (solo admin)" },
 ];
 
-// Calcula precio para un producto según tipo y categorías
-function calcPrice(product, type, quantity, categories) {
-  if (!product) return 0;
-  if (type === "entry") return product.purchase_price ?? 0;
-  const category = categories.find(c => c.id === product.category);
-  const { price } = calculatePrice({
-    product, client: null, quantity, category, categoryQty: quantity,
-  });
-  return price;
+// Calcula precio para un producto según tipo, categorías y cliente seleccionado
+function calcPrice(product, type, quantity, categories, client) {
+if (!product) return 0;
+if (type === "entry") return product.purchase_price ?? 0;
+const category = categories.find(c => c.id === product.category);
+const { price } = calculatePrice({
+  product, client: client || null, quantity, category, categoryQty: quantity,
+});
+return price;
 }
 
 export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
