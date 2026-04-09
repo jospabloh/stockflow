@@ -2,22 +2,22 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.6.1";
+export const APP_VERSION = "2.6.2";
 
 export const RELEASE_DATE = "2026-04-09";
 
 export const CHANGELOG = [
   {
-    version: "2.6.1",
+    version: "2.6.2",
     date: "2026-04-09",
     changes: [
-      "🧭 Corrección crítica de navegación post-guardado en cotizaciones: después de guardar exitosamente una cotización nueva, la app ahora navega directamente a la lista de cotizaciones con ruta explícita — eliminando el doble navigate(-1) que causaba página en blanco e historial roto",
-      "🎉 El confetti y el toast de éxito ahora son visibles correctamente al crear una cotización",
-      "✅ El usuario siempre termina en una pantalla válida y navegable después de guardar",
+      "✏️ Caja Chica — administradores ahora pueden editar y eliminar movimientos directamente desde el historial y desde los últimos movimientos",
+      "🗑️ Confirmación de borrado: al eliminar un movimiento de caja chica se muestra un diálogo de confirmación; el saldo se recalcula automáticamente",
+      "📝 Edición completa: administradores pueden modificar monto, fecha, descripción, categoría, referencia y notas de cualquier movimiento manual",
     ],
   },
   {
-    version: "2.6.0",
+    version: "2.6.1",
     date: "2026-04-09",
     changes: [
       "🔧 Corrección crítica: las acciones de guardar en formularios de edición (productos, clientes, cotizaciones, movimientos, categorías, proveedores) ahora completan la persistencia correctamente en todos los dispositivos y condiciones de sesión",

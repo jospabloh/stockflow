@@ -18,16 +18,27 @@ const TYPE_CONFIG = {
   adjustment:   { label: "Ajuste",        categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES] },
 };
 
-export default function PettyCashMovementForm({ open, movementType, businessId, currentBalance, onSaved, onClose }) {
-  const config = TYPE_CONFIG[movementType] || TYPE_CONFIG.income;
-  const [form, setForm] = useState({
-    amount: "",
-    description: "",
-    category: "",
-    movement_date: moment().format("YYYY-MM-DD"),
-    reference: "",
-    notes: "",
-  });
+export default function PettyCashMovementForm({ open, movementType, businessId, currentBalance, onSaved, onClose, movement }) {
+  const isEdit = !!movement;
+  const effectiveType = isEdit ? movement.movement_type : movementType;
+  const config = TYPE_CONFIG[effectiveType] || TYPE_CONFIG.income;
+  const [form, setForm] = useState(
+    isEdit ? {
+      amount: String(movement.amount || ""),
+      description: movement.description || "",
+      category: movement.category || "",
+      movement_date: movement.movement_date || moment().format("YYYY-MM-DD"),
+      reference: movement.reference || "",
+      notes: movement.notes || "",
+    } : {
+      amount: "",
+      description: "",
+      category: "",
+      movement_date: moment().format("YYYY-MM-DD"),
+      reference: "",
+      notes: "",
+    }
+  );
   const [saving, setSaving] = useState(false);
 
   const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
@@ -42,17 +53,28 @@ export default function PettyCashMovementForm({ open, movementType, businessId, 
     if (!businessId) { toast.error("No se encontró el negocio asociado"); return; }
 
     setSaving(true);
-    await base44.entities.PettyCashMovement.create({
-      business_id: businessId,
-      movement_type: movementType,
-      amount,
-      description: form.description.trim(),
-      category: form.category || "",
-      movement_date: form.movement_date,
-      reference: form.reference.trim(),
-      notes: form.notes.trim(),
-    });
-    toast.success("Movimiento guardado correctamente");
+    if (isEdit) {
+      await base44.entities.PettyCashMovement.update(movement.id, {
+        amount,
+        description: form.description.trim(),
+        category: form.category || "",
+        movement_date: form.movement_date,
+        reference: form.reference.trim(),
+        notes: form.notes.trim(),
+      });
+    } else {
+      await base44.entities.PettyCashMovement.create({
+        business_id: businessId,
+        movement_type: movementType,
+        amount,
+        description: form.description.trim(),
+        category: form.category || "",
+        movement_date: form.movement_date,
+        reference: form.reference.trim(),
+        notes: form.notes.trim(),
+      });
+    }
+    toast.success(isEdit ? "Movimiento actualizado" : "Movimiento guardado correctamente");
     setSaving(false);
     onSaved();
     onClose();
@@ -62,7 +84,7 @@ export default function PettyCashMovementForm({ open, movementType, businessId, 
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{config.label}</DialogTitle>
+          <DialogTitle>{isEdit ? `Editar ${config.label}` : config.label}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-1">
           {/* Amount */}

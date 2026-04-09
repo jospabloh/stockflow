@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MobileSelect } from "@/components/ui/MobileSelect";
-import { Search, Download } from "lucide-react";
+import { Search, Download, Pencil, Trash2 } from "lucide-react";
 import moment from "moment";
 
 const TYPE_LABELS = {
@@ -14,7 +14,7 @@ const TYPE_LABELS = {
   adjustment:   { label: "Ajuste",        color: "bg-amber-100 text-amber-700" },
 };
 
-export default function PettyCashHistory({ movements }) {
+export default function PettyCashHistory({ movements, isAdmin, onEdit, onDelete }) {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
@@ -88,6 +88,7 @@ export default function PettyCashHistory({ movements }) {
                 <TableHead>Categoría</TableHead>
                 <TableHead className="text-right">Monto</TableHead>
                 <TableHead>Referencia</TableHead>
+                {isAdmin && <TableHead className="text-right">Acciones</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -117,6 +118,18 @@ export default function PettyCashHistory({ movements }) {
                         {isNeg ? "−" : "+"} ${m.amount?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                       </TableCell>
                       <TableCell className="text-slate-500 text-sm">{m.reference || "—"}</TableCell>
+                      {isAdmin && (
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(m)} title="Editar">
+                              <Pencil className="h-3.5 w-3.5 text-slate-500" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onDelete(m.id)} title="Eliminar">
+                              <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
                     </TableRow>
                   );
                 })

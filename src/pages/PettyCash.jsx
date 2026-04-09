@@ -5,7 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { createButtonProps } from "@/lib/a11y";
+import { toast } from "sonner";
 import {
   PiggyBank, TrendingUp, TrendingDown, ListOrdered,
   Plus, Minus, SlidersHorizontal, History
@@ -21,6 +23,8 @@ export default function PettyCash() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [formType, setFormType] = useState("income");
+  const [editingMovement, setEditingMovement] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   const loadMovements = async () => {
     if (!businessId) return;
@@ -62,7 +66,15 @@ export default function PettyCash() {
 
   const hasInitialFund = movements.some(m => m.movement_type === "initial_fund");
 
-  const openForm = (type) => { setFormType(type); setFormOpen(true); };
+  const openForm = (type) => { setEditingMovement(null); setFormType(type); setFormOpen(true); };
+  const openEdit = (m) => { setEditingMovement(m); setFormOpen(true); };
+  const handleDeleteConfirm = async () => {
+    if (!deletingId) return;
+    await base44.entities.PettyCashMovement.delete(deletingId);
+    toast.success("Movimiento eliminado");
+    setDeletingId(null);
+    loadMovements();
+  };
 
   if (!businessId) return (
     <div className="flex flex-col items-center justify-center min-h-64 gap-4">
@@ -203,6 +215,16 @@ export default function PettyCash() {
                   <span className={`font-bold text-sm whitespace-nowrap ${isNeg ? "text-rose-600" : "text-emerald-600"}`}>
                     {isNeg ? "−" : "+"} ${m.amount?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                   </span>
+                  {isAdmin && (
+                    <div className="flex gap-1 ml-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(m)} title="Editar">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.415.586H9v-2.414a2 2 0 01.586-1.414z" /></svg>
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDeletingId(m.id)} title="Eliminar">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </Button>
+                    </div>
+                  )}
                 </div>
               );
             })
@@ -211,7 +233,7 @@ export default function PettyCash() {
 
         {/* Full history */}
         <TabsContent value="history" className="mt-4">
-          <PettyCashHistory movements={movements} />
+          <PettyCashHistory movements={movements} isAdmin={isAdmin} onEdit={openEdit} onDelete={setDeletingId} />
         </TabsContent>
       </Tabs>
 
@@ -223,9 +245,26 @@ export default function PettyCash() {
           businessId={businessId}
           currentBalance={balance}
           onSaved={loadMovements}
-          onClose={() => setFormOpen(false)}
+          onClose={() => { setFormOpen(false); setEditingMovement(null); }}
+          movement={editingMovement}
         />
       )}
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deletingId} onOpenChange={open => !open && setDeletingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar movimiento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. El saldo de caja chica se recalculará automáticamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-rose-600 hover:bg-rose-700">Eliminar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
