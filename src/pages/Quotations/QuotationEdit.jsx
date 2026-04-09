@@ -14,20 +14,14 @@ export default function QuotationEdit() {
     });
   }, [id]);
 
-  const handleSaved = (payload) => {
-    if (!payload || payload._reconcile) {
-      navigate(-1);
-    }
-  };
-
   return (
     <QuotationFormDialog
       open={!!quotation}
       onOpenChange={(open) => {
-        if (!open) navigate(-1);
+        if (!open) navigate('/Quotations', { replace: true });
       }}
       quotation={quotation}
-      onSaved={handleSaved}
+      onSaved={() => {}}
     />
   );
 }
