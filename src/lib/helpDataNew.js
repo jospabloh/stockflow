@@ -1,7 +1,52 @@
-// Artículos de ayuda — última versión: v2.5.8
-// Correcciones: accesibilidad de botones de acción en iOS (dvh + safe-area-inset)
+// Artículos de ayuda — última versión: v2.5.9
+// Correcciones: guardado silencioso en formularios de edición + confirmación visual de éxito (confetti)
 
 export const newHelpArticles = [
+    {
+      id: "release-2-5-9",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.5.9 — Corrección Crítica de Guardado + Confirmación Visual de Éxito",
+      keywords: ["versión", "2.5.9", "guardado", "guardar", "fallo", "silencioso", "error", "persistencia", "confetti", "éxito", "confirmación"],
+      related_ids: ["products-inventory", "movements-overview", "quotations-overview"],
+      content: `## 🆕 Versión 2.5.9 — 9 de abril de 2026
+
+### ✅ Cambios de esta versión
+
+#### 🔧 Corrección Crítica: Guardado Silencioso en Formularios
+
+**Problema resuelto:** En ciertos dispositivos y condiciones de sesión (token vencido o en proceso de renovación), las acciones de **guardar en formularios de edición** podían fallar silenciosamente — la pantalla parecía completar la operación normalmente, pero los cambios no eran persistidos en la base de datos.
+
+**Áreas afectadas:**
+- Edición y creación de **Productos**
+- Edición y creación de **Clientes**
+- Creación y edición de **Cotizaciones**
+- Registro de **Movimientos**
+- Edición de **Categorías** y **Proveedores**
+
+**Causa raíz:** Las funciones de backend que ejecutaban las escrituras dependían de tokens de sesión del usuario para la operación final de persistencia. En condiciones de token expirado o sesión bajo renovación, la autenticación fallaba antes de llegar a guardar.
+
+**Solución:** Las funciones de backend ahora:
+1. Validan la identidad y permisos del usuario al inicio (sin cambios)
+2. Realizan la escritura final usando **operaciones de servicio** independientes del estado de la sesión del usuario
+3. SDK de backend actualizado a versión 0.8.24
+
+---
+
+#### 🎉 Nueva Confirmación Visual de Éxito
+
+Al completar exitosamente una operación de guardado, ahora aparece una **animación de celebración** que confirma de forma inequívoca que los cambios fueron persistidos en la base de datos.
+
+**¿Por qué?** Para eliminar la ambigüedad de "¿sí guardó o no?". Si ves la celebración, el registro fue guardado correctamente.
+
+---
+
+### 📦 Versión Anterior — v2.5.8 (9 de abril de 2026)
+
+#### 📱 Corrección iOS: Botones de Guardar Siempre Visibles
+En iPhone (iOS), los botones "Guardar" y "Cancelar" en formularios ahora siempre están visibles y accesibles, sin quedar ocultos debajo del home indicator.
+`
+    },
     {
       id: "release-2-5-8",
       category: "Novedades",
