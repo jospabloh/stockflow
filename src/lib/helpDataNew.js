@@ -3,6 +3,37 @@
 
 export const newHelpArticles = [
     {
+      id: "release-2-6-2",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.6.2 — Caja Chica: Editar y Eliminar Movimientos",
+      keywords: ["versión", "2.6.2", "caja chica", "editar", "eliminar", "movimiento", "administrador", "historial"],
+      related_ids: ["petty-cash-overview"],
+      content: `## 🆕 Versión 2.6.2 — 9 de abril de 2026
+
+### ✅ Cambios de esta versión
+
+#### ✏️ Caja Chica — Editar y Eliminar Movimientos (Administradores)
+
+**Problema resuelto:** Los administradores no podían corregir ni eliminar movimientos de caja chica creados por error, ya que la pantalla no exponía acciones de edición ni eliminación.
+
+**Solución implementada:**
+- Los usuarios con rol **administrador** ahora ven botones de ✏️ editar y 🗑️ eliminar directamente en el historial completo y en la lista de últimos movimientos.
+- Al editar, se abre el mismo formulario precargado con los datos actuales (monto, fecha, descripción, categoría, referencia, notas).
+- Al eliminar, aparece un **diálogo de confirmación** antes de proceder.
+- El saldo de caja chica se **recalcula automáticamente** tras cualquier edición o eliminación.
+- Los usuarios sin rol administrador no ven estas acciones.
+
+**Alcance de seguridad:** Solo aplica a movimientos manuales. Todos los movimientos de caja chica son entradas directas, por lo que la edición directa es segura y no rompe integridad contable.
+
+---
+
+### 📦 Versión Anterior — v2.6.1 (9 de abril de 2026)
+
+Corrección crítica de navegación al guardar una cotización nueva (página en blanco por doble \`navigate(-1)\`).
+`
+    },
+    {
       id: "release-2-6-1",
       category: "Novedades",
       role: "admin",
