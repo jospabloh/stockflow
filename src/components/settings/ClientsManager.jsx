@@ -176,7 +176,7 @@ export default function ClientsManager() {
       </Table>
 
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-w-2xl flex flex-col max-h-[min(90vh,700px)] sm:max-h-[min(90vh,800px)] p-0">
+        <DialogContent className="max-w-2xl flex flex-col max-h-[min(90dvh,700px)] sm:max-h-[min(90dvh,800px)] p-0">
           <DialogHeader className="px-6 pt-6 pb-3 shrink-0 border-b border-border">
             <DialogTitle>{editing ? "Editar Cliente" : "Nuevo Cliente"}</DialogTitle>
           </DialogHeader>
@@ -272,7 +272,7 @@ export default function ClientsManager() {
             </div>
 
           </div>
-          <div className="flex justify-end gap-3 px-6 py-4 border-t border-border shrink-0 bg-card">
+          <div className="flex justify-end gap-3 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-border shrink-0 bg-card">
             <Button variant="outline" onClick={() => setFormOpen(false)} disabled={saving}>Cancelar</Button>
             <Button onClick={handleSave} disabled={!form.name?.trim() || !form.phone?.trim() || saving} className="bg-indigo-600 hover:bg-indigo-700">
               {saving ? "Guardando..." : "Guardar"}

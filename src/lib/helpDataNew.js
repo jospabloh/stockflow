@@ -1,7 +1,44 @@
-// Artículos de ayuda — última versión: v2.5.7
-// Correcciones: resolución de precios por cliente, consistencia de inventario, accesibilidad móvil, viewport iOS
+// Artículos de ayuda — última versión: v2.5.8
+// Correcciones: accesibilidad de botones de acción en iOS (dvh + safe-area-inset)
 
 export const newHelpArticles = [
+    {
+      id: "release-2-5-8",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.5.8 — Corrección iOS: Botones de Guardar Siempre Visibles",
+      keywords: ["versión", "2.5.8", "ios", "iphone", "botón", "guardar", "cancelar", "dialog", "mobile", "accesibilidad"],
+      related_ids: ["movements-overview", "products-inventory"],
+      content: `## 🆕 Versión 2.5.8 — 9 de abril de 2026
+
+### ✅ Cambios de esta versión
+
+#### 📱 Corrección iOS: Botones de Acción Siempre Visibles en Formularios
+
+**Problema resuelto:** En iPhone (iOS), al abrir formularios de edición de productos, cotizaciones o clientes, los botones **"Guardar"** y **"Cancelar"** podían quedar ocultos debajo del área visible de la pantalla. El usuario no podía guardar o cerrar el formulario sin hacer scroll manual, y en algunos casos los botones eran completamente inaccesibles.
+
+**Causa:** Los diálogos calculaban su altura máxima usando la unidad CSS \`vh\` (viewport height), que en iOS Safari y modo PWA no considera correctamente la barra de navegación del sistema ni la barra inferior de home indicator. Además, el padding inferior del footer no compensaba la zona de exclusión del home indicator.
+
+**Solución:** Se migraron los diálogos afectados a la unidad CSS \`dvh\` (dynamic viewport height), que en iOS calcula correctamente la altura disponible real. Se agregó también \`env(safe-area-inset-bottom)\` en el footer de los diálogos para garantizar separación respecto al home indicator del dispositivo.
+
+**Diálogos corregidos:**
+- Formulario de edición/creación de productos
+- Formulario de cotizaciones (nueva y edición)
+- Formulario de clientes (nuevo y edición)
+
+> Esta corrección aplica a todos los iPhones con iOS y a cualquier dispositivo que use SafeArea en la parte inferior (notch, home indicator).
+
+---
+
+### 📦 Versión Anterior — v2.5.7 (9 de abril de 2026)
+
+#### 💰 Corrección de Precios por Cliente en Movimientos
+El formulario de movimientos ahora aplica correctamente las reglas de precio configuradas para cada cliente.
+
+#### 📦 Corrección de Consistencia de Inventario
+Sincronización mejorada entre el campo de stock y el historial de movimientos.
+`
+    },
     {
       id: "release-2-5-7",
       category: "Novedades",

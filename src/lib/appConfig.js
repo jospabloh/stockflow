@@ -2,11 +2,19 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.5.7";
+export const APP_VERSION = "2.5.8";
 
 export const RELEASE_DATE = "2026-04-09";
 
 export const CHANGELOG = [
+  {
+    version: "2.5.8",
+    date: "2026-04-09",
+    changes: [
+      "📱 Corrección de accesibilidad de botones de acción en iOS: dialogs de edición de productos, cotizaciones y clientes ahora usan dvh en lugar de vh para el cálculo de altura máxima, garantizando que el footer con los botones Guardar/Cancelar siempre sea visible y alcanzable en iPhone",
+      "📱 Corrección de padding inferior en footers de dialogs: se aplica env(safe-area-inset-bottom) para que los botones de acción nunca queden ocultos bajo la barra de navegación inferior en dispositivos con notch o home indicator",
+    ],
+  },
   {
     version: "2.5.7",
     date: "2026-04-09",

@@ -243,7 +243,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
       />
     )}
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-w-2xl max-h-[90dvh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-3 shrink-0 border-b border-border">
           <DialogTitle>{product ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
         </DialogHeader>
@@ -372,7 +372,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
         </div>
         </div>
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-border shrink-0 bg-card">
+        <div className="flex justify-end gap-3 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-border shrink-0 bg-card">
           <Button variant="outline" onClick={() => onOpenChange(false)} {...createButtonProps('cancel')}>
             <X className="h-4 w-4 mr-1" /> Cancelar
           </Button>
