@@ -2,11 +2,21 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.5.8";
+export const APP_VERSION = "2.5.9";
 
 export const RELEASE_DATE = "2026-04-09";
 
 export const CHANGELOG = [
+  {
+    version: "2.5.9",
+    date: "2026-04-09",
+    changes: [
+      "🔧 Corrección crítica: las acciones de guardar en formularios de edición (productos, clientes, cotizaciones, movimientos, categorías, proveedores) ahora completan la persistencia correctamente en todos los dispositivos y condiciones de sesión",
+      "⚡ Mejora de robustez en backend: las funciones de escritura ahora utilizan asServiceRole para las operaciones finales de persistencia, previniendo fallos silenciosos causados por tokens de sesión expirados o condiciones de autenticación temporales",
+      "✅ SDK de backend actualizado a 0.8.24 en todas las funciones críticas de escritura",
+      "🎉 Nueva confirmación visual de éxito: al completar una operación de guardado exitosa se muestra un efecto de celebración para confirmar de forma inequívoca que los cambios fueron persistidos",
+    ],
+  },
   {
     version: "2.5.8",
     date: "2026-04-09",

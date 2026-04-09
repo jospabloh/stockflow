@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
 // SECURITY: Explicit whitelist of updatable Client fields
 const ALLOWED_UPDATE_FIELDS = new Set([
@@ -31,8 +31,8 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'client_id and updates are required' }, { status: 400 });
     }
 
-    // Fetch client to validate ownership
-    const clients = await base44.entities.Client.filter({ id: client_id });
+    // Fetch client to validate ownership — use asServiceRole to avoid RLS blocking
+    const clients = await base44.asServiceRole.entities.Client.filter({ id: client_id });
     if (clients.length === 0) {
       return Response.json({ success: false, error: 'Client not found' }, { status: 404 });
     }
@@ -67,7 +67,8 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    const updated = await base44.entities.Client.update(client_id, sanitized);
+    // Use asServiceRole for the update — ownership already validated above
+    const updated = await base44.asServiceRole.entities.Client.update(client_id, sanitized);
 
     return Response.json({ success: true, client_id, client: updated });
   } catch (error) {

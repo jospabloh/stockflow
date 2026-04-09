@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 const emptyForm = { name: "", business_name: "", giro: "", email: "", phone: "", address: "", rfc: "", notes: "", status: "active", force_wholesale_all_products: false, force_purchase_all_products: false };
 
@@ -69,6 +70,7 @@ export default function ClientsManager() {
           setSaving(false);
           return;
         }
+        confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 }, colors: ["#4F46E5", "#06B6D4", "#10B981"] });
         toast.success("✓ Cliente actualizado");
       } else {
         const response = await base44.functions.invoke('createClientSafe', { ...form, business_id: businessId });
@@ -77,6 +79,7 @@ export default function ClientsManager() {
           setSaving(false);
           return;
         }
+        confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 }, colors: ["#4F46E5", "#06B6D4", "#10B981"] });
         toast.success("✓ Cliente creado");
       }
       await load();

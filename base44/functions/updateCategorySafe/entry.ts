@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
 // Whitelist — wholesale_min_qty added as Category is now the source of truth for this threshold
 const ALLOWED_FIELDS = ['name', 'description', 'color', 'wholesale_min_qty'];
@@ -25,8 +25,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'updates object is required' }, { status: 400 });
     }
 
-    // Fetch record to validate ownership
-    const records = await base44.entities.Category.filter({ id: category_id });
+    // Fetch record to validate ownership — use asServiceRole to avoid RLS blocking
+    const records = await base44.asServiceRole.entities.Category.filter({ id: category_id });
     if (records.length === 0) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }

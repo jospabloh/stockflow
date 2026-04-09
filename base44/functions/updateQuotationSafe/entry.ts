@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
 // SECURITY: Explicit whitelist of updatable Quotation fields
 const ALLOWED_UPDATE_FIELDS = new Set([
@@ -29,8 +29,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'quotation_id and updates are required' }, { status: 400 });
     }
 
-    // Fetch quotation to validate ownership
-    const quotations = await base44.entities.Quotation.filter({ id: quotation_id });
+    // Fetch quotation to validate ownership — use asServiceRole to avoid RLS blocking
+    const quotations = await base44.asServiceRole.entities.Quotation.filter({ id: quotation_id });
     if (quotations.length === 0) {
       return Response.json({ error: 'Quotation not found' }, { status: 404 });
     }
@@ -62,8 +62,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Update quotation with sanitized data only
-    const updated = await base44.entities.Quotation.update(quotation_id, sanitized);
+    // Use asServiceRole for the update — ownership already validated above
+    const updated = await base44.asServiceRole.entities.Quotation.update(quotation_id, sanitized);
 
     return Response.json({
       success: true,

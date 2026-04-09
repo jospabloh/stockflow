@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
 Deno.serve(async (req) => {
   try {
@@ -42,7 +42,8 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'El precio de compra no puede ser negativo' }, { status: 400 });
     }
 
-    const product = await base44.entities.Product.create({
+    // Use asServiceRole for the create — business_id ownership already validated above
+    const product = await base44.asServiceRole.entities.Product.create({
       name,
       business_id,
       sku,

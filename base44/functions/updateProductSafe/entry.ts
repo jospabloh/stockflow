@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
 // SECURITY: Explicit whitelist — wholesale_min_qty removed (now lives in Category)
 const ALLOWED_UPDATE_FIELDS = new Set([
@@ -89,7 +89,8 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, product_id, product, message: 'No valid fields to update' });
     }
 
-    const updated = await base44.entities.Product.update(product_id, sanitized);
+    // Use asServiceRole for the update — ownership already validated above
+    const updated = await base44.asServiceRole.entities.Product.update(product_id, sanitized);
 
     return Response.json({ success: true, product_id, product: updated });
   } catch (error) {

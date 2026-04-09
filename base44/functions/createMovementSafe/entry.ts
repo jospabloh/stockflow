@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
 /**
  * Safe Movement creation with business_id validation
@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { product_id, product_name, type, quantity, unit_price, cost_price, total, reason, reference, stock_after, quotation_id, business_id } = body;
+    const { product_id, product_name, type, quantity, unit_price, cost_price, total, reason, reference, stock_after, quotation_id, business_id, paid } = body;
 
     // VALIDATION: business_id required
     if (!business_id) {
@@ -34,8 +34,8 @@ Deno.serve(async (req) => {
       }, { status: 403 });
     }
 
-    // All validations passed, create the movement
-    const movement = await base44.entities.Movement.create({
+    // All validations passed — use asServiceRole for resilient write
+    const movement = await base44.asServiceRole.entities.Movement.create({
       product_id,
       product_name,
       type,
@@ -47,7 +47,8 @@ Deno.serve(async (req) => {
       reference,
       stock_after,
       quotation_id,
-      business_id
+      business_id,
+      paid: paid ?? false
     });
 
     return Response.json({ 

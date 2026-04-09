@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import confetti from "canvas-confetti";
 import { base44 } from "@/api/base44Client";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -293,6 +294,9 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           return;
         }
       }
+      // Strong success feedback — confetti burst after confirmed persistence
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ["#4F46E5", "#06B6D4", "#10B981"] });
+      toast.success(quotation ? "✓ Cotización actualizada" : "✓ Cotización creada");
       onSaved();
       onOpenChange(false);
     } catch (error) {

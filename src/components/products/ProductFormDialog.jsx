@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileSelect } from "@/components/ui/MobileSelect";
-import { Save, X, ScanBarcode, Wand2, Camera, Plus, Barcode, Loader2 } from "lucide-react";
+import { Save, X, ScanBarcode, Wand2, Camera, Plus, Barcode, Loader2, CheckCircle2 } from "lucide-react";
+import confetti from "canvas-confetti";
 import BarcodeCameraScanner from "./BarcodeCameraScanner";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps } from "@/lib/a11y";
@@ -166,6 +167,8 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         });
       }
 
+      // Strong success feedback — confetti burst after confirmed persistence
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ["#4F46E5", "#06B6D4", "#10B981"] });
       toast.success(product ? "✓ Producto actualizado" : "✓ Producto creado");
       onOpenChange(false);
       setTimeout(() => onSaved({ _reconcile: true }), 300);
