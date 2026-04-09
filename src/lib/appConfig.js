@@ -2,11 +2,21 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.5.6";
+export const APP_VERSION = "2.5.7";
 
-export const RELEASE_DATE = "2026-04-08";
+export const RELEASE_DATE = "2026-04-09";
 
 export const CHANGELOG = [
+  {
+    version: "2.5.7",
+    date: "2026-04-09",
+    changes: [
+      "🔧 Corrección de precios en formulario de movimientos: el precio ahora aplica correctamente las reglas del cliente seleccionado (forzar precio compra o mayoreo), en lugar de ignorarlas siempre",
+      "🔧 Corrección de stock inconsistente: 'Café de Coatepec en Grano' (Baristop) corregido de 100 a 50 unidades, alineado con el historial de movimientos",
+      "📱 Corrección de accesibilidad del botón Guardar en formulario de movimientos: el footer ahora siempre visible en pantallas pequeñas (max-h-[90dvh] en diálogo)",
+      "📱 Corrección de zoom involuntario en iOS: viewport actualizado con maximum-scale=1.0 para evitar zoom por pellizco que causaba recarga de página en modo PWA",
+    ],
+  },
   {
     version: "2.5.6",
     date: "2026-04-08",

@@ -1,7 +1,68 @@
-// Artículos de ayuda — última versión: v2.5.6
-// Idle timeout inteligente: la sesión solo expira por inactividad real
+// Artículos de ayuda — última versión: v2.5.7
+// Correcciones de precios por cliente, stock, accesibilidad móvil y zoom iOS
 
 export const newHelpArticles = [
+    {
+      id: "release-2-5-7",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.5.7 — Correcciones: Precios por Cliente, Stock, Mobile",
+      keywords: ["versión", "2.5.7", "precio", "cliente", "mayoreo", "compra", "stock", "mobile", "ios", "zoom", "formulario"],
+      related_ids: ["movements-overview", "products-inventory", "dashboard-admin"],
+      content: `## 🆕 Versión 2.5.7 — 9 de abril de 2026
+
+### ✅ Cambios de esta versión
+
+#### 💰 Corrección: Precios por Cliente en Formulario de Movimientos
+
+**Problema resuelto:** Al registrar una salida directa en Movimientos, el precio mostrado y guardado **ignoraba las reglas especiales del cliente** (forzar precio de compra o precio de mayoreo). El precio siempre usaba el precio menudeo sin importar qué cliente se seleccionara.
+
+**Ahora:** Al seleccionar un cliente en el formulario de movimientos, el precio **se recalcula inmediatamente** aplicando las reglas configuradas:
+
+| Configuración del cliente | Precio aplicado |
+|---|---|
+| **Forzar precio de compra** (+ transporte) | Precio de compra del producto |
+| **Forzar precio de mayoreo** | Precio mayoreo del producto |
+| **Sin configuración especial** | Precio menudeo (o mayoreo si supera cantidad mínima) |
+
+> **Importante:** Esta corrección aplica tanto al precio visible en pantalla como al precio que se guarda en el movimiento.
+
+---
+
+#### 📦 Corrección de Stock: "Café de Coatepec en Grano" (Baristop)
+
+Se detectó y corrigió una inconsistencia en el stock del producto **"Café de Coatepec en Grano"** del negocio Baristop Distribuidora.
+
+- **Stock incorrecto registrado:** 100 piezas
+- **Stock corregido:** 50 piezas (consistente con el historial de movimientos)
+- **Causa:** El campo de stock del producto no coincidía con el \`stock_after\` del último movimiento registrado
+
+Si notas en tu negocio que el stock de un producto no coincide con el historial de movimientos, contacta al administrador del sistema para revisión.
+
+---
+
+#### 📱 Corrección Mobile: Botón "Registrar" Siempre Visible
+
+**Problema resuelto:** En pantallas pequeñas o móviles, al abrir el formulario de registro de movimientos, el botón **"Registrar"** quedaba oculto debajo del área visible y era difícil o imposible alcanzarlo.
+
+**Ahora:** El diálogo de movimientos tiene una altura máxima ajustada al viewport del dispositivo. El contenido del formulario hace scroll internamente y el botón de guardar **siempre está visible y accesible** en la parte inferior.
+
+---
+
+#### 📱 Corrección iOS: Zoom Involuntario / Recarga de Página
+
+**Problema resuelto:** En iPhones y iPads, al hacer un gesto de "pellizco para acercar" (pinch-to-zoom) la pantalla se ampliaba, y al soltar el gesto en modo PWA instalada parecía recargar la página o perder la vista.
+
+**Ahora:** El viewport está configurado para **desactivar el zoom de usuario** (\`maximum-scale=1.0\`), comportamiento estándar en aplicaciones nativas y PWA. La app se comporta como una app nativa sin zoom accidental.
+
+---
+
+### 📦 Versión Anterior — v2.5.6 (8 de abril de 2026)
+
+#### 🔒 Gestión de Sesión por Inactividad Real (Idle Timeout)
+La sesión ya no expira mientras el usuario está navegando activamente. El conteo solo inicia tras 20 minutos de inactividad total, con aviso previo de 2 minutos.
+`
+    },
     {
       id: "release-2-5-6",
       category: "Novedades",
