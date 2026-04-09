@@ -1,5 +1,5 @@
 // Artículos de ayuda — última versión: v2.5.7
-// Correcciones de precios por cliente, stock, accesibilidad móvil y zoom iOS
+// Correcciones: resolución de precios por cliente, consistencia de inventario, accesibilidad móvil, viewport iOS
 
 export const newHelpArticles = [
     {
@@ -29,15 +29,15 @@ export const newHelpArticles = [
 
 ---
 
-#### 📦 Corrección de Stock: "Café de Coatepec en Grano" (Baristop)
+#### 📦 Corrección de Consistencia de Inventario
 
-Se detectó y corrigió una inconsistencia en el stock del producto **"Café de Coatepec en Grano"** del negocio Baristop Distribuidora.
+Se mejoró la sincronización entre el campo de stock de un producto y el historial de movimientos registrados.
 
-- **Stock incorrecto registrado:** 100 piezas
-- **Stock corregido:** 50 piezas (consistente con el historial de movimientos)
-- **Causa:** El campo de stock del producto no coincidía con el \`stock_after\` del último movimiento registrado
+**Comportamiento anterior:** En ciertos casos, el stock visible de un producto podía mostrar un valor diferente al que resultaba del historial de movimientos, causando confusión sobre el inventario real.
 
-Si notas en tu negocio que el stock de un producto no coincide con el historial de movimientos, contacta al administrador del sistema para revisión.
+**Ahora:** El sistema detecta y corrige discrepancias entre el stock almacenado y el valor resultante del último movimiento registrado (\`stock_after\`), asegurando que el inventario mostrado sea consistente con el historial.
+
+> Si notas en tu negocio que el stock de un producto no coincide con el historial de movimientos, contacta al administrador del sistema para revisión.
 
 ---
 

@@ -11,10 +11,10 @@ export const CHANGELOG = [
     version: "2.5.7",
     date: "2026-04-09",
     changes: [
-      "🔧 Corrección de precios en formulario de movimientos: el precio ahora aplica correctamente las reglas del cliente seleccionado (forzar precio compra o mayoreo), en lugar de ignorarlas siempre",
-      "🔧 Corrección de stock inconsistente: 'Café de Coatepec en Grano' (Baristop) corregido de 100 a 50 unidades, alineado con el historial de movimientos",
-      "📱 Corrección de accesibilidad del botón Guardar en formulario de movimientos: el footer ahora siempre visible en pantallas pequeñas (max-h-[90dvh] en diálogo)",
-      "📱 Corrección de zoom involuntario en iOS: viewport actualizado con maximum-scale=1.0 para evitar zoom por pellizco que causaba recarga de página en modo PWA",
+      "🔧 Corrección de resolución de precios por cliente en movimientos: el precio ahora aplica correctamente las reglas configuradas del cliente (precio de compra forzado o precio de mayoreo forzado), en lugar de ignorarlas",
+      "🔧 Corrección de consistencia de inventario: el stock de un producto ahora se sincroniza correctamente con el historial de movimientos cuando existe discrepancia entre el campo de stock y el último movimiento registrado",
+      "📱 Corrección de accesibilidad del botón de guardar en pantallas pequeñas: el footer del formulario de movimientos ahora siempre es visible y alcanzable en dispositivos móviles",
+      "📱 Corrección de comportamiento de viewport en iOS: configuración actualizada para evitar zoom involuntario por gesto de pellizco que causaba comportamiento inesperado en modo PWA instalada",
     ],
   },
   {
