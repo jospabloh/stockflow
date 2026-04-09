@@ -100,8 +100,9 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       
-      // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
+      // Only treat 401 as auth expiry. 403 is a permission/business-logic error,
+      // NOT a sign that the session/token is invalid — do not redirect to login on 403.
+      if (error.status === 401) {
         setAuthError({
           type: 'auth_required',
           message: 'Authentication required'

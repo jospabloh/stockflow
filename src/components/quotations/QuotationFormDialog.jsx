@@ -294,11 +294,13 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           return;
         }
       }
-      // Strong success feedback — confetti burst after confirmed persistence
-      confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ["#4F46E5", "#06B6D4", "#10B981"] });
       toast.success(quotation ? "✓ Cotización actualizada" : "✓ Cotización creada");
-      onSaved();
       onOpenChange(false);
+      // Confetti after dialog closes — avoids iOS re-render race condition
+      requestAnimationFrame(() => {
+        confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ["#4F46E5", "#06B6D4", "#10B981"] });
+        onSaved();
+      });
     } catch (error) {
       toast.error(`⚠️ Error inesperado: ${error.message || "Intenta nuevamente"}`);
     } finally {

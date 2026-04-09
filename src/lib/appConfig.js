@@ -2,11 +2,21 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.5.9";
+export const APP_VERSION = "2.6.0";
 
 export const RELEASE_DATE = "2026-04-09";
 
 export const CHANGELOG = [
+  {
+    version: "2.6.0",
+    date: "2026-04-09",
+    changes: [
+      "🔒 Corrección crítica de sesión: los errores de validación de permisos en el backend (403) ya no se clasifican erróneamente como expiración de sesión, eliminando cierres de sesión inesperados después de guardar",
+      "📱 Corrección de estabilidad en iOS: el flujo post-guardado ahora cierra el diálogo antes de ejecutar el confetti y la navegación, evitando condiciones de carrera en el re-render que causaban inestabilidad de sesión",
+      "🧭 Corrección de navegación post-guardado: reemplazada la navegación relativa (`navigate(-1)`) por navegación explícita para mayor estabilidad en iOS y PWA, evitando disparos involuntarios del popstate",
+      "⚙️ SDK de sesión actualizado a 0.8.24 en las funciones de gestión de sesión (manageSession y sessionHeartbeat)",
+    ],
+  },
   {
     version: "2.5.9",
     date: "2026-04-09",

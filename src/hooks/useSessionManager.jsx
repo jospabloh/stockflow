@@ -50,8 +50,13 @@ export function useSessionManager(enabled = true) {
   const heartbeatIntervalRef = useRef(null);
 
   const isAuthError = (e) => {
+    // Only treat TRUE auth failures as session expiry.
+    // 403 must NOT be treated as auth expiry — our own backend functions return 403
+    // for business-logic reasons (cross-tenant protection, admin-only access, etc.).
+    // Only 401 Unauthorized means "token expired / not logged in".
     const msg = e?.message || e?.response?.data?.message || '';
-    return msg.includes('auth_required') || msg.includes('private') || (e?.status === 403) || (e?.response?.status === 403);
+    const status = e?.status || e?.response?.status;
+    return msg.includes('auth_required') || status === 401;
   };
 
   const callSession = useCallback(async () => {

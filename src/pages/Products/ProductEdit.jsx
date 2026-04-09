@@ -16,7 +16,8 @@ export default function ProductEdit() {
 
   const handleSaved = (payload) => {
     if (!payload || payload._reconcile) {
-      navigate(-1);
+      // Use explicit path instead of navigate(-1) to avoid iOS popstate/history instability
+      navigate("/Products", { replace: true });
     }
   };
 
@@ -24,7 +25,7 @@ export default function ProductEdit() {
     <ProductFormDialog
       open={!!product}
       onOpenChange={(open) => {
-        if (!open) navigate(-1);
+        if (!open) navigate("/Products", { replace: true });
       }}
       product={product}
       onSaved={handleSaved}
