@@ -111,13 +111,16 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   const addItem = () => setItems(prev => [...prev, { product: null, quantity: 1 }]);
   const removeItem = (idx) => setItems(prev => prev.filter((_, i) => i !== idx));
 
+  // Cliente seleccionado (objeto completo) para aplicar reglas de precio
+  const selectedClient = useMemo(() => clients.find(c => c.id === clientId) || null, [clients, clientId]);
+
   // Total general
   const grandTotal = useMemo(() => {
     return items.reduce((sum, item) => {
-      const price = calcPrice(item.product, movType, item.quantity, categories);
+      const price = calcPrice(item.product, movType, item.quantity, categories, selectedClient);
       return sum + (item.quantity * price);
     }, 0);
-  }, [items, movType, categories]);
+  }, [items, movType, categories, selectedClient]);
 
   const isAdjustment = movType === "adjustment";
   const needsParty = !isAdjustment; // entrada/salida/devolución requieren forma de pago y cliente/proveedor
@@ -166,7 +169,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       for (const item of validItems) {
         const product = item.product;
         const qty = item.quantity;
-        const unitPrice = calcPrice(product, movType, qty, categories);
+        const unitPrice = calcPrice(product, movType, qty, categories, selectedClient);
         const taxRate = product.tax_rate || 0;
         const totalWithoutTax = qty * unitPrice;
         const totalWithTax = totalWithoutTax * (1 + taxRate / 100);
@@ -230,7 +233,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl flex flex-col p-0">
+      <DialogContent className="max-w-2xl flex flex-col p-0 max-h-[90dvh]">
         <DialogHeader className="px-6 pt-6 pb-2 shrink-0 border-b border-border">
           <DialogTitle>Registrar Movimiento</DialogTitle>
         </DialogHeader>
@@ -284,7 +287,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
             </div>
 
             {items.map((item, idx) => {
-              const unitPrice = calcPrice(item.product, movType, item.quantity, categories);
+              const unitPrice = calcPrice(item.product, movType, item.quantity, categories, selectedClient);
               return (
                 <div key={idx} className="border border-border rounded-xl p-3 space-y-2 bg-card">
                   <div className="flex items-center justify-between">
