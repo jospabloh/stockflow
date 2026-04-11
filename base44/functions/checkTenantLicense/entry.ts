@@ -11,8 +11,9 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Platform owner: admin role with no business_id (pure platform admin)
-    const isPlatformAdmin = user.role === 'admin' && !user.business_id;
+    // Platform owner: only the app owner email
+    const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
+    const isPlatformAdmin = user.email === PLATFORM_OWNER_EMAIL;
 
     if (isPlatformAdmin) {
       return Response.json({

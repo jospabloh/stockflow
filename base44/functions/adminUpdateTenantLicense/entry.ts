@@ -23,7 +23,8 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (user.role !== 'admin' || user.business_id) return Response.json({ error: 'Forbidden: platform owner only' }, { status: 403 });
+    const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
+    if (user.email !== PLATFORM_OWNER_EMAIL) return Response.json({ error: 'Forbidden: platform owner only' }, { status: 403 });
 
     const body = await req.json();
     const { business_id, updates } = body;
