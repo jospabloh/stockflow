@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Bug } from "lucide-react";
 
 export default function DebugLicenseResolver() {
   const [debug, setDebug] = useState(null);
@@ -21,6 +21,19 @@ export default function DebugLicenseResolver() {
     }
   };
 
+  const handleDebugFilter = async () => {
+    setLoading(true);
+    try {
+      const res = await base44.functions.invoke('debugBusinessFilter', {});
+      setDebug(res.data);
+      console.log('Filter debug result:', res.data);
+    } catch (err) {
+      setDebug({ error: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Card className="border border-rose-300 bg-rose-50 p-4 space-y-3">
       <div className="flex items-start gap-2">
@@ -31,13 +44,22 @@ export default function DebugLicenseResolver() {
         </div>
       </div>
 
-      <Button
-        onClick={handleDebug}
-        disabled={loading}
-        className="w-full bg-rose-600 hover:bg-rose-700 text-white"
-      >
-        {loading ? "Debugging..." : "Run Debug Tenant Check"}
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          onClick={handleDebug}
+          disabled={loading}
+          className="flex-1 bg-rose-600 hover:bg-rose-700 text-white"
+        >
+          {loading ? "Debugging..." : "1. Debug Tenant"}
+        </Button>
+        <Button
+          onClick={handleDebugFilter}
+          disabled={loading}
+          className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
+        >
+          {loading ? "Debugging..." : "2. Debug Filter"}
+        </Button>
+      </div>
 
       {debug && (
         <div className="bg-white rounded p-3 border border-rose-200 max-h-96 overflow-auto">
