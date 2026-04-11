@@ -36,7 +36,18 @@ Deno.serve(async (req) => {
     const biz = businesses[0];
 
     // Grandfather: existing businesses with no billing_status → treat as active
-    const billingStatus = biz.billing_status || 'active';
+    let billingStatus = biz.billing_status || 'active';
+
+    // Real-time trial expiry check: if still marked as trial but end_at passed → view_only
+    if (billingStatus === 'trial' && biz.trial_end_at) {
+      const now = new Date();
+      const end = new Date(biz.trial_end_at);
+      if (end <= now) {
+        billingStatus = 'view_only';
+        // Async update in background (fire and forget)
+        base44.asServiceRole.entities.Business.update(biz.id, { billing_status: 'view_only' }).catch(() => {});
+      }
+    }
 
     let trialDaysLeft = null;
     if (billingStatus === 'trial' && biz.trial_end_at) {
