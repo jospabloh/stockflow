@@ -1,24 +1,21 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useBusinessContext } from "@/components/BusinessContext";
 
 const LicenseContext = createContext(null);
 
 export function LicenseProvider({ children }) {
-  const { businessId, isLoading: bizLoading } = useBusinessContext();
   const [license, setLicense] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (bizLoading) return;
     base44.functions.invoke("checkTenantLicense", {})
       .then(r => { setLicense(r.data); })
       .catch(() => {
         // Si falla la llamada, no restringir al usuario — solo el servidor decide view_only
-        setLicense(businessId ? { billing_status: 'trial', trial_days_left: null, is_platform_admin: false } : null);
+        setLicense({ billing_status: 'trial', trial_days_left: null, is_platform_admin: false });
       })
       .finally(() => setLoading(false));
-  }, [businessId, bizLoading]);
+  }, []);
 
   const isPlatformAdmin = license?.is_platform_admin ?? false;
   const billingStatus = license?.billing_status ?? null;
