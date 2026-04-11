@@ -12,48 +12,12 @@ export function LicenseProvider({ children }) {
   useEffect(() => {
     async function load() {
       try {
-        // Primero obtener el usuario para detectar platform admin
-        let user = null;
-        try { user = await base44.auth.me(); } catch (_) {}
-
-        if (user?.email === PLATFORM_OWNER_EMAIL) {
-          setLicense({ is_platform_admin: true, billing_status: 'active', trial_days_left: null, license_plan: 'pro', licensed_user_limit: 999 });
-          setLoading(false);
-          return;
-        }
-
-        // Leer negocio usando business_id del usuario — evitar ambigüedad de first() en multi-tenant
-        let biz = null;
-        if (user?.business_id) {
-          try {
-            const businesses = await base44.entities.Business.filter({ id: user.business_id });
-            biz = businesses?.[0];
-          } catch (_) {}
-        }
-
-        if (!biz) {
-          // Sin negocio asignado aún — no mostrar banner
-          setLicense({ is_platform_admin: false, billing_status: null, trial_days_left: null });
-          setLoading(false);
-          return;
-        }
-
-        let billingStatus = biz.billing_status || 'trial';
-        let trialDaysLeft = null;
-
-        if (billingStatus === 'trial' && biz.trial_end_at) {
-          const now = new Date();
-          const end = new Date(biz.trial_end_at);
-          if (end <= now) {
-            billingStatus = 'view_only';
-          } else {
-            trialDaysLeft = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
-          }
-        }
-
-        setLicense({ is_platform_admin: false, billing_status: billingStatus, trial_days_left: trialDaysLeft, license_plan: biz.license_plan || 'start', licensed_user_limit: biz.licensed_user_limit || 4 });
+        // Use server-side function for single source of truth
+        const response = await base44.functions.invoke('getCurrentTenantLicenseState', {});
+        setLicense(response.data);
       } catch (_) {
-        setLicense({ is_platform_admin: false, billing_status: 'trial', trial_days_left: null });
+        // Fallback for errors
+        setLicense({ is_platform_admin: false, billing_status: null, trial_days_left: null });
       } finally {
         setLoading(false);
       }
@@ -63,11 +27,12 @@ export function LicenseProvider({ children }) {
 
   const isPlatformAdmin = license?.is_platform_admin ?? false;
   const billingStatus = license?.billing_status ?? null;
-  const isReadOnly = !isPlatformAdmin && (billingStatus === "view_only" || billingStatus === "suspended");
+  const isReadOnly = license?.is_read_only ?? false;
   const trialDaysLeft = license?.trial_days_left ?? null;
   const licensePlan = license?.license_plan ?? "start";
-  const activeUserCount = license?.active_user_count ?? 0;
+  const activeUserCount = license?.active_user_count ?? null;
   const licensedUserLimit = license?.licensed_user_limit ?? 4;
+  const nextRenewalAt = license?.next_renewal_at ?? null;
 
   return (
     <LicenseContext.Provider value={{
@@ -80,6 +45,7 @@ export function LicenseProvider({ children }) {
       licensePlan,
       activeUserCount,
       licensedUserLimit,
+      nextRenewalAt,
     }}>
       {children}
     </LicenseContext.Provider>

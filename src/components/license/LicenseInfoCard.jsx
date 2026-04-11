@@ -13,7 +13,7 @@ const STATUS_CONFIG = {
 };
 
 export default function LicenseInfoCard() {
-  const { billingStatus, trialDaysLeft, licensePlan, licensedUserLimit, activeUserCount, loading } = useLicense();
+  const { billingStatus, trialDaysLeft, licensePlan, licensedUserLimit, activeUserCount, loading, nextRenewalAt } = useLicense();
 
   if (loading) {
     return (
@@ -70,11 +70,21 @@ export default function LicenseInfoCard() {
         </div>
 
         {/* Usuarios activos */}
-        {activeUserCount !== undefined && (
+        {activeUserCount !== null && activeUserCount !== undefined && (
           <div className="p-3 bg-white rounded-lg border border-slate-200">
             <p className="text-xs text-slate-500 font-semibold mb-1">Usuarios Activos</p>
             <p className={`text-sm font-medium ${activeUserCount >= licensedUserLimit ? "text-rose-600" : "text-slate-700"}`}>
               {activeUserCount}/{licensedUserLimit}
+            </p>
+          </div>
+        )}
+
+        {/* Fecha de renovación (si está activo) */}
+        {normalizedStatus === 'active' && nextRenewalAt && (
+          <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+            <p className="text-xs text-emerald-600 font-semibold mb-1">Próxima Renovación</p>
+            <p className="text-sm font-medium text-emerald-700">
+              {moment(nextRenewalAt).format('DD/MM/YYYY')}
             </p>
           </div>
         )}
