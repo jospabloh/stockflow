@@ -19,11 +19,30 @@ Deno.serve(async (req) => {
 
     const result = businesses.map(biz => {
       const tenantUsers = allUsers.filter(u => u.business_id === biz.id);
-      const billingStatus = biz.billing_status || 'active';
+      
+      // === UNIFIED LICENSE STATE RESOLUTION (same as getCurrentTenantLicenseState) ===
+      let billingStatus = biz.billing_status || 'trial';
       let trialDaysLeft = null;
+      let isReadOnly = false;
+
+      // If trial: check if expired
       if (billingStatus === 'trial' && biz.trial_end_at) {
-        trialDaysLeft = Math.max(0, Math.ceil((new Date(biz.trial_end_at) - now) / (1000 * 60 * 60 * 24)));
+        const trialEnd = new Date(biz.trial_end_at);
+        if (trialEnd <= now) {
+          // Trial expired → automatically become view_only
+          billingStatus = 'view_only';
+          isReadOnly = true;
+        } else {
+          // Still in trial
+          trialDaysLeft = Math.max(0, Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24)));
+        }
       }
+
+      // view_only and suspended always read-only
+      if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+        isReadOnly = true;
+      }
+
       return {
         id: biz.id,
         name: biz.name,
@@ -39,6 +58,7 @@ Deno.serve(async (req) => {
         activation_notes: biz.activation_notes || '',
         activated_by_admin: biz.activated_by_admin || '',
         active_user_count: tenantUsers.length,
+        is_read_only: isReadOnly,
         status: biz.status || 'active',
         created_date: biz.created_date,
       };

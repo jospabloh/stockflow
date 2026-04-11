@@ -57,7 +57,7 @@ export function useLicense() {
   if (!ctx) return {
     license: null, loading: false, isPlatformAdmin: false,
     billingStatus: null, isReadOnly: false, trialDaysLeft: null,
-    licensePlan: "start", activeUserCount: 0, licensedUserLimit: 4,
+    licensePlan: "start", activeUserCount: null, licensedUserLimit: 4, nextRenewalAt: null,
   };
   return ctx;
 }

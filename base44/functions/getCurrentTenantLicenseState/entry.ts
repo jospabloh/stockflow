@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch business using service role to ensure we get all fields
+    // Fetch business and tenant users
     const businesses = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
     const biz = businesses?.[0];
 
@@ -65,31 +65,41 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Fetch tenant users to count active ones
+    const allUsers = await base44.asServiceRole.entities.User.list();
+    const tenantUsers = allUsers.filter(u => u.business_id === biz.id);
+
+    // === UNIFIED LICENSE STATE RESOLUTION (same as adminGetAllLicenses) ===
+    const now = new Date();
     let billingStatus = biz.billing_status || 'trial';
-    let effectiveStatus = billingStatus;
     let trialDaysLeft = null;
     let isReadOnly = false;
 
-    // Calculate trial expiration
+    // If trial: check if expired
     if (billingStatus === 'trial' && biz.trial_end_at) {
-      const now = new Date();
-      const end = new Date(biz.trial_end_at);
-      if (end <= now) {
-        effectiveStatus = 'expired';
+      const trialEnd = new Date(biz.trial_end_at);
+      if (trialEnd <= now) {
+        // Trial expired → automatically become view_only
         billingStatus = 'view_only';
         isReadOnly = true;
       } else {
-        trialDaysLeft = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+        // Still in trial
+        trialDaysLeft = Math.max(0, Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24)));
       }
     }
 
-    // view_only and suspended are always read-only
+    // view_only and suspended always read-only
     if (billingStatus === 'view_only' || billingStatus === 'suspended') {
-      effectiveStatus = billingStatus === 'suspended' ? 'suspended' : 'expired';
       isReadOnly = true;
     }
 
-    // Calculate next renewal date for active licenses
+    // Normalize effective_status for display
+    let effectiveStatus = billingStatus;
+    if (billingStatus === 'view_only') {
+      effectiveStatus = 'expired';
+    }
+
+    // Next renewal date for active licenses
     let nextRenewalAt = null;
     if (billingStatus === 'active' && biz.license_activated_at) {
       const activated = new Date(biz.license_activated_at);
@@ -97,8 +107,8 @@ Deno.serve(async (req) => {
       nextRenewalAt.setMonth(nextRenewalAt.getMonth() + 1);
     }
 
-    // Get active user count if available
-    const activeUserCount = biz.active_user_count !== undefined ? biz.active_user_count : null;
+    // Active user count (from actual tenant users)
+    const activeUserCount = tenantUsers.length;
 
     return Response.json({
       is_platform_admin: false,
