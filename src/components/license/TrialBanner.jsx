@@ -13,13 +13,6 @@ export default function TrialBanner() {
 
   if (billingStatus === "trial") {
     const urgent = trialDaysLeft !== null && trialDaysLeft <= 5;
-    const trialText = trialDaysLeft === null
-      ? "Estás en período de prueba"
-      : trialDaysLeft === 0
-      ? "Tu período de prueba termina hoy"
-      : trialDaysLeft === 1
-      ? "Tu período de prueba termina mañana"
-      : `Período de prueba: ${trialDaysLeft} días restantes`;
     return (
       <div className={`w-full px-4 py-2.5 flex items-center justify-between gap-3 text-sm ${
         urgent
@@ -28,7 +21,13 @@ export default function TrialBanner() {
       }`}>
         <div className="flex items-center gap-2 min-w-0">
           <Clock className="h-4 w-4 flex-shrink-0" />
-          <span className="font-medium">{trialText}</span>
+          <span className="font-medium">
+            {trialDaysLeft === 0
+              ? "Tu período de prueba termina hoy"
+              : trialDaysLeft === 1
+              ? "Tu período de prueba termina mañana"
+              : `Período de prueba: ${trialDaysLeft} días restantes`}
+          </span>
         </div>
         <a href={STOCKFLOW_UPGRADE_URL} target="_blank" rel="noopener noreferrer">
           <Button size="sm" variant="secondary" className="whitespace-nowrap text-xs h-7 px-3">
