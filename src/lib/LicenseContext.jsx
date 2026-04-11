@@ -22,10 +22,14 @@ export function LicenseProvider({ children }) {
           return;
         }
 
-        // Leer negocio directamente — RLS del servidor filtra por business_id del token
-        let businesses = [];
-        try { businesses = await base44.entities.Business.list(); } catch (_) {}
-        const biz = businesses?.[0];
+        // Leer negocio usando business_id del usuario — evitar ambigüedad de first() en multi-tenant
+        let biz = null;
+        if (user?.business_id) {
+          try {
+            const businesses = await base44.entities.Business.filter({ id: user.business_id });
+            biz = businesses?.[0];
+          } catch (_) {}
+        }
 
         if (!biz) {
           // Sin negocio asignado aún — no mostrar banner

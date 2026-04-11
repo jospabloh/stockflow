@@ -11,12 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
 import { useBusinessContext } from "@/components/BusinessContext";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import LicenseInfoCard from "@/components/license/LicenseInfoCard";
 import { toast } from "sonner";
 
 export default function Settings() {
@@ -543,7 +538,9 @@ export default function Settings() {
 
           {/* Account — All users */}
           <TabsContent value="account">
-          <Card className="border-0 shadow-sm p-6 space-y-6">
+          <div className="space-y-6">
+            <LicenseInfoCard />
+            <Card className="border-0 shadow-sm p-6 space-y-6">
             <h3 className="font-semibold text-slate-700 text-lg">Gestión de Cuenta</h3>
             <div className="border border-red-200 rounded-xl p-5 space-y-3 bg-red-50/50">
               <div className="flex items-start gap-3">
@@ -569,6 +566,7 @@ export default function Settings() {
               </Button>
             </div>
           </Card>
+            </div>
           </TabsContent>
           </Tabs>
 
