@@ -48,8 +48,10 @@ export default function BusinessSetup() {
       currency: "MXN",
     });
     await base44.auth.updateMe({ business_id: business.id, role: "admin" });
+    // Initialize 30-day trial using server-side time
+    await base44.functions.invoke("initTenantTrial", { business_id: business.id }).catch(() => {});
     await refreshBusiness();
-    toast.success("¡Negocio creado! Bienvenido a StockFlow.");
+    toast.success("¡Negocio creado! Bienvenido a StockFlow. Tienes 30 días de prueba.");
     navigate("/Dashboard");
     setLoading(false);
   };

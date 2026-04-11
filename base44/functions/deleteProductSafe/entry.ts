@@ -48,6 +48,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // LICENSE CHECK
+    const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const biz = bizArr[0];
+    const billingStatus = biz?.billing_status || 'active';
+    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+      return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
     // Check for associated movements — use service role for consistency
     const movements = await base44.asServiceRole.entities.Movement.filter({
       product_id,

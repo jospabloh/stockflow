@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useNavigation } from "@/lib/NavigationContext";
+import { useLicense } from "@/lib/LicenseContext";
+import TrialBanner from "@/components/license/TrialBanner";
 
 // Detect if running as installed PWA / native app (not regular browser tab)
 const IS_NATIVE_APP = typeof window !== "undefined" && (
@@ -37,7 +39,8 @@ import {
   Briefcase,
   DollarSign,
   Palette,
-  Users
+  Users,
+  Shield
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -63,6 +66,7 @@ const navItems = [
   { name: "Configuración", icon: Settings, page: "Settings" },
   { name: "Centro de Ayuda", icon: HelpCircle, page: "HelpCenter" },
   { name: "Acerca de", icon: HelpCircle, page: "About" },
+  { name: "Licencias", icon: Shield, page: "LicenseAdmin", platformAdminOnly: true },
 ];
 
 // Flat map para encontrar páginas y detectar si están en submenu
@@ -86,6 +90,7 @@ export default function Layout({ children, currentPageName }) {
   const touchStartY = useRef(0);
   const mainRef = useRef(null);
   const { businessId, businessName, businessNameLocked, isLoading: bizLoading, user } = useBusinessContext();
+  const { isPlatformAdmin } = useLicense();
   const { sessionStatus, reactivate, sessionExpired, idleState, continueSession } = useSessionManager(!!businessId);
   useRegionalConfig();
   const { goBack, direction, navigationStack } = useNavigation();
@@ -200,8 +205,8 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Navegación principal">
-          {navItems.map((item) => {
-            const isActive = currentPageName === item.page;
+          {navItems.filter(item => !item.platformAdminOnly || isPlatformAdmin).map((item) => {
+          const isActive = currentPageName === item.page;
             const hasSubmenu = item.submenu && item.submenu.length > 0;
             const isSubmenuOpen = expandedSubmenu === item.name;
             const currentInSubmenu = item.submenu?.some(s => s.page === currentPageName);
@@ -360,6 +365,9 @@ export default function Layout({ children, currentPageName }) {
             </Button>
           </div>
         </header>
+
+        {/* Trial / license banner */}
+        <TrialBanner />
 
         {/* Session passive banner */}
         {sessionStatus === 'passive' && (

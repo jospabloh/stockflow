@@ -47,6 +47,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No valid fields to update' }, { status: 400 });
     }
 
+    // LICENSE CHECK
+    const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const biz2 = bizArr[0];
+    const billingStatus2 = biz2?.billing_status || 'active';
+    if (billingStatus2 === 'view_only' || billingStatus2 === 'suspended') {
+      return Response.json({ error: 'write_blocked', billing_status: billingStatus2 }, { status: 403 });
+    }
+
     await base44.asServiceRole.entities.Supplier.update(supplier_id, sanitized);
 
     return Response.json({ success: true, supplier_id, updated_fields: Object.keys(sanitized) });

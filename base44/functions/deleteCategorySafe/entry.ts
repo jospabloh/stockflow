@@ -40,6 +40,14 @@ Deno.serve(async (req) => {
       }, { status: 409 });
     }
 
+    // LICENSE CHECK
+    const bizArr2 = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const biz2 = bizArr2[0];
+    const billingStatus2 = biz2?.billing_status || 'active';
+    if (billingStatus2 === 'view_only' || billingStatus2 === 'suspended') {
+      return Response.json({ error: 'write_blocked', billing_status: billingStatus2 }, { status: 403 });
+    }
+
     await base44.asServiceRole.entities.Category.delete(category_id);
 
     return Response.json({ success: true, category_id });

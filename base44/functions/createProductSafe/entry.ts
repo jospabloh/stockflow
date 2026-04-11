@@ -42,6 +42,14 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'El precio de compra no puede ser negativo' }, { status: 400 });
     }
 
+    // LICENSE CHECK
+    const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const biz = bizArr[0];
+    const billingStatus = biz?.billing_status || 'active';
+    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+      return Response.json({ success: false, error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
     // Use asServiceRole for the create — business_id ownership already validated above
     const product = await base44.asServiceRole.entities.Product.create({
       name,

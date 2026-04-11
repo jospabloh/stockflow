@@ -9,6 +9,8 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BusinessProvider } from '@/components/BusinessContext';
+import { LicenseProvider } from '@/lib/LicenseContext';
+const LicenseAdmin = lazy(() => import('./pages/LicenseAdmin'));
 import { NavigationProvider } from '@/lib/NavigationContext';
 
 import BusinessSetup from './pages/BusinessSetup';
@@ -97,6 +99,7 @@ const AuthenticatedApp = () => {
       <Route path="/Suppliers" element={<LayoutWrapper currentPageName="Suppliers"><Suspense fallback={<PageLoader />}><Suppliers /></Suspense></LayoutWrapper>} />
       <Route path="/Clients" element={<LayoutWrapper currentPageName="Clients"><Suspense fallback={<PageLoader />}><Clients /></Suspense></LayoutWrapper>} />
       <Route path="/PaymentMethods" element={<LayoutWrapper currentPageName="PaymentMethods"><Suspense fallback={<PageLoader />}><PaymentMethods /></Suspense></LayoutWrapper>} />
+      <Route path="/LicenseAdmin" element={<LayoutWrapper currentPageName="LicenseAdmin"><Suspense fallback={<PageLoader />}><LicenseAdmin /></Suspense></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -110,12 +113,14 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <BusinessProvider>
+            <LicenseProvider>
             <Router>
               <NavigationProvider>
                 <AuthenticatedApp />
               </NavigationProvider>
             </Router>
             <Toaster position="top-center" richColors expand={true} />
+              </LicenseProvider>
           </BusinessProvider>
         </QueryClientProvider>
       </AuthProvider>

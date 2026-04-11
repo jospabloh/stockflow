@@ -48,6 +48,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No valid fields to update' }, { status: 400 });
     }
 
+    // LICENSE CHECK (flag updates like marking paid/delivered allowed in view_only — they don't create data)
+    // Only block writes that create or structurally mutate data. Flag updates are permitted.
+
     // Update quotation with whitelisted fields only
     await base44.asServiceRole.entities.Quotation.update(quotation.id, sanitizedUpdates);
 

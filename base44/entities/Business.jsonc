@@ -60,6 +60,69 @@
         "suspended"
       ],
       "default": "active"
+    },
+    "billing_status": {
+      "type": "string",
+      "enum": [
+        "trial",
+        "active",
+        "view_only",
+        "suspended"
+      ],
+      "default": "trial",
+      "description": "Estado comercial del tenant. trial=prueba, active=licencia activa, view_only=solo lectura (trial expirado), suspended=suspendido"
+    },
+    "license_plan": {
+      "type": "string",
+      "enum": [
+        "start",
+        "growth",
+        "pro"
+      ],
+      "default": "start",
+      "description": "Plan de licencia: start (4 usuarios), growth (10 usuarios), pro (20 usuarios)"
+    },
+    "licensed_user_limit": {
+      "type": "number",
+      "default": 4,
+      "description": "L\u00edmite de usuarios activos permitidos en este tenant"
+    },
+    "trial_start_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha/hora de inicio del per\u00edodo de prueba (servidor)"
+    },
+    "trial_end_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha/hora de fin del per\u00edodo de prueba (servidor)"
+    },
+    "license_activated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha/hora en que se activ\u00f3 la licencia comercial"
+    },
+    "license_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha/hora de expiraci\u00f3n de la licencia (nullable = sin expiraci\u00f3n)"
+    },
+    "payment_reference": {
+      "type": "string",
+      "description": "Referencia de pago (folio, transferencia, etc.)"
+    },
+    "activation_notes": {
+      "type": "string",
+      "description": "Notas de activaci\u00f3n del administrador de plataforma"
+    },
+    "activated_by_admin": {
+      "type": "string",
+      "description": "Email del administrador de plataforma que activ\u00f3 la licencia"
+    },
+    "support_contacted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u00daltima vez que el tenant contact\u00f3 soporte para upgrade"
     }
   },
   "required": [

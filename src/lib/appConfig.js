@@ -2,22 +2,25 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.6.2";
+export const APP_VERSION = "2.7.0";
 
 export const RELEASE_DATE = "2026-04-09";
 
 export const CHANGELOG = [
   {
-    version: "2.6.2",
-    date: "2026-04-09",
+    version: "2.7.0",
+    date: "2026-04-11",
     changes: [
-      "✏️ Caja Chica — administradores ahora pueden editar y eliminar movimientos directamente desde el historial y desde los últimos movimientos",
-      "🗑️ Confirmación de borrado: al eliminar un movimiento de caja chica se muestra un diálogo de confirmación; el saldo se recalcula automáticamente",
-      "📝 Edición completa: administradores pueden modificar monto, fecha, descripción, categoría, referencia y notas de cualquier movimiento manual",
+      "🌟 Sistema completo de licencias por tenant: prueba de 30 días, planes Start/Growth/Pro, modo solo lectura al expirar",
+      "🔒 Panel de administración de licencias exclusivo para administradores de plataforma (/LicenseAdmin)",
+      "⚠️ Banner de prueba y modo solo lectura visible en todo momento según estado del tenant",
+      "🛡️ Protección de escritura en backend (12 funciones): ningún tenant en view_only puede crear, editar ni eliminar datos",
+      "⏰ Job automático diario: expira trials vencidos y los transicióna a modo solo lectura",
+      "🏛️ Grandfather: tenants existentes sin estado de licencia tratados como activos automáticamente",
     ],
   },
   {
-    version: "2.6.1",
+    version: "2.6.2",
     date: "2026-04-09",
     changes: [
       "🔧 Corrección crítica: las acciones de guardar en formularios de edición (productos, clientes, cotizaciones, movimientos, categorías, proveedores) ahora completan la persistencia correctamente en todos los dispositivos y condiciones de sesión",

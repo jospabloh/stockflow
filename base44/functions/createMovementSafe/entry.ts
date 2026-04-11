@@ -34,6 +34,14 @@ Deno.serve(async (req) => {
       }, { status: 403 });
     }
 
+    // LICENSE CHECK: block write if tenant is view_only or suspended
+    const businesses = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const biz = businesses[0];
+    const billingStatus = biz?.billing_status || 'active';
+    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+      return Response.json({ success: false, error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
     // All validations passed — use asServiceRole for resilient write
     const movement = await base44.asServiceRole.entities.Movement.create({
       product_id,

@@ -67,6 +67,14 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
+    // LICENSE CHECK
+    const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const biz2 = bizArr[0];
+    const billingStatus2 = biz2?.billing_status || 'active';
+    if (billingStatus2 === 'view_only' || billingStatus2 === 'suspended') {
+      return Response.json({ success: false, error: 'write_blocked', billing_status: billingStatus2 }, { status: 403 });
+    }
+
     // Use asServiceRole for the update — ownership already validated above
     const updated = await base44.asServiceRole.entities.Client.update(client_id, sanitized);
 

@@ -38,6 +38,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Quotation already converted' }, { status: 400 });
     }
 
+    // LICENSE CHECK
+    const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const tenantBiz = bizArr[0];
+    const billingStatus = tenantBiz?.billing_status || 'active';
+    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+      return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
     // PHASE 1: Validate stock BEFORE any operations
     const itemsWithStock = [];
     for (const item of (quotation.items || [])) {

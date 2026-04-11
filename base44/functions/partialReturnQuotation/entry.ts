@@ -32,6 +32,9 @@ Deno.serve(async (req) => {
     if (quotation.business_id !== user.business_id) return Response.json({ error: 'Forbidden' }, { status: 403 });
     if (quotation.status !== 'converted') return Response.json({ error: 'Solo se pueden hacer devoluciones de ventas concretadas' }, { status: 400 });
 
+    // LICENSE CHECK — returns are allowed even in view_only (they correct existing data)
+    // Intentionally not blocking here: returns protect business from stuck stock
+
     // Validate returned items exist in quotation
     for (const ri of returned_items) {
       const match = (quotation.items || []).find(i => i.product_id === ri.product_id);

@@ -28,6 +28,14 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'La cantidad mínima mayoreo no puede ser negativa' }, { status: 400 });
     }
 
+    // LICENSE CHECK
+    const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const biz = bizArr[0];
+    const billingStatus = biz?.billing_status || 'active';
+    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+      return Response.json({ success: false, error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
     const category = await base44.entities.Category.create({
       name,
       business_id,
