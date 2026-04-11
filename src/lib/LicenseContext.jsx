@@ -14,8 +14,8 @@ export function LicenseProvider({ children }) {
     base44.functions.invoke("checkTenantLicense", {})
       .then(r => { setLicense(r.data); })
       .catch(() => {
-        // Si falla, mostrar trial por defecto para no ocultar el banner
-        setLicense(businessId ? { billing_status: 'trial', trial_days_left: null, is_platform_admin: false } : null);
+        // Si falla, bloquear escritura por seguridad (view_only conservador)
+        setLicense(businessId ? { billing_status: 'view_only', trial_days_left: null, is_platform_admin: false } : null);
       })
       .finally(() => setLoading(false));
   }, [businessId, bizLoading]);
