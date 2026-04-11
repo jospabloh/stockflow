@@ -28,30 +28,25 @@
     },
     "invite_code_active": {
       "type": "boolean",
-      "default": true,
-      "description": "Si el c\u00f3digo de invitaci\u00f3n est\u00e1 activo y acepta nuevos miembros"
+      "default": true
     },
     "tax_rate": {
       "type": "number",
-      "default": 16,
-      "description": "Tasa de IVA (%)"
+      "default": 16
     },
     "currency": {
       "type": "string",
       "default": "MXN"
     },
     "low_stock_email": {
-      "type": "string",
-      "description": "Email para alertas de stock bajo"
+      "type": "string"
     },
     "quotation_footer": {
-      "type": "string",
-      "description": "Texto al pie de cotizaciones"
+      "type": "string"
     },
     "primary_color": {
       "type": "string",
-      "default": "#4F46E5",
-      "description": "Color primario"
+      "default": "#4F46E5"
     },
     "status": {
       "type": "string",
@@ -69,8 +64,7 @@
         "view_only",
         "suspended"
       ],
-      "default": "trial",
-      "description": "Estado comercial del tenant. trial=prueba, active=licencia activa, view_only=solo lectura (trial expirado), suspended=suspendido"
+      "default": "trial"
     },
     "license_plan": {
       "type": "string",
@@ -79,50 +73,40 @@
         "growth",
         "pro"
       ],
-      "default": "start",
-      "description": "Plan de licencia: start (4 usuarios), growth (10 usuarios), pro (20 usuarios)"
+      "default": "start"
     },
     "licensed_user_limit": {
       "type": "number",
-      "default": 4,
-      "description": "L\u00edmite de usuarios activos permitidos en este tenant"
+      "default": 4
     },
     "trial_start_at": {
       "type": "string",
-      "format": "date-time",
-      "description": "Fecha/hora de inicio del per\u00edodo de prueba (servidor)"
+      "format": "date-time"
     },
     "trial_end_at": {
       "type": "string",
-      "format": "date-time",
-      "description": "Fecha/hora de fin del per\u00edodo de prueba (servidor)"
+      "format": "date-time"
     },
     "license_activated_at": {
       "type": "string",
-      "format": "date-time",
-      "description": "Fecha/hora en que se activ\u00f3 la licencia comercial"
+      "format": "date-time"
     },
     "license_expires_at": {
       "type": "string",
-      "format": "date-time",
-      "description": "Fecha/hora de expiraci\u00f3n de la licencia (nullable = sin expiraci\u00f3n)"
+      "format": "date-time"
     },
     "payment_reference": {
-      "type": "string",
-      "description": "Referencia de pago (folio, transferencia, etc.)"
+      "type": "string"
     },
     "activation_notes": {
-      "type": "string",
-      "description": "Notas de activaci\u00f3n del administrador de plataforma"
+      "type": "string"
     },
     "activated_by_admin": {
-      "type": "string",
-      "description": "Email del administrador de plataforma que activ\u00f3 la licencia"
+      "type": "string"
     },
     "support_contacted_at": {
       "type": "string",
-      "format": "date-time",
-      "description": "\u00daltima vez que el tenant contact\u00f3 soporte para upgrade"
+      "format": "date-time"
     }
   },
   "required": [
@@ -132,9 +116,7 @@
     "read": {
       "id": "{{user.business_id}}"
     },
-    "update": {
-      "id": "{{user.business_id}}"
-    },
+    "update": {},
     "delete": {
       "id": "{{user.business_id}}"
     }
