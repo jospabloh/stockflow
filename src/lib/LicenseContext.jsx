@@ -1,21 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 
 const LicenseContext = createContext(null);
 
 export function LicenseProvider({ children }) {
   const [license, setLicense] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { isLoadingAuth } = useAuth();
 
   useEffect(() => {
+    if (isLoadingAuth) return;
     base44.functions.invoke("checkTenantLicense", {})
       .then(r => { setLicense(r.data); })
       .catch(() => {
-        // Si falla la llamada, no restringir al usuario — solo el servidor decide view_only
         setLicense({ billing_status: 'trial', trial_days_left: null, is_platform_admin: false });
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [isLoadingAuth]);
 
   const isPlatformAdmin = license?.is_platform_admin ?? false;
   const billingStatus = license?.billing_status ?? null;
