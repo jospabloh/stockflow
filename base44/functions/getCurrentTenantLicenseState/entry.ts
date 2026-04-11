@@ -28,6 +28,7 @@ Deno.serve(async (req) => {
     }
 
     if (!user.business_id) {
+      console.error('[getCurrentTenantLicenseState] User has no business_id:', user.email);
       return Response.json({
         is_platform_admin: false,
         billing_status: null,
@@ -44,11 +45,25 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch business and tenant users
-    const businesses = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
-    const biz = businesses?.[0];
+    // STRICT TENANT RESOLUTION: Get business ONLY by exact user.business_id
+    // Use .list() and manually match to ensure strict ID matching
+    const allBusinesses = await base44.asServiceRole.entities.Business.list();
+    const biz = allBusinesses.find(b => b.id === user.business_id);
 
-    if (!biz) {
+    console.log('[getCurrentTenantLicenseState] User:', user.email, 'requesting business_id:', user.business_id);
+    console.log('[getCurrentTenantLicenseState] All businesses found:', allBusinesses.length);
+    if (biz) {
+      console.log('[getCurrentTenantLicenseState] Resolved business:', biz.id, biz.name);
+    } else {
+      console.log('[getCurrentTenantLicenseState] Business NOT FOUND for business_id:', user.business_id);
+    }
+
+    // HARD GUARD: If business not found or doesn't match, fail
+    if (!biz || biz.id !== user.business_id) {
+      console.error('[getCurrentTenantLicenseState] HARD FAIL: Business mismatch or not found');
+      if (biz) {
+        console.error('[getCurrentTenantLicenseState] Expected:', user.business_id, 'Got:', biz.id);
+      }
       return Response.json({
         is_platform_admin: false,
         billing_status: null,
@@ -65,9 +80,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch tenant users to count active ones
+    // Fetch tenant users to count active ones — STRICT MATCH by exact business_id
     const allUsers = await base44.asServiceRole.entities.User.list();
     const tenantUsers = allUsers.filter(u => u.business_id === biz.id);
+    
+    console.log('[getCurrentTenantLicenseState] Total users in system:', allUsers.length);
+    console.log('[getCurrentTenantLicenseState] Users for business_id', biz.id, ':', tenantUsers.length);
+    console.log('[getCurrentTenantLicenseState] Tenant user emails:', tenantUsers.map(u => u.email));
+    
+    // GUARD: Verify all filtered users actually belong to this business
+    const usersWithMismatch = tenantUsers.filter(u => u.business_id !== biz.id);
+    if (usersWithMismatch.length > 0) {
+      console.error('[getCurrentTenantLicenseState] ERROR: Found users with mismatched business_id:', usersWithMismatch);
+    }
 
     // === UNIFIED LICENSE STATE RESOLUTION (same as adminGetAllLicenses) ===
     const now = new Date();
