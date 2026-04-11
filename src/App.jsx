@@ -68,6 +68,7 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
+    <LicenseProvider>
     <Routes>
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
@@ -102,6 +103,7 @@ const AuthenticatedApp = () => {
       <Route path="/LicenseAdmin" element={<LayoutWrapper currentPageName="LicenseAdmin"><Suspense fallback={<PageLoader />}><LicenseAdmin /></Suspense></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </LicenseProvider>
   );
 };
 
@@ -113,14 +115,12 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <BusinessProvider>
-            <LicenseProvider>
             <Router>
               <NavigationProvider>
                 <AuthenticatedApp />
               </NavigationProvider>
             </Router>
             <Toaster position="top-center" richColors expand={true} />
-              </LicenseProvider>
           </BusinessProvider>
         </QueryClientProvider>
       </AuthProvider>
