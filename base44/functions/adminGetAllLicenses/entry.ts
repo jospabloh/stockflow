@@ -9,7 +9,8 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (user.role !== 'admin') return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+    // Only platform owner (admin without business_id) can access this
+    if (user.role !== 'admin' || user.business_id) return Response.json({ error: 'Forbidden: platform owner only' }, { status: 403 });
 
     const businesses = await base44.asServiceRole.entities.Business.list();
     const allUsers = await base44.asServiceRole.entities.User.list();
