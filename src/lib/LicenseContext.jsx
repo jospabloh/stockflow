@@ -12,18 +12,27 @@ export function LicenseProvider({ children }) {
   useEffect(() => {
     async function load() {
       try {
-        const user = await base44.auth.me();
-        if (!user) { setLoading(false); return; }
+        // Primero obtener el usuario para detectar platform admin
+        let user = null;
+        try { user = await base44.auth.me(); } catch (_) {}
 
-        if (user.email === PLATFORM_OWNER_EMAIL) {
-          setLicense({ is_platform_admin: true, billing_status: 'active', trial_days_left: null, license_plan: 'pro', licensed_user_limit: 999, active_user_count: 0 });
+        if (user?.email === PLATFORM_OWNER_EMAIL) {
+          setLicense({ is_platform_admin: true, billing_status: 'active', trial_days_left: null, license_plan: 'pro', licensed_user_limit: 999 });
           setLoading(false);
           return;
         }
 
-        const businesses = await base44.entities.Business.list();
+        // Leer negocio directamente — RLS del servidor filtra por business_id del token
+        let businesses = [];
+        try { businesses = await base44.entities.Business.list(); } catch (_) {}
         const biz = businesses?.[0];
-        if (!biz) { setLoading(false); return; }
+
+        if (!biz) {
+          // Sin negocio asignado aún — no mostrar banner
+          setLicense({ is_platform_admin: false, billing_status: null, trial_days_left: null });
+          setLoading(false);
+          return;
+        }
 
         let billingStatus = biz.billing_status || 'trial';
         let trialDaysLeft = null;
