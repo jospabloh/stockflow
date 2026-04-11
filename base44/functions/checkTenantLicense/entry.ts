@@ -11,8 +11,8 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Platform admin: no business_id, has admin role
-    const isPlatformAdmin = user.role === 'admin' && !user.business_id;
+    // Platform admin: any user with role=admin
+    const isPlatformAdmin = user.role === 'admin';
 
     if (isPlatformAdmin) {
       return Response.json({
