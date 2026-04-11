@@ -3,6 +3,109 @@
 
 export const newHelpArticles = [
     {
+      id: "release-2-7-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.7.0 — Sistema de Licencias por Tenant: Trial 30 Días + Planes + Modo Solo Lectura",
+      keywords: ["versión", "2.7.0", "licencia", "trial", "prueba", "plan", "start", "growth", "pro", "solo lectura", "view_only", "activar", "pago", "suspender"],
+      related_ids: [],
+      content: `## 🆕 Versión 2.7.0 — 11 de abril de 2026
+
+### ✅ Cambios de esta versión
+
+#### 🌟 Sistema Completo de Licencias por Tenant
+
+StockFlow ahora opera con un modelo de licencias **por negocio (tenant)**, no por usuario individual.
+
+---
+
+### ⏳ Prueba de 30 Días
+
+Cuando un nuevo negocio se crea en StockFlow:
+- Se inicia automáticamente un período de prueba de **30 días**
+- La fecha de inicio y fin es calculada en el servidor (no en el dispositivo del usuario)
+- Durante la prueba tienes acceso completo a todas las funciones
+- Un banner visible indica los días restantes
+
+---
+
+### 📊 Planes Disponibles
+
+| Plan | Usuarios máximos |
+|------|------------------|
+| **Start** | 4 usuarios |
+| **Growth** | 10 usuarios |
+| **Pro** | 20 usuarios |
+
+> Los planes difieren en capacidad de usuarios, no en funcionalidades disponibles.
+
+---
+
+### 🔒 Modo Solo Lectura (Trial Expirado)
+
+Cuando el período de prueba termina sin una licencia activa:
+- El tenant pasa automáticamente a modo **Solo Lectura**
+- Los usuarios pueden iniciar sesión normalmente
+- Todos los datos existentes siguen siendo visibles (dashboard, productos, movimientos, cotizaciones, reportes)
+- **No es posible crear, editar ni eliminar registros**
+- Un banner permanente explica la situación y ofrece opciones de activación
+- La protección es doble: frontend (UI bloqueada) + backend (funciones rechazan escrituras con HTTP 403)
+
+---
+
+### 🛍️ Activar Licencia
+
+Para activar una licencia comercial:
+1. Haz clic en el botón **\"Activar Licencia\"** del banner o ve a la página de planes
+2. Contacta al equipo de StockFlow para confirmar el pago
+3. El administrador de plataforma activará tu licencia manualmente después de confirmar el pago
+4. Tu negocio volverá a tener acceso completo de escritura
+
+---
+
+### 🔐 Panel de Administración de Licencias
+
+Exclusivo para el administrador de la plataforma StockFlow (no disponible para administradores de negocio).
+
+**Funciones disponibles:**
+- Ver todos los tenants con su estado de licencia
+- Activar o cambiar plan de licencia
+- Registrar referencia de pago y notas de activación
+- Suspender o reactivar un tenant
+- Ver el conteo de usuarios activos vs. límite del plan
+
+---
+
+### 🏛️ Tenants Existentes (Grandfather)
+
+Los negocios existentes en producción antes de v2.7.0 **no son afectados**:
+- Se tratan automáticamente como **activos** hasta que el administrador de plataforma los revise manualmente
+- No se les fuerza un trial ni se les bloquea el acceso
+
+---
+
+### ⏰ Job Automático Diario
+
+Un proceso automático se ejecuta cada día y:
+- Busca todos los tenants con trial expirado
+- Los transiciona a modo solo lectura
+- Nunca elimina datos ni bloquea el login
+
+---
+
+### 🛡️ Alcance de Protección Backend
+
+Las siguientes funciones bloquean escrituras para tenants en modo solo lectura o suspendidos:
+\`createMovementSafe\`, \`createQuotationSafe\`, \`convertQuotationSafe\`, \`cancelQuotationSafe\`, \`createProductSafe\`, \`updateProductSafe\`, \`deleteProductSafe\`, \`createClientSafe\`, \`updateClientSafe\`, \`createCategorySafe\`, \`updateCategorySafe\`, \`deleteCategorySafe\`, \`createSupplierSafe\`, \`updateSupplierSafe\`, \`deleteSupplierSafe\`.
+
+---
+
+### 📦 Versión Anterior — v2.6.2 (9 de abril de 2026)
+
+Caja Chica: editar y eliminar movimientos para administradores.
+`
+    },
+    {
       id: "release-2-6-2",
       category: "Novedades",
       role: "admin",
