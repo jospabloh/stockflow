@@ -22,7 +22,9 @@ export default function TrialBanner() {
         <div className="flex items-center gap-2 min-w-0">
           <Clock className="h-4 w-4 flex-shrink-0" />
           <span className="font-medium">
-            {trialDaysLeft === 0
+            {trialDaysLeft === null
+              ? "Estás en período de prueba"
+              : trialDaysLeft === 0
               ? "Tu período de prueba termina hoy"
               : trialDaysLeft === 1
               ? "Tu período de prueba termina mañana"
