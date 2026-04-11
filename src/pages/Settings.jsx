@@ -12,6 +12,7 @@ import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
 import { useBusinessContext } from "@/components/BusinessContext";
 import LicenseInfoCard from "@/components/license/LicenseInfoCard";
+import DebugLicenseResolver from "@/components/license/DebugLicenseResolver";
 import { toast } from "sonner";
 
 export default function Settings() {
@@ -540,6 +541,7 @@ export default function Settings() {
           <TabsContent value="account">
           <div className="space-y-6">
             <LicenseInfoCard />
+            <DebugLicenseResolver />
             <Card className="border-0 shadow-sm p-6 space-y-6">
             <h3 className="font-semibold text-slate-700 text-lg">Gestión de Cuenta</h3>
             <div className="border border-red-200 rounded-xl p-5 space-y-3 bg-red-50/50">
