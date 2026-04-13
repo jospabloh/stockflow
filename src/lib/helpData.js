@@ -2,8 +2,8 @@ import { helpDataExtension } from './helpDataExtension.js';
 import { newHelpArticles } from './helpDataNew';
 
 export const localHelpData = {
-  version: "2.5.5",
-  last_updated: "2026-04-07",
+  version: "2.7.1",
+  last_updated: "2026-04-13",
   get articles() { return [..._baseArticles, ...helpDataExtension, ...newHelpArticles]; }
 };
 
@@ -1743,6 +1743,19 @@ En la pestaña **"Historial completo"** puedes:
 3. Realiza un conteo físico periódico y usa **Ajuste** si hay diferencias.
 4. Repone el fondo con un **Ingreso** cuando el saldo esté bajo.
 5. Usa categorías consistentes para poder analizar en qué se gasta más.`
+    },
+
+    // ═══════════════════════════════════════════════
+    // LICENCIAS
+    // ═══════════════════════════════════════════════
+    {
+      id: "license-overview",
+      category: "Licencias",
+      role: "all",
+      title: "\uD83D\uDD11 Licencia y Per\u00EDodo de Prueba",
+      keywords: ["licencia", "trial", "prueba", "activar", "plan", "renovaci\u00F3n", "solo lectura", "suspendido", "billing", "upgrade"],
+      related_ids: ["roles-overview", "settings-business"],
+      content: `## \uD83D\uDD11 Licencia y Per\u00EDodo de Prueba\n\nStockFlow incluye un sistema de licencias por negocio. Cada negocio tiene su propio estado de licencia independiente.\n\n---\n\n### \u23F1\uFE0F Per\u00EDodo de Prueba\n\nAl registrar un nuevo negocio, se activa autom\u00E1ticamente un **per\u00EDodo de prueba de 30 d\u00EDas** con acceso completo.\n\n- El banner superior muestra los **d\u00EDas restantes** de prueba\n- Cuando quedan **5 d\u00EDas o menos**, el banner cambia a color \u00E1mbar\n- Al vencer, el sistema pasa a **modo solo lectura**\n\n---\n\n### \uD83D\uDCCB Estados de Licencia\n\n| Estado | Descripci\u00F3n | Acceso |\n|---|---|---|\n| **Prueba** | Per\u00EDodo de evaluaci\u00F3n activo | Completo |\n| **Activa** | Licencia pagada vigente | Completo |\n| **Solo Lectura** | Prueba vencida, sin licencia | Consultar \u00FAnicamente |\n| **Suspendida** | Cuenta suspendida | Sin acceso |\n\n---\n\n### \uD83D\uDD12 Modo Solo Lectura\n\nCuando el per\u00EDodo de prueba vence, el negocio entra en **modo solo lectura**:\n\n- \u2705 **Puedes:** consultar productos, movimientos, cotizaciones y reportes\n- \u274C **No puedes:** crear, editar ni eliminar registros\n- Un banner naranja permanente indica el estado\n\n---\n\n### \uD83D\uDCB3 Activar o Renovar tu Licencia\n\nVisita la p\u00E1gina oficial del producto:\n\n\uD83D\uDC49 **[https://www.acaciaco.com.mx/stockflow](https://www.acaciaco.com.mx/stockflow)**\n\nEl bot\u00F3n **\"Ver planes\"** o **\"Activar Licencia\"** en el banner te lleva directamente ah\u00ED.\n\n---\n\n### \uD83C\uDFC7 Planes Disponibles\n\n| Plan | Usuarios incluidos |\n|---|---|\n| **Start** | Hasta 4 usuarios |\n| **Growth** | Hasta 8 usuarios |\n| **Pro** | Hasta 20 usuarios |\n\n> Para contratar o cambiar de plan, contacta: **soporte@acaciaco.com.mx**`
     },
 
     // ═══════════════════════════════════════════════

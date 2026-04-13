@@ -2,11 +2,21 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.7.0";
+export const APP_VERSION = "2.7.1";
 
-export const RELEASE_DATE = "2026-04-09";
+export const RELEASE_DATE = "2026-04-13";
 
 export const CHANGELOG = [
+  {
+    version: "2.7.1",
+    date: "2026-04-13",
+    changes: [
+      "🔒 Corrección crítica de resolución de tenant en licencias: la función getCurrentTenantLicenseState ahora resuelve estrictamente el negocio por el business_id exacto del usuario autenticado",
+      "🛡️ Guard hard implementado: si el negocio resuelto no coincide con el business_id del usuario autenticado, la función falla de forma segura sin retornar datos de otro tenant",
+      "🔗 URL de upgrade corregida: los banners de prueba y modo solo lectura ahora apuntan a la página comercial correcta https://www.acaciaco.com.mx/stockflow",
+      "🧹 Limpieza: funciones y componentes de debug temporal removidos del codebase",
+    ],
+  },
   {
     version: "2.7.0",
     date: "2026-04-11",
