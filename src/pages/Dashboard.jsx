@@ -105,16 +105,10 @@ export default function Dashboard() {
     }).catch(() => setLoading(false));
   }, []);
 
-  // Forzar recalculación cuando cambia salesPeriod
-  useEffect(() => {
-    // Este efecto vacío asegura que salesData se recalcule
-  }, [salesPeriod]);
-
   // Función centralizada para convertir UTC a timezone México (UTC-6, FIJO sin daylight saving)
   const convertUTCToLocalDate = (isoString) => {
     const utcDate = new Date(isoString);
     // México City siempre está en UTC-6 (sin cambio de horario)
-    // Para convertir UTC a local, restamos 6 horas (-6 * 60 * 60 * 1000)
     const mexicoDate = new Date(utcDate.getTime() - (6 * 60 * 60 * 1000));
     return mexicoDate;
   };
@@ -127,8 +121,6 @@ export default function Dashboard() {
     const day = String(localDate.getUTCDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
-
-
 
   // Calcular datos según período GLOBAL (usar custom range si está definido)
   const { startStr: periodStartStr, endStr: periodEndStr } = useMemo(() => {
@@ -155,11 +147,25 @@ export default function Dashboard() {
     [quotations, periodStartStr, periodEndStr]
   );
 
-  // Stats dinámicos (NO filtrados, pero sí periódicos para ciertas métricas)
+  const isLowStockProduct = (product) => {
+    if (!product || product.status !== "active") return false;
+
+    const stock = Number(product.stock ?? 0);
+    const minStock = Number(product.min_stock);
+
+    if (!Number.isFinite(minStock)) return false;
+
+    return stock <= minStock;
+  };
+
+  // Stats dinámicos
   const activeProducts = products.filter((p) => p.status === "active");
-  const totalStock = activeProducts.reduce((sum, p) => sum + (p.stock || 0), 0);
-  const totalValue = activeProducts.reduce((sum, p) => sum + (p.stock || 0) * (p.purchase_price || 0), 0);
-  const lowStockProducts = activeProducts.filter((p) => p.stock <= (p.min_stock || 5));
+  const totalStock = activeProducts.reduce((sum, p) => sum + (Number(p.stock) || 0), 0);
+  const totalValue = activeProducts.reduce(
+    (sum, p) => sum + (Number(p.stock) || 0) * (Number(p.purchase_price) || 0),
+    0
+  );
+  const lowStockProducts = activeProducts.filter(isLowStockProduct);
 
   // Movimientos en período
   const periodMovementsCount = periodMovements.length;
@@ -172,12 +178,10 @@ export default function Dashboard() {
 
     const salesFromQuotations = periodConvertedQuotations.reduce((sum, q) => sum + (q.total || 0), 0);
     const salesFromDirectExits = periodDirectExits.reduce((sum, m) => sum + (m.total || 0), 0);
-    // IDs de cotizaciones canceladas — sus exits NO deben contar en costo ni devoluciones en revenue
     const cancelledQuotationIds = new Set(
       quotations.filter(q => q.status === "cancelled").map(q => q.id)
     );
 
-    // Descontar devoluciones parciales de cotizaciones convertidas activas
     const periodReturnsRevenue = periodMovements.filter(m =>
       m.type === "return" && m.quotation_id && !cancelledQuotationIds.has(m.quotation_id)
     ).reduce((sum, m) => sum + (m.total || 0), 0);
@@ -188,17 +192,13 @@ export default function Dashboard() {
     const unpaidTotal = unpaidQuotations + unpaidDirectExits;
     const realRevenue = salesRevenue - unpaidTotal;
 
-    // Vendido x entregar: cotizaciones convertidas no entregadas
     const undeliveredQuotations = periodConvertedQuotations.filter(q => !q.delivered);
     const undeliveredTotal = undeliveredQuotations.reduce((sum, q) => sum + (q.total || 0), 0);
     const undeliveredItems = undeliveredQuotations.reduce((sum, q) => sum + (q.items?.length || 0), 0);
 
     const productLookup = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
 
-    // Exits válidos: sin cotización cancelada asociada
     const validExits = periodExits.filter(m => !m.quotation_id || !cancelledQuotationIds.has(m.quotation_id));
-
-    // Returns del período — descontan el costo (devoluciones)
     const periodReturns = periodMovements.filter(m => m.type === "return" && m.quotation_id && !cancelledQuotationIds.has(m.quotation_id));
 
     const salesCost = validExits.reduce((sum, m) => {
@@ -213,11 +213,9 @@ export default function Dashboard() {
       return sum + ((m.quantity || 0) * costUnit);
     }, 0);
     
-    // Ganancia REAL = lo cobrado - costo de lo entregado (puede ser negativa)
     const actualProfit = realRevenue - salesCost;
     const actualMargin = realRevenue > 0 ? (actualProfit / realRevenue) * 100 : 0;
     
-    // Ganancia POTENCIAL = lo vendido - costo de lo entregado (indicador de si la venta es buena)
     const potentialProfit = salesRevenue - salesCost;
     const potentialMargin = salesRevenue > 0 ? (potentialProfit / salesRevenue) * 100 : 0;
     const salesCount = periodConvertedQuotations.length + periodDirectExits.length;
@@ -239,9 +237,8 @@ export default function Dashboard() {
     };
   }, [periodMovements, periodQuotations, products]);
 
-  // Cotizaciones concretadas sin pagar — GLOBAL (NO filtradas por período)
+  // Cotizaciones concretadas sin pagar — GLOBAL
   const unpaidConverted = quotations.filter(q => q.status === "converted" && !q.paid);
-  // Movimientos de salida directa sin pagar (sin quotation_id) — GLOBAL (NO filtradas por período)
   const unpaidDirectMovements = movements.filter(m => m.type === "exit" && !m.quotation_id && !m.paid);
 
   const unpaidCount = unpaidConverted.length + unpaidDirectMovements.length;
@@ -249,7 +246,7 @@ export default function Dashboard() {
     unpaidConverted.reduce((sum, q) => sum + (q.total || 0), 0) +
     unpaidDirectMovements.reduce((sum, m) => sum + (m.total || 0), 0);
 
-  // Quotation semaphore counts — Filtrado a últimos 30 días
+  // Quotation semaphore counts — últimos 30 días
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const thirtyDaysAgoStr = `${thirtyDaysAgo.getFullYear()}-${String(thirtyDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(thirtyDaysAgo.getDate()).padStart(2, '0')}`;
@@ -263,7 +260,6 @@ export default function Dashboard() {
   const quotYellow = quotationsLast30Days.filter(q => ["draft", "sent", "accepted"].includes(q.status)).length;
   const quotRed = quotationsLast30Days.filter(q => q.status === "cancelled").length;
   
-  // Alerta: Cotizaciones convertidas sin cobrar FUERA de 30 días (vencidas)
   const overduePaidQuotations = quotations.filter(q => {
     const dateStr = getDateStringMexico(q.created_date);
     return dateStr < thirtyDaysAgoStr && q.status === "converted" && !q.paid;
@@ -274,7 +270,6 @@ export default function Dashboard() {
     const data = [];
     
     if (salesPeriod === "day") {
-      // Para un día, mostrar horas
       for (let h = 0; h < 24; h += 4) {
         const hourMovements = periodMovements.filter((m) => {
           const d = convertUTCToLocalDate(m.created_date);
@@ -289,7 +284,6 @@ export default function Dashboard() {
         });
       }
     } else if (salesPeriod === "week") {
-      // Para una semana, mostrar días
       for (let i = 6; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
@@ -308,7 +302,6 @@ export default function Dashboard() {
         });
       }
     } else if (salesPeriod === "month") {
-      // Para un mes, mostrar semanas
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -332,7 +325,6 @@ export default function Dashboard() {
         week++;
       }
     } else {
-      // Para un año, mostrar meses
       const now = new Date();
       for (let m = 0; m < 12; m++) {
         const monthStart = new Date(now.getFullYear(), m, 1);
@@ -420,7 +412,7 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Cobro pendiente — cotizaciones concretadas sin pagar */}
+      {/* Cobro pendiente */}
       <UnpaidDetailModal
         open={unpaidModalOpen}
         onOpenChange={setUnpaidModalOpen}

@@ -2,11 +2,28 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.7.1";
+export const APP_VERSION = "2.7.3";
 
 export const RELEASE_DATE = "2026-04-13";
 
 export const CHANGELOG = [
+  {
+    version: "2.7.3",
+    date: "2026-04-13",
+    changes: [
+      "🐛 Regla de stock bajo unificada en los 3 puntos de visualización (campana, Dashboard, Products?filter=low_stock): un producto cuenta como stock bajo SOLO si status=active, min_stock es numérico y explícito, y stock <= min_stock",
+      "🚫 Productos inactivos excluidos de todas las alertas de stock bajo",
+      "🚫 Productos con min_stock null/undefined/inválido NO se cuentan como stock bajo",
+      "✅ Conteo idéntico garantizado: campana = tarjeta Dashboard = filtro Products stock bajo",
+    ],
+  },
+  {
+    version: "2.7.2",
+    date: "2026-04-13",
+    changes: [
+      "🔧 Fix lint: variable 'response' en QuotationFormDialog elevada a let antes del bloque if/else para resolver error no-undef",
+    ],
+  },
   {
     version: "2.7.1",
     date: "2026-04-13",

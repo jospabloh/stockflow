@@ -110,10 +110,25 @@ export default function Layout({ children, currentPageName }) {
 
   useEffect(() => {
     if (!businessId) return;
-    base44.entities.Product.filter({ status: "active", business_id: businessId }).then(products => {
-      const low = products.filter(p => p.stock <= p.min_stock).length;
-      setLowStockCount(low);
-    }).catch(() => {});
+
+    const isLowStockProduct = (product) => {
+      if (!product || product.status !== "active") return false;
+
+      const stock = Number(product.stock ?? 0);
+      const minStock = Number(product.min_stock);
+
+      if (!Number.isFinite(minStock)) return false;
+
+      return stock <= minStock;
+    };
+
+    base44.entities.Product
+      .filter({ business_id: businessId }, "-created_date", 500)
+      .then((products) => {
+        const low = products.filter(isLowStockProduct).length;
+        setLowStockCount(low);
+      })
+      .catch(() => {});
   }, [businessId]);
 
   useEffect(() => {
@@ -150,8 +165,6 @@ export default function Layout({ children, currentPageName }) {
     touchStartY.current = 0;
     setTimeout(() => setRefreshing(false), 1500);
   }, [pullY]);
-
-
 
   // Preserve scroll position per page across tab switches
   useEffect(() => {
@@ -206,7 +219,7 @@ export default function Layout({ children, currentPageName }) {
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Navegación principal">
           {navItems.filter(item => !item.platformAdminOnly || isPlatformAdmin).map((item) => {
-          const isActive = currentPageName === item.page;
+            const isActive = currentPageName === item.page;
             const hasSubmenu = item.submenu && item.submenu.length > 0;
             const isSubmenuOpen = expandedSubmenu === item.name;
             const currentInSubmenu = item.submenu?.some(s => s.page === currentPageName);

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Upload, Download } from "lucide-react";
+import { Plus, Search, Download } from "lucide-react";
 import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import {
@@ -53,18 +53,15 @@ export default function Products() {
 
   const handleSaved = (payload) => {
     if (!payload || payload._reconcile) {
-      // Network settled — do a silent background refresh
       loadData(businessId);
       return;
     }
     if (payload._optimistic) {
-      // Optimistic update: patch local list immediately
       if (payload.id) {
         setProducts((prev) =>
           prev.map((p) => (p.id === payload.id ? { ...p, ...payload } : p))
         );
       } else {
-        // New product: prepend a temporary record
         setProducts((prev) => [{ ...payload, id: `_tmp_${Date.now()}` }, ...prev]);
       }
     }
@@ -78,14 +75,32 @@ export default function Products() {
     }).catch(() => setLoading(false));
   }, []);
 
+  const isLowStockProduct = (product) => {
+    if (!product || product.status !== "active") return false;
+
+    const stock = Number(product.stock ?? 0);
+    const minStock = Number(product.min_stock);
+
+    if (!Number.isFinite(minStock)) return false;
+
+    return stock <= minStock;
+  };
+
   const filteredProducts = products.filter((p) => {
-    const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase()) ||
-      p.sku?.toLowerCase().includes(search.toLowerCase()) ||
-      p.barcode?.toLowerCase().includes(search.toLowerCase());
+    const searchTerm = search.toLowerCase();
+
+    const matchSearch =
+      p.name?.toLowerCase().includes(searchTerm) ||
+      p.sku?.toLowerCase().includes(searchTerm) ||
+      p.barcode?.toLowerCase().includes(searchTerm);
+
     const matchCategory = categoryFilter === "all" || p.category === categoryFilter;
-    const matchStock = stockFilter === "all" ||
-      (stockFilter === "low" && p.stock <= (p.min_stock || 5)) ||
-      (stockFilter === "out" && p.stock <= 0);
+
+    const matchStock =
+      stockFilter === "all" ||
+      (stockFilter === "low" && isLowStockProduct(p)) ||
+      (stockFilter === "out" && p.status === "active" && Number(p.stock ?? 0) <= 0);
+
     return matchSearch && matchCategory && matchStock;
   });
 
@@ -96,7 +111,6 @@ export default function Products() {
   const handleDelete = async () => {
     if (!deleteProduct) return;
     try {
-      // Backend function handles: ownership check, movement check, and actual delete
       const response = await base44.functions.invoke('deleteProductSafe', {
         product_id: deleteProduct.id,
       });
@@ -114,7 +128,6 @@ export default function Products() {
   };
 
   const handleExportCSV = () => {
-     // Helper para escapar valores CSV: envuelve en comillas si contiene coma, comilla o salto
      const escapeCSV = (value) => {
        const str = String(value || "");
        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
@@ -128,11 +141,10 @@ export default function Products() {
        : ["Nombre", "SKU", "Código de barras", "Precio Venta", "Stock", "Unidad"];
 
      const rows = filteredProducts.map((p) => isAdmin
-       ? [p.name, p.sku || "", p.barcode || "", p.purchase_price || 0, p.sale_price, p.stock, p.unit || "pieza"]
-       : [p.name, p.sku || "", p.barcode || "", p.sale_price, p.stock, p.unit || "pieza"]
+       ? [p.name, p.sku || "", p.barcode || "", p.purchase_price || 0, p.retail_sale_price, p.stock, p.unit || "pieza"]
+       : [p.name, p.sku || "", p.barcode || "", p.retail_sale_price, p.stock, p.unit || "pieza"]
      );
 
-     // Escapar todos los valores
      const escapedRows = rows.map((r) => r.map(escapeCSV).join(","));
      const csv = [headers.map(escapeCSV).join(","), ...escapedRows].join("\n");
 
