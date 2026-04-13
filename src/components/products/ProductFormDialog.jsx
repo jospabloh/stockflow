@@ -168,12 +168,20 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
       }
 
       toast.success(product ? "✓ Producto actualizado" : "✓ Producto creado");
-      onOpenChange(false);
-      // Confetti and navigation AFTER dialog is closed — avoids iOS re-render race condition
-      requestAnimationFrame(() => {
-        confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ["#4F46E5", "#06B6D4", "#10B981"] });
-        onSaved({ _reconcile: true });
+
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#4F46E5", "#06B6D4", "#10B981"],
       });
+
+      setTimeout(() => {
+        onSaved?.({
+          success: true,
+          product: response.data?.product || product || null,
+        });
+      }, 450);
     } catch (error) {
       console.error("Save error:", error);
       toast.error(`Error: ${error.message || 'No se pudo guardar el producto'}`);

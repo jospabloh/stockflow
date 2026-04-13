@@ -279,15 +279,16 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     try {
       const folio = quotation?.folio || await generateFolio();
       const data = { ...form, subtotal, tax: taxAmount, total, folio };
+      let response;
       if (quotation) {
-        const response = await base44.functions.invoke('updateQuotationSafe', { quotation_id: quotation.id, updates: data });
+        response = await base44.functions.invoke('updateQuotationSafe', { quotation_id: quotation.id, updates: data });
         if (!response.data.success) {
           toast.error(`⚠️ No se pudo guardar: ${response.data.error || "Error desconocido"}`);
           setSaving(false);
           return;
         }
       } else {
-        const response = await base44.functions.invoke('createQuotationSafe', { ...data, business_id: businessId });
+        response = await base44.functions.invoke('createQuotationSafe', { ...data, business_id: businessId });
         if (!response.data.success) {
           toast.error(`⚠️ No se pudo guardar: ${response.data.error || "Error desconocido"}`);
           setSaving(false);
@@ -295,12 +296,20 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
         }
       }
       toast.success(quotation ? "✓ Cotización actualizada" : "✓ Cotización creada");
-      onOpenChange(false);
-      // Confetti after dialog closes — avoids iOS re-render race condition
-      requestAnimationFrame(() => {
-        confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ["#4F46E5", "#06B6D4", "#10B981"] });
-        onSaved();
+
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#4F46E5", "#06B6D4", "#10B981"],
       });
+
+      setTimeout(() => {
+        onSaved?.({
+          success: true,
+          quotationId: quotation?.id || response?.data?.quotation?.id || null,
+        });
+      }, 450);
     } catch (error) {
       toast.error(`⚠️ Error inesperado: ${error.message || "Intenta nuevamente"}`);
     } finally {

@@ -5,14 +5,24 @@ import QuotationFormDialog from "@/components/quotations/QuotationFormDialog";
 export default function QuotationNew() {
   const navigate = useNavigate();
 
+  const goBackToQuotations = () => {
+    navigate("/Quotations", { replace: true });
+  };
+
+  const handleSaved = (payload) => {
+    if (payload?.success) {
+      goBackToQuotations();
+    }
+  };
+
   return (
     <QuotationFormDialog
       open={true}
       onOpenChange={(open) => {
-        if (!open) navigate('/Quotations', { replace: true });
+        if (!open) goBackToQuotations();
       }}
       quotation={null}
-      onSaved={() => {}}
+      onSaved={handleSaved}
     />
   );
 }

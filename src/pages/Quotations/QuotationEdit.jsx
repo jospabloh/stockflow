@@ -14,14 +14,24 @@ export default function QuotationEdit() {
     });
   }, [id]);
 
+  const goBackToQuotations = () => {
+    navigate("/Quotations", { replace: true });
+  };
+
+  const handleSaved = (payload) => {
+    if (payload?.success) {
+      goBackToQuotations();
+    }
+  };
+
   return (
     <QuotationFormDialog
       open={!!quotation}
       onOpenChange={(open) => {
-        if (!open) navigate('/Quotations', { replace: true });
+        if (!open) goBackToQuotations();
       }}
       quotation={quotation}
-      onSaved={() => {}}
+      onSaved={handleSaved}
     />
   );
 }

@@ -5,9 +5,13 @@ import ProductFormDialog from "@/components/products/ProductFormDialog";
 export default function ProductNew() {
   const navigate = useNavigate();
 
+  const goBackToProducts = () => {
+    navigate("/Products", { replace: true });
+  };
+
   const handleSaved = (payload) => {
-    if (!payload || payload._reconcile) {
-      navigate(-1);
+    if (payload?.success) {
+      goBackToProducts();
     }
   };
 
@@ -15,7 +19,7 @@ export default function ProductNew() {
     <ProductFormDialog
       open={true}
       onOpenChange={(open) => {
-        if (!open) navigate(-1);
+        if (!open) goBackToProducts();
       }}
       product={null}
       onSaved={handleSaved}

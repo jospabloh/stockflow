@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MobileSelect } from "@/components/ui/MobileSelect";
 import SearchableSelect from "@/components/ui/SearchableSelect";
-import { Save, ScanLine, Plus, Trash2, CheckCircle2 } from "lucide-react";
+import { Save, ScanLine, Search, Plus, Trash2, CheckCircle2 } from "lucide-react";
+import BarcodeCameraScanner from "@/components/products/BarcodeCameraScanner";
 import { toast } from "sonner";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps } from "@/lib/a11y";
@@ -48,6 +49,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   const [barcodeNotFound, setBarcodeNotFound] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
 
   // Campos comunes del movimiento
   const [movType, setMovType] = useState("exit");
@@ -83,25 +85,42 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
     }
   }, [open, businessId]);
 
-  const handleBarcodeSearch = () => {
-    if (!barcodeInput.trim()) return;
+  const assignProductByCode = (rawCode) => {
+    const code = String(rawCode || "").trim();
+    if (!code) return;
+
     const found = products.find(
-      (p) => p.barcode === barcodeInput.trim() || p.sku === barcodeInput.trim()
+      (p) => p.barcode === code || p.sku === code
     );
-    if (found) {
-      setBarcodeNotFound(false);
-      // Si el último item no tiene producto, asignarlo ahí; sino agregar nuevo
-      setItems(prev => {
-        const last = prev[prev.length - 1];
-        if (!last.product) {
-          return prev.map((item, i) => i === prev.length - 1 ? { ...item, product: found } : item);
-        }
-        return [...prev, { product: found, quantity: 1 }];
-      });
-      setBarcodeInput("");
-    } else {
+
+    setBarcodeInput(code);
+
+    if (!found) {
       setBarcodeNotFound(true);
+      toast.error("Código no encontrado");
+      return;
     }
+
+    setBarcodeNotFound(false);
+
+    setItems((prev) => {
+      const emptyIndex = prev.findIndex((item) => !item.product);
+
+      if (emptyIndex >= 0) {
+        return prev.map((item, i) =>
+          i === emptyIndex ? { ...item, product: found } : item
+        );
+      }
+
+      return [...prev, { product: found, quantity: 1 }];
+    });
+
+    setBarcodeInput("");
+    toast.success(`Producto agregado: ${found.name}`);
+  };
+
+  const handleBarcodeSearch = () => {
+    assignProductByCode(barcodeInput);
   };
 
   const updateItem = (idx, field, value) => {
@@ -221,9 +240,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       }
 
       toast.success(`${validItems.length} movimiento(s) registrado(s)`);
-      onSaved({ _optimistic: true });
-      onOpenChange(false);
-      onSaved({ _reconcile: true });
+      onSaved?.({ success: true, count: validItems.length });
     } catch (error) {
       toast.error(`Error al registrar movimiento: ${error.message}`);
     } finally {
@@ -232,7 +249,22 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      {showCamera && (
+        <BarcodeCameraScanner
+          onDetected={(code) => {
+            assignProductByCode(code);
+            setShowCamera(false);
+            setTimeout(() => barcodeRef.current?.focus(), 100);
+          }}
+          onClose={() => {
+            setShowCamera(false);
+            setTimeout(() => barcodeRef.current?.focus(), 100);
+          }}
+        />
+      )}
+
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl flex flex-col p-0 max-h-[90dvh]">
         <DialogHeader className="px-6 pt-6 pb-2 shrink-0 border-b border-border">
           <DialogTitle>Registrar Movimiento</DialogTitle>
@@ -247,14 +279,33 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
                 ref={barcodeRef}
                 placeholder="🔫 Escanee código de barras o SKU..."
                 value={barcodeInput}
-                onChange={(e) => { setBarcodeInput(e.target.value); setBarcodeNotFound(false); }}
+                onChange={(e) => {
+                  setBarcodeInput(e.target.value);
+                  setBarcodeNotFound(false);
+                }}
                 onKeyDown={(e) => e.key === "Enter" && handleBarcodeSearch()}
                 className={`flex-1 ${barcodeNotFound ? "border-red-400" : ""}`}
               />
-              <Button variant="outline" onClick={handleBarcodeSearch}>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowCamera(true)}
+                title="Escanear con cámara"
+              >
                 <ScanLine className="h-4 w-4" />
               </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBarcodeSearch}
+                title="Buscar código escrito"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
             </div>
+
             {barcodeNotFound && (
               <p className="text-xs text-red-500 pl-1">Código no encontrado.</p>
             )}
@@ -424,5 +475,6 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }

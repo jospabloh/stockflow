@@ -5,9 +5,13 @@ import MovementFormDialog from "@/components/movements/MovementFormDialog";
 export default function MovementNew() {
   const navigate = useNavigate();
 
+  const goBackToMovements = () => {
+    navigate("/Movements", { replace: true });
+  };
+
   const handleSaved = (payload) => {
-    if (!payload || payload._reconcile) {
-      navigate(-1);
+    if (payload?.success) {
+      goBackToMovements();
     }
   };
 
@@ -15,7 +19,7 @@ export default function MovementNew() {
     <MovementFormDialog
       open={true}
       onOpenChange={(open) => {
-        if (!open) navigate(-1);
+        if (!open) goBackToMovements();
       }}
       onSaved={handleSaved}
     />
