@@ -1,7 +1,68 @@
 // Artículos de ayuda — última versión: v2.5.9
-// Correcciones: guardado silencioso en formularios de edición + confirmación visual de éxito (confetti)
+// v2.8.0: Ingresos automáticos en Caja Chica por ventas en efectivo (función opcional por tenant)
 
 export const newHelpArticles = [
+    {
+      id: "release-2-8-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.8.0 — Caja Chica: Ingresos Automáticos por Ventas en Efectivo",
+      keywords: ["versión", "2.8.0", "caja chica", "ingreso automático", "efectivo", "venta", "cash", "cotización", "movimiento", "trazable", "sistema"],
+      related_ids: ["petty-cash-auto-income", "petty-cash-overview", "quotations-convert"],
+      content: `## 🆕 Versión 2.8.0 — 15 de abril de 2026
+
+### ✅ Cambios de esta versión
+
+#### ⚡ Función Opcional: Ingresos Automáticos en Caja Chica por Ventas en Efectivo
+
+Se implementó una función **activable por negocio** que registra automáticamente como ingreso en Caja Chica las ventas cobradas en efectivo.
+
+---
+
+### 🎯 ¿Cómo Funciona?
+
+Cuando la función está activada para un negocio:
+
+1. **Cotización en efectivo cobrada** → Se crea automáticamente un ingreso en Caja Chica por el total de la cotización
+2. **Movimiento directo en efectivo cobrado** → Se crea automáticamente un ingreso en Caja Chica por el monto de la venta
+
+**Condiciones requeridas:**
+- La forma de pago debe ser **Efectivo**
+- La venta debe estar **efectivamente cobrada** (flag \`paid: true\`)
+- Solo aplica al negocio que tiene la bandera habilitada
+
+---
+
+### 🔄 Ciclo de Vida Completo
+
+| Evento | Resultado en Caja Chica |
+|---|---|
+| Venta en efectivo marcada como cobrada | ➕ Ingreso automático creado |
+| Pago revertido (desmarcado) | ➖ Ingreso eliminado automáticamente |
+| Cotización cancelada/anulada | ➖ Ingreso eliminado automáticamente |
+| Movimiento eliminado | ➖ Ingreso eliminado automáticamente |
+
+---
+
+### 🛡️ Garantías de Integridad
+
+- **Sin duplicados:** Nunca se genera más de un ingreso por la misma transacción de origen
+- **Trazabilidad:** Cada ingreso automático está vinculado a su cotización o movimiento de origen
+- **Protección:** Los ingresos automáticos no se pueden editar ni eliminar manualmente
+
+---
+
+### 🔒 Aislamiento por Negocio
+
+Esta función está desactivada por defecto para todos los negocios. Solo se activa individualmente mediante una bandera de configuración. No afecta a ningún otro negocio.
+
+---
+
+### 📦 Versión Anterior — v2.7.3 (13 de abril de 2026)
+
+Corrección de regla de stock bajo unificada en los 3 puntos de visualización (campana, Dashboard, Products?filter=low_stock).
+`
+    },
     {
       id: "release-2-7-0",
       category: "Novedades",
