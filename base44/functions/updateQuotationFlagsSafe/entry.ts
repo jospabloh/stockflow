@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     }
 
     // CRITICAL: Mass-assignment protection - whitelist allowed fields
-    const sanitizedUpdates = {};
+    const sanitizedUpdates: Record<string, unknown> = {};
     for (const key of ALLOWED_FLAG_FIELDS) {
       if (key in updates) {
         sanitizedUpdates[key] = updates[key];
@@ -48,38 +48,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No valid fields to update' }, { status: 400 });
     }
 
-    // LICENSE CHECK (flag updates like marking paid/delivered allowed in view_only — they don't create data)
-    // Only block writes that create or structurally mutate data. Flag updates are permitted.
-
-    // Update quotation with whitelisted fields only
     await base44.asServiceRole.entities.Quotation.update(quotation.id, sanitizedUpdates);
 
-    // TENANT-SCOPED: Auto petty cash income for cash sales
-    // Trigger only when marking a converted quotation as paid
-    const isMarkingPaid = sanitizedUpdates.paid === true && quotation.status === 'converted' && !quotation.paid;
-    if (isMarkingPaid) {
-      const effectivePaymentMethod = sanitizedUpdates.payment_method || quotation.payment_method || '';
-      // Fire-and-forget: failure here must NOT block the flag update that already succeeded
+    // Tenant rule reconciliation for petty cash:
+    // - Marking paid true
+    // - Marking paid false
+    // - Changing payment method while already paid
+    const effectivePaid = ('paid' in sanitizedUpdates) ? Boolean(sanitizedUpdates.paid) : Boolean(quotation.paid);
+    const paymentMethodAfter = String(sanitizedUpdates.payment_method || quotation.payment_method || '');
+    const shouldReconcilePettyCash = quotation.status === 'converted' && (quotation.paid || effectivePaid) && (
+      'paid' in sanitizedUpdates || 'payment_method' in sanitizedUpdates
+    );
+
+    if (shouldReconcilePettyCash) {
       base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
-        action: 'create',
+        action: 'reconcile',
         origin_type: 'quotation',
         origin_id: quotation.id,
-        amount: quotation.total || 0,
-        payment_method: effectivePaymentMethod,
+        amount: effectivePaid ? (quotation.total || 0) : 0,
+        payment_method: paymentMethodAfter,
         description: `Venta cotización ${quotation.folio} — ${quotation.client_name || ''}`,
         folio_or_ref: quotation.folio,
         movement_date: new Date().toLocaleDateString('en-CA'),
-        business_id: user.business_id,
-      }).catch(() => {});
-    }
-
-    // Reverse petty cash if payment is being un-marked (paid explicitly set to false)
-    const isUnmarkingPaid = sanitizedUpdates.paid === false && quotation.paid === true;
-    if (isUnmarkingPaid) {
-      base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
-        action: 'reverse',
-        origin_type: 'quotation',
-        origin_id: quotation.id,
         business_id: user.business_id,
       }).catch(() => {});
     }

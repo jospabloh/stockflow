@@ -64,9 +64,17 @@ const navItems = [
   { name: "Caja Chica", icon: PiggyBank, page: "PettyCash" },
   { name: "Reportes", icon: BarChart3, page: "Reports" },
   { name: "Configuración", icon: Settings, page: "Settings" },
+  {
+    name: "Sistema",
+    icon: Shield,
+    platformAdminOnly: true,
+    submenu: [
+      { name: "Licencias", icon: Shield, page: "LicenseAdmin" },
+      { name: "Reglas por Tenant", icon: Shield, page: "TenantRulesAdmin" },
+    ]
+  },
   { name: "Centro de Ayuda", icon: HelpCircle, page: "HelpCenter" },
   { name: "Acerca de", icon: HelpCircle, page: "About" },
-  { name: "Licencias", icon: Shield, page: "LicenseAdmin", platformAdminOnly: true },
 ];
 
 // Flat map para encontrar páginas y detectar si están en submenu
@@ -100,11 +108,12 @@ export default function Layout({ children, currentPageName }) {
   const isChildRoute = /\/(Products|Movements|Quotations)\/(new|edit)/.test(location.pathname);
   const { theme, setTheme } = useTheme();
 
-  // Auto-expand "Catálogos" si estamos en una página hijo
+  // Auto-expand "Catálogos"/"Sistema" si estamos en una página hijo
   useEffect(() => {
     const current = getPageFromNavItems(currentPageName);
-    if (current?.parent?.name === "Catálogos") {
-      setExpandedSubmenu("Catálogos");
+    const parentName = current?.parent?.name;
+    if (parentName === "Catálogos" || parentName === "Sistema") {
+      setExpandedSubmenu(parentName);
     }
   }, [currentPageName]);
 

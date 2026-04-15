@@ -11,6 +11,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BusinessProvider } from '@/components/BusinessContext';
 import { LicenseProvider } from '@/lib/LicenseContext';
 const LicenseAdmin = lazy(() => import('./pages/LicenseAdmin'));
+const TenantRulesAdmin = lazy(() => import('./pages/TenantRulesAdmin'));
 import { NavigationProvider } from '@/lib/NavigationContext';
 
 import BusinessSetup from './pages/BusinessSetup';
@@ -101,6 +102,7 @@ const AuthenticatedApp = () => {
       <Route path="/Clients" element={<LayoutWrapper currentPageName="Clients"><Suspense fallback={<PageLoader />}><Clients /></Suspense></LayoutWrapper>} />
       <Route path="/PaymentMethods" element={<LayoutWrapper currentPageName="PaymentMethods"><Suspense fallback={<PageLoader />}><PaymentMethods /></Suspense></LayoutWrapper>} />
       <Route path="/LicenseAdmin" element={<LayoutWrapper currentPageName="LicenseAdmin"><Suspense fallback={<PageLoader />}><LicenseAdmin /></Suspense></LayoutWrapper>} />
+      <Route path="/TenantRulesAdmin" element={<LayoutWrapper currentPageName="TenantRulesAdmin"><Suspense fallback={<PageLoader />}><TenantRulesAdmin /></Suspense></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </LicenseProvider>
