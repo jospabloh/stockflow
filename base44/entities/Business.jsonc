@@ -107,6 +107,11 @@
     "support_contacted_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "auto_cash_income_to_petty_cash": {
+      "type": "boolean",
+      "default": false,
+      "description": "Caracter\u00edstica opcional: registrar autom\u00e1ticamente ventas en efectivo cobradas como ingresos en caja chica"
     }
   },
   "required": [

@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -88,6 +88,17 @@ Deno.serve(async (req) => {
 
     // Eliminar el movimiento
     await base44.asServiceRole.entities.Movement.delete(movement_id);
+
+    // TENANT-SCOPED: Reverse any system-generated petty cash income linked to this movement
+    // Only relevant if this was a paid direct exit (not linked to a quotation)
+    if (movement.type === 'exit' && !movement.quotation_id && movement.paid) {
+      base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+        action: 'reverse',
+        origin_type: 'movement',
+        origin_id: movement_id,
+        business_id: user.business_id,
+      }).catch(() => {});
+    }
 
     return Response.json({
       success: true,

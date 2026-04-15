@@ -67,9 +67,22 @@ export default function PettyCash() {
   const hasInitialFund = movements.some(m => m.movement_type === "initial_fund");
 
   const openForm = (type) => { setEditingMovement(null); setFormType(type); setFormOpen(true); };
-  const openEdit = (m) => { setEditingMovement(m); setFormOpen(true); };
+  const openEdit = (m) => {
+    if (m?.generated_by_system) {
+      toast.error("Este ingreso fue generado automáticamente por una venta y no puede editarse aquí. Corrígelo desde la cotización o movimiento de origen.");
+      return;
+    }
+    setEditingMovement(m);
+    setFormOpen(true);
+  };
   const handleDeleteConfirm = async () => {
     if (!deletingId) return;
+    const target = movements.find(m => m.id === deletingId);
+    if (target?.generated_by_system) {
+      toast.error("Este ingreso fue generado automáticamente por una venta. Para eliminarlo, cancela o revierte la venta original en Cotizaciones o Movimientos.");
+      setDeletingId(null);
+      return;
+    }
     await base44.entities.PettyCashMovement.delete(deletingId);
     toast.success("Movimiento eliminado");
     setDeletingId(null);
@@ -200,13 +213,15 @@ export default function PettyCash() {
                 expense: "Egreso",
                 adjustment: "Ajuste",
               };
+              const isSystemGenerated = m.generated_by_system === true;
               return (
-                <div key={m.id} className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3">
+                <div key={m.id} className={`flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 ${isSystemGenerated ? "border-indigo-200 dark:border-indigo-800" : ""}`}>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">{m.description}</p>
                     <p className="text-xs text-muted-foreground">
                       {m.movement_date || moment.utc(m.created_date).local().format("DD/MM/YY")}
                       {m.category ? ` · ${m.category}` : ""}
+                      {isSystemGenerated && " · Generado por venta"}
                     </p>
                   </div>
                   <Badge className={`${typeColors[m.movement_type]} border-0 text-xs whitespace-nowrap`}>
@@ -217,12 +232,18 @@ export default function PettyCash() {
                   </span>
                   {isAdmin && (
                     <div className="flex gap-1 ml-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(m)} title="Editar">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.415.586H9v-2.414a2 2 0 01.586-1.414z" /></svg>
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDeletingId(m.id)} title="Eliminar">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                      </Button>
+                      {isSystemGenerated ? (
+                        <span className="text-[10px] text-slate-400 px-1" title="Generado automáticamente — editar desde la venta de origen">🔒</span>
+                      ) : (
+                        <>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(m)} title="Editar">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.415.586H9v-2.414a2 2 0 01.586-1.414z" /></svg>
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDeletingId(m.id)} title="Eliminar">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </Button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

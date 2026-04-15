@@ -2,11 +2,26 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.7.3";
+export const APP_VERSION = "2.8.0";
 
-export const RELEASE_DATE = "2026-04-13";
+export const RELEASE_DATE = "2026-04-15";
 
 export const CHANGELOG = [
+  {
+    version: "2.8.0",
+    date: "2026-04-15",
+    changes: [
+      "✨ Nueva función opcional por tenant: ventas en efectivo cobradas se registran automáticamente como ingresos en Caja Chica",
+      "🔒 Característica activable individualmente por negocio mediante bandera de configuración — sin efecto en otros tenants",
+      "🔗 Cada ingreso generado automáticamente queda vinculado a su origen (cotización o movimiento directo) con metadatos trazables",
+      "🔄 Reversión automática: si se cancela o revierte la venta de origen, el ingreso en caja chica se elimina de forma segura",
+      "🛡️ Idempotencia garantizada: nunca se genera más de un ingreso por la misma transacción de origen",
+      "🔐 Registros generados por el sistema marcados como protegidos en Caja Chica — no editables ni eliminables directamente",
+      "⚡ Confirmación de pago en movimientos directos ahora pasa por función de backend segura con soporte de caja chica",
+      "📋 Schema de Caja Chica actualizado: nuevos campos origin_type, origin_id, generated_by_system, payment_method_snapshot",
+      "📋 Schema de Negocio actualizado: nuevo campo de bandera de función auto_cash_income_to_petty_cash (false por defecto)",
+    ],
+  },
   {
     version: "2.7.3",
     date: "2026-04-13",

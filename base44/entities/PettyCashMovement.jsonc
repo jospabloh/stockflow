@@ -40,6 +40,27 @@
     "notes": {
       "type": "string",
       "description": "Notas adicionales (opcional)"
+    },
+    "generated_by_system": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indica si fue generado autom\u00e1ticamente por el sistema (no editable manualmente)"
+    },
+    "origin_type": {
+      "type": "string",
+      "enum": [
+        "quotation",
+        "movement"
+      ],
+      "description": "Tipo de origen: cotizaci\u00f3n o movimiento de inventario directo"
+    },
+    "origin_id": {
+      "type": "string",
+      "description": "ID del registro de origen (quotation.id o movement.id)"
+    },
+    "payment_method_snapshot": {
+      "type": "string",
+      "description": "Forma de pago en el momento de la transacci\u00f3n"
     }
   },
   "required": [

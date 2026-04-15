@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MobileSelect } from "@/components/ui/MobileSelect";
-import { Search, Download, Pencil, Trash2 } from "lucide-react";
+import { Search, Download, Pencil, Trash2, Lock } from "lucide-react";
 import moment from "moment";
 
 const TYPE_LABELS = {
@@ -102,13 +102,21 @@ export default function PettyCashHistory({ movements, isAdmin, onEdit, onDelete 
                 filtered.map(m => {
                   const cfg = TYPE_LABELS[m.movement_type] || TYPE_LABELS.adjustment;
                   const isNeg = m.movement_type === "expense";
+                  const isSystemGenerated = m.generated_by_system === true;
                   return (
-                    <TableRow key={m.id} className="hover:bg-muted/30 transition-colors">
+                    <TableRow key={m.id} className={`hover:bg-muted/30 transition-colors ${isSystemGenerated ? "bg-emerald-50/30 dark:bg-emerald-950/10" : ""}`}>
                       <TableCell className="text-sm text-slate-600 whitespace-nowrap">
                         {m.movement_date || moment.utc(m.created_date).local().format("DD/MM/YY")}
                       </TableCell>
                       <TableCell>
-                        <Badge className={`${cfg.color} border-0 text-xs`}>{cfg.label}</Badge>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Badge className={`${cfg.color} border-0 text-xs`}>{cfg.label}</Badge>
+                          {isSystemGenerated && (
+                            <Badge className="bg-indigo-50 text-indigo-600 border-0 text-[10px] gap-0.5 px-1.5 py-0.5">
+                              <Lock className="h-2.5 w-2.5" /> Auto
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="font-medium max-w-[180px] truncate" title={m.description}>
                         {m.description}
@@ -120,14 +128,23 @@ export default function PettyCashHistory({ movements, isAdmin, onEdit, onDelete 
                       <TableCell className="text-slate-500 text-sm">{m.reference || "—"}</TableCell>
                       {isAdmin && (
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(m)} title="Editar">
-                              <Pencil className="h-3.5 w-3.5 text-slate-500" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onDelete(m.id)} title="Eliminar">
-                              <Trash2 className="h-3.5 w-3.5 text-rose-500" />
-                            </Button>
-                          </div>
+                          {isSystemGenerated ? (
+                            <span
+                              className="inline-flex items-center gap-1 text-[10px] text-slate-400 px-2 py-1"
+                              title="Generado por venta — corrígelo desde la cotización o movimiento de origen"
+                            >
+                              <Lock className="h-3 w-3" /> Solo lectura
+                            </span>
+                          ) : (
+                            <div className="flex justify-end gap-1">
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(m)} title="Editar">
+                                <Pencil className="h-3.5 w-3.5 text-slate-500" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onDelete(m.id)} title="Eliminar">
+                                <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                              </Button>
+                            </div>
+                          )}
                         </TableCell>
                       )}
                     </TableRow>

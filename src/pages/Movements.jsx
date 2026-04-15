@@ -145,7 +145,13 @@ export default function Movements() {
   const handleConfirmPayment = async () => {
     if (!confirmingPayment) return;
     try {
-      await base44.entities.Movement.update(confirmingPayment.id, { paid: true });
+      const res = await base44.functions.invoke('confirmMovementPaymentSafe', {
+        movement_id: confirmingPayment.id,
+      });
+      if (!res.data?.success) {
+        toast.error(`Error: ${res.data?.error || 'No se pudo confirmar el pago'}`);
+        return;
+      }
       toast.success("Pago confirmado");
       setConfirmingPayment(null);
       loadData(businessId);

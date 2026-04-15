@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -106,6 +106,17 @@ Deno.serve(async (req) => {
         status: 'cancelled',
         cancellation_reason: cancellation_reason || ''
       });
+
+      // TENANT-SCOPED: Reverse any system-generated petty cash income linked to this quotation
+      // Only relevant if the quotation was previously paid (cash income already recorded)
+      if (quotation.paid) {
+        base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+          action: 'reverse',
+          origin_type: 'quotation',
+          origin_id: quotation.id,
+          business_id: user.business_id,
+        }).catch(() => {});
+      }
 
       return Response.json({
         success: true,
