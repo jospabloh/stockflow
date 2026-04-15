@@ -1,7 +1,81 @@
-// Artículos de ayuda — última versión: v2.5.9
+// Artículos de ayuda — última versión: v2.8.1
+// v2.8.1: Módulo Reglas por Tenant + entidad TenantRule + funciones backend platform-admin-only
 // v2.8.0: Ingresos automáticos en Caja Chica por ventas en efectivo (función opcional por tenant)
 
 export const newHelpArticles = [
+    {
+      id: "release-2-8-1",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.8.1 — Reglas por Tenant: Administración de Excepciones Operativas",
+      keywords: ["versión", "2.8.1", "tenant rules", "reglas", "plataforma", "sistema", "admin", "TenantRule", "cash_sales_to_petty_cash", "excepciones"],
+      related_ids: ["platform-tenant-rules", "petty-cash-overview"],
+      content: `## 🆕 Versión 2.8.1 — 15 de abril de 2026
+
+### ✅ Cambios de esta versión
+
+#### 🛡️ Nuevo Módulo: Reglas por Tenant (Solo Plataforma)
+
+Se implementó el módulo completo de administración de **Reglas por Tenant**, accesible únicamente para administradores de la plataforma StockFlow desde el menú **Sistema → Reglas por Tenant**.
+
+---
+
+### 🎯 ¿Qué son las Reglas por Tenant?
+
+Son excepciones operativas específicas para un negocio (tenant) en particular. Permiten activar comportamientos avanzados sin afectar a ningún otro negocio.
+
+**Reglas disponibles en esta versión:**
+
+| Rule Key | Descripción |
+|---|---|
+| \`cash_sales_to_petty_cash\` | Ventas en efectivo cobradas generan ingresos automáticos en Caja Chica |
+| \`allow_manual_petty_cash_edit_delete\` | Permite editar/eliminar movimientos manuales de Caja Chica |
+| \`special_delivery_flow\` | Flujo especial de entrega (reservado) |
+| \`custom_pricing_override\` | Override de precios personalizado (reservado) |
+
+---
+
+### 🏛️ Navegación
+
+El menú lateral ahora muestra la sección **Sistema** (exclusiva para plataforma):
+- **Licencias** — Gestión de licencias por tenant
+- **Reglas por Tenant** — Gestión de excepciones operativas
+
+---
+
+### 🔐 Funciones Backend Platform-Admin-Only
+
+Se agregaron 4 nuevas funciones backend, todas restringidas al email del administrador de plataforma:
+
+- \`adminListTenantRules\` — Lista todas las reglas con filtros
+- \`adminUpsertTenantRule\` — Crea o actualiza una regla (upsert por business_id + rule_key)
+- \`adminDeleteTenantRule\` — Archiva una regla (soft delete)
+- \`getCurrentTenantRuleMap\` — Retorna el mapa de reglas activas para un tenant
+
+---
+
+### 📋 Entidad TenantRule
+
+Nueva entidad con los campos:
+- \`business_id\`, \`rule_key\`, \`enabled\`, \`config_json\`, \`notes\`
+- \`created_by\`, \`updated_by\`, \`archived\`, \`last_applied_at\`
+
+---
+
+### 🔄 Garantías
+
+- **Idempotencia:** Upsert basado en business_id + rule_key — nunca se crean duplicados activos
+- **Soft delete:** Las reglas se archivan, no se eliminan, para mantener trazabilidad
+- **Aislamiento:** Cada regla está estrictamente vinculada a un \`business_id\`
+- **Sin hardcodes:** El motor de reglas resuelve por \`business_id\`, nunca por nombre visible del tenant
+
+---
+
+### 📦 Versión Anterior — v2.8.0 (15 de abril de 2026)
+
+Función opcional por tenant: ventas en efectivo cobradas se registran automáticamente como ingresos en Caja Chica. Ver artículo completo: "v2.8.0 — Caja Chica: Ingresos Automáticos por Ventas en Efectivo".
+`
+    },
     {
       id: "release-2-8-0",
       category: "Novedades",

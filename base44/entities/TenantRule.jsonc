@@ -4,53 +4,50 @@
   "properties": {
     "business_id": {
       "type": "string",
-      "description": "ID del tenant/negocio"
+      "description": "ID del negocio al que pertenece esta regla"
     },
     "rule_key": {
       "type": "string",
-      "description": "Clave de regla tenant-scoped"
+      "description": "Identificador \u00fanico de la regla (ej: cash_sales_to_petty_cash)"
     },
     "enabled": {
       "type": "boolean",
       "default": false,
-      "description": "Si la regla está activa para el tenant"
+      "description": "Si la regla est\u00e1 activa para este tenant"
     },
     "config_json": {
       "type": "object",
-      "default": {},
-      "description": "Configuración de la regla"
+      "description": "Configuraci\u00f3n adicional espec\u00edfica de la regla en formato JSON"
     },
     "notes": {
       "type": "string",
-      "description": "Notas internas del admin de plataforma"
-    },
-    "created_by": {
-      "type": "string",
-      "description": "Email/ID del usuario que creó"
-    },
-    "updated_by": {
-      "type": "string",
-      "description": "Email/ID del usuario que actualizó"
+      "description": "Notas administrativas sobre el motivo y contexto de la regla"
     },
     "rule_scope": {
       "type": "string",
-      "default": "tenant",
-      "description": "Alcance de la regla"
+      "description": "\u00c1mbito de la regla (siempre: tenant)"
     },
     "source": {
       "type": "string",
-      "default": "platform_admin",
-      "description": "Origen de la regla"
+      "description": "Origen de la regla (platform_admin)"
     },
-    "last_applied_at": {
+    "created_by": {
       "type": "string",
-      "format": "date-time",
-      "description": "Última aplicación/reconciliación de la regla"
+      "description": "Email del administrador que cre\u00f3 la regla"
+    },
+    "updated_by": {
+      "type": "string",
+      "description": "Email del administrador que actualiz\u00f3 la regla por \u00faltima vez"
     },
     "archived": {
       "type": "boolean",
       "default": false,
-      "description": "Archivada/deshabilitada lógicamente"
+      "description": "Si la regla fue archivada (soft delete)"
+    },
+    "last_applied_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u00daltima vez que la regla fue aplicada"
     }
   },
   "required": [
@@ -59,16 +56,24 @@
   ],
   "rls": {
     "create": {
-      "business_id": "{{user.business_id}}"
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "read": {
-      "business_id": "{{user.business_id}}"
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "update": {
-      "business_id": "{{user.business_id}}"
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
-      "business_id": "{{user.business_id}}"
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
