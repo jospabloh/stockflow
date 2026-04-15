@@ -2,7 +2,7 @@ import { helpDataExtension } from './helpDataExtension.js';
 import { newHelpArticles } from './helpDataNew';
 
 export const localHelpData = {
-  version: "2.8.1",
+  version: "2.8.2",
   last_updated: "2026-04-15",
   get articles() { return [..._baseArticles, ...helpDataExtension, ...newHelpArticles]; }
 };

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { useLicense } from "@/lib/LicenseContext";
 import HelpSidebar from "@/components/help/HelpSidebar";
 
 // Render inline markdown formatting
 const renderInline = (text) => {
   let result = text;
-  // Handle **bold** (must be before *italic*)
   result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  // Handle *italic*
   result = result.replace(/\*(.+?)\*/g, '<em>$1</em>');
   return result;
 };
@@ -120,26 +119,58 @@ const MarkdownContent = ({ content }) => {
   return <>{elements}</>;
 };
 
+const PLATFORM_ADMIN_EMAIL = "h.josepablo@gmail.com";
+
+function filterArticlesByTenantRules(articles, tenantRuleMap, isPlatformAdmin, userEmail) {
+  return articles.filter(article => {
+    // Platform-admin-only articles: only shown to platform admin
+    if (article.category === "Administración Plataforma") {
+      return isPlatformAdmin || userEmail === PLATFORM_ADMIN_EMAIL;
+    }
+
+    // Tenant-rule-scoped articles: only shown when the rule is enabled for this tenant
+    if (article.visibility_scope === "tenant_rule") {
+      const ruleKey = article.required_rule_key;
+      if (!ruleKey) return false;
+      const rule = tenantRuleMap[ruleKey];
+      return rule && rule.enabled === true;
+    }
+
+    // All other articles are visible normally
+    return true;
+  });
+}
+
 export default function HelpCenter() {
   const [articles, setArticles] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const { isPlatformAdmin } = useLicense();
 
   useEffect(() => {
     const loadHelp = async () => {
       try {
-        const { localHelpData } = await import("@/lib/helpData");
-        const arts = (localHelpData && localHelpData.articles) || [];
-        setArticles(arts);
-        if (arts.length > 0) {
-          setActiveId(arts[0].id);
+        const [{ localHelpData }, userResult, ruleMapResult] = await Promise.all([
+          import("@/lib/helpData"),
+          base44.auth.me().catch(() => null),
+          base44.functions.invoke("getCurrentTenantRuleMap", {}).catch(() => ({ data: { rules: {} } })),
+        ]);
+
+        const allArticles = (localHelpData && localHelpData.articles) || [];
+        const tenantRuleMap = ruleMapResult?.data?.rules || {};
+        const userEmail = userResult?.email || "";
+
+        const visible = filterArticlesByTenantRules(allArticles, tenantRuleMap, isPlatformAdmin, userEmail);
+        setArticles(visible);
+        if (visible.length > 0) {
+          setActiveId(visible[0].id);
         }
       } catch (err) {
         console.error("Error loading help data:", err);
       }
     };
     loadHelp();
-  }, []);
+  }, [isPlatformAdmin]);
 
   const activeArticle = articles.find(a => a.id === activeId);
 

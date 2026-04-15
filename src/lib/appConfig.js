@@ -2,11 +2,22 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.8.1";
+export const APP_VERSION = "2.8.2";
 
 export const RELEASE_DATE = "2026-04-15";
 
 export const CHANGELOG = [
+  {
+    version: "2.8.2",
+    date: "2026-04-15",
+    changes: [
+      "🎯 Centro de Ayuda ahora filtra artículos según las reglas activas del tenant en tiempo de ejecución",
+      "📄 Nuevo artículo tenant-facing para la regla cash_sales_to_petty_cash: explicación operativa sin exponer arquitectura de plataforma",
+      "🛡️ Artículos de administración de plataforma (Reglas por Tenant) visibles únicamente para el administrador de plataforma",
+      "🔍 Artículos con visibility_scope='tenant_rule' visibles solo cuando required_rule_key está habilitado para ese negocio",
+      "⚡ Carga paralela de helpData + user + getCurrentTenantRuleMap en HelpCenter para rendimiento óptimo",
+    ],
+  },
   {
     version: "2.8.1",
     date: "2026-04-15",

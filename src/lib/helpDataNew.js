@@ -1,8 +1,115 @@
-// Artículos de ayuda — última versión: v2.8.1
+// Artículos de ayuda — última versión: v2.8.2
+// v2.8.2: Artículo tenant-facing para regla cash_sales_to_petty_cash + filtrado de ayuda por reglas del tenant
 // v2.8.1: Módulo Reglas por Tenant + entidad TenantRule + funciones backend platform-admin-only
 // v2.8.0: Ingresos automáticos en Caja Chica por ventas en efectivo (función opcional por tenant)
 
 export const newHelpArticles = [
+    {
+      id: "release-2-8-2",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.8.2 — Centro de Ayuda Sensible al Tenant",
+      keywords: ["versión", "2.8.2", "ayuda", "help center", "tenant", "reglas", "visibilidad", "filtrado"],
+      related_ids: ["platform-tenant-rules", "tenant-cash-sales-to-petty-cash", "petty-cash-overview"],
+      content: `## 🆕 Versión 2.8.2 — 15 de abril de 2026
+
+### ✅ Cambios de esta versión
+
+#### 🎯 Centro de Ayuda con Visibilidad por Tenant
+
+El Centro de Ayuda ahora filtra los artículos visibles según las reglas activas para cada negocio.
+
+---
+
+### 🔍 Cómo Funciona
+
+| Tipo de artículo | Visible para |
+|---|---|
+| Artículos generales | Todos los usuarios |
+| Artículos administrativos de plataforma | Solo administradores de plataforma |
+| Artículos con \`visibility_scope: "tenant_rule"\` | Solo tenants con esa regla habilitada |
+
+---
+
+### 💡 Por Qué
+
+- Los tenants no deben ver documentación técnica de administración de plataforma
+- Los tenants no deben ver artículos de funciones que no aplican a su negocio
+- El filtrado es dinámico — usa el mapa de reglas en tiempo de ejecución, no hardcodes
+
+---
+
+### 📦 Versión Anterior — v2.8.1 (15 de abril de 2026)
+
+Módulo de administración de Reglas por Tenant con gestión completa (listar, crear, editar, habilitar/deshabilitar y archivar).
+`
+    },
+    {
+      id: "tenant-cash-sales-to-petty-cash",
+      category: "Caja Chica",
+      role: "all",
+      // This article is only shown to tenants with cash_sales_to_petty_cash rule enabled
+      visibility_scope: "tenant_rule",
+      required_rule_key: "cash_sales_to_petty_cash",
+      title: "💵 Ventas en efectivo se reflejan automáticamente en Caja Chica",
+      keywords: ["caja chica", "efectivo", "venta", "automático", "ingreso", "cotización", "movimiento", "trazable", "reconciliación", "cancelación"],
+      related_ids: ["petty-cash-overview", "quotations-convert", "movements-register"],
+      content: `## 💵 Ventas en Efectivo → Caja Chica (Automático)
+
+En este negocio, las ventas cobradas en efectivo se registran automáticamente como ingresos en Caja Chica.
+
+---
+
+### ¿Qué significa esto?
+
+Cuando una venta es cobrada efectivamente en efectivo — ya sea desde una cotización o desde un movimiento directo — el sistema registra automáticamente un ingreso en Caja Chica por el monto correspondiente.
+
+**No necesitas hacerlo manualmente.** El registro ocurre de forma inmediata y está vinculado a su transacción de origen.
+
+---
+
+### ¿Cuándo se genera el ingreso?
+
+| Situación | Resultado |
+|---|---|
+| Cotización convertida con pago en efectivo | ➕ Ingreso automático en Caja Chica |
+| Movimiento directo (salida) marcado como cobrado en efectivo | ➕ Ingreso automático en Caja Chica |
+
+---
+
+### ¿Puedo editar o eliminar esos ingresos?
+
+**No directamente.** Los ingresos generados automáticamente están marcados como entradas del sistema y no pueden modificarse ni eliminarse desde la pantalla de Caja Chica.
+
+Esto protege la integridad de la información — el ingreso refleja exactamente lo que ocurrió en la venta.
+
+---
+
+### ¿Qué pasa si cancelo o revierto una venta?
+
+El sistema reconcilia el ingreso automáticamente:
+
+| Evento | Resultado en Caja Chica |
+|---|---|
+| Cotización cancelada o anulada | ➖ El ingreso se elimina automáticamente |
+| Pago revertido (desmarcado) | ➖ El ingreso se elimina automáticamente |
+| Forma de pago cambiada a no-efectivo | ➖ El ingreso se elimina automáticamente |
+| Movimiento directo eliminado | ➖ El ingreso se elimina automáticamente |
+
+---
+
+### ¿Por qué aparecen estos registros en el historial?
+
+Los ingresos generados automáticamente se identifican en el historial de Caja Chica con la indicación **"Sistema"**. Esto los distingue de los ingresos manuales y te permite saber que corresponden a una venta real.
+
+---
+
+### 💡 Consejos
+
+- Revisa el historial de Caja Chica al final del día para confirmar que los ingresos en efectivo corresponden con las ventas del día
+- Si notas una discrepancia, revisa la cotización o el movimiento de origen vinculado
+- Los ingresos automáticos no cuentan como ajustes — son ingresos reales de ventas`
+    },
     {
       id: "release-2-8-1",
       category: "Novedades",
