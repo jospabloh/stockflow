@@ -2,7 +2,7 @@ import { helpDataExtension } from './helpDataExtension.js';
 import { newHelpArticles } from './helpDataNew';
 
 export const localHelpData = {
-  version: "2.8.0",
+  version: "2.8.1",
   last_updated: "2026-04-15",
   get articles() { return [..._baseArticles, ...helpDataExtension, ...newHelpArticles]; }
 };
@@ -1830,6 +1830,41 @@ Una guía de bolsillo con las acciones más frecuentes.
 | Margen de ganancia | ((Venta − Compra) / Compra) × 100 |
 | Valor de inventario | Stock × Precio de compra |
 | Stock mínimo sugerido | Días entrega × Ventas diarias promedio |`
+    },
+
+    {
+      id: "platform-tenant-rules",
+      category: "Administración Plataforma",
+      role: "admin",
+      title: "🛡️ Reglas por Tenant (Solo Plataforma)",
+      keywords: ["tenant rules", "reglas por tenant", "plataforma", "sistema", "cash_sales_to_petty_cash", "excepciones"],
+      related_ids: ["settings-business", "petty-cash-overview", "version-about"],
+      content: `## 🛡️ Reglas por Tenant
+
+Las **Reglas por Tenant** son excepciones operativas controladas por administradores de plataforma en **Sistema → Reglas por Tenant**.
+
+### Qué son
+- Reglas de comportamiento específicas para **un negocio concreto** (por \`business_id\`).
+- Se gestionan a nivel plataforma, no como configuración normal del negocio.
+- Su uso debe ser **puntual, justificado y auditable**.
+
+### Qué NO son
+- No reemplazan Configuración del negocio.
+- No son parámetros generales para todos los tenants.
+- No deben usarse para hardcodes por nombre de cliente.
+
+### Ejemplo activo: \`cash_sales_to_petty_cash\`
+Cuando está habilitada para un tenant:
+- Las ventas cobradas en efectivo que califican generan ingresos de Caja Chica de forma automática y trazable.
+- El ingreso se vincula al origen (cotización o movimiento directo).
+- El sistema evita duplicados por transacción de origen.
+- Si el origen cambia y deja de calificar (cancelación, reversa o cambio de forma de pago), se reconcilia automáticamente.
+
+### Buenas prácticas
+1. Documenta en **Notas** por qué existe la excepción.
+2. Mantén \`config_json\` válido y mínimo.
+3. Revisa periódicamente reglas habilitadas y archiva las que ya no apliquen.
+4. Evita crear reglas sin impacto operativo claro.`
     },
     {
       id: "quick-reference-almacenista",

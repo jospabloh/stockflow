@@ -38,7 +38,10 @@ export default function MovementEditDialog({ open, onOpenChange, movement, onSav
   const handleSave = async () => {
     setSaving(true);
     try {
-      await base44.entities.Movement.update(movement.id, { reference, reason });
+      const response = await base44.functions.invoke('updateMovementPaymentDetailsSafe', { movement_id: movement.id, reference, reason });
+      if (!response.data?.success) {
+        throw new Error(response.data?.error || 'No se pudo actualizar el movimiento');
+      }
       toast.success("Movimiento actualizado");
       onSaved();
       onOpenChange(false);

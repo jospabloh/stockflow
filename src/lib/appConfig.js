@@ -2,11 +2,24 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.8.0";
+export const APP_VERSION = "2.8.1";
 
 export const RELEASE_DATE = "2026-04-15";
 
 export const CHANGELOG = [
+  {
+    version: "2.8.1",
+    date: "2026-04-15",
+    changes: [
+      "🛡️ Nuevo módulo de administración de plataforma: Reglas por Tenant con gestión segura (listar, crear, editar, habilitar/deshabilitar y archivar)",
+      "🏛️ Navegación administrativa reorganizada: sección Sistema con acceso exclusivo para plataforma a Licencias y Reglas por Tenant",
+      "⚙️ Nueva entidad TenantRule para excepciones operativas por negocio con soporte de config_json, notas y trazabilidad de cambios",
+      "🔐 Nuevas funciones backend platform-admin-only: adminListTenantRules, adminUpsertTenantRule, adminDeleteTenantRule y getCurrentTenantRuleMap",
+      "💸 Integración de regla tenant cash_sales_to_petty_cash: ingresos de caja chica generados por servidor, trazables por origen y sin duplicados",
+      "🔄 Reconciliación automática de caja chica en cambios de pago/cancelación/eliminación para mantener consistencia sin hardcodes por tenant",
+      "📘 Manual actualizado con artículo de Reglas por Tenant y lineamientos de uso administrativo",
+    ],
+  },
   {
     version: "2.8.0",
     date: "2026-04-15",

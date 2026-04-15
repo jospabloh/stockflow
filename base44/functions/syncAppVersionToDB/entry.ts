@@ -10,8 +10,8 @@ Deno.serve(async (req) => {
     }
 
     // Get the current version from environment or code
-    const currentVersion = "2.4.2";
-    const currentDate = "2026-04-06";
+    const currentVersion = "2.8.1";
+    const currentDate = "2026-04-15";
 
     // Get existing AppVersion records
     const versions = await base44.asServiceRole.entities.AppVersion.list();
@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.AppVersion.update(version.id, {
         version: currentVersion,
         released_at: new Date().toISOString(),
-        release_notes: "Función de corrección de cotizaciones: nueva función backend checkAndFixQuotation para anular o eliminar cotizaciones erradas"
+        release_notes: "Platform-admin Tenant Rules module, tenant rule map backend functions, and cash-sale-to-petty-cash rule reconciliation"
       });
       
       return Response.json({ 
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.AppVersion.create({
         version: currentVersion,
         released_at: new Date().toISOString(),
-        release_notes: "Función de corrección de cotizaciones"
+        release_notes: "Platform-admin Tenant Rules module and tenant-scoped petty-cash rule integration"
       });
 
       return Response.json({ 

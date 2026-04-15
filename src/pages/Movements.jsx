@@ -147,6 +147,7 @@ export default function Movements() {
     try {
       const res = await base44.functions.invoke('confirmMovementPaymentSafe', {
         movement_id: confirmingPayment.id,
+        business_id: businessId,
       });
       if (!res.data?.success) {
         toast.error(`Error: ${res.data?.error || 'No se pudo confirmar el pago'}`);

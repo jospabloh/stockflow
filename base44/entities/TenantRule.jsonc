@@ -1,0 +1,74 @@
+{
+  "name": "TenantRule",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "ID del tenant/negocio"
+    },
+    "rule_key": {
+      "type": "string",
+      "description": "Clave de regla tenant-scoped"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si la regla está activa para el tenant"
+    },
+    "config_json": {
+      "type": "object",
+      "default": {},
+      "description": "Configuración de la regla"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas internas del admin de plataforma"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email/ID del usuario que creó"
+    },
+    "updated_by": {
+      "type": "string",
+      "description": "Email/ID del usuario que actualizó"
+    },
+    "rule_scope": {
+      "type": "string",
+      "default": "tenant",
+      "description": "Alcance de la regla"
+    },
+    "source": {
+      "type": "string",
+      "default": "platform_admin",
+      "description": "Origen de la regla"
+    },
+    "last_applied_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Última aplicación/reconciliación de la regla"
+    },
+    "archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Archivada/deshabilitada lógicamente"
+    }
+  },
+  "required": [
+    "business_id",
+    "rule_key"
+  ],
+  "rls": {
+    "create": {
+      "business_id": "{{user.business_id}}"
+    },
+    "read": {
+      "business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "business_id": "{{user.business_id}}"
+    },
+    "delete": {
+      "business_id": "{{user.business_id}}"
+    }
+  }
+}

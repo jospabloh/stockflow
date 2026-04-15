@@ -21,13 +21,14 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { movement_id, business_id } = body;
+    const resolvedBusinessId = business_id || user.business_id;
 
     if (!movement_id) {
       return Response.json({ error: 'movement_id is required' }, { status: 400 });
     }
 
     // Validate business_id ownership
-    if (!business_id || business_id !== user.business_id) {
+    if (!resolvedBusinessId || resolvedBusinessId !== user.business_id) {
       return Response.json({ error: 'Forbidden: business_id mismatch' }, { status: 403 });
     }
 
@@ -60,7 +61,7 @@ Deno.serve(async (req) => {
     // TENANT-SCOPED: Trigger petty cash income for cash payments
     // Fire-and-forget — failure must NOT block the payment confirmation
     base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
-      action: 'create',
+      action: 'reconcile',
       origin_type: 'movement',
       origin_id: movement_id,
       amount: (movement.quantity || 0) * (movement.unit_price || 0),
@@ -68,7 +69,7 @@ Deno.serve(async (req) => {
       description: `Venta directa — ${movement.product_name || ''} (${movement.reason || ''})`,
       folio_or_ref: movement.reference || movement_id,
       movement_date: new Date().toLocaleDateString('en-CA'),
-      business_id: user.business_id,
+      business_id: resolvedBusinessId,
     }).catch(() => {});
 
     return Response.json({ success: true, movement_id });
