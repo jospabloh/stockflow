@@ -389,7 +389,9 @@ export default function Layout({ children, currentPageName }) {
         </header>
 
         {/* Trial / license banner */}
-        <TrialBanner />
+        <div className="flex-shrink-0">
+          <TrialBanner />
+        </div>
 
         {/* Session passive banner */}
         {sessionStatus === 'passive' && (
