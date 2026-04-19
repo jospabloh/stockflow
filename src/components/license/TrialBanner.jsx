@@ -14,14 +14,14 @@ export default function TrialBanner() {
   if (billingStatus === "trial") {
     const urgent = trialDaysLeft !== null && trialDaysLeft <= 5;
     return (
-      <div className={`w-full px-4 py-2.5 flex items-center justify-between gap-3 text-sm ${
+      <div className={`w-full px-4 py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 text-sm ${
         urgent
           ? "bg-amber-500 text-white"
           : "bg-indigo-600 text-white"
       }`}>
         <div className="flex items-center gap-2 min-w-0">
           <Clock className="h-4 w-4 flex-shrink-0" />
-          <span className="font-medium">
+          <span className="font-medium truncate">
             {trialDaysLeft === null
               ? "Estás en período de prueba"
               : trialDaysLeft === 0
@@ -31,7 +31,7 @@ export default function TrialBanner() {
               : `Período de prueba: ${trialDaysLeft} días restantes`}
           </span>
         </div>
-        <a href={STOCKFLOW_UPGRADE_URL} target="_blank" rel="noopener noreferrer">
+        <a href={STOCKFLOW_UPGRADE_URL} target="_blank" rel="noopener noreferrer" className="self-start sm:self-auto flex-shrink-0">
           <Button size="sm" variant="secondary" className="whitespace-nowrap text-xs h-7 px-3">
             Ver planes <ExternalLink className="h-3 w-3 ml-1" />
           </Button>
@@ -42,15 +42,15 @@ export default function TrialBanner() {
 
   if (billingStatus === "view_only") {
     return (
-      <div className="w-full px-4 py-3 flex items-center justify-between gap-3 text-sm bg-amber-50 border-b border-amber-200 dark:bg-amber-950/30 dark:border-amber-800">
+      <div className="w-full px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 text-sm bg-amber-50 border-b border-amber-200 dark:bg-amber-950/30 dark:border-amber-800">
         <div className="flex items-center gap-2 min-w-0">
           <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-          <div>
+          <div className="min-w-0">
             <span className="font-semibold text-amber-800 dark:text-amber-300">Modo Solo Lectura — </span>
             <span className="text-amber-700 dark:text-amber-400">Tu período de prueba ha terminado. Puedes consultar tu información pero no crear ni editar registros.</span>
           </div>
         </div>
-        <a href={STOCKFLOW_UPGRADE_URL} target="_blank" rel="noopener noreferrer">
+        <a href={STOCKFLOW_UPGRADE_URL} target="_blank" rel="noopener noreferrer" className="self-start sm:self-auto flex-shrink-0">
           <Button size="sm" className="whitespace-nowrap text-xs h-7 px-3 bg-amber-600 hover:bg-amber-700 text-white border-0">
             Activar Licencia <ExternalLink className="h-3 w-3 ml-1" />
           </Button>
