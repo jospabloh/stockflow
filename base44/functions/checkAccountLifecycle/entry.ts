@@ -104,11 +104,16 @@ Deno.serve(async (req: Request) => {
     }
 
     // === SECTION B: VIEW_ONLY BUSINESSES ===
-    // Only process businesses with view_only_since set — pre-existing view_only businesses
-    // must be seeded via migrateViewOnlySince before they enter the archival countdown.
     for (const biz of businesses.filter((b: any) => b.billing_status === 'view_only')) {
       results.view_only.processed++;
-      if (!biz.view_only_since) continue; // skip unmigrated businesses
+
+      // Auto-seed view_only_since if missing — gives a fresh 15-day countdown from today.
+      // Uses trial_end_at as the best estimate for businesses that transitioned before this field existed.
+      if (!biz.view_only_since) {
+        const seededSince = biz.trial_end_at || nowISO;
+        await base44.asServiceRole.entities.Business.update(biz.id, { view_only_since: seededSince });
+        biz.view_only_since = seededSince;
+      }
 
       const viewOnlySince = new Date(biz.view_only_since);
       const daysInViewOnly = Math.floor((now.getTime() - viewOnlySince.getTime()) / DAY_MS);
