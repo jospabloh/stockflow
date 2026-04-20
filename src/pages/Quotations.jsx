@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Search, MoreHorizontal, Pencil, ShoppingCart, FileDown, Truck, CheckCircle2, DollarSign, XCircle, AlertTriangle, RotateCcw } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Pencil, ShoppingCart, FileDown, Truck, CheckCircle2, DollarSign, XCircle, AlertTriangle, RotateCcw, Banknote } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import moment from "moment";
@@ -352,10 +352,23 @@ export default function Quotations() {
             <AlertDialogTitle id="cancel-title">
               {cancelQuotation?.status === "converted" ? `¿Anular venta ${cancelQuotation?.folio}?` : `¿Cancelar cotización ${cancelQuotation?.folio}?`}
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              {cancelQuotation?.status === "converted"
-                ? "⚠️ Esta venta ya fue concretada. Al anularla se revertirá el stock de todos los productos. Esta acción no se puede deshacer."
-                : "Esta acción marcará la cotización como cancelada. Por favor indica el motivo."}
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  {cancelQuotation?.status === "converted"
+                    ? "⚠️ Esta venta ya fue concretada. Al anularla se revertirá el stock de todos los productos. Esta acción no se puede deshacer."
+                    : "Esta acción marcará la cotización como cancelada. Por favor indica el motivo."}
+                </p>
+                {cancelQuotation?.paid &&
+                  String(cancelQuotation?.payment_method || "").trim().toLowerCase() === "efectivo" && (
+                    <div className="flex items-start gap-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 px-3 py-2 text-sm text-blue-800 dark:text-blue-300">
+                      <Banknote className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      <span>
+                        Esta venta fue cobrada en efectivo. El ingreso registrado en caja chica se revertirá automáticamente al anularla.
+                      </span>
+                    </div>
+                  )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="px-1 py-2">
