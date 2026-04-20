@@ -231,14 +231,16 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       setTotalsWithTransport({ subtotal: 0, tax: 0, transportFee: 0, total: 0 });
       return;
     }
+    const controller = new AbortController();
     base44.functions.invoke('calculateQuotationWithTransport', {
       items: form.items,
       client_id: selectedClient?.id || null
     }).then(res => {
-      setTotalsWithTransport(res.data);
+      if (!controller.signal.aborted) setTotalsWithTransport(res.data);
     }).catch(() => {
-      setTotalsWithTransport({ subtotal: baseCalc.subtotal, tax: baseCalc.tax, transportFee: 0, total: baseCalc.total });
+      if (!controller.signal.aborted) setTotalsWithTransport({ subtotal: baseCalc.subtotal, tax: baseCalc.tax, transportFee: 0, total: baseCalc.total });
     });
+    return () => controller.abort();
   }, [form.items, selectedClient?.id]);
 
   const { subtotal, tax: taxAmount, transportFee, total } = totalsWithTransport;
@@ -278,7 +280,12 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     setSaving(true);
     try {
       const folio = quotation?.folio || await generateFolio();
-      const data = { ...form, subtotal, tax: taxAmount, total, folio };
+      const saveResult = calculateTotalsWithReconciliation(form.items);
+      const saveTransport = selectedClient?.force_purchase_all_products ? 20 * form.items.length : 0;
+      const saveSubtotal = saveResult.subtotal;
+      const saveTax = saveResult.tax;
+      const saveTotal = Math.round((saveResult.total + saveTransport) * 100) / 100;
+      const data = { ...form, subtotal: saveSubtotal, tax: saveTax, total: saveTotal, folio };
       let response;
       if (quotation) {
         response = await base44.functions.invoke('updateQuotationSafe', { quotation_id: quotation.id, updates: data });
