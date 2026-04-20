@@ -67,5 +67,22 @@ export default function TrialBanner() {
     );
   }
 
+  if (billingStatus === "archived") {
+    return (
+      <div className="w-full px-4 py-3 flex items-center gap-3 text-sm bg-red-600 text-white">
+        <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+        <span className="font-semibold flex-1 min-w-0 truncate">
+          Cuenta archivada — Tu negocio será eliminado permanentemente. Contacta soporte para recuperarlo.
+        </span>
+        <a
+          href="mailto:soporte@acaciaco.com.mx"
+          className="flex-shrink-0 text-white underline text-xs whitespace-nowrap"
+        >
+          soporte@acaciaco.com.mx
+        </a>
+      </div>
+    );
+  }
+
   return null;
 }

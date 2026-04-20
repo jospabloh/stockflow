@@ -14,6 +14,10 @@ const ALLOWED_FIELDS = [
   'license_activated_at',
   'license_expires_at',
   'trial_end_at',
+  'auto_renewal',
+  'view_only_since',
+  'archived_at',
+  'scheduled_delete_at',
 ];
 
 const PLAN_LIMITS = { start: 4, growth: 10, pro: 20 };
