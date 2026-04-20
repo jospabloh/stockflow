@@ -1,0 +1,77 @@
+{
+  "name": "EmailNotification",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio relacionado"
+    },
+    "email_type": {
+      "type": "string",
+      "enum": [
+        "trial_welcome",
+        "trial_day_15",
+        "trial_day_25",
+        "trial_day_28",
+        "trial_day_30",
+        "trial_expired",
+        "license_expiring_7",
+        "license_expiring_3",
+        "license_expiring_1",
+        "license_expired",
+        "renewal_upcoming",
+        "renewal_confirmed",
+        "account_view_only",
+        "archive_warning",
+        "account_archived",
+        "delete_warning",
+        "account_deleted_confirmation"
+      ],
+      "description": "Tipo de email de ciclo de vida"
+    },
+    "recipient_email": {
+      "type": "string",
+      "description": "Email del destinatario"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "sent", "failed"],
+      "default": "pending",
+      "description": "Estado de envio"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora de envio exitoso"
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Numero de intentos de envio"
+    },
+    "last_attempt_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Ultimo intento de envio"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Mensaje de error del ultimo intento fallido"
+    }
+  },
+  "required": ["business_id", "email_type", "recipient_email"],
+  "rls": {
+    "read": {
+      "user_condition": { "role": "admin" }
+    },
+    "create": {
+      "user_condition": { "role": "admin" }
+    },
+    "update": {
+      "user_condition": { "role": "admin" }
+    },
+    "delete": {
+      "user_condition": { "role": "admin" }
+    }
+  }
+}

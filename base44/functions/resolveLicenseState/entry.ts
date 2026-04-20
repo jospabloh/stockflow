@@ -27,8 +27,8 @@ export function resolveLicenseState(biz, tenantUsers = []) {
     }
   }
 
-  // view_only and suspended always read-only
-  if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+  // view_only, suspended, and archived are always read-only
+  if (billingStatus === 'view_only' || billingStatus === 'suspended' || billingStatus === 'archived') {
     isReadOnly = true;
   }
 

@@ -28,6 +28,23 @@ Deno.serve(async (req) => {
       licensed_user_limit: 4,
     });
 
+    // Queue trial_welcome email — non-fatal if it fails
+    try {
+      const bizUsers = await base44.asServiceRole.entities.User.filter({ business_id });
+      const admin = bizUsers.find((u: any) => u.role === 'admin') || bizUsers[0];
+      if (admin?.email) {
+        await base44.asServiceRole.entities.EmailNotification.create({
+          business_id,
+          email_type: 'trial_welcome',
+          recipient_email: admin.email,
+          status: 'pending',
+          retry_count: 0,
+        });
+      }
+    } catch (_) {
+      console.warn('[initTenantTrial] Failed to queue trial_welcome email');
+    }
+
     return Response.json({
       success: true,
       trial_start_at: now.toISOString(),

@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
 Deno.serve(async (req) => {
   try {
@@ -45,10 +45,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // STRICT TENANT RESOLUTION: filter by exact user.business_id to avoid
-    // pagination gaps that .list() would introduce on large datasets
-    const matches = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
-    const biz = matches[0];
+    // Use list + in-memory find for reliability (filter-by-id can fail silently on some SDK versions)
+    const allBizs = await base44.asServiceRole.entities.Business.list();
+    const biz = allBizs.find(b => b.id === user.business_id);
 
     console.log('[getCurrentTenantLicenseState] User:', user.email, 'business_id:', user.business_id, 'found:', !!biz);
 
@@ -92,7 +91,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+    if (billingStatus === 'view_only' || billingStatus === 'suspended' || billingStatus === 'archived') {
       isReadOnly = true;
     }
 
@@ -121,6 +120,10 @@ Deno.serve(async (req) => {
       license_activated_at: biz.license_activated_at || null,
       next_renewal_at: nextRenewalAt,
       is_read_only: isReadOnly,
+      auto_renewal: biz.auto_renewal || false,
+      view_only_since: biz.view_only_since || null,
+      archived_at: biz.archived_at || null,
+      scheduled_delete_at: biz.scheduled_delete_at || null,
     });
   } catch (error) {
     console.error('getCurrentTenantLicenseState error:', error);

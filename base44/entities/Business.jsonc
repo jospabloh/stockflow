@@ -62,7 +62,8 @@
         "trial",
         "active",
         "view_only",
-        "suspended"
+        "suspended",
+        "archived"
       ],
       "default": "trial"
     },
@@ -112,6 +113,26 @@
       "type": "boolean",
       "default": false,
       "description": "Caracter\u00edstica opcional: registrar autom\u00e1ticamente ventas en efectivo cobradas como ingresos en caja chica"
+    },
+    "auto_renewal": {
+      "type": "boolean",
+      "default": false,
+      "description": "Renovaci\u00f3n autom\u00e1tica de licencia activa"
+    },
+    "view_only_since": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha en que el negocio entr\u00f3 en modo solo lectura"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha en que el negocio fue archivado"
+    },
+    "scheduled_delete_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha programada de eliminaci\u00f3n permanente del negocio"
     }
   },
   "required": [
