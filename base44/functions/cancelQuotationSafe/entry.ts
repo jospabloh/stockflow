@@ -72,11 +72,13 @@ Deno.serve(async (req) => {
           if (product) {
             const restoredStock = (product.stock || 0) + data.quantity;
 
-            // Create return movement
+            // 'entry' type: syncProductStock automation adds qty to stock (correct reversion).
+            // Using 'return' would cause automation to SUBTRACT qty — wrong direction.
+            // No explicit stock update: automation is the sole stock authority.
             await base44.entities.Movement.create({
               product_id: product_id,
               product_name: data.product_name,
-              type: 'return',
+              type: 'entry',
               quantity: data.quantity,
               unit_price: data.unit_price,
               total: data.unit_price * data.quantity,
@@ -85,13 +87,6 @@ Deno.serve(async (req) => {
               reason: `Cancelación: ${cancellation_reason || 'Sin motivo especificado'}`,
               quotation_id: quotation.id,
               business_id: user.business_id,
-            });
-
-            // Update product stock
-            await base44.asServiceRole.functions.invoke('updateProductStockSafe', {
-              product_id: product.id,
-              new_stock: restoredStock,
-              business_id: user.business_id
             });
           }
         }
