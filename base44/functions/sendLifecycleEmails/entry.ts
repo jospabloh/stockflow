@@ -269,10 +269,14 @@ function getEmailTemplate(
 Deno.serve(async (req: Request) => {
   try {
     const base44 = createClientFromRequest(req);
+    const body = await req.json().catch(() => ({}));
 
-    // Auth: cron secret OR platform admin
-    const cronSecret = req.headers.get('x-cron-secret');
-    const validCron = cronSecret && cronSecret === Deno.env.get('CRON_SECRET');
+    // Accept cron secret from header (manual/delegation calls) or body (Base44 scheduler via function_args)
+    const cronSecretEnv = Deno.env.get('CRON_SECRET');
+    const validCron = cronSecretEnv && (
+      req.headers.get('x-cron-secret') === cronSecretEnv ||
+      body?.['x-cron-secret'] === cronSecretEnv
+    );
     if (!validCron) {
       const user = await base44.auth.me().catch(() => null);
       if (!user || user.email !== PLATFORM_OWNER_EMAIL) {
