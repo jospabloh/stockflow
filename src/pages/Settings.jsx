@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe } from "lucide-react";
+import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, CheckCircle2, XCircle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
@@ -30,6 +30,9 @@ export default function Settings() {
   const [confirmDeleteStep, setConfirmDeleteStep] = useState(0); // 0: initial, 1: warning, 2: confirm
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [diagnosticBusinessId, setDiagnosticBusinessId] = useState(null);
+  const [auditResult, setAuditResult] = useState(null);
+  const [auditing, setAuditing] = useState(false);
+  const [fixing, setFixing] = useState(false);
 
   useEffect(() => {
      const checkAndLoadSettings = async () => {
@@ -183,6 +186,7 @@ export default function Settings() {
               <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>
               <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>
               <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>
+              <TabsTrigger value="inventario"><PackageSearch className="h-4 w-4 mr-1" /> Inventario</TabsTrigger>
             </>
           )}
           
@@ -568,6 +572,157 @@ export default function Settings() {
           </Card>
             </div>
           </TabsContent>
+
+          {/* Inventario — Admin only */}
+          {isAdmin && (
+            <TabsContent value="inventario">
+              <Card className="border-0 shadow-sm p-6 space-y-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="font-semibold text-slate-700 text-lg">Auditoría de Stock</h3>
+                    <p className="text-sm text-slate-500 mt-1">
+                      Detecta y corrige discrepancias en el inventario causadas por la actualización duplicada de stock (corregida el 2026-04-20).
+                    </p>
+                  </div>
+                  <Button
+                    onClick={async () => {
+                      setAuditing(true);
+                      setAuditResult(null);
+                      try {
+                        const resp = await base44.functions.invoke('fixDoubleStockBug', { dry_run: true });
+                        setAuditResult(resp.data);
+                      } catch (e) {
+                        toast.error(`Error al auditar: ${e.message}`);
+                      } finally {
+                        setAuditing(false);
+                      }
+                    }}
+                    disabled={auditing}
+                    variant="outline"
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${auditing ? 'animate-spin' : ''}`} />
+                    {auditing ? 'Verificando...' : 'Verificar stock'}
+                  </Button>
+                </div>
+
+                {auditResult && (
+                  <div className="space-y-4">
+                    {/* Summary */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-slate-50 rounded-xl p-3 text-center">
+                        <p className="text-2xl font-bold text-slate-700">{auditResult.summary?.products_audited ?? 0}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Productos auditados</p>
+                      </div>
+                      <div className={`rounded-xl p-3 text-center ${(auditResult.summary?.products_with_discrepancy ?? 0) > 0 ? 'bg-red-50' : 'bg-emerald-50'}`}>
+                        <p className={`text-2xl font-bold ${(auditResult.summary?.products_with_discrepancy ?? 0) > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                          {auditResult.summary?.products_with_discrepancy ?? 0}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">Con discrepancia</p>
+                      </div>
+                      <div className={`rounded-xl p-3 text-center ${(auditResult.summary?.skipped_needs_manual_review ?? 0) > 0 ? 'bg-amber-50' : 'bg-slate-50'}`}>
+                        <p className={`text-2xl font-bold ${(auditResult.summary?.skipped_needs_manual_review ?? 0) > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
+                          {auditResult.summary?.skipped_needs_manual_review ?? 0}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">Revisión manual</p>
+                      </div>
+                    </div>
+
+                    {auditResult.summary?.products_with_discrepancy === 0 ? (
+                      <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                        <p className="text-sm text-emerald-700 font-medium">El inventario está en orden. No se detectaron discrepancias.</p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Table of discrepancies */}
+                        <div className="rounded-xl border border-border overflow-hidden">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="bg-muted/40 border-b border-border">
+                                <th className="text-left px-4 py-2.5 font-semibold text-slate-600">Producto</th>
+                                <th className="text-right px-4 py-2.5 font-semibold text-slate-600">Stock actual</th>
+                                <th className="text-right px-4 py-2.5 font-semibold text-slate-600">Stock correcto</th>
+                                <th className="text-center px-4 py-2.5 font-semibold text-slate-600">Acción</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {auditResult.discrepancies?.map((d, i) => (
+                                <tr key={i} className="border-b border-border last:border-0 hover:bg-muted/20">
+                                  <td className="px-4 py-3 font-medium text-slate-700">{d.product}</td>
+                                  <td className="px-4 py-3 text-right">
+                                    <span className="font-bold text-red-600">{d.current_stock}</span>
+                                  </td>
+                                  <td className="px-4 py-3 text-right">
+                                    <span className="font-bold text-emerald-600">{d.correct_stock}</span>
+                                  </td>
+                                  <td className="px-4 py-3 text-center">
+                                    {d.has_adjustments ? (
+                                      <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
+                                        <AlertTriangle className="h-3 w-3" /> Revisión manual
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-1 rounded-full">
+                                        <CheckCircle2 className="h-3 w-3" /> Auto-corregible
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Manual review alert */}
+                        {(auditResult.summary?.skipped_needs_manual_review ?? 0) > 0 && (
+                          <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+                            <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                            <div className="text-sm text-amber-800">
+                              <p className="font-semibold">
+                                {auditResult.summary.skipped_needs_manual_review} {auditResult.summary.skipped_needs_manual_review === 1 ? 'producto requiere' : 'productos requieren'} revisión manual
+                              </p>
+                              <p className="mt-1 text-amber-700">
+                                Tienen movimientos de ajuste en su historial que complican la corrección automática. Ve a <strong>Movimientos → Ajuste</strong> y establece el stock correcto contando físicamente.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Auto-correct button */}
+                        {(auditResult.summary?.products_with_discrepancy - (auditResult.summary?.skipped_needs_manual_review ?? 0)) > 0 && (
+                          <div className="flex justify-end">
+                            <Button
+                              onClick={async () => {
+                                setFixing(true);
+                                try {
+                                  const resp = await base44.functions.invoke('fixDoubleStockBug', { dry_run: false });
+                                  if (resp.data?.summary?.corrected > 0) {
+                                    toast.success(`✅ ${resp.data.summary.corrected} producto(s) corregidos correctamente`);
+                                    setAuditResult(null);
+                                  } else {
+                                    toast.info('No hubo productos corregidos automáticamente.');
+                                  }
+                                } catch (e) {
+                                  toast.error(`Error al corregir: ${e.message}`);
+                                } finally {
+                                  setFixing(false);
+                                }
+                              }}
+                              disabled={fixing}
+                              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                            >
+                              <XCircle className={`h-4 w-4 mr-2 ${fixing ? 'animate-spin' : ''}`} />
+                              {fixing ? 'Aplicando...' : `Corregir automáticamente (${auditResult.summary?.products_with_discrepancy - (auditResult.summary?.skipped_needs_manual_review ?? 0)} productos)`}
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </Card>
+            </TabsContent>
+          )}
+
           </Tabs>
 
           {/* Delete Account Modal — Multi-step Flow */}
