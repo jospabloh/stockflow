@@ -61,10 +61,13 @@ Deno.serve(async (req) => {
       const product = prods[0];
       const newStock = (product.stock || 0) + ri.quantity;
 
+      // 'entry' type: syncProductStock automation adds qty to stock (correct for customer return).
+      // Using 'return' would cause automation to SUBTRACT qty — wrong direction.
+      // No explicit Product.update: automation is the sole stock authority.
       await base44.asServiceRole.entities.Movement.create({
         product_id: ri.product_id,
         product_name: ri.product_name,
-        type: 'return',
+        type: 'entry',
         quantity: ri.quantity,
         unit_price: ri.unit_price,
         total: ri.quantity * ri.unit_price,
@@ -74,8 +77,6 @@ Deno.serve(async (req) => {
         quotation_id: quotation.id,
         business_id: user.business_id,
       });
-
-      await base44.asServiceRole.entities.Product.update(ri.product_id, { stock: newStock });
     }
 
     // Recalculate quotation totals removing returned items

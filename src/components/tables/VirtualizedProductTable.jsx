@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { FixedSizeList as List } from "react-window";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, AlertTriangle, Barcode, Loader2 } from "lucide-react";
+import { Pencil, Trash2, AlertTriangle, Barcode, Loader2, History } from "lucide-react";
 import { createButtonProps } from "@/lib/a11y";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
@@ -11,6 +12,7 @@ const ITEM_HEIGHT = 60;
 const HEADER_HEIGHT = 52;
 
 export default function VirtualizedProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated }) {
+  const navigate = useNavigate();
   const [generatingId, setGeneratingId] = useState(null);
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || "—";
 
@@ -74,7 +76,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
             {product.status === "active" ? "Activo" : "Inactivo"}
           </Badge>
         </div>
-        <div className="w-24 text-center flex items-center justify-center gap-1">
+        <div className="w-32 text-center flex items-center justify-center gap-1">
           {!product.barcode && (
             <Button
               variant="ghost"
@@ -91,19 +93,28 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
           )}
           {isAdmin && (
             <>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-7 w-7" 
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => navigate(`/Movements?product_id=${product.id}`)}
+                title="Ver historial de movimientos"
+              >
+                <History className="h-3.5 w-3.5 text-indigo-400" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
                 onClick={() => onEdit(product)}
                 {...createButtonProps('edit')}
               >
                 <Pencil className="h-3.5 w-3.5 text-slate-400" />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-7 w-7" 
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
                 onClick={() => onDelete(product)}
                 {...createButtonProps('delete')}
               >
@@ -135,7 +146,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
         <div className="w-24 text-right">Precio Menudeo</div>
         <div className="w-32 text-right">Stock</div>
         <div className="w-16 text-center">Estado</div>
-        <div className="w-24 text-center">Acciones</div>
+        <div className="w-32 text-center">Acciones</div>
       </div>
 
       {/* Virtualized List */}

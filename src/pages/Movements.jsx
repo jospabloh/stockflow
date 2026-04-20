@@ -65,6 +65,7 @@ export default function Movements() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [editingMovement, setEditingMovement] = useState(null);
   const [confirmingPayment, setConfirmingPayment] = useState(null);
+  const [productIdFilter, setProductIdFilter] = useState(null);
 
   const loadData = async (bId) => {
     if (!bId) return;
@@ -102,6 +103,12 @@ export default function Movements() {
     if (type && ["entry", "exit", "return", "adjustment"].includes(type)) {
       setTypeFilter(type);
     }
+    const pid = params.get("product_id");
+    if (pid) {
+      setProductIdFilter(pid);
+    } else {
+      setProductIdFilter(null);
+    }
   }, [location.search]);
 
   const getProductTaxRate = (productId) => {
@@ -120,8 +127,13 @@ export default function Movements() {
       m.reference?.toLowerCase().includes(s) ||
       m.reason?.toLowerCase().includes(s);
     const matchType = typeFilter === "all" || m.type === typeFilter;
-    return matchSearch && matchType;
+    const matchProduct = !productIdFilter || m.product_id === productIdFilter;
+    return matchSearch && matchType && matchProduct;
   });
+
+  const filteredProductName = productIdFilter
+    ? (products.find(p => p.id === productIdFilter)?.name || productIdFilter)
+    : null;
 
   const handleDeleteMovement = async () => {
     if (!deletingMovement) return;
@@ -201,6 +213,24 @@ export default function Movements() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+
+      {/* Banner de filtro por producto (solo admin) */}
+      {isAdmin && filteredProductName && (
+        <div className="flex items-center justify-between gap-4 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-3">
+            <SlidersHorizontal className="h-5 w-5 text-indigo-500 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-indigo-800 dark:text-indigo-300">
+                Historial de: <span className="font-bold">{filteredProductName}</span>
+              </p>
+              <p className="text-xs text-indigo-600 dark:text-indigo-400">Mostrando solo movimientos de este producto</p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => navigate("/Movements")}>
+            Ver todos
+          </Button>
+        </div>
+      )}
 
       {/* Alerta de cobro pendiente */}
       {unpaidDirectExits.length > 0 && (

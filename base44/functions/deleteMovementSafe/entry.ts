@@ -83,11 +83,23 @@ Deno.serve(async (req) => {
     // Garantizar no negativos
     if (revertedStock < 0) revertedStock = 0;
 
-    // Actualizar el stock del producto
-    await base44.asServiceRole.entities.Product.update(product.id, { stock: revertedStock });
+    // Para entry/exit/return: eliminar primero — la automación syncProductStock
+    // revierte el efecto del movimiento automáticamente en el evento 'delete'.
+    // No se llama Product.update explícitamente para no duplicar la reversión.
+    //
+    // Para adjustment: la automación aplica -qty como delta, que puede no coincidir
+    // con el stock previo al ajuste. Por eso sí se actualiza explícitamente aquí,
+    // DESPUÉS de eliminar, para que el Product.update sea la escritura final.
+    const isAdjustment = movement.type === 'adjustment';
 
-    // Eliminar el movimiento
+    // Eliminar el movimiento (dispara automación para entry/exit/return)
     await base44.asServiceRole.entities.Movement.delete(movement_id);
+
+    if (isAdjustment) {
+      // Ajuste: sobreescribir el stock al valor correcto previo al ajuste,
+      // compensando lo que la automación haya aplicado tras el delete.
+      await base44.asServiceRole.entities.Product.update(product.id, { stock: revertedStock });
+    }
 
     // TENANT-SCOPED: Reverse any system-generated petty cash income linked to this movement
     // Only relevant if this was a paid direct exit (not linked to a quotation)
