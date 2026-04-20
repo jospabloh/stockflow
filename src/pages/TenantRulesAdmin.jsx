@@ -40,6 +40,7 @@ export default function TenantRulesAdmin() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [activating, setActivating] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
 
   const load = async () => {
@@ -85,6 +86,27 @@ export default function TenantRulesAdmin() {
       return { key, active, total };
     });
   }, [rules]);
+
+  const baristopRuleActive = rules.some(
+    (r) => r.rule_key === "cash_sales_to_petty_cash" && (r.business_name || "").toLowerCase().includes("baristop")
+  );
+
+  const handleActivateBaristop = async () => {
+    setActivating(true);
+    try {
+      const response = await base44.functions.invoke("activateBaristopCashRule", {});
+      if (!response.data?.success) {
+        toast.error(response.data?.error || "No se pudo activar la regla");
+        return;
+      }
+      toast.success("Regla Baristop activada correctamente");
+      await load();
+    } catch (error) {
+      toast.error(`Error al activar: ${error.message}`);
+    } finally {
+      setActivating(false);
+    }
+  };
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
@@ -180,6 +202,11 @@ export default function TenantRulesAdmin() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={load} disabled={loading}><RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Actualizar</Button>
+          {!baristopRuleActive && (
+            <Button variant="outline" onClick={handleActivateBaristop} disabled={activating || loading}>
+              {activating ? "Activando..." : "Activar Baristop"}
+            </Button>
+          )}
           <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> Nueva Regla</Button>
         </div>
       </div>
