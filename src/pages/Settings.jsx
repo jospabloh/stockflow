@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, CheckCircle2, XCircle } from "lucide-react";
+import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, CheckCircle2, XCircle, Minus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
@@ -33,6 +33,22 @@ export default function Settings() {
   const [auditResult, setAuditResult] = useState(null);
   const [auditing, setAuditing] = useState(false);
   const [fixing, setFixing] = useState(false);
+  const [fixingProductId, setFixingProductId] = useState(null);
+  const [dismissedIds, setDismissedIds] = useState(() => {
+    try {
+      const raw = localStorage.getItem(`sf_audit_dismissed_${businessId}`);
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch { return new Set(); }
+  });
+
+  const dismissProduct = (productId) => {
+    setDismissedIds(prev => {
+      const next = new Set(prev);
+      next.add(productId);
+      try { localStorage.setItem(`sf_audit_dismissed_${businessId}`, JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  };
 
   useEffect(() => {
      const checkAndLoadSettings = async () => {
@@ -581,7 +597,7 @@ export default function Settings() {
                   <div>
                     <h3 className="font-semibold text-slate-700 text-lg">Auditoría de Stock</h3>
                     <p className="text-sm text-slate-500 mt-1">
-                      Detecta y corrige discrepancias en el inventario causadas por la actualización duplicada de stock (corregida el 2026-04-20).
+                      Verifica la integridad del inventario y corrige discrepancias detectadas en los conteos.
                     </p>
                   </div>
                   <Button
@@ -605,120 +621,141 @@ export default function Settings() {
                   </Button>
                 </div>
 
-                {auditResult && (
-                  <div className="space-y-4">
-                    {/* Summary */}
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="bg-slate-50 rounded-xl p-3 text-center">
-                        <p className="text-2xl font-bold text-slate-700">{auditResult.summary?.products_audited ?? 0}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">Productos auditados</p>
-                      </div>
-                      <div className={`rounded-xl p-3 text-center ${(auditResult.summary?.products_with_discrepancy ?? 0) > 0 ? 'bg-red-50' : 'bg-emerald-50'}`}>
-                        <p className={`text-2xl font-bold ${(auditResult.summary?.products_with_discrepancy ?? 0) > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                          {auditResult.summary?.products_with_discrepancy ?? 0}
-                        </p>
-                        <p className="text-xs text-slate-500 mt-0.5">Con discrepancia</p>
-                      </div>
-                      <div className={`rounded-xl p-3 text-center ${(auditResult.summary?.skipped_needs_manual_review ?? 0) > 0 ? 'bg-amber-50' : 'bg-slate-50'}`}>
-                        <p className={`text-2xl font-bold ${(auditResult.summary?.skipped_needs_manual_review ?? 0) > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
-                          {auditResult.summary?.skipped_needs_manual_review ?? 0}
-                        </p>
-                        <p className="text-xs text-slate-500 mt-0.5">Revisión manual</p>
-                      </div>
-                    </div>
-
-                    {auditResult.summary?.products_with_discrepancy === 0 ? (
-                      <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                        <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0" />
-                        <p className="text-sm text-emerald-700 font-medium">El inventario está en orden. No se detectaron discrepancias.</p>
-                      </div>
-                    ) : (
-                      <>
-                        {/* Table of discrepancies */}
-                        <div className="rounded-xl border border-border overflow-hidden">
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr className="bg-muted/40 border-b border-border">
-                                <th className="text-left px-4 py-2.5 font-semibold text-slate-600">Producto</th>
-                                <th className="text-right px-4 py-2.5 font-semibold text-slate-600">Stock actual</th>
-                                <th className="text-right px-4 py-2.5 font-semibold text-slate-600">Stock correcto</th>
-                                <th className="text-center px-4 py-2.5 font-semibold text-slate-600">Acción</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {auditResult.discrepancies?.map((d, i) => (
-                                <tr key={i} className="border-b border-border last:border-0 hover:bg-muted/20">
-                                  <td className="px-4 py-3 font-medium text-slate-700">{d.product}</td>
-                                  <td className="px-4 py-3 text-right">
-                                    <span className="font-bold text-red-600">{d.current_stock}</span>
-                                  </td>
-                                  <td className="px-4 py-3 text-right">
-                                    <span className="font-bold text-emerald-600">{d.correct_stock}</span>
-                                  </td>
-                                  <td className="px-4 py-3 text-center">
-                                    {d.has_adjustments ? (
-                                      <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
-                                        <AlertTriangle className="h-3 w-3" /> Revisión manual
-                                      </span>
-                                    ) : (
-                                      <span className="inline-flex items-center gap-1 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-1 rounded-full">
-                                        <CheckCircle2 className="h-3 w-3" /> Auto-corregible
-                                      </span>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                {auditResult && (() => {
+                  const visible = (auditResult.discrepancies || []).filter(d => !dismissedIds.has(d.product_id));
+                  const autoFixable = visible.filter(d => !d.has_adjustments);
+                  const needsManual = visible.filter(d => d.has_adjustments);
+                  return (
+                    <div className="space-y-4">
+                      {visible.length === 0 ? (
+                        <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                          <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                          <p className="text-sm text-emerald-700 font-medium">
+                            {(auditResult.discrepancies || []).length > 0
+                              ? 'Todas las discrepancias han sido revisadas o corregidas.'
+                              : 'El inventario está en orden. No se detectaron discrepancias.'}
+                          </p>
                         </div>
-
-                        {/* Manual review alert */}
-                        {(auditResult.summary?.skipped_needs_manual_review ?? 0) > 0 && (
-                          <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
-                            <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                            <div className="text-sm text-amber-800">
-                              <p className="font-semibold">
-                                {auditResult.summary.skipped_needs_manual_review} {auditResult.summary.skipped_needs_manual_review === 1 ? 'producto requiere' : 'productos requieren'} revisión manual
-                              </p>
-                              <p className="mt-1 text-amber-700">
-                                Tienen movimientos de ajuste en su historial que complican la corrección automática. Ve a <strong>Movimientos → Ajuste</strong> y establece el stock correcto contando físicamente.
-                              </p>
+                      ) : (
+                        <>
+                          {/* Auto-fixable items */}
+                          {autoFixable.length > 0 && (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Corregibles automáticamente</p>
+                                <Button
+                                  size="sm"
+                                  onClick={async () => {
+                                    setFixing(true);
+                                    try {
+                                      const resp = await base44.functions.invoke('fixDoubleStockBug', { dry_run: false });
+                                      if (resp.data?.summary?.corrected > 0) {
+                                        toast.success(`${resp.data.summary.corrected} producto(s) corregidos`);
+                                        setAuditResult(null);
+                                      }
+                                    } catch (e) {
+                                      toast.error(`Error: ${e.message}`);
+                                    } finally {
+                                      setFixing(false);
+                                    }
+                                  }}
+                                  disabled={fixing}
+                                  className="bg-indigo-600 hover:bg-indigo-700 text-white h-7 text-xs"
+                                >
+                                  <CheckCircle2 className={`h-3.5 w-3.5 mr-1.5 ${fixing ? 'animate-spin' : ''}`} />
+                                  {fixing ? 'Aplicando...' : `Autocorregir todos (${autoFixable.length})`}
+                                </Button>
+                              </div>
+                              <div className="rounded-xl border border-border overflow-hidden">
+                                {autoFixable.map((d) => (
+                                  <div key={d.product_id} className="border-b border-border last:border-0 px-4 py-3 hover:bg-muted/20 space-y-1.5">
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-slate-700 text-sm">{d.product}</p>
+                                        <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{d.justification}</p>
+                                      </div>
+                                      <div className="flex items-center gap-2 shrink-0 mt-0.5">
+                                        <span className="text-sm text-red-500 font-bold line-through">{d.current_stock}</span>
+                                        <span className="text-slate-400 text-xs">→</span>
+                                        <span className="text-sm text-emerald-600 font-bold">{d.correct_stock}</span>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-2 justify-end">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-7 text-xs border-slate-200 text-slate-500 hover:text-slate-700"
+                                        onClick={() => dismissProduct(d.product_id)}
+                                      >
+                                        <Minus className="h-3 w-3 mr-1" /> Dejar así
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
+                                        disabled={fixingProductId === d.product_id}
+                                        onClick={async () => {
+                                          setFixingProductId(d.product_id);
+                                          try {
+                                            await base44.functions.invoke('fixDoubleStockBug', { dry_run: false, product_id: d.product_id });
+                                            toast.success(`${d.product}: stock ajustado a ${d.correct_stock}`);
+                                            dismissProduct(d.product_id);
+                                          } catch (e) {
+                                            toast.error(`Error: ${e.message}`);
+                                          } finally {
+                                            setFixingProductId(null);
+                                          }
+                                        }}
+                                      >
+                                        <CheckCircle2 className={`h-3.5 w-3.5 mr-1.5 ${fixingProductId === d.product_id ? 'animate-spin' : ''}`} />
+                                        Ajustar a {d.correct_stock}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
 
-                        {/* Auto-correct button */}
-                        {(auditResult.summary?.products_with_discrepancy - (auditResult.summary?.skipped_needs_manual_review ?? 0)) > 0 && (
-                          <div className="flex justify-end">
-                            <Button
-                              onClick={async () => {
-                                setFixing(true);
-                                try {
-                                  const resp = await base44.functions.invoke('fixDoubleStockBug', { dry_run: false });
-                                  if (resp.data?.summary?.corrected > 0) {
-                                    toast.success(`✅ ${resp.data.summary.corrected} producto(s) corregidos correctamente`);
-                                    setAuditResult(null);
-                                  } else {
-                                    toast.info('No hubo productos corregidos automáticamente.');
-                                  }
-                                } catch (e) {
-                                  toast.error(`Error al corregir: ${e.message}`);
-                                } finally {
-                                  setFixing(false);
-                                }
-                              }}
-                              disabled={fixing}
-                              className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                            >
-                              <XCircle className={`h-4 w-4 mr-2 ${fixing ? 'animate-spin' : ''}`} />
-                              {fixing ? 'Aplicando...' : `Corregir automáticamente (${auditResult.summary?.products_with_discrepancy - (auditResult.summary?.skipped_needs_manual_review ?? 0)} productos)`}
-                            </Button>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
+                          {/* Manual review items */}
+                          {needsManual.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Requieren conteo físico</p>
+                              <div className="rounded-xl border border-amber-200 overflow-hidden bg-amber-50/40">
+                                {needsManual.map((d) => (
+                                  <div key={d.product_id} className="border-b border-amber-200 last:border-0 px-4 py-3 space-y-1.5">
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-slate-700 text-sm">{d.product}</p>
+                                        <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{d.justification}</p>
+                                        <p className="text-xs text-amber-700 mt-1">
+                                          Usa <strong>Movimientos → Ajuste</strong> para establecer el stock real tras contar físicamente.
+                                        </p>
+                                      </div>
+                                      <div className="flex items-center gap-2 shrink-0 mt-0.5">
+                                        <span className="text-sm text-red-500 font-bold">{d.current_stock}</span>
+                                        <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-2 justify-end">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-7 text-xs border-amber-200 text-amber-700 hover:bg-amber-100"
+                                        onClick={() => dismissProduct(d.product_id)}
+                                      >
+                                        <Minus className="h-3 w-3 mr-1" /> Dejar así
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
               </Card>
             </TabsContent>
           )}
