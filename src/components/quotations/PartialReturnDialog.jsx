@@ -9,20 +9,43 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { RotateCcw } from "lucide-react";
+import { Banknote, RotateCcw } from "lucide-react";
+
+function isCashPayment(method) {
+  return String(method || "").trim().toLowerCase() === "efectivo";
+}
 
 export default function PartialReturnDialog({ open, onOpenChange, quotation, onSaved }) {
   const [returnItems, setReturnItems] = useState({});
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Reset when dialog opens
-  React.useEffect(() => {
+  // Caja chica: solo visible cuando la venta fue en efectivo y la regla está activa
+  const [cashRuleEnabled, setCashRuleEnabled] = useState(false);
+  const [pettyCashDeduct, setPettyCashDeduct] = useState(null); // null=sin elegir, true=sí, false=no
+
+  useEffect(() => {
     if (open) {
       setReturnItems({});
       setReason("");
+      setPettyCashDeduct(null);
+      setCashRuleEnabled(false);
+
+      // Solo verificamos la regla si la venta fue pagada en efectivo
+      if (quotation?.paid && isCashPayment(quotation?.payment_method)) {
+        base44.functions
+          .invoke("getCurrentTenantRuleMap", {})
+          .then((res) => {
+            const rules = res?.data?.rules || {};
+            setCashRuleEnabled(rules?.cash_sales_to_petty_cash?.enabled === true);
+          })
+          .catch(() => setCashRuleEnabled(false));
+      }
     }
-  }, [open]);
+  }, [open, quotation?.id]);
+
+  const showPettyCashSection =
+    cashRuleEnabled && quotation?.paid && isCashPayment(quotation?.payment_method);
 
   const toggleItem = (item) => {
     setReturnItems(prev => {
@@ -53,6 +76,10 @@ export default function PartialReturnDialog({ open, onOpenChange, quotation, onS
       toast.error("Escribe el motivo de la devolución");
       return;
     }
+    if (showPettyCashSection && pettyCashDeduct === null) {
+      toast.error("Indica si deseas deducir el monto de la caja chica");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -68,6 +95,7 @@ export default function PartialReturnDialog({ open, onOpenChange, quotation, onS
         quotation_id: quotation.id,
         returned_items,
         reason,
+        petty_cash_deduction: showPettyCashSection ? pettyCashDeduct : false,
       });
 
       if (!res.data.success) {
@@ -75,7 +103,7 @@ export default function PartialReturnDialog({ open, onOpenChange, quotation, onS
         return;
       }
 
-      toast.success(`✅ Devolución registrada — ${returned_items.length} producto(s) devuelto(s)`);
+      toast.success(`Devolución registrada — ${returned_items.length} producto(s) devuelto(s)`);
       onSaved();
       onOpenChange(false);
     } catch (err) {
@@ -146,6 +174,49 @@ export default function PartialReturnDialog({ open, onOpenChange, quotation, onS
             </div>
           )}
 
+          {/* Sección caja chica — solo para ventas pagadas en efectivo con regla activa */}
+          {showPettyCashSection && Object.keys(returnItems).length > 0 && (
+            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Banknote className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
+                  Venta cobrada en efectivo
+                </p>
+              </div>
+              <p className="text-sm text-blue-700 dark:text-blue-400">
+                ¿Deseas registrar un egreso de{" "}
+                <span className="font-bold">
+                  ${returnTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                </span>{" "}
+                en caja chica por esta devolución?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPettyCashDeduct(true)}
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border-2 transition-all ${
+                    pettyCashDeduct === true
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white dark:bg-transparent text-blue-700 dark:text-blue-300 border-blue-300 hover:border-blue-500"
+                  }`}
+                >
+                  Sí, deducir de caja chica
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPettyCashDeduct(false)}
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border-2 transition-all ${
+                    pettyCashDeduct === false
+                      ? "bg-slate-500 text-white border-slate-500"
+                      : "bg-white dark:bg-transparent text-slate-600 dark:text-slate-400 border-slate-300 hover:border-slate-400"
+                  }`}
+                >
+                  No afectar caja chica
+                </button>
+              </div>
+            </div>
+          )}
+
           <div>
             <Label className="mb-1.5 block">Motivo de devolución *</Label>
             <Textarea
@@ -161,7 +232,12 @@ export default function PartialReturnDialog({ open, onOpenChange, quotation, onS
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button
             onClick={handleSubmit}
-            disabled={Object.keys(returnItems).length === 0 || !reason.trim() || saving}
+            disabled={
+              Object.keys(returnItems).length === 0 ||
+              !reason.trim() ||
+              (showPettyCashSection && Object.keys(returnItems).length > 0 && pettyCashDeduct === null) ||
+              saving
+            }
             className="bg-orange-500 hover:bg-orange-600 text-white"
           >
             <RotateCcw className="h-4 w-4 mr-1" />

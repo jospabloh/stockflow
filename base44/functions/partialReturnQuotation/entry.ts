@@ -6,6 +6,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 // 3. Crea movimientos de tipo "return" para cada item devuelto
 // 4. Actualiza el total de la cotización (quita los items devueltos)
 // 5. Incrementa el stock de los productos devueltos
+// 6. [Baristop / cash_sales_to_petty_cash] Si petty_cash_deduction=true y la venta fue en efectivo,
+//    registra un egreso en caja chica por el monto devuelto
+
+const CASH_RULE_KEY = 'cash_sales_to_petty_cash';
+const DEFAULT_CASH_METHODS = ['Efectivo'];
+
+function isCashMethod(method: string, allowed: string[] = DEFAULT_CASH_METHODS): boolean {
+  if (!method) return false;
+  const norm = (s: string) => String(s || '').trim().toLowerCase();
+  return allowed.some((m) => norm(m) === norm(method));
+}
 
 Deno.serve(async (req) => {
   try {
@@ -14,8 +25,9 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { quotation_id, returned_items, reason } = body;
+    const { quotation_id, returned_items, reason, petty_cash_deduction } = body;
     // returned_items: [{ product_id, product_name, quantity, unit_price, tax_rate }]
+    // petty_cash_deduction: boolean — si true y la venta fue en efectivo, deduce de caja chica
 
     if (!quotation_id || !returned_items?.length) {
       return Response.json({ error: 'quotation_id y returned_items son requeridos' }, { status: 400 });
@@ -87,6 +99,56 @@ Deno.serve(async (req) => {
       subtotal: newSubtotal,
       tax: newTax,
     });
+
+    // TENANT-SCOPED: Caja chica — egreso por devolución de venta en efectivo
+    // Solo aplica si: el usuario confirmó deducir, la venta fue pagada en efectivo,
+    // y el tenant tiene activa la regla cash_sales_to_petty_cash.
+    if (petty_cash_deduction === true && quotation.paid && isCashMethod(quotation.payment_method)) {
+      try {
+        const ruleRows = await base44.asServiceRole.entities.TenantRule.filter({
+          business_id: user.business_id,
+          rule_key: CASH_RULE_KEY,
+        });
+        const rule = ruleRows.find((r) => !r.archived && r.enabled);
+
+        if (rule) {
+          const allowedMethods: string[] =
+            Array.isArray(rule.config_json?.payment_methods) && rule.config_json.payment_methods.length > 0
+              ? rule.config_json.payment_methods
+              : DEFAULT_CASH_METHODS;
+
+          const returnAmount = returned_items.reduce(
+            (sum: number, ri: { quantity: number; unit_price: number }) => sum + ri.quantity * ri.unit_price,
+            0,
+          );
+
+          if (returnAmount > 0 && isCashMethod(quotation.payment_method, allowedMethods)) {
+            await base44.asServiceRole.entities.PettyCashMovement.create({
+              business_id: user.business_id,
+              movement_type: 'expense',
+              amount: returnAmount,
+              description: `Devolución en efectivo — ${quotation.folio} — ${reason.trim()}`,
+              category: 'Devolución efectivo',
+              movement_date: new Date().toLocaleDateString('en-CA'),
+              reference: quotation.folio,
+              notes: `Generado automáticamente por devolución de venta en efectivo. Cotización: ${quotation.id}. Regla: ${CASH_RULE_KEY}.`,
+              generated_by_system: true,
+              origin_type: 'quotation_return',
+              origin_id: quotation.id,
+              payment_method_snapshot: quotation.payment_method,
+            });
+
+            if (rule.id) {
+              await base44.asServiceRole.entities.TenantRule.update(rule.id, {
+                last_applied_at: new Date().toISOString(),
+              });
+            }
+          }
+        }
+      } catch (_err) {
+        // Fire-and-forget: un fallo en caja chica no bloquea la devolución de inventario
+      }
+    }
 
     return Response.json({ success: true, quotation_id, returned_count: returned_items.length });
   } catch (error) {

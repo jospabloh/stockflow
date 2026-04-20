@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MobileSelect } from "@/components/ui/MobileSelect";
 import SearchableSelect from "@/components/ui/SearchableSelect";
-import { Save, ScanLine, Search, Plus, Trash2, CheckCircle2 } from "lucide-react";
+import { Save, ScanLine, Search, Plus, Trash2, CheckCircle2, Banknote } from "lucide-react";
 import BarcodeCameraScanner from "@/components/products/BarcodeCameraScanner";
 import { toast } from "sonner";
 import { useBusinessContext } from "@/components/BusinessContext";
@@ -57,6 +57,10 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   const [clientId, setClientId] = useState("");
   const [isPaid, setIsPaid] = useState(false);
 
+  // Caja chica: deducción por devolución en efectivo (solo con regla activa)
+  const [cashRuleEnabled, setCashRuleEnabled] = useState(false);
+  const [pettyCashDeduct, setPettyCashDeduct] = useState(null); // null=sin elegir, true=sí, false=no
+
   // OB3: Lista de items (cada uno con producto + cantidad)
   const [items, setItems] = useState([{ product: null, quantity: 1 }]);
 
@@ -66,18 +70,22 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         base44.entities.Product.filter({ status: "active", business_id: businessId }),
         base44.entities.Category.filter({ business_id: businessId }),
         base44.functions.invoke('getBusinessCatalogs', {}),
-      ]).then(([prods, cats, catalogsRes]) => {
+        base44.functions.invoke('getCurrentTenantRuleMap', {}).catch(() => ({ data: { rules: {} } })),
+      ]).then(([prods, cats, catalogsRes, ruleMapRes]) => {
         setProducts(prods);
         setCategories(cats);
         const catalogs = catalogsRes?.data || {};
         setPaymentMethods(catalogs.paymentMethods || []);
         setClients(catalogs.clients || []);
         setSuppliers(catalogs.suppliers || []);
+        const rules = ruleMapRes?.data?.rules || {};
+        setCashRuleEnabled(rules?.cash_sales_to_petty_cash?.enabled === true);
       });
       setMovType("exit");
       setPaymentMethodId("");
       setClientId("");
       setIsPaid(false);
+      setPettyCashDeduct(null);
       setItems([{ product: null, quantity: 1 }]);
       setBarcodeInput("");
       setBarcodeNotFound(false);
@@ -143,7 +151,18 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
   const isAdjustment = movType === "adjustment";
   const needsParty = !isAdjustment; // entrada/salida/devolución requieren forma de pago y cliente/proveedor
-  const canSave = items.some(i => i.product) && (!needsParty || (paymentMethodId && clientId)) && !saving;
+
+  const selectedPmName = paymentMethods.find(p => p.id === paymentMethodId)?.name || "";
+  const isReturnWithCash =
+    movType === "return" &&
+    cashRuleEnabled &&
+    selectedPmName.trim().toLowerCase() === "efectivo";
+
+  const canSave =
+    items.some(i => i.product) &&
+    (!needsParty || (paymentMethodId && clientId)) &&
+    !(isReturnWithCash && pettyCashDeduct === null) &&
+    !saving;
 
   const handleSave = async () => {
     if (!items.some(i => i.product)) {
@@ -220,6 +239,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           reference: pmName,
           reason: clientName,
           paid: movType === "exit" ? isPaid : true,
+          petty_cash_deduction: isReturnWithCash ? pettyCashDeduct === true : false,
         });
         if (!movResp.data.success) {
           toast.error(`Error en "${product.name}": ${movResp.data.error}`);
@@ -316,7 +336,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
             <Label className="text-foreground mb-1.5 block">Tipo de movimiento *</Label>
             <MobileSelect
               value={movType}
-              onValueChange={(val) => { setMovType(val); setClientId(""); }}
+              onValueChange={(val) => { setMovType(val); setClientId(""); setPettyCashDeduct(null); }}
               placeholder="Tipo"
               options={ALL_TYPES.filter(t => t.value !== "adjustment" || isAdmin).map((t) => ({ value: t.value, label: t.label }))}
             />
@@ -401,7 +421,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
               <Label className="text-foreground mb-1.5 block">{movType === "return" ? "Método de reembolso *" : "Forma de pago *"}</Label>
               <SearchableSelect
                 value={paymentMethodId}
-                onValueChange={setPaymentMethodId}
+                onValueChange={(val) => { setPaymentMethodId(val); setPettyCashDeduct(null); }}
                 placeholder={movType === "return" ? "Seleccionar método de reembolso" : "Seleccionar forma de pago"}
                 options={paymentMethods.map((pm) => ({ value: pm.id, label: pm.name }))}
               />
@@ -426,6 +446,49 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
                   : clients.map((c) => ({ value: c.id, label: c.name, searchLabel: c.business_name || c.name }))
                 }
               />
+            </div>
+          )}
+
+          {/* Caja chica — deducción por devolución en efectivo (solo con regla activa) */}
+          {isReturnWithCash && (
+            <div className="rounded-xl border-2 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Banknote className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
+                  Reembolso en efectivo
+                </p>
+              </div>
+              <p className="text-sm text-blue-700 dark:text-blue-400">
+                ¿Deseas registrar un egreso de{" "}
+                <span className="font-bold">
+                  ${grandTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                </span>{" "}
+                en caja chica por esta devolución?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPettyCashDeduct(true)}
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border-2 transition-all ${
+                    pettyCashDeduct === true
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white dark:bg-transparent text-blue-700 dark:text-blue-300 border-blue-300 hover:border-blue-500"
+                  }`}
+                >
+                  Sí, deducir de caja chica
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPettyCashDeduct(false)}
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border-2 transition-all ${
+                    pettyCashDeduct === false
+                      ? "bg-slate-500 text-white border-slate-500"
+                      : "bg-white dark:bg-transparent text-slate-600 dark:text-slate-400 border-slate-300 hover:border-slate-400"
+                  }`}
+                >
+                  No afectar caja chica
+                </button>
+              </div>
             </div>
           )}
 
