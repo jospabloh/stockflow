@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, AlertTriangle, Barcode, Loader2 } from "lucide-react";
+import { Pencil, Trash2, AlertTriangle, Barcode, Loader2, History } from "lucide-react";
 import { createButtonProps } from "@/lib/a11y";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -104,19 +104,28 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
             )}
             {isAdmin && (
               <>
-                <Button 
-                   variant="ghost" 
-                   size="icon" 
-                   className="h-8 w-8" 
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => navigate(`/Movements?product_id=${product.id}`)}
+                  title="Ver historial de movimientos"
+                >
+                  <History className="h-4 w-4 text-indigo-400" />
+                </Button>
+                <Button
+                   variant="ghost"
+                   size="icon"
+                   className="h-8 w-8"
                    onClick={() => onEdit(product)}
                    {...createButtonProps('edit')}
                  >
                    <Pencil className="h-4 w-4 text-slate-400" />
                  </Button>
-                 <Button 
-                   variant="ghost" 
-                   size="icon" 
-                   className="h-8 w-8" 
+                 <Button
+                   variant="ghost"
+                   size="icon"
+                   className="h-8 w-8"
                    onClick={() => onDelete(product)}
                    {...createButtonProps('delete')}
                  >
@@ -176,19 +185,27 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
           )}
           {isAdmin && (
             <>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-11 px-3" 
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-11 px-3 text-indigo-500"
+                onClick={() => navigate(`/Movements?product_id=${product.id}`)}
+              >
+                <History className="h-4 w-4 mr-1" /> Historial
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-11 px-3"
                 onClick={() => onEdit(product)}
                 {...createButtonProps('edit')}
               >
                 <Pencil className="h-4 w-4 text-muted-foreground mr-1" /> Editar
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-11 px-3 text-red-400 hover:text-red-600" 
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-11 px-3 text-red-400 hover:text-red-600"
                 onClick={() => onDelete(product)}
                 {...createButtonProps('delete')}
               >

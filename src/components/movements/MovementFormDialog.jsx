@@ -246,17 +246,6 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           setSaving(false);
           return;
         }
-
-        const stockResp = await base44.functions.invoke('updateProductStockSafe', {
-          product_id: product.id,
-          new_stock: newStock,
-          business_id: businessId,
-        });
-        if (!stockResp.data.success) {
-          toast.error(`Error actualizando stock de "${product.name}": ${stockResp.data.error}`);
-          setSaving(false);
-          return;
-        }
       }
 
       toast.success(`${validItems.length} movimiento(s) registrado(s)`);
