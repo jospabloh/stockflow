@@ -19,8 +19,8 @@ Deno.serve(async (req) => {
     const { search = '', business_id = '', rule_key = '', enabled } = body || {};
 
     const [rules, businesses] = await Promise.all([
-      base44.asServiceRole.entities.TenantRule.list(),
-      base44.asServiceRole.entities.Business.list(),
+      base44.asServiceRole.entities.TenantRule.filter({}),
+      base44.asServiceRole.entities.Business.filter({}),
     ]);
 
     const businessMap = new Map(businesses.map((b) => [b.id, b]));
