@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Shield, Search, Users, RefreshCw, Edit, CheckCircle, Clock, Lock, AlertTriangle, Mail } from "lucide-react";
+import { Shield, Search, Users, RefreshCw, Edit, CheckCircle, Clock, Lock, AlertTriangle, Mail, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
 
@@ -78,6 +78,7 @@ export default function LicenseAdmin() {
       licensed_user_limit: biz.licensed_user_limit || 4,
       payment_reference: biz.payment_reference || "",
       activation_notes: biz.activation_notes || "",
+      auto_renewal: biz.auto_renewal || false,
     });
     setEditTarget(biz);
   };
@@ -162,6 +163,7 @@ export default function LicenseAdmin() {
                   <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Plan</th>
                   <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Usuarios</th>
                   <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Trial / Activación</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Auto-Renewal</th>
                   <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Ref. Pago</th>
                   <th className="px-4 py-3"></th>
                 </tr>
@@ -209,6 +211,15 @@ export default function LicenseAdmin() {
                           )}
                           {biz.activated_by_admin && (
                             <p className="truncate max-w-[120px]">Por: {biz.activated_by_admin}</p>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {biz.auto_renewal ? (
+                            <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs flex items-center gap-1 w-fit">
+                              <RotateCcw className="h-3 w-3" /> Auto
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Manual</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-xs text-muted-foreground max-w-[120px] truncate">
@@ -291,6 +302,23 @@ export default function LicenseAdmin() {
                 onChange={e => setEditForm(f => ({ ...f, activation_notes: e.target.value }))}
                 className="mt-1"
               />
+            </div>
+            <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/30">
+              <input
+                type="checkbox"
+                id="auto_renewal"
+                checked={editForm.auto_renewal || false}
+                onChange={e => setEditForm(f => ({ ...f, auto_renewal: e.target.checked }))}
+                className="h-4 w-4 rounded accent-indigo-600 cursor-pointer"
+              />
+              <div>
+                <Label htmlFor="auto_renewal" className="cursor-pointer font-medium">Renovación automática</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {editForm.auto_renewal
+                    ? "Se enviará aviso FYI antes de renovar. Sin recordatorios de pago."
+                    : "Se enviarán recordatorios de pago antes de vencer."}
+                </p>
+              </div>
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={() => setEditTarget(null)} disabled={saving}>Cancelar</Button>

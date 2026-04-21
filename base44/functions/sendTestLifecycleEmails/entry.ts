@@ -194,12 +194,13 @@ function getEmailTemplate(
 
     case 'renewal_upcoming':
       return {
-        subject: `Tu renovación automática de ${APP_NAME} es en menos de 5 días`,
+        subject: `Tu licencia de ${APP_NAME} se renueva automáticamente en 7 días`,
         html: wrap(`
-          <h2 style="color:#111827;margin-top:0">Próxima renovación automática</h2>
-          <p style="color:#374151;line-height:1.6">Hola, ${name}. Tu licencia de ${APP_NAME} se renovará automáticamente el <strong>${formatDate(licenseExpiresAt)}</strong>.</p>
-          <p style="color:#374151;line-height:1.6">No necesitas hacer nada — la renovación es automática. Si tienes alguna pregunta contáctanos.</p>
+          <h2 style="color:#111827;margin-top:0">Aviso de renovación automática</h2>
+          <p style="color:#374151;line-height:1.6">Hola, ${name}. Te informamos que tu licencia de ${APP_NAME} se <strong>renovará automáticamente</strong> el <strong>${formatDate(licenseExpiresAt)}</strong>.</p>
+          <p style="color:#374151;line-height:1.6">No necesitas hacer nada — la renovación es automática. Solo asegúrate de que tu método de pago esté vigente.</p>
           ${ctaButton('Ir a mi cuenta', appUrl)}
+          <p style="color:#6b7280;font-size:13px">¿Tienes alguna pregunta? Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND_COLOR}">${SUPPORT_EMAIL}</a></p>
         `, appUrl),
       };
 
