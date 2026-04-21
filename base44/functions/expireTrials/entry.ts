@@ -37,10 +37,11 @@ Deno.serve(async (req) => {
 
         let sendData: any = null;
         try {
+          const emailJobs = lifecycleData?.emails_to_send ?? [];
           const sendResp = await fetch(`${appUrl}/functions/v1/sendLifecycleEmails`, {
             method: 'POST',
             headers: sharedHeaders,
-            body: JSON.stringify({}),
+            body: JSON.stringify({ jobs: emailJobs }),
           });
           sendData = await sendResp.json();
           console.log('[expireTrials] sendLifecycleEmails:', JSON.stringify(sendData));
