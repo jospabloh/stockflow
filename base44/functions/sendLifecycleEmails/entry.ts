@@ -279,7 +279,7 @@ Deno.serve(async (req: Request) => {
     );
     if (!validCron) {
       const user = await base44.auth.me().catch(() => null);
-      if (!user || user.email !== PLATFORM_OWNER_EMAIL) {
+      if (!user || (user.email !== PLATFORM_OWNER_EMAIL && user.role !== 'admin')) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
