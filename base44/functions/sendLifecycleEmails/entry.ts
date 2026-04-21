@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
-import { Resend } from 'npm:resend';
 
 const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
 const SUPPORT_EMAIL = 'soporte@acaciaco.com.mx';
@@ -283,14 +282,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const resendKey = Deno.env.get('RESEND_API_KEY');
-    if (!resendKey) {
-      return Response.json({ error: 'RESEND_API_KEY not configured' }, { status: 500 });
-    }
-
-    const emailFrom = Deno.env.get('EMAIL_FROM') || `${APP_NAME} <noreply@acaciaco.com.mx>`;
     const appUrl = Deno.env.get('APP_URL') || UPGRADE_URL;
-    const resend = new Resend(resendKey);
 
     // Mode 1: jobs passed directly in body (called from checkAccountLifecycle / expireTrials)
     // Mode 2: standalone scheduler run — read from EmailNotification entity if available
@@ -350,11 +342,11 @@ Deno.serve(async (req: Request) => {
       }
 
       try {
-        await resend.emails.send({
-          from: emailFrom,
-          to: [job.recipient_email],
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: job.recipient_email,
           subject: template.subject,
-          html: template.html,
+          body: template.html,
+          from_name: APP_NAME,
         });
         sent++;
         console.log(`[sendLifecycleEmails] Sent ${job.email_type} to ${job.recipient_email}`);

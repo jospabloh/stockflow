@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
-import { Resend } from 'npm:resend';
 
 const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
 const SUPPORT_EMAIL = 'soporte@acaciaco.com.mx';
@@ -292,15 +291,7 @@ Deno.serve(async (req: Request) => {
       return Response.json({ error: 'Forbidden: platform owner only' }, { status: 403 });
     }
 
-    const resendKey = Deno.env.get('RESEND_API_KEY');
-    if (!resendKey) {
-      return Response.json({ error: 'RESEND_API_KEY not configured' }, { status: 500 });
-    }
-
-    const emailFrom = Deno.env.get('EMAIL_FROM') || `${APP_NAME} <noreply@acaciaco.com.mx>`;
     const appUrl = Deno.env.get('APP_URL') || UPGRADE_URL;
-
-    const resend = new Resend(resendKey);
 
     const now = new Date();
     const licenseExpiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -329,11 +320,11 @@ Deno.serve(async (req: Request) => {
       const subject = `[PRUEBA] ${template.subject}`;
 
       try {
-        await resend.emails.send({
-          from: emailFrom,
-          to: [PLATFORM_OWNER_EMAIL],
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: PLATFORM_OWNER_EMAIL,
           subject,
-          html: template.html,
+          body: template.html,
+          from_name: APP_NAME,
         });
         results.push({ type: emailType, subject, status: 'sent' });
         sent++;

@@ -52,14 +52,20 @@ export default function LicenseAdmin() {
     setSendingTestEmails(true);
     try {
       const r = await base44.functions.invoke("sendTestLifecycleEmails", {});
-      const { sent, failed, recipient } = r.data || {};
-      if (failed > 0) {
-        toast.warning(`${sent} correos enviados, ${failed} fallaron — revisa la consola`);
+      const { sent, failed, recipient, error, results } = r.data || {};
+      if (error) {
+        toast.error(`Error en la función: ${error}`);
+        console.error("[sendTestLifecycleEmails] error:", error);
+      } else if (failed > 0) {
+        const firstErr = results?.find(x => x.status === "failed")?.error || "";
+        toast.warning(`${sent} enviados, ${failed} fallaron — ${firstErr}`);
+        console.warn("[sendTestLifecycleEmails] results:", results);
       } else {
         toast.success(`${sent} correos de prueba enviados a ${recipient}`);
       }
     } catch (err) {
-      toast.error("Error al enviar correos de prueba");
+      toast.error(`Error al enviar correos de prueba: ${err?.message || err}`);
+      console.error("[sendTestLifecycleEmails] exception:", err);
     } finally {
       setSendingTestEmails(false);
     }
