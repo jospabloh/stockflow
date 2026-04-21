@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { name, business_id, contact_name, email, phone, address, rfc, notes } = body;
+    const { name, business_id, contact_name, email, phone, address, rfc, notes, extra_contacts } = body;
 
     // VALIDATION: business_id required
     if (!business_id) {
@@ -51,7 +51,8 @@ Deno.serve(async (req) => {
       phone,
       address,
       rfc,
-      notes
+      notes,
+      extra_contacts: extra_contacts || "[]",
     });
 
     return Response.json({ 

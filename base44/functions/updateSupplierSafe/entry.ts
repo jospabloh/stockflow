@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
 // Whitelist — excludes id, business_id, metadata fields
-const ALLOWED_FIELDS = ['name', 'contact_name', 'email', 'phone', 'address', 'rfc', 'notes'];
+const ALLOWED_FIELDS = ['name', 'contact_name', 'email', 'phone', 'address', 'rfc', 'notes', 'extra_contacts'];
 
 Deno.serve(async (req) => {
   try {
