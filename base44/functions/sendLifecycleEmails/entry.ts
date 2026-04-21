@@ -342,7 +342,7 @@ Deno.serve(async (req: Request) => {
       }
 
       try {
-        await base44.integrations.Core.SendEmail({
+        await base44.asServiceRole.integrations.Core.SendEmail({
           to: job.recipient_email,
           subject: template.subject,
           body: template.html,

@@ -320,7 +320,7 @@ Deno.serve(async (req: Request) => {
       const subject = `[PRUEBA] ${template.subject}`;
 
       try {
-        await base44.integrations.Core.SendEmail({
+        await base44.asServiceRole.integrations.Core.SendEmail({
           to: PLATFORM_OWNER_EMAIL,
           subject,
           body: template.html,
