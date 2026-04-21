@@ -2,11 +2,28 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.8.2";
+export const APP_VERSION = "2.9.0";
 
-export const RELEASE_DATE = "2026-04-15";
+export const RELEASE_DATE = "2026-04-21";
 
 export const CHANGELOG = [
+  {
+    version: "2.9.0",
+    date: "2026-04-21",
+    changes: [
+      "🔍 Nueva pestaña 'Audit Inventario' en Configuración: detecta discrepancias entre stock actual y movimientos registrados",
+      "🗂️ Clasificación automática de discrepancias: direct_edit, sync_error, no_movements, legacy_bug con badges visuales",
+      "✅ Resolución de auditoría: el admin puede aceptar stock actual o revertirlo al valor calculado con movimiento de reconciliación",
+      "📧 Sistema de ciclo de vida de cuentas con emails automáticos en español: bienvenida, aviso de expiración, modo solo-lectura y archivo",
+      "🔄 Transiciones automáticas gestionadas por scheduler diario: trial → view_only → archived → deleted",
+      "☑️ Checkbox de auto-renovación por tenant en panel de administración de licencias",
+      "👥 Múltiples contactos por proveedor: contacto principal obligatorio + contactos adicionales opcionales",
+      "🔒 Campos obligatorios en formulario de cliente: Nombre de Contacto, Nombre de Negocio y Teléfono",
+      "🐛 Fix: scroll y max-height en diálogo Editar Licencia — ya no se corta en pantallas pequeñas",
+      "🐛 Fix: badge de stock bajo en sidebar se refresca correctamente al navegar entre páginas",
+      "🐛 Fix: emails de ciclo de vida ahora se envían via Core.SendEmail nativo de base44 (sin dependencia de Resend)",
+    ],
+  },
   {
     version: "2.8.2",
     date: "2026-04-15",
