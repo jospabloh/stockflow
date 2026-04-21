@@ -231,6 +231,22 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // === SECTION E: ACTIVE BUSINESSES WITH AUTO-RENEWAL ===
+    for (const biz of businesses.filter(
+      (b: any) => b.billing_status === 'active' && b.license_expires_at && b.auto_renewal
+    )) {
+      const expiresAt = new Date(biz.license_expires_at);
+      const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / DAY_MS);
+      const adminEmails = await getAdminEmails(base44, biz.id);
+
+      // FYI: renewal in 7 days
+      if (daysUntilExpiry === 7) {
+        for (const email of adminEmails) {
+          if (scheduleEmail(emailJobs, seen, 'renewal_upcoming', email, biz)) results.active.emails_queued++;
+        }
+      }
+    }
+
     console.log(`[checkAccountLifecycle] Done:`, JSON.stringify(results));
     return Response.json({ success: true, checked_at: nowISO, results, emails_to_send: emailJobs });
 
