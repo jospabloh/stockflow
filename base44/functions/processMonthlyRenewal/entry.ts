@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
-const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 interface EmailJob {
@@ -53,7 +52,7 @@ Deno.serve(async (req: Request) => {
     );
     if (!validCron) {
       const user = await base44.auth.me().catch(() => null);
-      if (!user || user.email !== PLATFORM_OWNER_EMAIL) {
+      if (!user || user.role !== 'admin') {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
