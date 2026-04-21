@@ -79,15 +79,22 @@ export default function LicenseAdmin() {
       payment_reference: biz.payment_reference || "",
       activation_notes: biz.activation_notes || "",
       auto_renewal: biz.auto_renewal || false,
+      license_expires_at: biz.license_expires_at ? biz.license_expires_at.slice(0, 10) : "",
     });
     setEditTarget(biz);
   };
 
   const handleSave = async () => {
     setSaving(true);
+    const updates = { ...editForm };
+    if (updates.license_expires_at) {
+      updates.license_expires_at = new Date(updates.license_expires_at).toISOString();
+    } else {
+      delete updates.license_expires_at;
+    }
     await base44.functions.invoke("adminUpdateTenantLicense", {
       business_id: editTarget.id,
-      updates: editForm,
+      updates,
     });
     toast.success(`Licencia de "${editTarget.name}" actualizada`);
     setSaving(false);
@@ -319,6 +326,20 @@ export default function LicenseAdmin() {
                     : "Se enviarán recordatorios de pago antes de vencer."}
                 </p>
               </div>
+            </div>
+            <div>
+              <Label>Fecha de vencimiento / renovación</Label>
+              <Input
+                type="date"
+                value={editForm.license_expires_at || ""}
+                onChange={e => setEditForm(f => ({ ...f, license_expires_at: e.target.value }))}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {editForm.auto_renewal
+                  ? "Se extiende 1 mes automáticamente cada día 1. Los correos FYI se envían 7 días antes."
+                  : "Los correos de recordatorio se enviarán 7, 3 y 1 día(s) antes de esta fecha."}
+              </p>
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={() => setEditTarget(null)} disabled={saving}>Cancelar</Button>
