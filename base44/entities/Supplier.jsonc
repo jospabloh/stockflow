@@ -30,6 +30,11 @@
       "type": "string",
       "description": "Notas adicionales"
     },
+    "extra_contacts": {
+      "type": "string",
+      "description": "Contactos adicionales (JSON: [{name, email, phone}])",
+      "default": "[]"
+    },
     "business_id": {
       "type": "string",
       "description": "ID del negocio al que pertenece"
