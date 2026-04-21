@@ -56,6 +56,14 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, client_id, client, message: 'No valid fields to update' });
     }
 
+    // VALIDATION: Required fields cannot be blanked out
+    const newName = 'name' in sanitized ? sanitized.name : client.name;
+    const newBusinessName = 'business_name' in sanitized ? sanitized.business_name : client.business_name;
+    const newPhone = 'phone' in sanitized ? sanitized.phone : client.phone;
+    if (!newName?.trim() || !newBusinessName?.trim() || !newPhone?.trim()) {
+      return Response.json({ success: false, error: 'Nombre de contacto, nombre de negocio y teléfono son requeridos' }, { status: 400 });
+    }
+
     // VALIDATION: Mutually exclusive pricing flags
     const newForceWholesale = sanitized.force_wholesale_all_products ?? client.force_wholesale_all_products ?? false;
     const newForcePurchase = sanitized.force_purchase_all_products ?? client.force_purchase_all_products ?? false;

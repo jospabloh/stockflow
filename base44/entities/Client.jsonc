@@ -60,6 +60,7 @@
   },
   "required": [
     "name",
+    "business_name",
     "phone",
     "business_id"
   ],

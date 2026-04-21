@@ -24,6 +24,10 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'Unauthorized: business_id mismatch' }, { status: 403 });
     }
 
+    if (!name?.trim() || !business_name?.trim() || !phone?.trim()) {
+      return Response.json({ success: false, error: 'Nombre de contacto, nombre de negocio y teléfono son requeridos' }, { status: 400 });
+    }
+
     // VALIDATION: Mutually exclusive pricing flags
     if (force_wholesale_all_products && force_purchase_all_products) {
       return Response.json({
