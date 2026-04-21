@@ -271,7 +271,6 @@ Deno.serve(async (req: Request) => {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
 
-    // Accept cron secret from header (manual/delegation calls) or body (Base44 scheduler via function_args)
     const cronSecretEnv = Deno.env.get('CRON_SECRET');
     const validCron = cronSecretEnv && (
       req.headers.get('x-cron-secret') === cronSecretEnv ||
@@ -291,95 +290,78 @@ Deno.serve(async (req: Request) => {
 
     const emailFrom = Deno.env.get('EMAIL_FROM') || `${APP_NAME} <noreply@acaciaco.com.mx>`;
     const appUrl = Deno.env.get('APP_URL') || UPGRADE_URL;
-
     const resend = new Resend(resendKey);
 
-    // Fetch all notifications
-    const allNotifications = await base44.asServiceRole.entities.EmailNotification.list();
+    // Mode 1: jobs passed directly in body (called from checkAccountLifecycle / expireTrials)
+    // Mode 2: standalone scheduler run — read from EmailNotification entity if available
+    let finalBatch: Array<{
+      email_type: string;
+      recipient_email: string;
+      business_name: string;
+      license_expires_at?: string | null;
+      scheduled_delete_at?: string | null;
+    }> = [];
 
-    // Filter: pending + failed under MAX_RETRIES
-    const toProcess = allNotifications.filter(
-      (n: any) =>
-        n.status === 'pending' ||
-        (n.status === 'failed' && (n.retry_count || 0) < MAX_RETRIES)
-    );
-
-    // Layer 1 dedup: within batch, keep first per (business_id + email_type)
-    const seenKeys = new Set<string>();
-    const deduped: any[] = [];
-    for (const n of toProcess) {
-      const key = `${n.business_id}:${n.email_type}`;
-      if (!seenKeys.has(key)) {
-        seenKeys.add(key);
-        deduped.push(n);
+    if (Array.isArray(body.jobs) && body.jobs.length > 0) {
+      finalBatch = body.jobs;
+      console.log(`[sendLifecycleEmails] Using ${finalBatch.length} inline jobs from request body`);
+    } else {
+      // Try reading from EmailNotification entity (optional — entity may not exist yet)
+      try {
+        const allNotifications = await base44.asServiceRole.entities.EmailNotification.list();
+        const toProcess = allNotifications.filter(
+          (n: any) => n.status === 'pending' || (n.status === 'failed' && (n.retry_count || 0) < MAX_RETRIES)
+        );
+        const seenKeys = new Set<string>();
+        for (const n of toProcess) {
+          const key = `${n.business_id}:${n.email_type}:${n.recipient_email}`;
+          if (!seenKeys.has(key)) {
+            seenKeys.add(key);
+            finalBatch.push(n);
+          }
+        }
+        console.log(`[sendLifecycleEmails] Using ${finalBatch.length} jobs from EmailNotification entity`);
+      } catch (entityErr: any) {
+        console.warn(`[sendLifecycleEmails] EmailNotification entity not available: ${entityErr.message}`);
+        return Response.json({ success: true, sent: 0, failed: 0, batch_size: 0, note: 'EmailNotification entity not available' });
       }
     }
-
-    // Layer 2 dedup: skip if already 'sent' for (business_id + email_type)
-    const sentKeys = new Set<string>(
-      allNotifications
-        .filter((n: any) => n.status === 'sent')
-        .map((n: any) => `${n.business_id}:${n.email_type}`)
-    );
-    const finalBatch = deduped.filter(
-      (n: any) => !sentKeys.has(`${n.business_id}:${n.email_type}`)
-    );
-
-    // Build business context map
-    const businesses = await base44.asServiceRole.entities.Business.list();
-    const bizMap = new Map(businesses.map((b: any) => [b.id, b]));
 
     let sent = 0;
     let failed = 0;
     const errors: any[] = [];
 
-    for (const notification of finalBatch) {
-      const biz: any = bizMap.get(notification.business_id);
+    for (const job of finalBatch) {
       const ctx = {
-        businessName: biz?.name || 'tu negocio',
+        businessName: job.business_name || 'tu negocio',
         appUrl,
         supportEmail: SUPPORT_EMAIL,
         upgradeUrl: UPGRADE_URL,
-        licenseExpiresAt: biz?.license_expires_at || null,
-        scheduledDeleteAt: biz?.scheduled_delete_at || null,
+        licenseExpiresAt: job.license_expires_at || null,
+        scheduledDeleteAt: job.scheduled_delete_at || null,
       };
 
-      const template = getEmailTemplate(notification.email_type, ctx);
+      const template = getEmailTemplate(job.email_type, ctx);
       if (!template) {
-        await base44.asServiceRole.entities.EmailNotification.update(notification.id, {
-          status: 'failed',
-          error_message: `Unknown email_type: ${notification.email_type}`,
-          last_attempt_at: new Date().toISOString(),
-          retry_count: (notification.retry_count || 0) + 1,
-        });
+        console.warn(`[sendLifecycleEmails] Unknown email_type: ${job.email_type}`);
         failed++;
+        errors.push({ type: job.email_type, recipient: job.recipient_email, error: 'Unknown email_type' });
         continue;
       }
 
       try {
         await resend.emails.send({
           from: emailFrom,
-          to: [notification.recipient_email],
+          to: [job.recipient_email],
           subject: template.subject,
           html: template.html,
         });
-        await base44.asServiceRole.entities.EmailNotification.update(notification.id, {
-          status: 'sent',
-          sent_at: new Date().toISOString(),
-          last_attempt_at: new Date().toISOString(),
-        });
         sent++;
-        console.log(`[sendLifecycleEmails] Sent ${notification.email_type} to ${notification.recipient_email}`);
+        console.log(`[sendLifecycleEmails] Sent ${job.email_type} to ${job.recipient_email}`);
       } catch (err: any) {
-        const newRetryCount = (notification.retry_count || 0) + 1;
-        await base44.asServiceRole.entities.EmailNotification.update(notification.id, {
-          status: newRetryCount >= MAX_RETRIES ? 'failed' : 'pending',
-          error_message: String(err?.message || err),
-          last_attempt_at: new Date().toISOString(),
-          retry_count: newRetryCount,
-        });
         failed++;
-        errors.push({ id: notification.id, type: notification.email_type, error: String(err?.message || err) });
+        errors.push({ type: job.email_type, recipient: job.recipient_email, error: String(err?.message || err) });
+        console.error(`[sendLifecycleEmails] Failed ${job.email_type} to ${job.recipient_email}:`, err?.message);
       }
     }
 
