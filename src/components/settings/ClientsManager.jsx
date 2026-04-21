@@ -28,6 +28,7 @@ export default function ClientsManager() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // CRITICAL FIX: Filter clients by business_id to prevent cross-tenant data leaks
   const load = () => businessId 
@@ -36,19 +37,22 @@ export default function ClientsManager() {
 
   useEffect(() => { load(); }, []);
 
-  const openNew = () => { setEditing(null); setForm(emptyForm); setFormOpen(true); };
-  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, business_name: c.business_name || "", giro: c.giro || "", email: c.email || "", phone: c.phone || "", address: c.address || "", rfc: c.rfc || "", notes: c.notes || "", status: c.status || "active", force_wholesale_all_products: c.force_wholesale_all_products || false, force_purchase_all_products: c.force_purchase_all_products || false }); setFormOpen(true); };
+  const openNew = () => { setEditing(null); setForm(emptyForm); setFieldErrors({}); setFormOpen(true); };
+  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, business_name: c.business_name || "", giro: c.giro || "", email: c.email || "", phone: c.phone || "", address: c.address || "", rfc: c.rfc || "", notes: c.notes || "", status: c.status || "active", force_wholesale_all_products: c.force_wholesale_all_products || false, force_purchase_all_products: c.force_purchase_all_products || false }); setFieldErrors({}); setFormOpen(true); };
 
   const handleSave = async () => {
     // Validate required fields
-    if (!form.name?.trim()) {
-      toast.error("El nombre es requerido");
+    const errors = {};
+    if (!form.name?.trim()) errors.name = true;
+    if (!form.business_name?.trim()) errors.business_name = true;
+    if (!form.phone?.trim()) errors.phone = true;
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      toast.error("Por favor completa todos los campos requeridos");
       return;
     }
-    if (!form.phone?.trim()) {
-      toast.error("El teléfono es requerido");
-      return;
-    }
+    setFieldErrors({});
 
     // Frontend: mutually exclusive flags
     if (form.force_wholesale_all_products && form.force_purchase_all_products) {
@@ -186,12 +190,22 @@ export default function ClientsManager() {
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Nombre *</Label>
-                <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+                <Label>Nombre de Contacto *</Label>
+                <Input
+                  value={form.name}
+                  onChange={e => { setForm({ ...form, name: e.target.value }); if (fieldErrors.name) setFieldErrors(p => ({ ...p, name: false })); }}
+                  className={fieldErrors.name ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+                {fieldErrors.name && <p className="text-xs text-red-500 mt-1">Campo requerido</p>}
               </div>
               <div>
-                <Label>Nombre Negocio</Label>
-                <Input value={form.business_name} onChange={e => setForm({ ...form, business_name: e.target.value })} placeholder="Opcional" />
+                <Label>Nombre de Negocio *</Label>
+                <Input
+                  value={form.business_name}
+                  onChange={e => { setForm({ ...form, business_name: e.target.value }); if (fieldErrors.business_name) setFieldErrors(p => ({ ...p, business_name: false })); }}
+                  className={fieldErrors.business_name ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+                {fieldErrors.business_name && <p className="text-xs text-red-500 mt-1">Campo requerido</p>}
               </div>
             </div>
             <div>
@@ -205,7 +219,12 @@ export default function ClientsManager() {
             </div>
             <div>
               <Label>Teléfono *</Label>
-              <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+              <Input
+                value={form.phone}
+                onChange={e => { setForm({ ...form, phone: e.target.value }); if (fieldErrors.phone) setFieldErrors(p => ({ ...p, phone: false })); }}
+                className={fieldErrors.phone ? "border-red-500 focus-visible:ring-red-500" : ""}
+              />
+              {fieldErrors.phone && <p className="text-xs text-red-500 mt-1">Campo requerido</p>}
             </div>
             </div>
             <div>
@@ -277,7 +296,7 @@ export default function ClientsManager() {
           </div>
           <div className="flex justify-end gap-3 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-border shrink-0 bg-card">
             <Button variant="outline" onClick={() => setFormOpen(false)} disabled={saving}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={!form.name?.trim() || !form.phone?.trim() || saving} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button onClick={handleSave} disabled={!form.name?.trim() || !form.business_name?.trim() || !form.phone?.trim() || saving} className="bg-indigo-600 hover:bg-indigo-700">
               {saving ? "Guardando..." : "Guardar"}
             </Button>
           </div>
