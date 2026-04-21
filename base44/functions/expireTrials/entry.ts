@@ -22,17 +22,34 @@ Deno.serve(async (req) => {
     // Delegate to checkAccountLifecycle via HTTP if APP_URL is configured
     const appUrl = Deno.env.get('APP_URL');
     if (appUrl) {
-      const delegateUrl = `${appUrl}/functions/v1/checkAccountLifecycle`;
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (cronSecret) headers['x-cron-secret'] = cronSecret;
+      const sharedHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (cronSecret) sharedHeaders['x-cron-secret'] = cronSecret;
       const authHeader = req.headers.get('authorization');
-      if (authHeader) headers['Authorization'] = authHeader;
+      if (authHeader) sharedHeaders['Authorization'] = authHeader;
 
       try {
-        const resp = await fetch(delegateUrl, { method: 'POST', headers });
-        const data = await resp.json();
-        console.log('[expireTrials] Delegated to checkAccountLifecycle:', JSON.stringify(data));
-        return Response.json({ success: true, delegated: true, result: data });
+        const lifecycleResp = await fetch(`${appUrl}/functions/v1/checkAccountLifecycle`, {
+          method: 'POST',
+          headers: sharedHeaders,
+        });
+        const lifecycleData = await lifecycleResp.json();
+        console.log('[expireTrials] checkAccountLifecycle:', JSON.stringify(lifecycleData));
+
+        let sendData: any = null;
+        try {
+          const sendResp = await fetch(`${appUrl}/functions/v1/sendLifecycleEmails`, {
+            method: 'POST',
+            headers: sharedHeaders,
+            body: JSON.stringify({}),
+          });
+          sendData = await sendResp.json();
+          console.log('[expireTrials] sendLifecycleEmails:', JSON.stringify(sendData));
+        } catch (sendErr: any) {
+          console.error('[expireTrials] sendLifecycleEmails failed:', sendErr.message);
+          sendData = { error: sendErr.message };
+        }
+
+        return Response.json({ success: true, delegated: true, lifecycle: lifecycleData, emails: sendData });
       } catch (fetchErr: any) {
         console.error('[expireTrials] Delegation fetch failed, running fallback:', fetchErr.message);
       }

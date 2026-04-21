@@ -3,13 +3,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-async function getAdminEmail(base44: any, businessId: string): Promise<string | null> {
+async function getAdminEmails(base44: any, businessId: string): Promise<string[]> {
   try {
     const users = await base44.asServiceRole.entities.User.filter({ business_id: businessId });
-    const admin = users.find((u: any) => u.role === 'admin');
-    return admin?.email || null;
+    return users.filter((u: any) => u.role === 'admin').map((u: any) => u.email).filter(Boolean);
   } catch (_) {
-    return null;
+    return [];
   }
 }
 
@@ -25,7 +24,10 @@ async function queueEmail(
       business_id: businessId,
     });
     const alreadyQueued = existing.find(
-      (e: any) => e.email_type === emailType && (e.status === 'pending' || e.status === 'sent')
+      (e: any) =>
+        e.email_type === emailType &&
+        e.recipient_email === recipientEmail &&
+        (e.status === 'pending' || e.status === 'sent')
     );
     if (alreadyQueued) return false;
     await base44.asServiceRole.entities.EmailNotification.create({
@@ -77,7 +79,7 @@ Deno.serve(async (req: Request) => {
 
       const trialStart = new Date(biz.trial_start_at);
       const daysElapsed = Math.floor((now.getTime() - trialStart.getTime()) / DAY_MS);
-      const adminEmail = await getAdminEmail(base44, biz.id);
+      const adminEmails = await getAdminEmails(base44, biz.id);
 
       // Trial expired — transition to view_only
       if (biz.trial_end_at && new Date(biz.trial_end_at) <= now) {
@@ -86,8 +88,8 @@ Deno.serve(async (req: Request) => {
           view_only_since: nowISO,
         });
         results.trial.transitioned++;
-        if (adminEmail) {
-          const q = await queueEmail(base44, biz.id, 'trial_expired', adminEmail);
+        for (const email of adminEmails) {
+          const q = await queueEmail(base44, biz.id, 'trial_expired', email);
           if (q) results.trial.emails_queued++;
         }
         continue;
@@ -101,9 +103,11 @@ Deno.serve(async (req: Request) => {
         { day: 30, type: 'trial_day_30' },
       ];
       for (const m of milestones) {
-        if (daysElapsed >= m.day && adminEmail) {
-          const q = await queueEmail(base44, biz.id, m.type, adminEmail);
-          if (q) results.trial.emails_queued++;
+        if (daysElapsed >= m.day) {
+          for (const email of adminEmails) {
+            const q = await queueEmail(base44, biz.id, m.type, email);
+            if (q) results.trial.emails_queued++;
+          }
         }
       }
     }
@@ -122,18 +126,20 @@ Deno.serve(async (req: Request) => {
 
       const viewOnlySince = new Date(biz.view_only_since);
       const daysInViewOnly = Math.floor((now.getTime() - viewOnlySince.getTime()) / DAY_MS);
-      const adminEmail = await getAdminEmail(base44, biz.id);
+      const adminEmails = await getAdminEmails(base44, biz.id);
 
       // Queue account_view_only once (idempotent)
-      if (adminEmail) {
-        const q = await queueEmail(base44, biz.id, 'account_view_only', adminEmail);
+      for (const email of adminEmails) {
+        const q = await queueEmail(base44, biz.id, 'account_view_only', email);
         if (q) results.view_only.emails_queued++;
       }
 
       // 10+ days: warn about upcoming archival
-      if (daysInViewOnly >= 10 && adminEmail) {
-        const q = await queueEmail(base44, biz.id, 'archive_warning', adminEmail);
-        if (q) results.view_only.emails_queued++;
+      if (daysInViewOnly >= 10) {
+        for (const email of adminEmails) {
+          const q = await queueEmail(base44, biz.id, 'archive_warning', email);
+          if (q) results.view_only.emails_queued++;
+        }
       }
 
       // 15+ days: archive
@@ -146,8 +152,8 @@ Deno.serve(async (req: Request) => {
           scheduled_delete_at: scheduledDelete.toISOString(),
         });
         results.view_only.archived++;
-        if (adminEmail) {
-          const q = await queueEmail(base44, biz.id, 'account_archived', adminEmail);
+        for (const email of adminEmails) {
+          const q = await queueEmail(base44, biz.id, 'account_archived', email);
           if (q) results.view_only.emails_queued++;
         }
       }
@@ -160,19 +166,21 @@ Deno.serve(async (req: Request) => {
 
       const scheduledDelete = new Date(biz.scheduled_delete_at);
       const daysUntilDelete = Math.ceil((scheduledDelete.getTime() - now.getTime()) / DAY_MS);
-      const adminEmail = await getAdminEmail(base44, biz.id);
+      const adminEmails = await getAdminEmails(base44, biz.id);
 
       // 7 days before: warn
-      if (daysUntilDelete <= 7 && daysUntilDelete > 0 && adminEmail) {
-        const q = await queueEmail(base44, biz.id, 'delete_warning', adminEmail);
-        if (q) results.archived.emails_queued++;
+      if (daysUntilDelete <= 7 && daysUntilDelete > 0) {
+        for (const email of adminEmails) {
+          const q = await queueEmail(base44, biz.id, 'delete_warning', email);
+          if (q) results.archived.emails_queued++;
+        }
       }
 
       // Deletion day reached
       if (scheduledDelete <= now) {
         // Queue confirmation before deleting so record still exists
-        if (adminEmail) {
-          await queueEmail(base44, biz.id, 'account_deleted_confirmation', adminEmail);
+        for (const email of adminEmails) {
+          await queueEmail(base44, biz.id, 'account_deleted_confirmation', email);
           results.archived.emails_queued++;
         }
 
@@ -204,7 +212,7 @@ Deno.serve(async (req: Request) => {
       results.active.processed++;
       const expiresAt = new Date(biz.license_expires_at);
       const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / DAY_MS);
-      const adminEmail = await getAdminEmail(base44, biz.id);
+      const adminEmails = await getAdminEmails(base44, biz.id);
 
       // Expired: transition to view_only
       if (expiresAt <= now) {
@@ -213,8 +221,8 @@ Deno.serve(async (req: Request) => {
           view_only_since: nowISO,
         });
         results.active.transitioned++;
-        if (adminEmail) {
-          const q = await queueEmail(base44, biz.id, 'license_expired', adminEmail);
+        for (const email of adminEmails) {
+          const q = await queueEmail(base44, biz.id, 'license_expired', email);
           if (q) results.active.emails_queued++;
         }
         continue;
@@ -227,9 +235,11 @@ Deno.serve(async (req: Request) => {
         { threshold: 1, type: 'license_expiring_1' },
       ];
       for (const m of milestones) {
-        if (daysUntilExpiry <= m.threshold && adminEmail) {
-          const q = await queueEmail(base44, biz.id, m.type, adminEmail);
-          if (q) results.active.emails_queued++;
+        if (daysUntilExpiry <= m.threshold) {
+          for (const email of adminEmails) {
+            const q = await queueEmail(base44, biz.id, m.type, email);
+            if (q) results.active.emails_queued++;
+          }
         }
       }
     }
