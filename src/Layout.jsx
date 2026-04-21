@@ -138,7 +138,7 @@ export default function Layout({ children, currentPageName }) {
         setLowStockCount(low);
       })
       .catch(() => {});
-  }, [businessId]);
+  }, [businessId, location.pathname]);
 
   useEffect(() => {
     if (!bizLoading && !businessId) {
