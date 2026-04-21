@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Shield, Search, Users, RefreshCw, Edit, CheckCircle, Clock, Lock, AlertTriangle } from "lucide-react";
+import { Shield, Search, Users, RefreshCw, Edit, CheckCircle, Clock, Lock, AlertTriangle, Mail } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
 
@@ -32,6 +32,7 @@ export default function LicenseAdmin() {
   const [editTarget, setEditTarget] = useState(null);
   const [saving, setSaving] = useState(false);
   const [editForm, setEditForm] = useState({});
+  const [sendingTestEmails, setSendingTestEmails] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -46,6 +47,23 @@ export default function LicenseAdmin() {
     if (!search) return businesses;
     return businesses.filter(b => b.name?.toLowerCase().includes(search.toLowerCase()));
   }, [businesses, search]);
+
+  const handleSendTestEmails = async () => {
+    setSendingTestEmails(true);
+    try {
+      const r = await base44.functions.invoke("sendTestLifecycleEmails", {});
+      const { sent, failed, recipient } = r.data || {};
+      if (failed > 0) {
+        toast.warning(`${sent} correos enviados, ${failed} fallaron — revisa la consola`);
+      } else {
+        toast.success(`${sent} correos de prueba enviados a ${recipient}`);
+      }
+    } catch (err) {
+      toast.error("Error al enviar correos de prueba");
+    } finally {
+      setSendingTestEmails(false);
+    }
+  };
 
   const openEdit = (biz) => {
     setEditForm({
@@ -93,9 +111,15 @@ export default function LicenseAdmin() {
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">Gestión interna de licencias por tenant — solo administradores de plataforma</p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Actualizar
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleSendTestEmails} disabled={sendingTestEmails}>
+            <Mail className={`h-4 w-4 mr-1 ${sendingTestEmails ? "animate-pulse" : ""}`} />
+            {sendingTestEmails ? "Enviando..." : "Correos de prueba"}
+          </Button>
+          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Actualizar
+          </Button>
+        </div>
       </div>
 
       {/* Summary cards */}
