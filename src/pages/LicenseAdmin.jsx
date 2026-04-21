@@ -249,7 +249,7 @@ export default function LicenseAdmin() {
 
       {/* Edit dialog */}
       <Dialog open={!!editTarget} onOpenChange={o => !o && setEditTarget(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Licencia — {editTarget?.name}</DialogTitle>
           </DialogHeader>
