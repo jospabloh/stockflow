@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, CheckCircle2, XCircle, Minus } from "lucide-react";
+import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, CheckCircle2, XCircle, Minus, ShieldCheck, History } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
@@ -202,7 +202,7 @@ export default function Settings() {
               <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>
               <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>
               <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>
-              <TabsTrigger value="inventario"><PackageSearch className="h-4 w-4 mr-1" /> Inventario</TabsTrigger>
+              <TabsTrigger value="inventario"><PackageSearch className="h-4 w-4 mr-1" /> Audit Inventario</TabsTrigger>
             </>
           )}
           
@@ -589,15 +589,15 @@ export default function Settings() {
             </div>
           </TabsContent>
 
-          {/* Inventario — Admin only */}
+          {/* Audit Inventario — Admin only */}
           {isAdmin && (
             <TabsContent value="inventario">
               <Card className="border-0 shadow-sm p-6 space-y-6">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="font-semibold text-slate-700 text-lg">Auditoría de Stock</h3>
+                    <h3 className="font-semibold text-slate-700 text-lg">Audit Inventario</h3>
                     <p className="text-sm text-slate-500 mt-1">
-                      Verifica la integridad del inventario y corrige discrepancias detectadas en los conteos.
+                      Compara el stock actual de cada producto contra su historial de movimientos. Detecta ediciones directas, errores de sincronización y otras discrepancias, y permite al admin decidir cómo resolverlas.
                     </p>
                   </div>
                   <Button
@@ -605,7 +605,7 @@ export default function Settings() {
                       setAuditing(true);
                       setAuditResult(null);
                       try {
-                        const resp = await base44.functions.invoke('fixDoubleStockBug', { dry_run: true });
+                        const resp = await base44.functions.invoke('auditInventoryNow', {});
                         setAuditResult(resp.data);
                       } catch (e) {
                         toast.error(`Error al auditar: ${e.message}`);
@@ -617,140 +617,154 @@ export default function Settings() {
                     variant="outline"
                   >
                     <RefreshCw className={`h-4 w-4 mr-2 ${auditing ? 'animate-spin' : ''}`} />
-                    {auditing ? 'Verificando...' : 'Verificar stock'}
+                    {auditing ? 'Auditando...' : 'Auditar inventario'}
                   </Button>
                 </div>
 
                 {auditResult && (() => {
                   const visible = (auditResult.discrepancies || []).filter(d => !dismissedIds.has(d.product_id));
-                  const autoFixable = visible.filter(d => !d.has_adjustments);
-                  const needsManual = visible.filter(d => d.has_adjustments);
+                  const total = auditResult.summary?.products_audited ?? 0;
+
+                  const reasonLabel = {
+                    direct_edit: { label: 'Edición directa', color: 'text-amber-700 bg-amber-50 border-amber-200' },
+                    sync_error:  { label: 'Error de sync',   color: 'text-red-700 bg-red-50 border-red-200' },
+                    no_movements:{ label: 'Sin movimientos', color: 'text-slate-700 bg-slate-50 border-slate-200' },
+                    legacy_bug:  { label: 'Bug histórico',   color: 'text-purple-700 bg-purple-50 border-purple-200' },
+                  };
+
                   return (
                     <div className="space-y-4">
+                      {/* Summary bar */}
                       {visible.length === 0 ? (
                         <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                          <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0" />
-                          <p className="text-sm text-emerald-700 font-medium">
-                            {(auditResult.discrepancies || []).length > 0
-                              ? 'Todas las discrepancias han sido revisadas o corregidas.'
-                              : 'El inventario está en orden. No se detectaron discrepancias.'}
-                          </p>
+                          <ShieldCheck className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm text-emerald-700 font-medium">
+                              {(auditResult.discrepancies || []).length > 0
+                                ? 'Todas las discrepancias han sido revisadas o corregidas.'
+                                : `Inventario íntegro — ${total} producto${total !== 1 ? 's' : ''} auditado${total !== 1 ? 's' : ''}, sin discrepancias.`}
+                            </p>
+                          </div>
                         </div>
                       ) : (
                         <>
-                          {/* Auto-fixable items */}
-                          {autoFixable.length > 0 && (
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Corregibles automáticamente</p>
-                                <Button
-                                  size="sm"
-                                  onClick={async () => {
-                                    setFixing(true);
-                                    try {
-                                      const resp = await base44.functions.invoke('fixDoubleStockBug', { dry_run: false });
-                                      if (resp.data?.summary?.corrected > 0) {
-                                        toast.success(`${resp.data.summary.corrected} producto(s) corregidos`);
-                                        setAuditResult(null);
-                                      }
-                                    } catch (e) {
-                                      toast.error(`Error: ${e.message}`);
-                                    } finally {
-                                      setFixing(false);
-                                    }
-                                  }}
-                                  disabled={fixing}
-                                  className="bg-indigo-600 hover:bg-indigo-700 text-white h-7 text-xs"
-                                >
-                                  <CheckCircle2 className={`h-3.5 w-3.5 mr-1.5 ${fixing ? 'animate-spin' : ''}`} />
-                                  {fixing ? 'Aplicando...' : `Autocorregir todos (${autoFixable.length})`}
-                                </Button>
-                              </div>
-                              <div className="rounded-xl border border-border overflow-hidden">
-                                {autoFixable.map((d) => (
-                                  <div key={d.product_id} className="border-b border-border last:border-0 px-4 py-3 hover:bg-muted/20 space-y-1.5">
-                                    <div className="flex items-start justify-between gap-3">
-                                      <div className="flex-1 min-w-0">
-                                        <p className="font-medium text-slate-700 text-sm">{d.product}</p>
-                                        <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{d.justification}</p>
-                                      </div>
-                                      <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                                        <span className="text-sm text-red-500 font-bold line-through">{d.current_stock}</span>
-                                        <span className="text-slate-400 text-xs">→</span>
-                                        <span className="text-sm text-emerald-600 font-bold">{d.correct_stock}</span>
-                                      </div>
-                                    </div>
-                                    <div className="flex gap-2 justify-end">
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="h-7 text-xs border-slate-200 text-slate-500 hover:text-slate-700"
-                                        onClick={() => dismissProduct(d.product_id)}
-                                      >
-                                        <Minus className="h-3 w-3 mr-1" /> Dejar así
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
-                                        disabled={fixingProductId === d.product_id}
-                                        onClick={async () => {
-                                          setFixingProductId(d.product_id);
-                                          try {
-                                            await base44.functions.invoke('fixDoubleStockBug', { dry_run: false, product_id: d.product_id });
-                                            toast.success(`${d.product}: stock ajustado a ${d.correct_stock}`);
-                                            dismissProduct(d.product_id);
-                                          } catch (e) {
-                                            toast.error(`Error: ${e.message}`);
-                                          } finally {
-                                            setFixingProductId(null);
-                                          }
-                                        }}
-                                      >
-                                        <CheckCircle2 className={`h-3.5 w-3.5 mr-1.5 ${fixingProductId === d.product_id ? 'animate-spin' : ''}`} />
-                                        Ajustar a {d.correct_stock}
-                                      </Button>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                            <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                            <p className="text-sm text-amber-700 font-medium">
+                              {visible.length} discrepancia{visible.length !== 1 ? 's' : ''} detectada{visible.length !== 1 ? 's' : ''} en {total} producto{total !== 1 ? 's' : ''} auditados.
+                            </p>
+                          </div>
 
-                          {/* Manual review items */}
-                          {needsManual.length > 0 && (
-                            <div className="space-y-2">
-                              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Requieren conteo físico</p>
-                              <div className="rounded-xl border border-amber-200 overflow-hidden bg-amber-50/40">
-                                {needsManual.map((d) => (
-                                  <div key={d.product_id} className="border-b border-amber-200 last:border-0 px-4 py-3 space-y-1.5">
-                                    <div className="flex items-start justify-between gap-3">
-                                      <div className="flex-1 min-w-0">
+                          <div className="rounded-xl border border-border overflow-hidden">
+                            {visible.map((d) => {
+                              const badge = reasonLabel[d.reason_type] || reasonLabel.sync_error;
+                              const isInflated = d.difference > 0;
+                              const isBusy = fixingProductId === d.product_id;
+                              return (
+                                <div key={d.product_id} className="border-b border-border last:border-0 px-4 py-4 hover:bg-muted/20 space-y-2">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
                                         <p className="font-medium text-slate-700 text-sm">{d.product}</p>
-                                        <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{d.justification}</p>
-                                        <p className="text-xs text-amber-700 mt-1">
-                                          Usa <strong>Movimientos → Ajuste</strong> para establecer el stock real tras contar físicamente.
-                                        </p>
+                                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${badge.color}`}>
+                                          {badge.label}
+                                        </span>
                                       </div>
-                                      <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                                        <span className="text-sm text-red-500 font-bold">{d.current_stock}</span>
-                                        <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                                      </div>
+                                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">{d.reason_detail}</p>
                                     </div>
-                                    <div className="flex gap-2 justify-end">
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="h-7 text-xs border-amber-200 text-amber-700 hover:bg-amber-100"
-                                        onClick={() => dismissProduct(d.product_id)}
-                                      >
-                                        <Minus className="h-3 w-3 mr-1" /> Dejar así
-                                      </Button>
+                                    <div className="flex items-center gap-2 shrink-0 mt-0.5">
+                                      <span className="text-sm text-red-500 font-bold line-through">{d.current_stock}</span>
+                                      <span className="text-slate-400 text-xs">→</span>
+                                      <span className="text-sm text-emerald-600 font-bold">{d.expected_stock}</span>
+                                      <span className={`text-xs font-semibold ${isInflated ? 'text-red-500' : 'text-blue-500'}`}>
+                                        ({isInflated ? '+' : ''}{d.difference})
+                                      </span>
                                     </div>
                                   </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+
+                                  {/* Audit log mini-history */}
+                                  {d.audit_log_entries?.length > 0 && (
+                                    <div className="flex items-start gap-1.5 text-xs text-slate-400 pl-1">
+                                      <History className="h-3 w-3 mt-0.5 shrink-0" />
+                                      <span>
+                                        {d.audit_log_entries.length} edición{d.audit_log_entries.length !== 1 ? 'es' : ''} directa{d.audit_log_entries.length !== 1 ? 's' : ''} registrada{d.audit_log_entries.length !== 1 ? 's' : ''} —
+                                        última por <strong>{d.audit_log_entries[d.audit_log_entries.length - 1].performed_by}</strong>
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  <div className="flex gap-2 justify-end pt-1">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 text-xs border-slate-200 text-slate-500 hover:text-slate-700"
+                                      onClick={() => dismissProduct(d.product_id)}
+                                    >
+                                      <Minus className="h-3 w-3 mr-1" /> Ignorar
+                                    </Button>
+                                    {d.can_auto_correct && (
+                                      <>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="h-7 text-xs border-slate-300 text-slate-600 hover:bg-slate-50"
+                                          disabled={isBusy}
+                                          onClick={async () => {
+                                            setFixingProductId(d.product_id);
+                                            try {
+                                              await base44.functions.invoke('applyInventoryAuditCorrection', {
+                                                product_id: d.product_id,
+                                                action: 'accept_current',
+                                                expected_stock: d.expected_stock,
+                                              });
+                                              toast.success(`${d.product}: stock actual (${d.current_stock}) aceptado y reconciliado`);
+                                              dismissProduct(d.product_id);
+                                            } catch (e) {
+                                              toast.error(`Error: ${e.message}`);
+                                            } finally {
+                                              setFixingProductId(null);
+                                            }
+                                          }}
+                                        >
+                                          <CheckCircle2 className={`h-3.5 w-3.5 mr-1.5 ${isBusy ? 'animate-spin' : ''}`} />
+                                          Aceptar actual ({d.current_stock})
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
+                                          disabled={isBusy}
+                                          onClick={async () => {
+                                            setFixingProductId(d.product_id);
+                                            try {
+                                              await base44.functions.invoke('applyInventoryAuditCorrection', {
+                                                product_id: d.product_id,
+                                                action: 'revert_to_calculated',
+                                                expected_stock: d.expected_stock,
+                                              });
+                                              toast.success(`${d.product}: stock corregido a ${d.expected_stock}`);
+                                              dismissProduct(d.product_id);
+                                            } catch (e) {
+                                              toast.error(`Error: ${e.message}`);
+                                            } finally {
+                                              setFixingProductId(null);
+                                            }
+                                          }}
+                                        >
+                                          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isBusy ? 'animate-spin' : ''}`} />
+                                          Corregir a {d.expected_stock}
+                                        </Button>
+                                      </>
+                                    )}
+                                    {!d.can_auto_correct && (
+                                      <p className="text-xs text-slate-400 self-center">
+                                        Usa <strong>Movimientos → Ajuste</strong> para corregir manualmente.
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </>
                       )}
                     </div>

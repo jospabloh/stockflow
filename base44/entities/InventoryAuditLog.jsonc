@@ -1,0 +1,61 @@
+{
+  "name": "InventoryAuditLog",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "description": "ID del producto afectado"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Nombre del producto (desnormalizado)"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "direct_edit",
+        "system_correction"
+      ],
+      "description": "Tipo de evento: edición directa sin movimiento o corrección de auditoría"
+    },
+    "stock_before": {
+      "type": "number",
+      "description": "Stock antes del cambio"
+    },
+    "stock_after": {
+      "type": "number",
+      "description": "Stock después del cambio"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Descripción legible del motivo del cambio"
+    },
+    "performed_by": {
+      "type": "string",
+      "description": "Email del usuario que realizó el cambio"
+    }
+  },
+  "required": [
+    "product_id",
+    "business_id",
+    "event_type"
+  ],
+  "rls": {
+    "create": {
+      "business_id": "{{user.business_id}}"
+    },
+    "read": {
+      "business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "business_id": "{{user.business_id}}"
+    },
+    "delete": {
+      "business_id": "{{user.business_id}}"
+    }
+  }
+}

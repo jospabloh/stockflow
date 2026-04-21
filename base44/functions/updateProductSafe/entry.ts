@@ -100,6 +100,20 @@ Deno.serve(async (req) => {
     // Use asServiceRole for the update — ownership already validated above
     const updated = await base44.asServiceRole.entities.Product.update(product_id, sanitized);
 
+    // Log direct stock edits to InventoryAuditLog for audit trail
+    if (sanitized.stock !== undefined && sanitized.stock !== product.stock) {
+      base44.asServiceRole.entities.InventoryAuditLog.create({
+        product_id,
+        product_name: product.name,
+        business_id: user.business_id,
+        event_type: 'direct_edit',
+        stock_before: product.stock ?? 0,
+        stock_after: sanitized.stock,
+        notes: 'Stock editado directamente desde formulario de producto',
+        performed_by: user.email,
+      }).catch(() => {});
+    }
+
     return Response.json({ success: true, product_id, product: updated });
   } catch (error) {
     console.error('[updateProductSafe]', error);
