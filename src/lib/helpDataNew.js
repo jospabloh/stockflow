@@ -1,9 +1,80 @@
-// Artículos de ayuda — última versión: v2.8.2
+// Artículos de ayuda — última versión: v2.9.0
+// v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor, campos requeridos en cliente
 // v2.8.2: Artículo tenant-facing para regla cash_sales_to_petty_cash + filtrado de ayuda por reglas del tenant
 // v2.8.1: Módulo Reglas por Tenant + entidad TenantRule + funciones backend platform-admin-only
 // v2.8.0: Ingresos automáticos en Caja Chica por ventas en efectivo (función opcional por tenant)
 
 export const newHelpArticles = [
+    {
+      id: "release-2-9-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.9.0 — Auditoría de Inventario y Ciclo de Vida de Cuentas",
+      keywords: ["versión", "2.9.0", "auditoría", "inventario", "ciclo de vida", "emails", "proveedor", "contactos", "cliente", "campos requeridos"],
+      related_ids: ["release-2-8-2", "inventory-overview", "petty-cash-overview"],
+      content: `## 🆕 Versión 2.9.0 — 21 de abril de 2026
+
+### ✅ Novedades de esta versión
+
+---
+
+#### 🔍 Sistema de Auditoría de Inventario
+
+Nueva pestaña **"Audit Inventario"** en Configuración → Auditoría.
+
+- Compara el stock actual de cada producto con su historial de movimientos registrados
+- Clasifica discrepancias con badges visuales:
+  - \`direct_edit\` — el stock fue editado directamente sin movimiento
+  - \`sync_error\` — desincronización entre campo de stock y movimientos
+  - \`no_movements\` — producto sin historial de movimientos
+  - \`legacy_bug\` — discrepancia originada por un bug anterior
+- El administrador puede **aceptar el stock actual** o **revertirlo al valor calculado** con un movimiento de reconciliación trazable
+
+---
+
+#### 📧 Ciclo de Vida de Cuentas y Emails Automáticos
+
+Gestión automatizada del estado de los tenants con notificaciones en español.
+
+- **Transiciones automáticas** gestionadas por scheduler diario: trial → view_only → archived → deleted
+- **17 plantillas de email en español**: bienvenida, aviso de expiración (30/15/7/3/1 días), modo solo-lectura, archivo y renovación mensual
+- **Auto-renovación configurable**: nuevo checkbox por tenant en el panel de administración de licencias
+- **Integración nativa**: emails enviados via \`Core.SendEmail\` de base44 — sin dependencias externas
+
+---
+
+#### 👥 Múltiples Contactos por Proveedor
+
+- Nuevo campo **\`extra_contacts\`** en la entidad Proveedor: permite registrar N contactos adicionales
+- El formulario de proveedor ahora tiene una sección de contactos con contacto principal obligatorio y extras opcionales
+- Elimina la necesidad de crear registros duplicados del mismo proveedor por cada contacto
+
+---
+
+#### 🔒 Campos Obligatorios en Formulario de Cliente
+
+Los siguientes campos son ahora requeridos al crear o editar un cliente:
+- **Nombre de Contacto**
+- **Nombre de Negocio**
+- **Teléfono**
+
+---
+
+### 🐛 Correcciones
+
+| Área | Descripción |
+|---|---|
+| Licencias | Diálogo "Editar Licencia" ahora tiene scroll y max-height — el footer con botones siempre es accesible |
+| Sidebar | Badge de stock bajo se refresca correctamente al navegar entre páginas |
+| Emails | Reemplazado Resend con \`Core.SendEmail\` nativo de base44 para mayor fiabilidad |
+
+---
+
+### 📦 Versión Anterior — v2.8.2 (15 de abril de 2026)
+
+Centro de Ayuda sensible al tenant: filtra artículos según las reglas activas del negocio en tiempo de ejecución.
+`
+    },
     {
       id: "release-2-8-2",
       category: "Novedades",

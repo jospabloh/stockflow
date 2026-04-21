@@ -1,5 +1,33 @@
 # Changelog — StockFlow
 
+## v2.9.0 (2026-04-21)
+
+### 🔍 Sistema de Auditoría de Inventario
+- **Nueva pestaña "Audit Inventario"** en Configuración: compara el stock actual de cada producto con su historial de movimientos
+- **Clasificación de discrepancias**: `direct_edit` (edición directa), `sync_error` (desincronización), `no_movements` (sin historial), `legacy_bug` (bug anterior)
+- **Resolución asistida**: el administrador puede aceptar el stock actual o revertirlo al valor calculado; se genera un movimiento de reconciliación trazable
+
+### 📧 Ciclo de Vida de Cuentas y Emails Automáticos
+- **Transiciones automáticas**: scheduler diario gestiona trial → view_only → archived → deleted según fecha de expiración
+- **17 plantillas de email en español**: bienvenida, aviso de expiración, modo solo-lectura, archivo, renovación mensual
+- **Auto-renovación configurable**: checkbox por tenant en panel de administración de licencias
+- **Integración nativa**: emails enviados via `Core.SendEmail` de base44 (sin dependencias externas)
+
+### 👥 Múltiples Contactos por Proveedor
+- **Campo `extra_contacts`** en entidad Supplier: permite registrar N contactos adicionales por proveedor
+- **Formulario actualizado**: sección de contactos con contacto principal obligatorio y extras opcionales
+- **Elimina duplicados**: ya no es necesario crear múltiples registros del mismo proveedor por contacto
+
+### 🔒 Validaciones en Formulario de Cliente
+- **Campos obligatorios**: Nombre de Contacto, Nombre de Negocio y Teléfono ahora se validan al guardar
+
+### 🐛 Correcciones
+- **Diálogo Editar Licencia**: añadido scroll y max-height para que el footer con botones siempre sea accesible
+- **Badge de stock bajo**: el contador en la barra lateral se refresca correctamente al navegar entre páginas
+- **Emails de ciclo de vida**: reemplazado Resend con integración nativa `Core.SendEmail` de base44
+
+---
+
 ## v2.5.5 (2026-04-07)
 
 ### 🎯 Dashboard: Semáforo de Cotizaciones Mejorado
