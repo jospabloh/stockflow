@@ -5,8 +5,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Download } from "lucide-react";
 import { MobileSelect } from "@/components/ui/MobileSelect";
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   Tooltip,

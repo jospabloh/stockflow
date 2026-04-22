@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Search } from "lucide-react";
+import React, { useState } from "react";
+import { MessageCircle } from "lucide-react";
 
 const SUGGESTIONS = [
   "¿Cómo creo una cotización?",

@@ -18,7 +18,6 @@ import {
 import ProductTable from "@/components/products/ProductTable";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { createTableProps } from "@/lib/a11y";
 
 export default function Products() {
   const navigate = useNavigate();

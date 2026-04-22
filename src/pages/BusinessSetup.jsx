@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Building2, Users, ArrowRight, Package, Copy, CheckCircle2 } from "lucide-react";
+import { Building2, Users, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useBusinessContext } from "@/components/BusinessContext";

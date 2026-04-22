@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, CheckCircle2, XCircle, Minus, ShieldCheck, History } from "lucide-react";
+import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, CheckCircle2, Minus, ShieldCheck, History } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
