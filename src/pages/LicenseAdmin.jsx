@@ -85,8 +85,11 @@ export default function LicenseAdmin() {
     setEditTarget(biz);
   };
 
+  const [saveWarning, setSaveWarning] = useState(null);
+
   const handleSave = async () => {
     setSaving(true);
+    setSaveWarning(null);
     const updates = { ...editForm };
     if (updates.license_expires_at) {
       updates.license_expires_at = new Date(updates.license_expires_at).toISOString();
@@ -107,6 +110,21 @@ export default function LicenseAdmin() {
           toast.error(data.error || "Error al guardar la licencia");
         }
         console.error("[adminUpdateTenantLicense] failure", data);
+        return;
+      }
+      if (data.warning) {
+        toast.warning(data.warning);
+        setSaveWarning({ message: data.warning, mismatches: data.mismatches || [] });
+        setEditForm(f => ({ ...f, auto_renewal: data.persisted?.auto_renewal ?? f.auto_renewal }));
+        load();
+        return;
+      }
+      if (data.persisted && "auto_renewal" in updates && data.persisted.auto_renewal !== updates.auto_renewal) {
+        const msg = "auto_renewal no persistió a pesar del reintento";
+        toast.warning(msg);
+        setSaveWarning({ message: msg, mismatches: [{ field: "auto_renewal", requested: updates.auto_renewal, persisted: data.persisted.auto_renewal }] });
+        setEditForm(f => ({ ...f, auto_renewal: data.persisted.auto_renewal }));
+        load();
         return;
       }
       toast.success(`Licencia de "${editTarget.name}" actualizada`);
@@ -267,11 +285,24 @@ export default function LicenseAdmin() {
       </div>
 
       {/* Edit dialog */}
-      <Dialog open={!!editTarget} onOpenChange={o => { if (!o) { setEditTarget(null); setEditForm({}); } }}>
+      <Dialog open={!!editTarget} onOpenChange={o => { if (!o) { setEditTarget(null); setEditForm({}); setSaveWarning(null); } }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Licencia — {editTarget?.name}</DialogTitle>
           </DialogHeader>
+          {saveWarning && (
+            <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+              <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-500" />
+              <div>
+                <p className="font-medium">{saveWarning.message}</p>
+                {saveWarning.mismatches.map(m => (
+                  <p key={m.field} className="text-xs mt-0.5">
+                    {m.field}: solicitado <strong>{String(m.requested)}</strong>, persistido <strong>{String(m.persisted)}</strong>
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="space-y-4 pt-2">
             <div>
               <Label>Estado de Facturación</Label>
@@ -367,6 +398,7 @@ export default function LicenseAdmin() {
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={() => { setEditTarget(null); setEditForm({}); }} disabled={saving}>Cancelar</Button>
+              <Button variant="outline" onClick={() => { load(); setEditTarget(null); setEditForm({}); setSaveWarning(null); }} disabled={saving}>Cerrar</Button>
               <Button onClick={handleSave} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
                 {saving ? "Guardando..." : "Guardar Cambios"}
               </Button>
