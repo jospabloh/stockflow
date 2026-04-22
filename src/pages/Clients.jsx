@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { useBusinessContext } from "@/components/BusinessContext";
+import React from "react";
 import ClientsManager from "@/components/settings/ClientsManager";
 
 export default function Clients() {

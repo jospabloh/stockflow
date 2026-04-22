@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2, ChevronDown, RotateCcw } from "lucide-react";
-import { createButtonProps } from "@/lib/a11y";
 import moment from "moment";
 
 function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInRouteChange, isExpired, onRegenerate }) {

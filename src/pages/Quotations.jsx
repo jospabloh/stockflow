@@ -3,16 +3,8 @@ import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,24 +15,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Plus, Search, MoreHorizontal, Pencil, ShoppingCart, FileDown, Truck, CheckCircle2, DollarSign, XCircle, AlertTriangle, RotateCcw, Banknote } from "lucide-react";
+
+
+import { Plus, Search, Banknote } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import { generateQuotationPDF } from "@/components/quotations/QuotationPDF";
 import QuotationPreviewDialog from "@/components/quotations/QuotationPreviewDialog";
 import PartialReturnDialog from "@/components/quotations/PartialReturnDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
-import { createButtonProps } from "@/lib/a11y";
 import VirtualizedQuotationTable from "@/components/tables/VirtualizedQuotationTable";
-import { calculatePrice, computeCategoryQtyMap } from "@/lib/pricingEngine";
 
 const statusConfig = {
   draft: { label: "Borrador", color: "bg-slate-100 text-slate-700", dot: "bg-slate-400", desc: "Cotización en edición" },

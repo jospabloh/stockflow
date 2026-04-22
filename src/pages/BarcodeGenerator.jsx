@@ -3,8 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useBusinessContext } from "@/components/BusinessContext";
 import BarcodeGenerator from "@/components/barcode/BarcodeGenerator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Check } from "lucide-react";
 import { toast } from "sonner";
 

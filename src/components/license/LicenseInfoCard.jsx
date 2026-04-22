@@ -2,7 +2,7 @@ import React from "react";
 import { useLicense } from "@/lib/LicenseContext";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, CheckCircle, Lock, AlertTriangle, Zap, Users, Calendar } from "lucide-react";
+import { Clock, CheckCircle, Lock, AlertTriangle, Zap, Users } from "lucide-react";
 import moment from "moment";
 
 const STATUS_CONFIG = {

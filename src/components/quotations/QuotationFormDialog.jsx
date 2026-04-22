@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
 import { base44 } from "@/api/base44Client";
 import {

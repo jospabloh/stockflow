@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { FileDown, Truck, CheckCircle2, DollarSign } from "lucide-react";
 import { generateQuotationPDF } from "./QuotationPDF";
-import { calculateLineVAT, formatMXN } from "@/lib/vatCalculator";
+import { calculateLineVAT } from "@/lib/vatCalculator";
 
 function fmt(n) {
   return (n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });

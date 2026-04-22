@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileSelect } from "@/components/ui/MobileSelect";
-import { Save, X, ScanBarcode, Wand2, Camera, Plus, Barcode, Loader2, CheckCircle2 } from "lucide-react";
+import { Save, X, ScanBarcode, Wand2, Camera, Plus, Barcode, Loader2 } from "lucide-react";
 import confetti from "canvas-confetti";
 import BarcodeCameraScanner from "./BarcodeCameraScanner";
 import { useBusinessContext } from "@/components/BusinessContext";

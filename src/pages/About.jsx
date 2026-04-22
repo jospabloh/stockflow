@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Package, Users, Tag, CheckCircle2, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Heart, Users, Tag, CheckCircle2, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { APP_VERSION, RELEASE_DATE, CHANGELOG } from "@/lib/appConfig";
 
 export default function About() {
