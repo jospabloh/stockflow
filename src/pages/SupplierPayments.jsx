@@ -94,8 +94,8 @@ export default function SupplierPayments() {
     if (!businessId) return;
     // Catálogos: consultas directas, misma estrategia que QuotationFormDialog
     Promise.all([
-      base44.entities.Supplier.filter({ business_id: businessId }, "name"),
-      base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }, "name"),
+      base44.entities.Supplier.filter({ business_id: businessId }),
+      base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }),
     ]).then(([sups, methods]) => {
       setSuppliers(sups);
       setPaymentMethods(methods);
@@ -118,8 +118,8 @@ export default function SupplierPayments() {
   useEffect(() => {
     if (!formOpen || !businessId) return;
     Promise.all([
-      base44.entities.Supplier.filter({ business_id: businessId }, "name"),
-      base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }, "name"),
+      base44.entities.Supplier.filter({ business_id: businessId }),
+      base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }),
     ]).then(([sups, methods]) => {
       setSuppliers(sups);
       setPaymentMethods(methods);
