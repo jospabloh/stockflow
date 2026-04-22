@@ -92,14 +92,14 @@ export default function SupplierPayments() {
   const loadAll = async () => {
     if (!businessId) return;
     try {
-      const [pays, sups, methods] = await Promise.all([
+      const [pays, catalogsRes] = await Promise.all([
         base44.entities.SupplierPayment.filter({ business_id: businessId }, "-payment_date", 1000),
-        base44.entities.Supplier.filter({ business_id: businessId }, "name"),
-        base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }, "name").catch(() => []),
+        base44.functions.invoke('getBusinessCatalogs', {}),
       ]);
+      const catalogs = catalogsRes?.data || {};
       setPayments(pays);
-      setSuppliers(sups);
-      setPaymentMethods(methods);
+      setSuppliers(catalogs.suppliers || []);
+      setPaymentMethods(catalogs.paymentMethods || []);
     } catch (err) {
       console.error("Error loading supplier payments:", err);
       toast.error("Error al cargar datos");
