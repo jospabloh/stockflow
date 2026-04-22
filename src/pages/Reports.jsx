@@ -8,6 +8,7 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import moment from "moment";
 import OperationalReports from "@/components/reports/OperationalReports";
 import PredictiveReports from "@/components/reports/PredictiveReports";
+import SupplierPaymentsReportChart from "@/components/dashboard/SupplierPaymentsReportChart";
 
 export default function Reports() {
   const [products, setProducts] = useState([]);
@@ -107,6 +108,9 @@ export default function Reports() {
           {/* OPERACIONAL - visible para todos */}
           <TabsTrigger value="operational" className="font-medium">📊 Reportes Operacionales</TabsTrigger>
           
+          {/* PAGOS A PROVEEDORES - visible para todos */}
+          <TabsTrigger value="suppliers" className="font-medium">💸 Pagos a Proveedores</TabsTrigger>
+
           {/* PREDICTIVO - solo para admins */}
           {isAdmin && (
             <TabsTrigger value="predictive" className="font-medium">🔮 Análisis Inteligente</TabsTrigger>
@@ -125,6 +129,11 @@ export default function Reports() {
               setDateTo(dt);
             }}
           />
+        </TabsContent>
+
+        {/* LAYER 1.5: PAGOS A PROVEEDORES */}
+        <TabsContent value="suppliers">
+          <SupplierPaymentsReportChart dateFrom={dateFrom} dateTo={dateTo} />
         </TabsContent>
 
         {/* LAYER 2: REPORTES PREDICTIVOS / INTELIGENTES - Solo para Admins */}
