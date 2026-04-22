@@ -99,7 +99,7 @@ export default function SupplierPayments() {
     ]).then(([sups, methods]) => {
       setSuppliers(sups);
       setPaymentMethods(methods);
-    });
+    }).catch(err => { console.error('SupplierPayments catalogs load failed', err); toast.error('No se pudieron cargar proveedores y formas de pago'); });
     // Pagos: carga separada con indicador de carga
     try {
       const pays = await base44.entities.SupplierPayment.filter(
@@ -123,7 +123,7 @@ export default function SupplierPayments() {
     ]).then(([sups, methods]) => {
       setSuppliers(sups);
       setPaymentMethods(methods);
-    });
+    }).catch(err => { console.error('SupplierPayments catalogs load failed', err); toast.error('No se pudieron cargar proveedores y formas de pago'); });
   }, [formOpen, businessId]);
 
   useEffect(() => {
