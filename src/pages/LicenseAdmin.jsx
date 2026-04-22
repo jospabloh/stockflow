@@ -79,7 +79,7 @@ export default function LicenseAdmin() {
       licensed_user_limit: biz.licensed_user_limit || 4,
       payment_reference: biz.payment_reference || "",
       activation_notes: biz.activation_notes || "",
-      auto_renewal: biz.auto_renewal || false,
+      auto_renewal: biz.auto_renewal ?? false,
       license_expires_at: biz.license_expires_at ? biz.license_expires_at.slice(0, 10) : "",
     });
     setEditTarget(biz);
@@ -93,14 +93,32 @@ export default function LicenseAdmin() {
     } else {
       delete updates.license_expires_at;
     }
-    await base44.functions.invoke("adminUpdateTenantLicense", {
-      business_id: editTarget.id,
-      updates,
-    });
-    toast.success(`Licencia de "${editTarget.name}" actualizada`);
-    setSaving(false);
-    setEditTarget(null);
-    load();
+    try {
+      const r = await base44.functions.invoke("adminUpdateTenantLicense", {
+        business_id: editTarget.id,
+        updates,
+      });
+      const data = r?.data || {};
+      if (!data.success) {
+        if (Array.isArray(data.mismatches) && data.mismatches.length > 0) {
+          const fields = data.mismatches.map(m => m.field).join(", ");
+          toast.error(`El servidor no guardó estos campos: ${fields}`);
+        } else {
+          toast.error(data.error || "Error al guardar la licencia");
+        }
+        console.error("[adminUpdateTenantLicense] failure", data);
+        return;
+      }
+      toast.success(`Licencia de "${editTarget.name}" actualizada`);
+      setEditTarget(null);
+      setEditForm({});
+      load();
+    } catch (err) {
+      toast.error(`Error al guardar: ${err?.message || err}`);
+      console.error("[adminUpdateTenantLicense] exception", err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (licenseLoading) return (
@@ -249,7 +267,7 @@ export default function LicenseAdmin() {
       </div>
 
       {/* Edit dialog */}
-      <Dialog open={!!editTarget} onOpenChange={o => !o && setEditTarget(null)}>
+      <Dialog open={!!editTarget} onOpenChange={o => { if (!o) { setEditTarget(null); setEditForm({}); } }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Licencia — {editTarget?.name}</DialogTitle>
@@ -348,7 +366,7 @@ export default function LicenseAdmin() {
               </p>
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setEditTarget(null)} disabled={saving}>Cancelar</Button>
+              <Button variant="outline" onClick={() => { setEditTarget(null); setEditForm({}); }} disabled={saving}>Cancelar</Button>
               <Button onClick={handleSave} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
                 {saving ? "Guardando..." : "Guardar Cambios"}
               </Button>
