@@ -2,11 +2,29 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.9.0";
+export const APP_VERSION = "2.9.1";
 
-export const RELEASE_DATE = "2026-04-21";
+export const RELEASE_DATE = "2026-04-22";
 
 export const CHANGELOG = [
+  {
+    version: "2.9.1",
+    date: "2026-04-22",
+    changes: [
+      "💳 Nuevo módulo 'Pagos a Proveedores': registro y seguimiento de desembolsos a proveedores con perfil por proveedor",
+      "📊 Dashboard mejorado: nueva sección de Pagos a Proveedores con gráfico de período y top 5 proveedores",
+      "💰 Análisis de Ventas actualizado: línea de Pagos a Proveedores + nueva línea Utilidad Neta con badge de impacto",
+      "📈 Reports: nueva pestaña de Pagos a Proveedores con gráfico acumulativo y KPIs vs período anterior",
+      "🔗 Toggle de Caja Chica: en Pagos a Proveedores, opción de sincronizar pago con egreso de Caja Chica (generated_by_system)",
+      "🔍 Búsqueda mejorada: Select de Proveedor ahora usa SearchableSelect con filtro en tiempo real (nombre de negocio + contacto)",
+      "🔍 Búsqueda mejorada: Select de Método de pago ahora usa SearchableSelect; botón X reemplaza opción '— Ninguno —'",
+      "📱 Búsqueda inteligente: toggle de Caja Chica solo aparece cuando el método es 'Efectivo', se resetea al cambiar método",
+      "🎨 Layout del Dashboard optimizado: grid 2-col desde md (tablets ahora ven side-by-side), eliminado whitespace innecesario",
+      "📊 Semáforo de Cotizaciones mejorado: tasa de conversión % + barra de progreso proporcional + enlace 'Ver todas'",
+      "🌓 Dark mode mejorado: colores de gráficos ahora reaccionan al cambio de tema en tiempo real (CartesianGrid, axes, tooltip)",
+      "🧹 Lint: resuelto 31 warnings ESLint no-unused-vars + 54 imports no utilizados removidos",
+    ],
+  },
   {
     version: "2.9.0",
     date: "2026-04-21",

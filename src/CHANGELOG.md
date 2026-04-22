@@ -1,5 +1,35 @@
 # Changelog — StockFlow
 
+## v2.9.1 (2026-04-22)
+
+### 💳 Módulo Pagos a Proveedores
+- **Nueva página "Pagos a Proveedores"**: CRUD completo con filtros y resumen de KPIs para registrar desembolsos a proveedores
+- **Perfil por proveedor**: acceso rápido al histórico de pagos desde la tarjeta del proveedor
+- **Toggle Caja Chica**: cada pago puede sincronizarse con un egreso de Caja Chica (marcado como \`generated_by_system\`)
+- **Dashboard integrado**: nueva sección con gráfico de período + ranking de top 5 proveedores
+- **Reports**: nueva pestaña con gráfico acumulativo + KPIs vs período anterior
+
+### 📊 Dashboard Optimizado
+- **Análisis de Ventas**: nueva línea "Pagos a Proveedores" + línea "Utilidad Neta" con badge de impacto (emerald/amber/rose)
+- **Semáforo mejorado**: tasa de conversión % + barra de progreso proporcional + enlace "Ver todas"
+- **Layout responsive**: grid 2-col desde `md` (tablets ven side-by-side), eliminado whitespace innecesario
+- **Espaciado optimizado**: reducción de `space-y-6` → `space-y-5`, `gap-6` → `gap-4`
+
+### 🔍 Búsqueda Mejorada
+- **Select de Proveedor**: ahora usa `SearchableSelect` con filtro en tiempo real sobre nombre de negocio y contacto
+- **Select de Método de Pago**: reemplazado con `SearchableSelect`; botón X reemplaza "— Ninguno —"
+- **Comportamiento inteligente**: toggle Caja Chica solo aparece con método "Efectivo", se resetea al cambiar
+
+### 🌓 Dark Mode Reactivo
+- **Sincronización de gráficos**: CartesianGrid, ejes (XAxis/YAxis) y tooltip adaptan al cambio de tema en tiempo real
+- **MutationObserver**: detecta cambios en clase `dark` y re-renderiza gráficos sin recargar
+
+### 🧹 Limpieza de Código
+- **ESLint**: resuelto 31 warnings `no-unused-vars`
+- **Imports**: removidos 54 imports no utilizados en 18 archivos
+
+---
+
 ## v2.9.0 (2026-04-21)
 
 ### 🔍 Sistema de Auditoría de Inventario
