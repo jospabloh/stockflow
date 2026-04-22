@@ -220,7 +220,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
   );
 }
 
-function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInRouteChange, isExpired, onRegenerate }) {
+function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInRouteChange, isExpired, onRegenerate }) {
   const status = statusConfig[q.status] || statusConfig.draft;
   const expired = isExpired(q);
 
@@ -344,7 +344,6 @@ export default function VirtualizedQuotationTable({
   onPartialReturn,
   onInvoiceStatusChange,
   onInRouteChange,
-  onDeliveredChange,
   isExpired,
   onRegenerate,
 }) {

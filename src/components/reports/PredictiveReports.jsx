@@ -99,7 +99,7 @@ export default function PredictiveReports({
     }));
   });
 
-  const handleExportCSV = (data, filename) => {
+  const handleExportCSV = (data, _filename) => {
     if (!data.length) return;
     const headers = Object.keys(data[0]).join(",");
     const rows = data.map((r) => Object.values(r).join(",")).join("\n");
@@ -279,7 +279,7 @@ export default function PredictiveReports({
 }
 
 // Componente Pivot Dinámico
-function DynamicPivotReport({ movements, quotations, products, categories, dateFrom, dateTo, onExport }) {
+function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo, onExport }) {
   const [rowGroupBy, setRowGroupBy] = useState("product");
   const [colGroupBy, setColGroupBy] = useState("month");
   const [metricType, setMetricType] = useState("sum");

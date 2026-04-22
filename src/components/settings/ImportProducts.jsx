@@ -259,8 +259,6 @@ export default function ImportProducts() {
     }
   };
 
-  const typeCount = Object.keys(IMPORT_TYPES).length;
-
   return (
     <Card className="border-0 shadow-sm p-6 space-y-6">
       <div>

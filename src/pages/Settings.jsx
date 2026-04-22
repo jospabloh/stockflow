@@ -29,10 +29,9 @@ export default function Settings() {
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
   const [confirmDeleteStep, setConfirmDeleteStep] = useState(0); // 0: initial, 1: warning, 2: confirm
   const [deletingAccount, setDeletingAccount] = useState(false);
-  const [diagnosticBusinessId, setDiagnosticBusinessId] = useState(null);
+  const [_diagnosticBusinessId, setDiagnosticBusinessId] = useState(null);
   const [auditResult, setAuditResult] = useState(null);
   const [auditing, setAuditing] = useState(false);
-  const [fixing, setFixing] = useState(false);
   const [fixingProductId, setFixingProductId] = useState(null);
   const [dismissedIds, setDismissedIds] = useState(() => {
     try {
@@ -187,7 +186,6 @@ export default function Settings() {
   }
 
   // Almacenistas solo ven: Clientes, Categorías, Productos, Proveedores, Formas de Pago
-  const allowedTabsForStaff = ['clients', 'categories', 'suppliers', 'payments', 'products'];
   const defaultTab = isAdmin ? 'business' : 'clients';
 
   return (
@@ -872,7 +870,7 @@ export default function Settings() {
                       try {
                         const me = await base44.auth.me();
                         await base44.entities.User.delete(me.id);
-                      } catch (_e) {
+                      } catch {
                         // Silently proceed to logout even if deletion fails
                       }
                       base44.auth.logout();

@@ -21,7 +21,7 @@ export function BusinessProvider({ children }) {
           const biz = businesses?.find(b => b.id === bid) || businesses?.[0];
           if (biz?.name) setBusinessName(biz.name);
         }
-      } catch (err) {
+      } catch {
         // not logged in or no business
       } finally {
         setIsLoading(false);

@@ -9,7 +9,6 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 
 const ITEM_HEIGHT = 60;
-const HEADER_HEIGHT = 52;
 
 export default function VirtualizedProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated }) {
   const navigate = useNavigate();
