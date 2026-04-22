@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 import {
   Table,
   TableBody,
@@ -486,16 +487,18 @@ export default function SupplierPayments() {
             {/* Proveedor */}
             <div>
               <Label>Proveedor *</Label>
-              <Select value={form.supplier_id} onValueChange={v => set("supplier_id", v)}>
-                <SelectTrigger className={fieldErrors.supplier_id ? "border-red-500 focus:ring-red-500" : ""}>
-                  <SelectValue placeholder={suppliers.length === 0 ? "Primero registra proveedores" : "Selecciona un proveedor"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {suppliers.map(s => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className={fieldErrors.supplier_id ? "rounded-md ring-1 ring-red-500" : ""}>
+                <SearchableSelect
+                  value={form.supplier_id}
+                  onValueChange={v => set("supplier_id", v)}
+                  placeholder={suppliers.length === 0 ? "Primero registra proveedores" : "Selecciona un proveedor"}
+                  options={suppliers.map(s => ({
+                    value: s.id,
+                    label: s.contact_name || s.name,
+                    searchLabel: s.name,
+                  }))}
+                />
+              </div>
               {fieldErrors.supplier_id && <p className="text-xs text-red-500 mt-1">Selecciona un proveedor</p>}
             </div>
 
@@ -528,17 +531,17 @@ export default function SupplierPayments() {
             {/* Método de pago */}
             <div>
               <Label>Método de pago</Label>
-              <Select value={form.payment_method || "none"} onValueChange={v => set("payment_method", v === "none" ? "" : v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un método" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">— Ninguno —</SelectItem>
-                  {paymentMethods.map(pm => (
-                    <SelectItem key={pm.id} value={pm.name}>{pm.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                value={form.payment_method || ""}
+                onValueChange={v => {
+                  set("payment_method", v);
+                  if (String(v || "").trim().toLowerCase() !== "efectivo") {
+                    set("affects_petty_cash", false);
+                  }
+                }}
+                placeholder="Selecciona un método"
+                options={paymentMethods.map(pm => ({ value: pm.name, label: pm.name }))}
+              />
               {paymentMethods.length === 0 && (
                 <p className="text-[11px] text-slate-400 mt-1">Puedes registrar métodos en Catálogos → Tipo de pago</p>
               )}
@@ -576,23 +579,25 @@ export default function SupplierPayments() {
               />
             </div>
 
-            {/* Toggle caja chica */}
-            <div className="flex items-start gap-3 p-3 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20">
-              <Switch
-                id="affects-petty-cash"
-                checked={!!form.affects_petty_cash}
-                onCheckedChange={v => set("affects_petty_cash", v)}
-                className="mt-0.5"
-              />
-              <label htmlFor="affects-petty-cash" className="flex-1 cursor-pointer">
-                <div className="flex items-center gap-2 text-sm font-medium text-rose-800 dark:text-rose-300">
-                  <PiggyBank className="h-4 w-4" /> Descontar de Caja Chica
-                </div>
-                <p className="text-[11px] text-rose-700/80 dark:text-rose-400/80 mt-0.5">
-                  Crea automáticamente un egreso en Caja Chica por este monto. Podrás verlo pero no editarlo desde ahí; los cambios se hacen desde este pago.
-                </p>
-              </label>
-            </div>
+            {/* Toggle caja chica — solo visible cuando el método de pago es efectivo */}
+            {String(form.payment_method || "").trim().toLowerCase() === "efectivo" && (
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20">
+                <Switch
+                  id="affects-petty-cash"
+                  checked={!!form.affects_petty_cash}
+                  onCheckedChange={v => set("affects_petty_cash", v)}
+                  className="mt-0.5"
+                />
+                <label htmlFor="affects-petty-cash" className="flex-1 cursor-pointer">
+                  <div className="flex items-center gap-2 text-sm font-medium text-rose-800 dark:text-rose-300">
+                    <PiggyBank className="h-4 w-4" /> Descontar de Caja Chica
+                  </div>
+                  <p className="text-[11px] text-rose-700/80 dark:text-rose-400/80 mt-0.5">
+                    Crea automáticamente un egreso en Caja Chica por este monto. Podrás verlo pero no editarlo desde ahí; los cambios se hacen desde este pago.
+                  </p>
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 px-6 py-4 border-t border-border shrink-0 bg-card">
