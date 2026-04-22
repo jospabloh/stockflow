@@ -92,14 +92,40 @@ export default function SupplierPayments() {
   const loadAll = async () => {
     if (!businessId) return;
     try {
-      const [pays, catalogsRes] = await Promise.all([
-        base44.entities.SupplierPayment.filter({ business_id: businessId }, "-payment_date", 1000),
-        base44.functions.invoke('getBusinessCatalogs', {}),
-      ]);
-      const catalogs = catalogsRes?.data || {};
+      // Load payments directly — always works for all roles
+      const pays = await base44.entities.SupplierPayment.filter(
+        { business_id: businessId }, "-payment_date", 1000
+      );
       setPayments(pays);
-      setSuppliers(catalogs.suppliers || []);
-      setPaymentMethods(catalogs.paymentMethods || []);
+
+      // Load catalog data: try service-role function first (bypasses RLS for custom roles),
+      // then fall back to direct entity queries (works for admin users)
+      let sups = [];
+      let methods = [];
+
+      try {
+        const catalogsRes = await base44.functions.invoke('getBusinessCatalogs', {});
+        const catalogs = catalogsRes?.data || {};
+        sups = Array.isArray(catalogs.suppliers) ? catalogs.suppliers : [];
+        methods = Array.isArray(catalogs.paymentMethods) ? catalogs.paymentMethods : [];
+      } catch {
+        // service-role function unavailable — fall through to direct queries
+      }
+
+      // Direct-query fallback (admin users with direct entity access)
+      if (sups.length === 0) {
+        sups = await base44.entities.Supplier.filter(
+          { business_id: businessId }, "name"
+        ).catch(() => []);
+      }
+      if (methods.length === 0) {
+        methods = await base44.entities.PaymentMethod.filter(
+          { business_id: businessId, active: true }, "name"
+        ).catch(() => []);
+      }
+
+      setSuppliers(sups);
+      setPaymentMethods(methods);
     } catch (err) {
       console.error("Error loading supplier payments:", err);
       toast.error("Error al cargar datos");
