@@ -1,10 +1,90 @@
-// Artículos de ayuda — última versión: v2.9.0
+// Artículos de ayuda — última versión: v2.9.1
+// v2.9.1: Módulo Pagos a Proveedores, búsqueda mejorada, optimizaciones dashboard + dark mode
 // v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor, campos requeridos en cliente
 // v2.8.2: Artículo tenant-facing para regla cash_sales_to_petty_cash + filtrado de ayuda por reglas del tenant
 // v2.8.1: Módulo Reglas por Tenant + entidad TenantRule + funciones backend platform-admin-only
 // v2.8.0: Ingresos automáticos en Caja Chica por ventas en efectivo (función opcional por tenant)
 
 export const newHelpArticles = [
+    {
+      id: "release-2-9-1",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.9.1 — Módulo Pagos a Proveedores y Optimizaciones Dashboard",
+      keywords: ["versión", "2.9.1", "pagos", "proveedores", "supplier payments", "dashboard", "dark mode", "búsqueda"],
+      related_ids: ["release-2-9-0", "dashboard-overview", "supplier-overview"],
+      content: `## 🆕 Versión 2.9.1 — 22 de abril de 2026
+
+### ✅ Novedades de esta versión
+
+---
+
+#### 💳 Nuevo Módulo: Pagos a Proveedores
+
+Registra y da seguimiento a los desembolsos realizados a proveedores — clave para reflejar la utilidad neta real.
+
+- **Nueva página "Pagos a Proveedores"**: CRUD completo (crear, editar, eliminar) con filtros y resumen de KPIs
+- **Perfil por proveedor**: acceso rápido a histórico de pagos desde la tarjeta del proveedor
+- **Toggle Caja Chica**: cada pago puede sincronizarse con un egreso de Caja Chica (marcado como \`generated_by_system\`)
+- **Nueva entidad SupplierPayment** con multi-tenant RLS para aislamiento de datos
+
+---
+
+#### 📊 Dashboard Mejorado
+
+- **Nueva sección Pagos a Proveedores**: gráfico de barras de pagos en el período + ranking de top 5 proveedores
+- **Análisis de Ventas actualizado**: nueva línea de "Pagos a Proveedores" + línea "Utilidad Neta" con badge de impacto (%)
+- **Badge de impacto**: emerald (bajo impacto), amber (medio), rose (alto — más del 80% consumido)
+- **Semáforo de Cotizaciones mejorado**: ahora muestra tasa de conversión %, barra de progreso proporcional y enlace "Ver todas"
+
+---
+
+#### 🔍 Búsqueda Mejorada en Formularios
+
+- **Select de Proveedor**: reemplazado con \`SearchableSelect\` que filtra en tiempo real sobre nombre de negocio y contacto principal
+- **Select de Método de Pago**: reemplazado con \`SearchableSelect\` mejorado; botón X reemplaza la opción "— Ninguno —"
+- **Comportamiento inteligente**: toggle de Caja Chica solo aparece cuando el método es "Efectivo" y se resetea al cambiar método
+
+---
+
+#### 🌓 Dark Mode Mejorado
+
+- **Sincronización reactiva**: los gráficos ahora reaccionan al cambio de tema en tiempo real
+- **Elementos gráficos**: colores de CartesianGrid, ejes (XAxis/YAxis), y tooltip adaptan automáticamente
+- **Observador de tema**: \`MutationObserver\` detecta cambios en la clase \`dark\` y re-renderiza gráficos sin recargar
+
+---
+
+#### 🎨 Optimizaciones de Layout
+
+- **Grid responsivo**: activado 2-col desde \`md\` (768px) — tablets ahora ven layout side-by-side
+- **Eliminación de whitespace**: todos los grids usan \`items-start\` para evitar estiramiento forzado a altura máxima
+- **Espaciado optimizado**: \`space-y-6\` → \`space-y-5\`, \`gap-6\` → \`gap-4\` en secciones de gráficos
+- **Padding responsivo**: \`p-4 md:p-5\` en todas las tarjetas, \`p-3 md:p-4\` en barra de filtros
+- **Limpieza visual**: removida explicación de fórmula en Análisis de Ventas (~100px de espacio recuperado)
+- **Filtro mobile-friendly**: subtitle oculto en móvil (\`hidden sm:block\`)
+
+---
+
+#### 🧹 Limpieza de Código
+
+- **ESLint**: resuelto 31 warnings \`no-unused-vars\` en toda la aplicación
+- **Imports**: removidos 54 imports no utilizados en 18 archivos
+
+---
+
+#### 📈 Reports
+
+- **Nueva pestaña Pagos a Proveedores**: gráfico acumulativo de pagos + KPIs vs período anterior
+- **Análisis comparativo**: delta de monto y cantidad respecto al período previo
+
+---
+
+### 📦 Versión Anterior — v2.9.0 (21 de abril de 2026)
+
+Auditoría de Inventario, ciclo de vida de cuentas con emails automáticos, múltiples contactos por proveedor y campos requeridos en cliente.
+`
+    },
     {
       id: "release-2-9-0",
       category: "Novedades",
