@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Shield, Search, Users, RefreshCw, Edit, CheckCircle, Clock, Lock, AlertTriangle, Mail, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import moment from "moment";
@@ -256,31 +257,36 @@ export default function LicenseAdmin() {
           <div className="space-y-4 pt-2">
             <div>
               <Label>Estado de Facturación</Label>
-              <select
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring mt-1"
-                value={editForm.billing_status || ""}
-                onChange={e => setEditForm(f => ({ ...f, billing_status: e.target.value }))}
-              >
-                <option value="trial">Prueba (trial)</option>
-                <option value="active">Activo (licencia activa)</option>
-                <option value="view_only">Solo lectura (trial expirado)</option>
-                <option value="suspended">Suspendido</option>
-              </select>
+              <Select value={editForm.billing_status || ""} onValueChange={v => setEditForm(f => ({ ...f, billing_status: v }))}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="trial">Prueba (trial)</SelectItem>
+                  <SelectItem value="active">Activo (licencia activa)</SelectItem>
+                  <SelectItem value="view_only">Solo lectura (trial expirado)</SelectItem>
+                  <SelectItem value="suspended">Suspendido</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Plan</Label>
-              <select
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring mt-1"
+              <Select
                 value={editForm.license_plan || "start"}
-                onChange={e => {
+                onValueChange={v => {
                   const limits = { start: 4, growth: 10, pro: 20 };
-                  setEditForm(f => ({ ...f, license_plan: e.target.value, licensed_user_limit: limits[e.target.value] || 4 }));
+                  setEditForm(f => ({ ...f, license_plan: v, licensed_user_limit: limits[v] || 4 }));
                 }}
               >
-                <option value="start">Start — 4 usuarios</option>
-                <option value="growth">Growth — 10 usuarios</option>
-                <option value="pro">Pro — 20 usuarios</option>
-              </select>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="start">Start — 4 usuarios</SelectItem>
+                  <SelectItem value="growth">Growth — 10 usuarios</SelectItem>
+                  <SelectItem value="pro">Pro — 20 usuarios</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Límite de usuarios</Label>

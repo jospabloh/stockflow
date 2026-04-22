@@ -59,6 +59,7 @@ Deno.serve(async (req) => {
         activated_by_admin: biz.activated_by_admin || '',
         active_user_count: tenantUsers.length,
         is_read_only: isReadOnly,
+        auto_renewal: biz.auto_renewal ?? false,
         status: biz.status || 'active',
         created_date: biz.created_date,
       };
