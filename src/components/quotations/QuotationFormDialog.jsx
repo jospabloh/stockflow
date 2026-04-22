@@ -20,7 +20,7 @@ import { calculateTotalsWithReconciliation, formatMXN } from "@/lib/vatCalculato
 
 
 
-function PriceInfo({ rule, origin, warning }) {
+function PriceInfo({ origin, warning }) {
   if (!origin) return null;
   return (
     <div className={`mt-1 px-2 py-1 rounded text-[10px] flex items-start gap-1 ${warning ? "bg-amber-50 text-amber-700" : "bg-indigo-50 text-indigo-600"}`}>

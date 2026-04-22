@@ -311,8 +311,6 @@ export default function SupplierPayments() {
     </div>
   );
 
-  const selectedSupplier = suppliers.find(s => s.id === form.supplier_id);
-
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header */}

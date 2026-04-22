@@ -23,7 +23,7 @@ export default function BarcodeCameraScanner({ onDetected, onClose }) {
       }
     };
 
-    reader.decodeFromVideoDevice(undefined, videoRef.current, (result, err) => {
+    reader.decodeFromVideoDevice(undefined, videoRef.current, (result, _err) => {
       if (result && !detectedRef.current) {
         detectedRef.current = true;
         stopCamera();

@@ -108,7 +108,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
     updateField("sku", sku);
   };
 
-  const handleBarcodeKeyDown = (e) => {
+  const handleBarcodeKeyDown = (_e) => {
     const now = Date.now();
     if (now - lastKeystroke.current < 50) {
       setScanning(true);

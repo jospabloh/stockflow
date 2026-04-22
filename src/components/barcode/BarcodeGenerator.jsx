@@ -94,7 +94,7 @@ function BarcodeDisplay({ barcode }) {
   );
 }
 
-export default function BarcodeGenerator({ productId, productName, businessId, onSave, isSaving = false }) {
+export default function BarcodeGenerator({ productName, onSave, isSaving = false }) {
   const [barcode, setBarcode] = useState("");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);

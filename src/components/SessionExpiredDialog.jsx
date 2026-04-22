@@ -3,7 +3,7 @@ import { AlertTriangle, RefreshCw, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 
-export default function SessionExpiredDialog({ open, onContinue }) {
+export default function SessionExpiredDialog({ open }) {
   const [loading, setLoading] = useState(false);
 
   if (!open) return null;

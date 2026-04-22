@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { CheckCircle, AlertCircle } from "lucide-react";
 import moment from "moment";
 
-export default function CollectionsRiskReport({ quotations, dateFrom, dateTo }) {
+export default function CollectionsRiskReport({ quotations }) {
   const collectionsData = useMemo(() => {
     const today = moment();
 

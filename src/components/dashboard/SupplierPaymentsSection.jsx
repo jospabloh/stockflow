@@ -14,11 +14,6 @@ import {
 } from "recharts";
 import { HandCoins, Crown, ArrowRight } from "lucide-react";
 
-// Convierte UTC a timezone México (UTC-6 fijo, sin DST) — coincide con Dashboard.jsx
-const toMexicoDate = (iso) => {
-  const utc = new Date(iso);
-  return new Date(utc.getTime() - 6 * 60 * 60 * 1000);
-};
 
 const initials = (name) => {
   if (!name) return "?";

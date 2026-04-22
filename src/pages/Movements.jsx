@@ -77,13 +77,6 @@ export default function Movements() {
     });
   };
 
-  const handleSaved = (payload) => {
-    if (!payload || payload._reconcile) {
-      loadData(businessId);
-    }
-    // optimistic: movement list will reflect after reconcile
-  };
-
   useEffect(() => {
     base44.auth.me().then(u => {
       const role = u?.role;
@@ -108,11 +101,6 @@ export default function Movements() {
       setProductIdFilter(null);
     }
   }, [location.search]);
-
-  const getProductTaxRate = (productId) => {
-    const prod = products.find(p => p.id === productId);
-    return prod?.tax_rate || 0;
-  };
 
   const getFinalTotal = (m) => {
     // El precio unitario YA incluye IVA, así que el total es directamente quantity × unit_price

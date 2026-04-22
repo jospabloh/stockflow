@@ -10,7 +10,6 @@ export default function OperationalReports({
   movements,
   dateFrom,
   dateTo,
-  onDateChange,
 }) {
   const [qStatusFilter, setQStatusFilter] = useState("converted");
   const [qClientFilter, setQClientFilter] = useState("all");
@@ -43,7 +42,7 @@ export default function OperationalReports({
   const uniqueClients = [...new Set(quotations.map((q) => q.client_name).filter(Boolean))].sort();
   const uniquePaymentMethods = [...new Set(quotations.map((q) => q.payment_method).filter(Boolean))].sort();
 
-  const handleExportCSV = (data, filename) => {
+  const handleExportCSV = (data, _filename) => {
     if (!data.length) return;
     const headers = Object.keys(data[0]).join(",");
     const rows = data.map((r) => Object.values(r).join(",")).join("\n");

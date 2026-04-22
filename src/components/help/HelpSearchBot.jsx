@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { MessageCircle } from "lucide-react";
 
-const SUGGESTIONS = [
-  "¿Cómo creo una cotización?",
-  "¿Cómo registro una entrada de inventario?",
-  "¿Qué reportes puedo ver?",
-  "¿Cómo cancelo una venta?",
-];
-
-export default function HelpSearchBot({ articles, onNavigate }) {
+export default function HelpSearchBot() {
   const [open, setOpen] = useState(false);
 
   return (

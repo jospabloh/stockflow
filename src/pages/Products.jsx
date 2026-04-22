@@ -50,22 +50,6 @@ export default function Products() {
     });
   };
 
-  const handleSaved = (payload) => {
-    if (!payload || payload._reconcile) {
-      loadData(businessId);
-      return;
-    }
-    if (payload._optimistic) {
-      if (payload.id) {
-        setProducts((prev) =>
-          prev.map((p) => (p.id === payload.id ? { ...p, ...payload } : p))
-        );
-      } else {
-        setProducts((prev) => [{ ...payload, id: `_tmp_${Date.now()}` }, ...prev]);
-      }
-    }
-  };
-
   useEffect(() => {
     base44.auth.me().then(u => {
       setIsAdmin(u?.role === "admin");

@@ -99,7 +99,7 @@ export default function Layout({ children, currentPageName }) {
   const [pullY, setPullY] = useState(0);
   const touchStartY = useRef(0);
   const mainRef = useRef(null);
-  const { businessId, businessName, businessNameLocked, isLoading: bizLoading, user } = useBusinessContext();
+  const { businessId, businessName, isLoading: bizLoading, user } = useBusinessContext();
   const { isPlatformAdmin } = useLicense();
   const { sessionStatus, reactivate, sessionExpired, idleState, continueSession } = useSessionManager(!!businessId);
   useRegionalConfig();
