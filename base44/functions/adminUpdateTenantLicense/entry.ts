@@ -80,7 +80,31 @@ Deno.serve(async (req) => {
 
     console.log('[adminUpdateTenantLicense] updating', business_id, 'with', sanitized);
 
-    await base44.asServiceRole.entities.Business.update(business_id, sanitized);
+    // Proactive partition: apply non-boolean fields first, then boolean fields separately.
+    // This prevents SDK from silently dropping new boolean columns in mixed-type updates.
+    const booleanUpdates: Record<string, unknown> = {};
+    const otherUpdates: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(sanitized)) {
+      if (BOOLEAN_FIELDS.includes(k)) booleanUpdates[k] = v;
+      else otherUpdates[k] = v;
+    }
+
+    if (Object.keys(otherUpdates).length > 0) {
+      await base44.asServiceRole.entities.Business.update(business_id, otherUpdates);
+    }
+
+    let boolUpdateError: Error | null = null;
+    if (Object.keys(booleanUpdates).length > 0) {
+      try {
+        await base44.asServiceRole.entities.Business.update(business_id, booleanUpdates);
+      } catch (e) {
+        boolUpdateError = e as Error;
+        console.warn('[adminUpdateTenantLicense] boolean update failed', boolUpdateError?.message);
+      }
+    }
+
+    // Brief delay to mitigate read-after-write inconsistency
+    await new Promise(r => setTimeout(r, 50));
 
     // Re-fetch to verify persistence — SDK may silently drop some fields
     let fresh = (await base44.asServiceRole.entities.Business.filter({ id: business_id }))[0];
@@ -96,8 +120,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Targeted retry for boolean fields that weren't persisted — workaround for
-    // SDK dropping new boolean columns in multi-field updates
+    // Targeted retry for boolean fields that weren't persisted
     const boolMismatches = mismatches.filter(m => BOOLEAN_FIELDS.includes(m.field));
     if (boolMismatches.length > 0) {
       const retryPayload: Record<string, unknown> = {};
@@ -123,6 +146,27 @@ Deno.serve(async (req) => {
     });
 
     if (finalMismatches.length > 0) {
+      // If only boolean fields failed, the primary status change succeeded — return 200 with warning
+      const nonBoolFinalMismatches = finalMismatches.filter(m => !BOOLEAN_FIELDS.includes(m.field));
+      if (nonBoolFinalMismatches.length === 0) {
+        return Response.json({
+          success: true,
+          warning: 'auto_renewal no persistió a pesar del reintento',
+          mismatches: finalMismatches,
+          persisted: {
+            auto_renewal: fresh.auto_renewal,
+            billing_status: fresh.billing_status,
+            license_plan: fresh.license_plan,
+            licensed_user_limit: fresh.licensed_user_limit,
+            license_expires_at: fresh.license_expires_at,
+            payment_reference: fresh.payment_reference,
+            activation_notes: fresh.activation_notes,
+            activated_by_admin: fresh.activated_by_admin,
+            license_activated_at: fresh.license_activated_at,
+          },
+          business_id,
+        });
+      }
       return Response.json({
         success: false,
         error: 'Some fields failed to persist after retry',
