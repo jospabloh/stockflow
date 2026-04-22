@@ -89,50 +89,42 @@ export default function SupplierPayments() {
   const [filterTo, setFilterTo] = useState("");
   const [search, setSearch] = useState("");
 
+  // Carga pagos + catálogos del tenant — igual que QuotationFormDialog
   const loadAll = async () => {
     if (!businessId) return;
+    // Catálogos: consultas directas, misma estrategia que QuotationFormDialog
+    Promise.all([
+      base44.entities.Supplier.filter({ business_id: businessId }, "name"),
+      base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }, "name"),
+    ]).then(([sups, methods]) => {
+      setSuppliers(sups);
+      setPaymentMethods(methods);
+    });
+    // Pagos: carga separada con indicador de carga
     try {
-      // Load payments directly — always works for all roles
       const pays = await base44.entities.SupplierPayment.filter(
         { business_id: businessId }, "-payment_date", 1000
       );
       setPayments(pays);
-
-      // Load catalog data: try service-role function first (bypasses RLS for custom roles),
-      // then fall back to direct entity queries (works for admin users)
-      let sups = [];
-      let methods = [];
-
-      try {
-        const catalogsRes = await base44.functions.invoke('getBusinessCatalogs', {});
-        const catalogs = catalogsRes?.data || {};
-        sups = Array.isArray(catalogs.suppliers) ? catalogs.suppliers : [];
-        methods = Array.isArray(catalogs.paymentMethods) ? catalogs.paymentMethods : [];
-      } catch {
-        // service-role function unavailable — fall through to direct queries
-      }
-
-      // Direct-query fallback (admin users with direct entity access)
-      if (sups.length === 0) {
-        sups = await base44.entities.Supplier.filter(
-          { business_id: businessId }, "name"
-        ).catch(() => []);
-      }
-      if (methods.length === 0) {
-        methods = await base44.entities.PaymentMethod.filter(
-          { business_id: businessId, active: true }, "name"
-        ).catch(() => []);
-      }
-
-      setSuppliers(sups);
-      setPaymentMethods(methods);
     } catch (err) {
       console.error("Error loading supplier payments:", err);
-      toast.error("Error al cargar datos");
+      toast.error("Error al cargar pagos");
     } finally {
       setLoading(false);
     }
   };
+
+  // Recarga catálogos cada vez que el formulario se abre — misma estrategia que QuotationFormDialog
+  useEffect(() => {
+    if (!formOpen || !businessId) return;
+    Promise.all([
+      base44.entities.Supplier.filter({ business_id: businessId }, "name"),
+      base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }, "name"),
+    ]).then(([sups, methods]) => {
+      setSuppliers(sups);
+      setPaymentMethods(methods);
+    });
+  }, [formOpen, businessId]);
 
   useEffect(() => {
     loadAll();
