@@ -89,24 +89,42 @@ export default function SupplierPayments() {
   const [filterTo, setFilterTo] = useState("");
   const [search, setSearch] = useState("");
 
+  // Carga pagos + catálogos del tenant — igual que QuotationFormDialog
   const loadAll = async () => {
     if (!businessId) return;
+    // Catálogos: consultas directas, misma estrategia que QuotationFormDialog
+    Promise.all([
+      base44.entities.Supplier.filter({ business_id: businessId }, "name"),
+      base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }, "name"),
+    ]).then(([sups, methods]) => {
+      setSuppliers(sups);
+      setPaymentMethods(methods);
+    });
+    // Pagos: carga separada con indicador de carga
     try {
-      const [pays, catalogsRes] = await Promise.all([
-        base44.entities.SupplierPayment.filter({ business_id: businessId }, "-payment_date", 1000),
-        base44.functions.invoke('getBusinessCatalogs', {}),
-      ]);
-      const catalogs = catalogsRes?.data || {};
+      const pays = await base44.entities.SupplierPayment.filter(
+        { business_id: businessId }, "-payment_date", 1000
+      );
       setPayments(pays);
-      setSuppliers(catalogs.suppliers || []);
-      setPaymentMethods(catalogs.paymentMethods || []);
     } catch (err) {
       console.error("Error loading supplier payments:", err);
-      toast.error("Error al cargar datos");
+      toast.error("Error al cargar pagos");
     } finally {
       setLoading(false);
     }
   };
+
+  // Recarga catálogos cada vez que el formulario se abre — misma estrategia que QuotationFormDialog
+  useEffect(() => {
+    if (!formOpen || !businessId) return;
+    Promise.all([
+      base44.entities.Supplier.filter({ business_id: businessId }, "name"),
+      base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }, "name"),
+    ]).then(([sups, methods]) => {
+      setSuppliers(sups);
+      setPaymentMethods(methods);
+    });
+  }, [formOpen, businessId]);
 
   useEffect(() => {
     loadAll();
