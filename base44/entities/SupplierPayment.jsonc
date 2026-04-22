@@ -1,0 +1,72 @@
+{
+  "name": "SupplierPayment",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    },
+    "supplier_id": {
+      "type": "string",
+      "description": "ID del proveedor"
+    },
+    "supplier_name": {
+      "type": "string",
+      "description": "Nombre del proveedor (desnormalizado al momento del pago)"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Monto pagado"
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha del pago (YYYY-MM-DD)"
+    },
+    "payment_method": {
+      "type": "string",
+      "description": "Forma de pago (nombre snapshot de PaymentMethod)"
+    },
+    "concept": {
+      "type": "string",
+      "description": "Concepto o descripción del pago"
+    },
+    "reference": {
+      "type": "string",
+      "description": "Referencia, folio o número de transacción (opcional)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas adicionales (opcional)"
+    },
+    "affects_petty_cash": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si el pago generó un egreso automático en caja chica"
+    },
+    "petty_cash_movement_id": {
+      "type": "string",
+      "description": "ID del PettyCashMovement asociado cuando affects_petty_cash=true"
+    }
+  },
+  "required": [
+    "business_id",
+    "supplier_id",
+    "amount",
+    "payment_date"
+  ],
+  "rls": {
+    "create": {
+      "business_id": "{{user.business_id}}"
+    },
+    "read": {
+      "business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "business_id": "{{user.business_id}}"
+    },
+    "delete": {
+      "business_id": "{{user.business_id}}"
+    }
+  }
+}

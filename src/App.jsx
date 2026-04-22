@@ -29,6 +29,7 @@ const Categories = lazy(() => import('./pages/Categories'));
 const Suppliers = lazy(() => import('./pages/Suppliers'));
 const Clients = lazy(() => import('./pages/Clients'));
 const PaymentMethods = lazy(() => import('./pages/PaymentMethods'));
+const SupplierPayments = lazy(() => import('./pages/SupplierPayments'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center">
@@ -101,6 +102,7 @@ const AuthenticatedApp = () => {
       <Route path="/Suppliers" element={<LayoutWrapper currentPageName="Suppliers"><Suspense fallback={<PageLoader />}><Suppliers /></Suspense></LayoutWrapper>} />
       <Route path="/Clients" element={<LayoutWrapper currentPageName="Clients"><Suspense fallback={<PageLoader />}><Clients /></Suspense></LayoutWrapper>} />
       <Route path="/PaymentMethods" element={<LayoutWrapper currentPageName="PaymentMethods"><Suspense fallback={<PageLoader />}><PaymentMethods /></Suspense></LayoutWrapper>} />
+      <Route path="/SupplierPayments" element={<LayoutWrapper currentPageName="SupplierPayments"><Suspense fallback={<PageLoader />}><SupplierPayments /></Suspense></LayoutWrapper>} />
       <Route path="/LicenseAdmin" element={<LayoutWrapper currentPageName="LicenseAdmin"><Suspense fallback={<PageLoader />}><LicenseAdmin /></Suspense></LayoutWrapper>} />
       <Route path="/TenantRulesAdmin" element={<LayoutWrapper currentPageName="TenantRulesAdmin"><Suspense fallback={<PageLoader />}><TenantRulesAdmin /></Suspense></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />

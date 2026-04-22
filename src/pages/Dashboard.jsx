@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { Package, ArrowLeftRight, DollarSign, AlertTriangle, TrendingUp, Clock } from "lucide-react";
+import { Package, ArrowLeftRight, DollarSign, AlertTriangle, TrendingUp, Clock, HandCoins } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import LowStockAlert from "@/components/dashboard/LowStockAlert";
 import RecentMovements from "@/components/dashboard/RecentMovements";
 import SalesFilterToggle from "@/components/dashboard/SalesFilterToggle";
+import SupplierPaymentsSection from "@/components/dashboard/SupplierPaymentsSection";
 import {
   BarChart,
   Bar,
@@ -81,6 +82,7 @@ export default function Dashboard() {
   const [products, setProducts] = useState([]);
   const [movements, setMovements] = useState([]);
   const [quotations, setQuotations] = useState([]);
+  const [supplierPayments, setSupplierPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [unpaidModalOpen, setUnpaidModalOpen] = useState(false);
@@ -92,12 +94,14 @@ export default function Dashboard() {
       const admin = u?.role === "admin";
       const bId = u?.business_id;
       setIsAdmin(admin);
-      const [prods, movs] = await Promise.all([
+      const [prods, movs, pays] = await Promise.all([
         base44.entities.Product.filter({ business_id: bId }, "-created_date", 500),
         base44.entities.Movement.filter({ business_id: bId }, "-created_date", 1000),
+        base44.entities.SupplierPayment.filter({ business_id: bId }, "-payment_date", 1000).catch(() => []),
       ]);
       setProducts(prods);
       setMovements(movs);
+      setSupplierPayments(pays);
       // Cargar cotizaciones para todos (para ventas del día)
       const quots = await base44.entities.Quotation.filter({ business_id: bId }, "-created_date", 1000).catch(() => []);
       setQuotations(quots);
@@ -145,6 +149,15 @@ export default function Dashboard() {
       return dateStr >= periodStartStr && dateStr <= periodEndStr;
     }),
     [quotations, periodStartStr, periodEndStr]
+  );
+
+  // payment_date viene ya como YYYY-MM-DD en timezone local, comparación directa de strings
+  const periodSupplierPayments = useMemo(() =>
+    supplierPayments.filter((p) => {
+      const d = p.payment_date || "";
+      return d >= periodStartStr && d <= periodEndStr;
+    }),
+    [supplierPayments, periodStartStr, periodEndStr]
   );
 
   const isLowStockProduct = (product) => {
@@ -215,10 +228,16 @@ export default function Dashboard() {
     
     const actualProfit = realRevenue - salesCost;
     const actualMargin = realRevenue > 0 ? (actualProfit / realRevenue) * 100 : 0;
-    
+
     const potentialProfit = salesRevenue - salesCost;
     const potentialMargin = salesRevenue > 0 ? (potentialProfit / salesRevenue) * 100 : 0;
     const salesCount = periodConvertedQuotations.length + periodDirectExits.length;
+
+    const supplierPaymentsTotal = periodSupplierPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+    const netProfit = actualProfit - supplierPaymentsTotal;
+    const netMargin = realRevenue > 0 ? (netProfit / realRevenue) * 100 : 0;
+    // % de utilidad real consumida por pagos a proveedores (solo cuando hay utilidad positiva)
+    const supplierImpactPct = actualProfit > 0 ? (supplierPaymentsTotal / actualProfit) * 100 : 0;
 
     return {
       salesRevenue,
@@ -234,8 +253,12 @@ export default function Dashboard() {
       periodConvertedQuotations,
       undeliveredTotal,
       undeliveredItems,
+      supplierPaymentsTotal,
+      netProfit,
+      netMargin,
+      supplierImpactPct,
     };
-  }, [periodMovements, periodQuotations, products]);
+  }, [periodMovements, periodQuotations, periodSupplierPayments, products]);
 
   // Cotizaciones concretadas sin pagar — GLOBAL
   const unpaidConverted = quotations.filter(q => q.status === "converted" && !q.paid);
@@ -512,8 +535,8 @@ export default function Dashboard() {
                       <span className="text-sm text-slate-600 dark:text-slate-400">Costo de lo entregado</span>
                       <span className="font-bold text-slate-700 dark:text-slate-200">${salesData.salesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                     </div>
-                    <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 border-t-2 ${salesData.actualMargin >= 0 ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900" : "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900"}`}>
-                      <span className={`text-sm font-semibold ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>Ganancia/Pérdida Real</span>
+                    <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 ${salesData.actualMargin >= 0 ? "bg-emerald-50 dark:bg-emerald-950/40" : "bg-red-50 dark:bg-red-950/40"}`}>
+                      <span className={`text-sm font-semibold ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>Utilidad Real</span>
                       <div className="flex items-center gap-2">
                         <span className={`font-bold text-lg ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
                           {salesData.actualMargin >= 0 ? "+" : ""}{salesData.actualProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
@@ -523,11 +546,46 @@ export default function Dashboard() {
                         </Badge>
                       </div>
                     </div>
+                    {/* Pagos a proveedores del período */}
+                    <div className="flex justify-between items-center bg-orange-50 dark:bg-orange-950/30 rounded-lg px-4 py-2.5">
+                      <span className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                        <HandCoins className="h-3.5 w-3.5 text-orange-500" /> Pagos a proveedores
+                      </span>
+                      <Link
+                        to={createPageUrl("SupplierPayments")}
+                        className="font-bold text-orange-700 dark:text-orange-400 hover:underline"
+                      >
+                        −${salesData.supplierPaymentsTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                      </Link>
+                    </div>
+                    {/* Utilidad Neta */}
+                    <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 border-t-2 ${salesData.netMargin >= 0 ? "bg-emerald-100/70 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800" : "bg-red-100/70 dark:bg-red-950/60 border-red-300 dark:border-red-800"}`}>
+                      <span className={`text-sm font-bold ${salesData.netMargin >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
+                        Utilidad Neta <span className="text-[10px] font-normal opacity-70">(− prov.)</span>
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`font-bold text-lg ${salesData.netMargin >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
+                          {salesData.netMargin >= 0 ? "+" : ""}{salesData.netProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                        </span>
+                        {salesData.supplierPaymentsTotal > 0 && salesData.actualProfit > 0 && (
+                          <Badge className={`border-0 text-xs font-semibold ${
+                            salesData.supplierImpactPct < 30
+                              ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300"
+                              : salesData.supplierImpactPct <= 50
+                              ? "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
+                              : "bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-300"
+                          }`} title={`${salesData.supplierImpactPct.toFixed(1)}% de la utilidad se destinó a pagos a proveedores`}>
+                            {salesData.supplierImpactPct.toFixed(1)}% consumido
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                     <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800">
                       <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
                         <strong>¿Cómo se calcula?</strong><br/>
-                        <span className="text-slate-500">Ganancia Real = Cobrado efectivamente − Costo de lo entregado</span><br/>
-                        <span className="text-slate-500">Puede ser positiva (ganancia) o negativa (pérdida) según si has cobrado menos de lo que te costó.</span>
+                        <span className="text-slate-500">Utilidad Real = Cobrado efectivamente − Costo de lo entregado</span><br/>
+                        <span className="text-slate-500">Utilidad Neta = Utilidad Real − Pagos a proveedores del período</span><br/>
+                        <span className="text-slate-500">El badge muestra qué % de tu utilidad real consumieron los pagos a proveedores.</span>
                       </p>
                     </div>
                   </>
@@ -596,6 +654,14 @@ export default function Dashboard() {
           <RecentMovements movements={movements} />
         </div>
       </div>
+
+      {/* Sección gráfica: Pagos a Proveedores */}
+      <SupplierPaymentsSection
+        payments={periodSupplierPayments}
+        salesPeriod={customDateRange.start && customDateRange.end ? null : salesPeriod}
+        periodStartStr={periodStartStr}
+        periodEndStr={periodEndStr}
+      />
     </div>
   );
 }

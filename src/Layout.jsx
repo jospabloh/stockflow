@@ -40,7 +40,8 @@ import {
   DollarSign,
   Palette,
   Users,
-  Shield
+  Shield,
+  HandCoins
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,7 @@ const navItems = [
   { name: "Movimientos", icon: ArrowLeftRight, page: "Movements" },
   { name: "Cotizaciones", icon: FileText, page: "Quotations" },
   { name: "Caja Chica", icon: PiggyBank, page: "PettyCash" },
+  { name: "Pagos a Proveedores", icon: HandCoins, page: "SupplierPayments" },
   { name: "Reportes", icon: BarChart3, page: "Reports" },
   { name: "Configuración", icon: Settings, page: "Settings" },
   {
