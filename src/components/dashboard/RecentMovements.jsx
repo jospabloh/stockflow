@@ -13,26 +13,26 @@ const typeConfig = {
 export default function RecentMovements({ movements }) {
   return (
     <Card className="border-0 shadow-sm">
-      <div className="p-5">
-        <h3 className="font-semibold text-slate-700 mb-4">Movimientos Recientes</h3>
+      <div className="p-4 md:p-5">
+        <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">Movimientos Recientes</h3>
         {movements.length === 0 ? (
-          <p className="text-sm text-slate-400 text-center py-8">Sin movimientos recientes</p>
+          <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-8">Sin movimientos recientes</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {movements.slice(0, 8).map((mov) => {
               const config = typeConfig[mov.type] || typeConfig.adjustment;
               const IconComp = config.icon;
               return (
                 <div key={mov.id} className="flex items-center gap-3">
-                  <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${config.color}`}>
+                  <div className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 ${config.color}`}>
                     <IconComp className="h-4 w-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-700 truncate">{mov.product_name}</p>
-                    <p className="text-xs text-slate-400">{moment(mov.created_date).fromNow()}</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{mov.product_name}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">{moment(mov.created_date).fromNow()}</p>
                   </div>
-                  <div className="text-right">
-                    <p className={`text-sm font-semibold ${mov.type === "exit" ? "text-rose-600" : "text-emerald-600"}`}>
+                  <div className="text-right flex-shrink-0">
+                    <p className={`text-sm font-semibold ${mov.type === "exit" ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}`}>
                       {mov.type === "exit" ? "-" : "+"}{mov.quantity}
                     </p>
                   </div>
