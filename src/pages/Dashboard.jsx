@@ -88,6 +88,15 @@ export default function Dashboard() {
   const [unpaidModalOpen, setUnpaidModalOpen] = useState(false);
   const [salesPeriod, setSalesPeriod] = useState("day");
   const [customDateRange, setCustomDateRange] = useState({ start: null, end: null });
+  const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.classList.contains("dark"));
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     base44.auth.me().then(async (u) => {
@@ -369,6 +378,10 @@ export default function Dashboard() {
     return data;
   }, [salesPeriod, periodMovements]);
 
+  const chartTitle = customDateRange.start && customDateRange.end
+    ? "Movimientos — Período personalizado"
+    : ({ day: "Movimientos — Hoy", week: "Movimientos — Esta semana", month: "Movimientos — Este mes", year: "Movimientos — Este año" }[salesPeriod] ?? "Movimientos");
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -378,13 +391,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-5 max-w-7xl mx-auto">
       {/* FILTRO GLOBAL EN TOP */}
-      <div className="sticky top-0 z-10 bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-indigo-950/30 dark:to-cyan-950/30 backdrop-blur-sm border-b border-indigo-200 dark:border-indigo-900 rounded-lg p-4 mb-2">
+      <div className="sticky top-0 z-10 bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-indigo-950/30 dark:to-cyan-950/30 backdrop-blur-sm border-b border-indigo-200 dark:border-indigo-900 rounded-lg p-3 md:p-4 mb-2">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">Período de análisis</p>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Todos los datos se filtran por este período</p>
+            <p className="hidden sm:block text-sm text-slate-600 dark:text-slate-400 mt-1">Todos los datos se filtran por este período</p>
           </div>
           <SalesFilterToggle 
             period={salesPeriod} 
@@ -497,9 +510,9 @@ export default function Dashboard() {
       )}
 
       {/* Sales Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-       <Card className="border-0 shadow-sm p-5">
-         <h3 className="font-semibold text-slate-700 flex items-center gap-2 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+       <Card className="border-0 shadow-sm p-4 md:p-5">
+         <h3 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-4">
            <TrendingUp className="h-4 w-4 text-indigo-500" /> Análisis de Ventas
          </h3>
             {salesData.salesRevenue === 0 ? (
@@ -580,14 +593,6 @@ export default function Dashboard() {
                         )}
                       </div>
                     </div>
-                    <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800">
-                      <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                        <strong>¿Cómo se calcula?</strong><br/>
-                        <span className="text-slate-500">Utilidad Real = Cobrado efectivamente − Costo de lo entregado</span><br/>
-                        <span className="text-slate-500">Utilidad Neta = Utilidad Real − Pagos a proveedores del período</span><br/>
-                        <span className="text-slate-500">El badge muestra qué % de tu utilidad real consumieron los pagos a proveedores.</span>
-                      </p>
-                    </div>
                   </>
                 )}
               </div>
@@ -595,52 +600,92 @@ export default function Dashboard() {
        </Card>
 
         {/* Quotation Semaphore */}
-        <Card className="border-0 shadow-sm p-5">
+        <Card className="border-0 shadow-sm p-4 md:p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-slate-700">Semáforo de Cotizaciones</h3>
-            <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">En los últimos 30 días</span>
+            <h3 className="font-semibold text-slate-700 dark:text-slate-200">Semáforo de Cotizaciones</h3>
+            <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">Últimos 30 días</span>
           </div>
-          <div className="space-y-3">
-            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=converted`)} className="w-full text-left flex justify-between items-center bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-4 py-2.5 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-colors cursor-pointer">
+          <div className="space-y-2.5">
+            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=converted`)} className="w-full text-left flex justify-between items-center bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-4 py-3 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" />
                 <span className="text-sm text-slate-600 dark:text-slate-400">Concretadas en venta</span>
               </div>
-              <span className="font-bold text-emerald-700 dark:text-emerald-300 text-lg">{quotGreen}</span>
+              <span className="font-bold text-emerald-700 dark:text-emerald-300 text-xl">{quotGreen}</span>
             </button>
-            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=active`)} className="w-full text-left flex justify-between items-center bg-amber-50 dark:bg-amber-950/40 rounded-lg px-4 py-2.5 hover:bg-amber-100 dark:hover:bg-amber-950/60 transition-colors cursor-pointer">
+            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=active`)} className="w-full text-left flex justify-between items-center bg-amber-50 dark:bg-amber-950/40 rounded-lg px-4 py-3 hover:bg-amber-100 dark:hover:bg-amber-950/60 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-amber-400 inline-block" />
                 <span className="text-sm text-slate-600 dark:text-slate-400">Sin concretar (activas)</span>
               </div>
-              <span className="font-bold text-amber-400 dark:text-amber-300 text-lg">{quotYellow}</span>
+              <span className="font-bold text-amber-400 dark:text-amber-300 text-xl">{quotYellow}</span>
             </button>
-            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=cancelled`)} className="w-full text-left flex justify-between items-center bg-red-50 dark:bg-red-950/40 rounded-lg px-4 py-2.5 hover:bg-red-100 dark:hover:bg-red-950/60 transition-colors cursor-pointer">
+            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=cancelled`)} className="w-full text-left flex justify-between items-center bg-red-50 dark:bg-red-950/40 rounded-lg px-4 py-3 hover:bg-red-100 dark:hover:bg-red-950/60 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-red-500 inline-block" />
                 <span className="text-sm text-slate-600 dark:text-slate-400">Canceladas</span>
               </div>
-              <span className="font-bold text-red-500 dark:text-red-300 text-lg">{quotRed}</span>
+              <span className="font-bold text-red-500 dark:text-red-300 text-xl">{quotRed}</span>
             </button>
           </div>
+          {quotationsLast30Days.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-slate-500 dark:text-slate-400">Tasa de conversión</span>
+                <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                  {((quotGreen / quotationsLast30Days.length) * 100).toFixed(0)}%
+                </span>
+              </div>
+              <div className="flex h-2 rounded-full overflow-hidden gap-px bg-slate-100 dark:bg-slate-800">
+                {quotGreen > 0 && (
+                  <div className="bg-emerald-400 rounded-l-full transition-all" style={{ flex: quotGreen }} />
+                )}
+                {quotYellow > 0 && (
+                  <div className="bg-amber-400 transition-all" style={{ flex: quotYellow }} />
+                )}
+                {quotRed > 0 && (
+                  <div className="bg-red-400 rounded-r-full transition-all" style={{ flex: quotRed }} />
+                )}
+              </div>
+              <div className="mt-3 flex justify-between items-center">
+                <span className="text-xs text-slate-400 dark:text-slate-500">{quotationsLast30Days.length} cotización(es) total</span>
+                <Link to={createPageUrl("Quotations")} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+                  Ver todas →
+                </Link>
+              </div>
+            </div>
+          )}
         </Card>
       </div>
 
       {/* Charts and alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 border-0 shadow-sm p-6">
-          <h3 className="font-semibold text-slate-700 mb-4">Movimientos (Últimos 7 días)</h3>
-          <ResponsiveContainer width="100%" height={280}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        <Card className="lg:col-span-2 border-0 shadow-sm p-4 md:p-6">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <h3 className="font-semibold text-slate-700 dark:text-slate-200">{chartTitle}</h3>
+            <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-sm bg-indigo-500 inline-block" />
+                Entradas
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-sm bg-cyan-500 inline-block" />
+                Salidas
+              </span>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={260}>
             <BarChart data={chartData} barCategoryGap="20%">
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="day" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#334155" : "#f1f5f9"} />
+              <XAxis dataKey="day" tick={{ fill: isDark ? "#64748b" : "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: isDark ? "#64748b" : "#94a3b8", fontSize: 12 }} axisLine={false} tickLine={false} />
               <Tooltip
                 contentStyle={{
-                  background: "white",
-                  border: "none",
+                  background: isDark ? "#1e293b" : "white",
+                  border: isDark ? "1px solid #334155" : "none",
                   borderRadius: "12px",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+                  color: isDark ? "#e2e8f0" : "#1e293b",
                 }}
               />
               <Bar dataKey="Entradas" fill="#6366f1" radius={[6, 6, 0, 0]} />
@@ -649,7 +694,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </Card>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <LowStockAlert products={lowStockProducts} />
           <RecentMovements movements={movements} />
         </div>
