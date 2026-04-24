@@ -42,8 +42,8 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
     }
 
-    // All validations passed, create the quotation
-    const quotation = await base44.entities.Quotation.create({
+    // All validations passed, create the quotation — use asServiceRole to allow almacenista to bypass RLS
+    const quotation = await base44.asServiceRole.entities.Quotation.create({
       folio,
       client_id,
       client_name,
