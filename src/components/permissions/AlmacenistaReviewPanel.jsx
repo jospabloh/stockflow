@@ -133,19 +133,10 @@ export default function AlmacenistaReviewPanel({ perms, onPermChange, onSave }) 
                           }
                         }}
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 mb-2">
                           <div className="text-lg">{ACTION_ICONS[action]}</div>
                           <div className="flex-1 min-w-0">
                             <div className="font-medium text-sm">{ACTION_LABELS[action]}</div>
-                            <div className="text-xs text-muted-foreground mt-0.5">
-                              {isDefault ? (
-                                isCurrent 
-                                  ? "✓ Permitido" 
-                                  : "✗ Reducido"
-                              ) : (
-                                "✗ No disponible"
-                              )}
-                            </div>
                           </div>
                           {editMode && isDefault && (
                             <Checkbox
@@ -162,10 +153,51 @@ export default function AlmacenistaReviewPanel({ perms, onPermChange, onSave }) 
                             </div>
                           )}
                         </div>
+                        
+                        {/* Detail row */}
+                        <div className="ml-9 text-xs space-y-0.5">
+                          <div className="flex gap-2">
+                            <span className="font-semibold min-w-fit">Default:</span>
+                            <span className={isDefault ? 'text-emerald-700 font-medium' : 'text-slate-500'}>
+                              {isDefault ? '✓ Permitido' : '✗ No permitido'}
+                            </span>
+                          </div>
+                          <div className="flex gap-2">
+                            <span className="font-semibold min-w-fit">Actual:</span>
+                            <span className={isCurrent ? 'text-emerald-700 font-medium' : 'text-red-600 font-medium'}>
+                              {isCurrent ? '✓ Permitido' : '✗ Bloqueado'}
+                            </span>
+                            {isReduced && (
+                              <span className="text-red-500 font-semibold ml-1">(↓ Reducido)</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
                 </div>
+                
+                {/* Summary */}
+                {hasChanges && (
+                  <div className="mt-4 p-3 bg-amber-100/50 border border-amber-300 rounded-lg">
+                    <p className="text-xs font-semibold text-amber-900 mb-1">Resumen de cambios:</p>
+                    <ul className="text-xs text-amber-800 space-y-1">
+                      {['ver', 'leer', 'escribir', 'modificar', 'eliminar'].map(action => {
+                        const isDefault = defaultActions[action];
+                        const isCurrent = currentActions[action] ?? isDefault;
+                        if (isCurrent !== isDefault) {
+                          return (
+                            <li key={action} className="flex gap-2 items-center">
+                              <span className="text-red-600 font-bold">✗</span>
+                              <span>{ACTION_LABELS[action]}: {isDefault ? 'permitido por defecto, ahora bloqueado' : 'no está disponible'}</span>
+                            </li>
+                          );
+                        }
+                        return null;
+                      })}
+                    </ul>
+                  </div>
+                )}
               </Card>
             );
           })}
