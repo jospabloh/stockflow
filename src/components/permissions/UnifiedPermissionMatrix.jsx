@@ -7,7 +7,7 @@ import { Edit2, Save, X, RotateCcw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Matriz completa de funcionalidades por módulo
-const PERMISSION_MATRIX = {
+export const PERMISSION_MATRIX = {
   Dashboard: {
     label: "Dashboard",
     actions: [
@@ -185,6 +185,20 @@ export default function UnifiedPermissionMatrix({ perms, onPermChange, onSave, s
     });
   };
 
+  const selectAll = () => {
+    Object.entries(PERMISSION_MATRIX).forEach(([module, data]) => {
+      data.actions.forEach(action => {
+        onPermChange(activeRole, `${module}:${action.id}`, true);
+      });
+    });
+  };
+
+  const selectNone = () => {
+    Object.keys(currentRolePerms).forEach(key => {
+      onPermChange(activeRole, key, false);
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -251,16 +265,34 @@ export default function UnifiedPermissionMatrix({ perms, onPermChange, onSave, s
         </Card>
       </div>
 
-      {/* Reset button */}
+      {/* Control buttons */}
       {editMode && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={resetToDefaults}
-          className="text-amber-700 border-amber-300 hover:bg-amber-50"
-        >
-          <RotateCcw className="h-4 w-4 mr-1" /> Restaurar valores por defecto
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={selectAll}
+            className="text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+          >
+            ✓ Seleccionar todo
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={selectNone}
+            className="text-slate-700 border-slate-300 hover:bg-slate-50"
+          >
+            ○ Ninguno
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={resetToDefaults}
+            className="text-amber-700 border-amber-300 hover:bg-amber-50"
+          >
+            <RotateCcw className="h-4 w-4 mr-1" /> Restaurar valores por defecto
+          </Button>
+        </div>
       )}
 
       {/* Matriz */}

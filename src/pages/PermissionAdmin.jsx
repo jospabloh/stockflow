@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import UnifiedPermissionMatrix from "@/components/permissions/UnifiedPermissionMatrix";
+import { PERMISSION_MATRIX } from "@/components/permissions/UnifiedPermissionMatrix";
 
 
 
@@ -51,10 +52,25 @@ export default function PermissionAdmin() {
       const data = response.data;
       setProfiles(data?.profiles || {});
       setFeatureEnabled(data?.featureEnabled === true);
-      setPerms({
-        admin: data?.profiles?.admin || {},
-        almacenista: data?.profiles?.almacenista || {},
-      });
+      // Admin por defecto con todos los permisos activados
+      const adminPerms = data?.profiles?.admin;
+      if (!adminPerms || Object.keys(adminPerms).length === 0) {
+        const allPerms = {};
+        Object.entries(PERMISSION_MATRIX).forEach(([module, moduleData]) => {
+          moduleData.actions.forEach(action => {
+            allPerms[`${module}:${action.id}`] = true;
+          });
+        });
+        setPerms({
+          admin: allPerms,
+          almacenista: data?.profiles?.almacenista || {},
+        });
+      } else {
+        setPerms({
+          admin: adminPerms || {},
+          almacenista: data?.profiles?.almacenista || {},
+        });
+      }
     } catch (error) {
       toast.error(`Error al cargar permisos: ${error.message}`);
     } finally {
