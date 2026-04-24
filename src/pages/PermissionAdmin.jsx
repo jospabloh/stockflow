@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, RefreshCw, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import AlmacenistaReviewPanel from "@/components/permissions/AlmacenistaReviewPanel";
+import GranularPermissionManager from "@/components/permissions/GranularPermissionManager";
 
 const ACTION_LABELS = {
   ver: "Ver",
@@ -268,10 +269,23 @@ export default function PermissionAdmin() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="almacenista">
-          <AlmacenistaReviewPanel 
+        <TabsContent value="almacenista" className="space-y-4">
+          <Card className="p-4 bg-blue-50 border-blue-200">
+            <p className="text-sm text-blue-700">
+              <strong>Sistema de permisos por elemento:</strong> Define exactamente qué tarjetas y funciones ve el almacenista en cada página.
+            </p>
+          </Card>
+          <GranularPermissionManager 
             perms={perms} 
-            onPermChange={handleToggleAction}
+            onPermChange={(role, key, value) => {
+              setPerms(prev => ({
+                ...prev,
+                [role]: {
+                  ...prev[role],
+                  [key]: value,
+                },
+              }));
+            }}
             onSave={() => handleSave('almacenista')}
           />
         </TabsContent>
