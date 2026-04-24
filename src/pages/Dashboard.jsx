@@ -424,7 +424,7 @@ export default function Dashboard() {
           color="indigo"
           href={createPageUrl("Products")}
         />
-        {canSee("total_costs") && (
+        {canSee("total_stock_value") && (
           <StatCard
             title="Valor Total"
             value={`$${totalValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`}
@@ -548,11 +548,13 @@ export default function Dashboard() {
                 )}
                 {canSee("net_profit") && (
                    <>
+                      {canSee("cost_breakdown") && (
                       <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 rounded-lg px-4 py-2.5">
                         <span className="text-sm text-slate-600 dark:text-slate-400">Costo de lo entregado</span>
                         <span className="font-bold text-slate-700 dark:text-slate-200">${salesData.salesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                       </div>
-                      <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 ${salesData.actualMargin >= 0 ? "bg-emerald-50 dark:bg-emerald-950/40" : "bg-red-50 dark:bg-red-950/40"}`}>
+                      )}
+                      {canSee("profit_metrics") && (<div className={`flex justify-between items-center rounded-lg px-4 py-2.5 ${salesData.actualMargin >= 0 ? "bg-emerald-50 dark:bg-emerald-950/40" : "bg-red-50 dark:bg-red-950/40"}`}>
                         <span className={`text-sm font-semibold ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>Utilidad Real</span>
                         <div className="flex items-center gap-2">
                           <span className={`font-bold text-lg ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
@@ -563,7 +565,9 @@ export default function Dashboard() {
                           </Badge>
                         </div>
                       </div>
+                      )}
                       {/* Pagos a proveedores del período */}
+                      {canSee("supplier_impact") && (
                       <div className="flex justify-between items-center bg-orange-50 dark:bg-orange-950/30 rounded-lg px-4 py-2.5">
                         <span className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
                           <HandCoins className="h-3.5 w-3.5 text-orange-500" /> Pagos a proveedores
@@ -575,6 +579,7 @@ export default function Dashboard() {
                           −${salesData.supplierPaymentsTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                         </Link>
                       </div>
+                      )}
                       {/* Utilidad Neta */}
                       <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 border-t-2 ${salesData.netMargin >= 0 ? "bg-emerald-100/70 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800" : "bg-red-100/70 dark:bg-red-950/60 border-red-300 dark:border-red-800"}`}>
                         <span className={`text-sm font-bold ${salesData.netMargin >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
@@ -663,7 +668,7 @@ export default function Dashboard() {
       </div>
 
       {/* Charts and alerts */}
-      {canSee("sales_trend") && (
+      {canSee("chart_visualization") && (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
         <Card className="lg:col-span-2 border-0 shadow-sm p-4 md:p-6">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
