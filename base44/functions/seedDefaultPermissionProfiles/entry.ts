@@ -37,6 +37,23 @@ const LEGACY_DEFAULTS: Record<string, Record<string, Record<string, boolean>>> =
     HelpCenter: { ver: true, leer: true, escribir: false, modificar: false, eliminar: false },
     About: { ver: true, leer: true, escribir: false, modificar: false, eliminar: false },
   },
+  vendedor: {
+    Dashboard: { ver: true, leer: true, escribir: false, modificar: false, eliminar: false },
+    Products: { ver: true, leer: true, escribir: false, modificar: false, eliminar: false },
+    Movements: { ver: true, leer: true, escribir: true, modificar: false, eliminar: false },
+    Quotations: { ver: true, leer: true, escribir: true, modificar: true, eliminar: false },
+    Reports: { ver: false, leer: false, escribir: false, modificar: false, eliminar: false },
+    Settings: { ver: false, leer: false, escribir: false, modificar: false, eliminar: false },
+    PettyCash: { ver: false, leer: false, escribir: false, modificar: false, eliminar: false },
+    BarcodeGenerator: { ver: false, leer: false, escribir: false, modificar: false, eliminar: false },
+    Categories: { ver: true, leer: true, escribir: false, modificar: false, eliminar: false },
+    Suppliers: { ver: true, leer: true, escribir: false, modificar: false, eliminar: false },
+    Clients: { ver: true, leer: true, escribir: true, modificar: false, eliminar: false },
+    PaymentMethods: { ver: true, leer: true, escribir: false, modificar: false, eliminar: false },
+    SupplierPayments: { ver: false, leer: false, escribir: false, modificar: false, eliminar: false },
+    HelpCenter: { ver: true, leer: true, escribir: false, modificar: false, eliminar: false },
+    About: { ver: true, leer: true, escribir: false, modificar: false, eliminar: false },
+  },
 };
 
 Deno.serve(async (req) => {
