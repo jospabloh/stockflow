@@ -237,18 +237,22 @@ export default function UnifiedPermissionMatrix({ perms, onPermChange, onSave, s
         </div>
 
         {/* Role tabs */}
-        <Tabs value={activeRole} onValueChange={setActiveRole}>
-          <TabsList>
-            {ROLES.map(role => (
-              <TabsTrigger key={role.id} value={role.id}>
-                <span>{role.label}</span>
-                <Badge variant="outline" className="ml-2 h-5 px-1.5 text-xs">
-                  {Object.keys(currentRolePerms).filter(k => currentRolePerms[k] === true).length}/{stats.total}
-                </Badge>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+         <Tabs value={activeRole} onValueChange={setActiveRole}>
+           <TabsList>
+             {ROLES.map(role => {
+               const rolePerms = perms?.[role.id] || {};
+               const granted = Object.keys(rolePerms).filter(k => rolePerms[k] === true).length;
+               return (
+                 <TabsTrigger key={role.id} value={role.id}>
+                   <span>{role.label}</span>
+                   <Badge variant="outline" className="ml-2 h-5 px-1.5 text-xs">
+                     {granted}/{stats.total}
+                   </Badge>
+                 </TabsTrigger>
+               );
+             })}
+           </TabsList>
+         </Tabs>
       </div>
 
       {/* Info cards */}
