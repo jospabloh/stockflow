@@ -127,17 +127,22 @@ export default function Quotations() {
       });
       
       if (!response.data.success) {
-        setConvertError(`Error: ${response.data.error || 'Conversion failed'}`);
+        const errMsg = response.data.error || response.data.message || 'Conversion failed';
+        setConvertError(`❌ ${errMsg}`);
+        toast.error(`Conversión cancelada: ${errMsg}`);
         return;
       }
 
       setConvertQuotation(null);
       setConvertPaymentMethod("");
       setConvertError("");
+      toast.success("✓ Cotización convertida en venta");
       loadData(businessId);
-    } catch (error) {
-      setConvertError(`Error durante conversión: ${error.message || "Intenta nuevamente"}. El stock no fue modificado.`);
-    }
+      } catch (error) {
+      const errMsg = error.response?.data?.error || error.message || "Intenta nuevamente";
+      setConvertError(`❌ ${errMsg}`);
+      toast.error(`Error en conversión: ${errMsg}`);
+      }
   };
 
   const handleCancel = async () => {
@@ -158,16 +163,19 @@ export default function Quotations() {
       });
       
       if (!response.data.success) {
-        toast.error(`Error: ${response.data.error || 'Cancellation failed'}`);
+        const errMsg = response.data.error || response.data.message || 'Cancellation failed';
+        toast.error(`❌ ${errMsg}`);
         return;
       }
 
       setCancelQuotation(null);
       setCancelReason("");
+      toast.success("✓ Cotización cancelada");
       loadData(businessId);
-    } catch (error) {
-      toast.error(`Error al cancelar cotización: ${error.message}`);
-    }
+      } catch (error) {
+      const errMsg = error.response?.data?.error || error.message || "Error inesperado";
+      toast.error(`❌ ${errMsg}`);
+      }
   };
 
   const handleConfirmPayment = async () => {
@@ -183,24 +191,31 @@ export default function Quotations() {
      setPayQuotation(null);
      return;
    }
-   // CRITICAL: Use backend-validated safe function for payment confirmation
-   const updates = { paid: true, payment_method: paymentMethod };
-   if (payMarkDelivered) { updates.delivered = true; updates.in_route = false; }
+   try {
+     // CRITICAL: Use backend-validated safe function for payment confirmation
+     const updates = { paid: true, payment_method: paymentMethod };
+     if (payMarkDelivered) { updates.delivered = true; updates.in_route = false; }
 
-   const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
-     quotation_id: payQuotation.id,
-     updates
-   });
+     const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
+       quotation_id: payQuotation.id,
+       updates
+     });
 
-   if (!response.data.success) {
-     toast.error(`Error: ${response.data.error || 'Payment confirmation failed'}`);
-     return;
+     if (!response.data.success) {
+       const errMsg = response.data.error || response.data.message || 'Payment confirmation failed';
+       toast.error(`❌ ${errMsg}`);
+       return;
+     }
+
+     setPayQuotation(null);
+     setPaymentMethod("");
+     setPayMarkDelivered(false);
+     toast.success("✓ Pago confirmado");
+     loadData(businessId);
+   } catch (error) {
+     const errMsg = error.response?.data?.error || error.message || "Error inesperado";
+     toast.error(`❌ ${errMsg}`);
    }
-
-   setPayQuotation(null);
-   setPaymentMethod("");
-   setPayMarkDelivered(false);
-   loadData(businessId);
   };
 
   const handleEdit = (q) => {

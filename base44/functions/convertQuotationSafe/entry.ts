@@ -46,16 +46,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
     }
 
-    // PHASE 1: Validate stock BEFORE any operations
+    // PHASE 1: Validate stock BEFORE any operations — use asServiceRole to avoid RLS blocking
     const itemsWithStock = [];
     for (const item of (quotation.items || [])) {
-      const prods = await base44.entities.Product.filter({ id: item.product_id, business_id: user.business_id });
+      let prods;
+      try {
+        prods = await base44.asServiceRole.entities.Product.filter({ id: item.product_id, business_id: user.business_id });
+      } catch (err) {
+        return Response.json({ error: `Error fetching product: ${err.message}` }, { status: 500 });
+      }
       if (prods.length === 0) {
-        return Response.json({ error: 'Product not found' }, { status: 400 });
+        return Response.json({ error: `Product ${item.product_id} not found` }, { status: 404 });
       }
       const product = prods[0];
       if (item.quantity > (product.stock || 0)) {
-        return Response.json({ error: 'Insufficient stock' }, { status: 400 });
+        return Response.json({ error: `Insufficient stock for ${item.product_name}: available ${product.stock}, requested ${item.quantity}` }, { status: 400 });
       }
       itemsWithStock.push({ ...item, product });
     }

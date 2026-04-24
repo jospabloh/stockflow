@@ -297,7 +297,8 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       } else {
         response = await base44.functions.invoke('createQuotationSafe', { ...data, business_id: businessId });
         if (!response.data.success) {
-          toast.error(`⚠️ No se pudo guardar: ${response.data.error || "Error desconocido"}`);
+          const errMsg = response.data.error || response.data.message || "Error desconocido";
+          toast.error(`❌ No se pudo guardar: ${errMsg}`);
           setSaving(false);
           return;
         }
@@ -314,14 +315,16 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       setTimeout(() => {
         onSaved?.({
           success: true,
-          quotationId: quotation?.id || response?.data?.quotation?.id || null,
+          quotationId: quotation?.id || response.data?.quotation_id || null,
         });
       }, 450);
-    } catch (error) {
-      toast.error(`⚠️ Error inesperado: ${error.message || "Intenta nuevamente"}`);
-    } finally {
+      } catch (error) {
+      const errMsg = error.response?.data?.error || error.message || "Error inesperado. Intenta nuevamente";
+      toast.error(`❌ ${errMsg}`);
       setSaving(false);
-    }
+      } finally {
+      setSaving(false);
+      }
   };
 
   return (
