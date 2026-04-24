@@ -235,12 +235,18 @@ export default function Layout({ children, currentPageName }) {
           {navItems
             .filter(item => !item.platformAdminOnly || isPlatformAdmin)
             .filter(item => !item.adminOrPlatformAdmin || isPlatformAdmin || user?.role === 'admin')
-            .filter(item => !item.page || item.platformAdminOnly || item.adminOrPlatformAdmin || canSee(item.page))
+            .filter(item => {
+              if (item.platformAdminOnly || item.adminOrPlatformAdmin) return true;
+              if (item.page) return canSee(item.page);
+              if (item.submenu) return item.submenu.some(s => canSee(s.page));
+              return true;
+            })
             .map((item) => {
             const isActive = currentPageName === item.page;
             const hasSubmenu = item.submenu && item.submenu.length > 0;
             const isSubmenuOpen = expandedSubmenu === item.name;
             const currentInSubmenu = item.submenu?.some(s => s.page === currentPageName);
+            const visibleSubitems = item.submenu?.filter(s => canSee(s.page)) || [];
 
             if (hasSubmenu) {
               return (
@@ -260,7 +266,7 @@ export default function Layout({ children, currentPageName }) {
                   </button>
                   {isSubmenuOpen && (
                     <div className="mt-1 ml-2 border-l border-indigo-200 dark:border-indigo-800 pl-2 space-y-0.5">
-                      {item.submenu.map((subitem) => {
+                      {visibleSubitems.map((subitem) => {
                         const subIsActive = currentPageName === subitem.page;
                         return (
                           <Link
