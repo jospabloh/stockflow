@@ -1,11 +1,66 @@
-// Artículos de ayuda — última versión: v2.9.1
+// Artículos de ayuda — última versión: v2.9.2
+// Solo contiene notas de versión (release notes). Los artículos de manual permanente están en helpDataExtension.js
+// v2.9.2: Fixes panel licencias (auto_renewal, dropdown dark mode, boolean partition) + fixes catálogos Pagos a Proveedores
 // v2.9.1: Módulo Pagos a Proveedores, búsqueda mejorada, optimizaciones dashboard + dark mode
-// v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor, campos requeridos en cliente
-// v2.8.2: Artículo tenant-facing para regla cash_sales_to_petty_cash + filtrado de ayuda por reglas del tenant
-// v2.8.1: Módulo Reglas por Tenant + entidad TenantRule + funciones backend platform-admin-only
-// v2.8.0: Ingresos automáticos en Caja Chica por ventas en efectivo (función opcional por tenant)
+// v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor
+// v2.8.2: Centro de Ayuda sensible al tenant
 
 export const newHelpArticles = [
+    {
+      id: "release-2-9-2",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.9.2 — Fixes Panel de Licencias y Carga de Catálogos",
+      keywords: ["versión", "2.9.2", "licencias", "auto_renewal", "renovación", "pagos proveedores", "catálogo", "dropdown", "dark mode"],
+      related_ids: ["release-2-9-1", "license-overview", "supplier-payments-guide"],
+      content: `## 🆕 Versión 2.9.2 — 24 de abril de 2026
+
+### 🐛 Correcciones de esta versión
+
+---
+
+#### 💳 Pagos a Proveedores — Carga de Catálogos
+
+Se corrigieron múltiples problemas que causaban que los dropdowns de Proveedor y Método de Pago aparecieran vacíos al entrar al módulo.
+
+| Fix | Descripción |
+|---|---|
+| Carga via serviceRole | Proveedores y Métodos de Pago ahora se cargan con el mismo patrón que QuotationFormDialog |
+| Errores visibles | Los fallos de carga muestran un toast explicativo en lugar de fallar silenciosamente |
+| Parámetro sort | Removido parámetro incompatible que causaba rechazo en ciertos filtros |
+
+---
+
+#### 🔑 Panel de Licencias
+
+Se corrigieron varios problemas relacionados con el checkbox de auto-renovación y la usabilidad en modo oscuro.
+
+| Fix | Descripción |
+|---|---|
+| auto_renewal persistence | El checkbox ahora persiste correctamente al aprobar o actualizar una licencia |
+| Dark mode dropdowns | Los selects del panel de licencias son ahora visibles en modo oscuro (migrados a Radix UI Select) |
+| Boolean partition | \`adminUpdateTenantLicense\` reintenta campos booleanos si el SDK los descarta en update multi-campo |
+| UX tolerante | Los errores de guardado muestran qué campos específicos fallaron — nunca más éxito silencioso |
+
+---
+
+### 📚 Manual Reorganizado
+
+Los artículos de Reportes, Configuración y Caja Chica que estaban en la sección **Novedades** fueron movidos a sus secciones permanentes en el manual. Ahora son más fáciles de encontrar por categoría.
+
+**Nuevos artículos permanentes:**
+- 🔍 Auditoría de Inventario (Configuración)
+- 💳 Pagos a Proveedores — Guía Completa (nueva categoría)
+- 🔄 Ciclo de Vida de la Cuenta (Licencias)
+- 👥 Múltiples Contactos por Proveedor (Configuración)
+
+---
+
+### 📦 Versión Anterior — v2.9.1 (22 de abril de 2026)
+
+Módulo Pagos a Proveedores, búsqueda mejorada con SearchableSelect, Dashboard optimizado y dark mode reactivo.
+`
+    },
     {
       id: "release-2-9-1",
       category: "Novedades",
@@ -194,72 +249,6 @@ El Centro de Ayuda ahora filtra los artículos visibles según las reglas activa
 
 Módulo de administración de Reglas por Tenant con gestión completa (listar, crear, editar, habilitar/deshabilitar y archivar).
 `
-    },
-    {
-      id: "tenant-cash-sales-to-petty-cash",
-      category: "Caja Chica",
-      role: "all",
-      // This article is only shown to tenants with cash_sales_to_petty_cash rule enabled
-      visibility_scope: "tenant_rule",
-      required_rule_key: "cash_sales_to_petty_cash",
-      title: "💵 Ventas en efectivo se reflejan automáticamente en Caja Chica",
-      keywords: ["caja chica", "efectivo", "venta", "automático", "ingreso", "cotización", "movimiento", "trazable", "reconciliación", "cancelación"],
-      related_ids: ["petty-cash-overview", "quotations-convert", "movements-register"],
-      content: `## 💵 Ventas en Efectivo → Caja Chica (Automático)
-
-En este negocio, las ventas cobradas en efectivo se registran automáticamente como ingresos en Caja Chica.
-
----
-
-### ¿Qué significa esto?
-
-Cuando una venta es cobrada efectivamente en efectivo — ya sea desde una cotización o desde un movimiento directo — el sistema registra automáticamente un ingreso en Caja Chica por el monto correspondiente.
-
-**No necesitas hacerlo manualmente.** El registro ocurre de forma inmediata y está vinculado a su transacción de origen.
-
----
-
-### ¿Cuándo se genera el ingreso?
-
-| Situación | Resultado |
-|---|---|
-| Cotización convertida con pago en efectivo | ➕ Ingreso automático en Caja Chica |
-| Movimiento directo (salida) marcado como cobrado en efectivo | ➕ Ingreso automático en Caja Chica |
-
----
-
-### ¿Puedo editar o eliminar esos ingresos?
-
-**No directamente.** Los ingresos generados automáticamente están marcados como entradas del sistema y no pueden modificarse ni eliminarse desde la pantalla de Caja Chica.
-
-Esto protege la integridad de la información — el ingreso refleja exactamente lo que ocurrió en la venta.
-
----
-
-### ¿Qué pasa si cancelo o revierto una venta?
-
-El sistema reconcilia el ingreso automáticamente:
-
-| Evento | Resultado en Caja Chica |
-|---|---|
-| Cotización cancelada o anulada | ➖ El ingreso se elimina automáticamente |
-| Pago revertido (desmarcado) | ➖ El ingreso se elimina automáticamente |
-| Forma de pago cambiada a no-efectivo | ➖ El ingreso se elimina automáticamente |
-| Movimiento directo eliminado | ➖ El ingreso se elimina automáticamente |
-
----
-
-### ¿Por qué aparecen estos registros en el historial?
-
-Los ingresos generados automáticamente se identifican en el historial de Caja Chica con la indicación **"Sistema"**. Esto los distingue de los ingresos manuales y te permite saber que corresponden a una venta real.
-
----
-
-### 💡 Consejos
-
-- Revisa el historial de Caja Chica al final del día para confirmar que los ingresos en efectivo corresponden con las ventas del día
-- Si notas una discrepancia, revisa la cotización o el movimiento de origen vinculado
-- Los ingresos automáticos no cuentan como ajustes — son ingresos reales de ventas`
     },
     {
       id: "release-2-8-1",
@@ -861,609 +850,5 @@ Se corrigió que el nombre del negocio no aparecía debajo de "StockFlow" en la 
 | Cotizaciones | 4 (draft, sent, accepted, converted) |
 | Caja Chica | 4 movimientos (fondo inicial + ingresos + egreso) |
 `
-    },
-    {
-      id: "reports-movement-stock",
-      category: "Reportes",
-      role: "almacenista",
-      title: "📊 Reporte de Movimientos de Stock",
-      keywords: ["movimientos", "stock", "entrada", "salida", "historial", "almacenista", "reporte operacional"],
-      related_ids: ["movements-overview", "reports-all"],
-      content: `## 📊 Reporte de Movimientos de Stock
-
-La pestaña **Movimientos de Stock** está diseñada especialmente para Almacenistas, mostrando el **historial detallado de todas las entradas, salidas, devoluciones y ajustes** del período seleccionado.
-
----
-
-### 📋 Qué verás en este reporte
-
-| Columna | Descripción |
-|---|---|
-| **Fecha** | Cuándo ocurrió el movimiento |
-| **Producto** | Nombre del producto que fue movido |
-| **Tipo** | Entrada, Salida, Devolución o Ajuste |
-| **Cantidad** | Unidades que entraron o salieron |
-| **Total** | Monto asociado al movimiento |
-| **Stock Resultante** | Cuántas unidades quedaron después del movimiento |
-
----
-
-### 🎯 Casos de Uso
-
-**Reconciliar inventario:**
-Filtra el reporte por rango de fechas y verifica cada movimiento para asegurar que el stock del sistema es correcto.
-
-**Auditoría de entradas:**
-Filtra por tipo "Entrada" para revisar todas las mercancías que llegaron del proveedor.
-
-**Análisis de ventas:**
-Filtra por tipo "Salida" para ver el volumen de ventas del período sin conversiones a cotización.
-
-**Búsqueda de errores:**
-Si sospechas que un movimiento fue registrado incorrectamente, usa el filtro de fechas para localizarlo.
-
----
-
-### 📥 Exportar Datos
-
-Haz clic en el botón **CSV** para descargar todos los movimientos del período seleccionado en una hoja de cálculo. Útil para análisis detallado en Excel.`
-    },
-    {
-      id: "reports-pending-payment",
-      category: "Reportes",
-      role: "almacenista",
-      title: "💰 Reporte de Pendientes de Cobro",
-      keywords: ["cobranza", "pendiente", "pago", "venta sin cobro", "almacenista", "operación diaria"],
-      related_ids: ["quotations-convert", "reports-all", "quotations-states"],
-      content: `## 💰 Pendientes de Cobro
-
-Este reporte muestra **todas las ventas que aún no han sido cobradas**, ayudándote a gestionar la cobranza del día a día.
-
----
-
-### 🎯 A Quién Va
-
-Este reporte es **ideal para Almacenistas** que necesitan saber qué clientes aún deben dinero.
-
----
-
-### 📊 Tarjetas Resumen
-
-| Tarjeta | Qué muestra |
-|---|---|
-| **Total Ventas** | Suma de todas las cotizaciones convertidas en venta en el período |
-| **Cobrado** | Monto total ya pagado |
-| **Pendiente de Pago** | **Dinero que aún falta cobrar** — esto es lo importante para tu gestión |
-
----
-
-### 🔴 Situación de Riesgo: "Entregado sin Cobrar"
-
-Una de las alertas más importantes en el reporte es cuando un **pedido ya fue entregado al cliente pero aún no se ha cobrado**.
-
-En este caso:
-- El botón de **Pago** se vuelve **🔴 ROJO y PULSANTE** como advertencia
-- El folio de la cotización se resalta con la etiqueta **"¡COBRAR!"**
-
-**Acción inmediata:** Contacta al cliente para gestionar el pago pendiente.
-
----
-
-### 📋 Filtros Disponibles
-
-| Filtro | Para qué sirve |
-|---|---|
-| **Estado** | Filtra por estado de la cotización (Todas, Concretadas, etc.) |
-| **Cliente** | Busca pedidos de un cliente específico |
-| **Forma de Pago** | Filtra por método de pago (Efectivo, Transferencia, Tarjeta) |
-| **Pago** | Muestra solo Pagadas, Pendientes, o Todas |
-
----
-
-### 💡 Consejos de Cobranza
-
-1. **Revisa este reporte diariamente** — identifica rápidamente qué pedidos están listos para cobrar
-2. **Prioriza los "Entregado sin Cobrar"** — son los más urgentes
-3. **Registra el pago en el mismo momento** — no dejes pendientes para después
-4. **Exporta a CSV** si necesitas hacer seguimiento con más detalle`
-    },
-    {
-      id: "reports-prediction-admin",
-      category: "Reportes",
-      role: "admin",
-      title: "🔮 Predicción Inteligente de Pedidos (Admin)",
-      keywords: ["predicción", "tendencia", "pedidos", "semanas", "stock", "admin", "inteligente", "alerta"],
-      related_ids: ["reports-admin", "products-inventory", "dashboard-admin"],
-      content: `## 🔮 Predicción Inteligente de Pedidos
-
-**Disponible solo para Administradores.**
-
-Esta es una herramienta **inteligente de análisis predictivo** basada en los últimos 60 días de movimientos de tu negocio. Te ayuda a **saber exactamente cuándo pedir a los proveedores** sin dejar de stock.
-
----
-
-### 📊 Cómo Funciona
-
-El sistema analiza automáticamente:
-
-1. **Frecuencia de ventas** — Cuántas veces por semana se vende cada producto
-2. **Cantidad promedio** — Cuántas unidades se venden en cada transacción
-3. **Stock actual** — Cuántas unidades tienes ahora
-4. **Proyección** — Cuántas semanas faltan para que se agote el stock
-
-\`\`\`
-Fórmula:
-Semanas disponibles = Stock actual ÷ (Promedio por venta × Ventas por semana)
-\`\`\`
-
----
-
-### 🎯 Tres Niveles de Alerta
-
-| Alerta | Significado | Acción recomendada |
-|---|---|---|
-| 🔴 **URGENTE** (< 2 semanas) | Stock se agotará **muy pronto** | **Pedir YA** — riesgo de desabasto inminente |
-| 🟡 **PRONTO** (2-4 semanas) | Stock se agotará en las próximas semanas | **Preparar solicitud** en los próximos días |
-| 🟢 **OK** (> 4 semanas) | Stock suficiente por ahora | **Monitorear** sin urgencia |
-
----
-
-### 📋 Ejemplo Práctico
-
-Supongamos que analizamos un producto "Cable HDMI":
-
-- **Stock actual:** 50 unidades
-- **Ventas en últimos 60 días:** 40 unidades en 8 transacciones
-- **Promedio por transacción:** 5 unidades
-- **Frecuencia:** 1.3 transacciones por semana
-- **Proyección:** 50 ÷ (5 × 1.3) = **7.7 semanas** → 🟢 OK
-
-Si ese mismo producto tuviera solo 10 unidades:
-- **Proyección:** 10 ÷ (5 × 1.3) = **1.5 semanas** → 🔴 URGENTE
-
----
-
-### 🎯 Ventajas de la Predicción
-
-✅ **No vuelves a quedarte sin stock** — sabes exactamente cuándo pedir
-✅ **Evitas sobrestocks** — no compras productos que no se venden
-✅ **Optimizas el cash flow** — ordenas en el momento justo
-✅ **Reduce el estrés operativo** — todo es automático y basado en datos
-
----
-
-### 💡 Cómo Usar Este Reporte
-
-**Cada lunes o cuando abras el reporte:**
-
-1. Revisa la lista de productos con alerta 🔴 **URGENTE** — llama al proveedor HOY
-2. Revisa la lista con alerta 🟡 **PRONTO** — prepara la solicitud para esta semana
-3. Los productos 🟢 **OK** no necesitan atención inmediata
-
-**Si un producto no aparece en la lista:**
-- No tuvo ventas en los últimos 60 días — probablemente sea de baja demanda, no lo ordenes hasta que haya movimiento
-
----
-
-### ⚠️ Excepciones
-
-Esta predicción funciona mejor para **productos con ventas regulares**. 
-
-Para productos con ventas **muy esporádicas** o **estacionales**, úsala como guía pero confía también en tu experiencia del negocio.`
-    },
-    {
-      id: "settings-delete-reason",
-      category: "Configuración",
-      role: "almacenista",
-      title: "🗑️ Eliminar Catalogos — Razón Obligatoria",
-      keywords: ["eliminar", "categoría", "proveedor", "razón", "motivo", "auditoría", "almacenista"],
-      related_ids: ["settings-categories", "settings-business"],
-      content: `## 🗑️ Eliminar Catálogos — Registro de Razón
-
-Cuando un **Almacenista** intenta eliminar una categoría, proveedor u otro catálogo, el sistema **requiere que registre una razón** de por qué desea eliminarlo.
-
----
-
-### ✅ Por Qué se Solicita una Razón
-
-Esta medida protege la integridad de tu negocio:
-
-- **Auditoría:** Los Administradores pueden ver quién eliminó qué y por qué
-- **Prevención de errores:** Obliga a pensar antes de eliminar
-- **Responsabilidad:** Cada acción deja un rastro identificable
-
----
-
-### 📋 Cómo Funciona
-
-1. Haz clic en el ícono de **🗑️ Basura** junto al elemento que deseas eliminar
-2. Aparecerá un diálogo que pide:
-   - **Confirmación** de la acción
-   - **Razón de eliminación** (campo obligatorio)
-3. Escribe una **descripción clara** del motivo (ejemplo: "Categoría discontinuada, no vendemos más estos productos")
-4. Confirma — el elemento se elimina y la razón queda registrada
-
----
-
-### 💡 Ejemplos de Buenas Razones
-
-✅ "Categoría obsoleta, descontinuamos esta línea de negocio"
-✅ "Proveedor ya no trabaja con nosotros, cambió de dirección"
-✅ "Producto duplicado, merge con otra categoría"
-✅ "Error administrativo, se creó por accidente"
-
-❌ **Evita:** "no sé", "porque sí", o dejar el campo vacío
-
----
-
-### 🔐 Quién Puede Ver las Razones
-
-- ✅ **Administradores** — ven todas las razones de eliminación
-- ❌ **Almacenistas** — solo la suya propia
-
----
-
-### 💡 Nota Importante
-
-Si el Administrador **NO quiere que se elimine** nada, puede:
-- Desactivar el elemento (cambiar estado a "Inactivo")
-- En lugar de eliminar, esto conserva el historial y la integridad de la auditoría`
-    },
-    {
-      id: "reports-predictive-intro",
-      category: "Reportes",
-      role: "admin",
-      title: "🔮 Capa Predictiva/Inteligente de Reportes — Introducción",
-      keywords: ["predictivo", "inteligente", "análisis", "admin", "owner", "determinístico", "8 reportes", "v2.0.0"],
-      related_ids: ["reports-admin", "reports-all", "dashboard-admin"],
-      content: `## 🔮 Capa Predictiva/Inteligente de Reportes (v2.0.0)
-
-**Disponible solo para Administradores y Owners.**
-
----
-
-### 🎯 ¿Qué es la Capa Predictiva?
-
-Es un **conjunto de 8 reportes avanzados e inteligentes** diseñados para proporcionar análisis estratégico del negocio usando **lógica determinística interna** (sin depender de APIs externas).
-
-Los reportes te ayudan a:
-- Identificar productos en riesgo de agotamiento
-- Optimizar órdenes de reabastecimiento
-- Detectar patrones de cobranza problemática
-- Encontrar anomalías operativas
-- Analizar dinámicamente el negocio por múltiples dimensiones
-
----
-
-### 📋 Los 8 Reportes Disponibles
-
-1. **Análisis Dinámico (Pivot)** — Cruza múltiples dimensiones de datos
-2. **Más Vendidos** — Productos por valor de ventas
-3. **Baja Rotación** — Productos con poco movimiento
-4. **Tendencia** — Evolución diaria de entradas/salidas
-5. **Riesgo de Agotamiento** — Proyección de días para desabasto
-6. **Sugerencia de Resurtido** — Cantidades recomendadas a pedir
-7. **Riesgo de Cobranza** — Scoring de deudas problemáticas
-8. **Discrepancias/Anomalías** — Detección de irregularidades
-
----
-
-### 🔒 Acceso Restringido
-
-- ✅ **Visible para:** Admin, Owner
-- ❌ **Invisible para:** Sales, Warehouse, Storekeeper
-
-Los usuarios operacionales ven únicamente los **Reportes Operacionales** estándar.
-
----
-
-### 🚀 Cómo Acceder
-
-Ve a **Reportes** en el menú lateral. Si tienes rol Admin/Owner, verás una pestaña **"Análisis Inteligente"** con los 8 reportes agrupados.
-
----
-
-### ⚡ Características Técnicas
-
-✅ **Determinístico** — Basado en reglas de negocio internas, no en IA externa
-✅ **Offline-capable** — Funciona completamente local sin depender de APIs
-✅ **Sin créditos de integración** — No consume créditos de Base44
-✅ **Aislamiento multi-tenant** — Cada negocio ve solo sus datos
-✅ **Memoizado** — Optimizado para rendimiento`
-    },
-    {
-      id: "reports-pivot-analysis",
-      category: "Reportes",
-      role: "admin",
-      title: "📊 Análisis Dinámico (Pivot) — Cruza Tus Datos",
-      keywords: ["pivot", "dinámico", "análisis", "cruzado", "producto", "categoría", "cliente", "mes", "semana", "agregación"],
-      related_ids: ["reports-predictive-intro", "reports-admin", "movements-overview"],
-      content: `## 📊 Análisis Dinámico (Pivot Table)
-
-Una herramienta **poderosa y flexible** para analizar tus movimientos desde múltiples ángulos.
-
----
-
-### 🎯 ¿Para Qué Sirve?
-
-Cruza datos de forma dinámica:
-- **Por qué agrupar** → Producto, Categoría, o Cliente
-- **Cuándo agrupar** → Mes, Semana, o Día
-- **Qué métrica** → Valor ($) o Cantidad (u)
-- **Cómo agregar** → Suma, Promedio, Mín, Máx, Conteo
-
-**Resultado:** Una tabla que muestra exactamente lo que buscas sin necesidad de exportar a Excel.
-
----
-
-### 🎮 Controles
-
-| Control | Opciones |
-|---|---|
-| **Agrupar Filas** | Producto, Categoría, Cliente |
-| **Agrupar Columnas** | Mes, Semana, Día |
-| **Métrica** | Valor ($), Cantidad (u) |
-| **Agregación** | Suma, Promedio, Mín, Máx, Contar |
-
----
-
-### 💡 Ejemplos de Análisis
-
-**Ejemplo 1: Ventas por Categoría por Mes**
-- Filas: Categoría
-- Columnas: Mes
-- Métrica: Valor
-- Agregación: Suma
-→ Sabes qué categoría vendió más en cada mes
-
-**Ejemplo 2: Unidades vendidas por Producto por Semana**
-- Filas: Producto
-- Columnas: Semana
-- Métrica: Cantidad
-- Agregación: Suma
-→ Ves la evolución semanal de cada producto
-
-**Ejemplo 3: Clientes más rentables**
-- Filas: Cliente
-- Columnas: Mes
-- Métrica: Valor
-- Agregación: Suma
-→ Identifica tus clientes top por mes
-
----
-
-### 📥 Exportar
-
-Haz clic en **CSV** para descargar la tabla y continuar el análisis en Excel o Google Sheets.`
-    },
-    {
-      id: "reports-depletion-risk",
-      category: "Reportes",
-      role: "admin",
-      title: "⚠️ Riesgo de Agotamiento — Proyección de Stock",
-      keywords: ["agotamiento", "proyección", "riesgo", "desabasto", "días", "semanas", "criticidad", "alerta"],
-      related_ids: ["reports-predictive-intro", "products-inventory", "reports-reorder"],
-      content: `## ⚠️ Riesgo de Agotamiento
-
-Un análisis que **predice cuántos días le quedan a cada producto** antes de que se agote, basado en el promedio de ventas de los últimos 30 días.
-
----
-
-### 📊 Cómo Funciona
-
-Para cada producto activo, el sistema calcula:
-
-\`\`\`
-Días restantes = Stock actual ÷ (Promedio diario de salidas últimos 30 días)
-\`\`\`
-
----
-
-### 🎯 Niveles de Riesgo
-
-| Nivel | Rango | Color | Acción |
-|---|---|---|---|
-| **Crítico** | < 7 días | 🔴 Rojo | **Pedir YA** |
-| **Alto** | 7-15 días | 🟠 Naranja | Preparar orden inmediatamente |
-| **Medio** | 15-30 días | 🟡 Amarillo | Monitorear próxima semana |
-| **Bajo** | > 30 días | 🟢 Verde | Sin urgencia |
-
----
-
-### 📋 Ejemplo
-
-| Producto | Stock | Promedio/día | Días Restantes | Riesgo |
-|---|---|---|---|---|
-| Cable HDMI | 50 | 2.5 | 20 | 🟡 Medio |
-| Mouse | 8 | 3 | 2.7 | 🔴 Crítico |
-| Teclado | 120 | 1 | 120 | 🟢 Bajo |
-
----
-
-### 💡 Cómo Usarlo
-
-1. **Enfócate en los rojos** (críticos) — necesitan acción inmediata
-2. **Prepara órdenes para los naranjas** — ordena esta semana
-3. **Monitorea los amarillos** — quizá necesites ordenar pronto
-4. **Ignora los verdes** — tienen stock suficiente`
-    },
-    {
-      id: "reports-reorder-suggestion",
-      category: "Reportes",
-      role: "admin",
-      title: "📦 Sugerencia de Resurtido — Cantidades Automáticas",
-      keywords: ["resurtido", "sugerencia", "cantidad", "orden", "compra", "proveedor", "cálculo automático"],
-      related_ids: ["reports-predictive-intro", "reports-depletion-risk", "products-inventory"],
-      content: `## 📦 Sugerencia de Resurtido
-
-Calcula **automáticamente cuántas unidades debes pedir** a cada proveedor, basado en consumo histórico y stock actual.
-
----
-
-### 🧮 Fórmula
-
-\`\`\`
-Sugerencia = Máx(0, Stock recomendado − Stock actual)
-
-Stock recomendado = Promedio diario × 45 días (buffer de 1.5 meses)
-\`\`\`
-
-**En otras palabras:** El sistema sugiere que mantengas un buffer de 45 días de consumo promedio.
-
----
-
-### 🎯 Niveles de Urgencia
-
-| Urgencia | Significado | Acción |
-|---|---|---|
-| 🔴 **Crítica** | Necesita resurtido INMEDIATO | Llama al proveedor HOY |
-| 🟠 **Alta** | Será necesario resurtido esta semana | Prepara solicitud ahora |
-| 🟡 **Media** | Resurtido en próximas 2 semanas | Avisa al proveedor |
-
----
-
-### 📊 Ejemplo
-
-| Producto | Stock Act. | Stock Rec. | Sugerencia | Urgencia |
-|---|---|---|---|---|
-| Cable HDMI | 50 | 112 | 62 u | 🟠 Alta |
-| Mouse | 8 | 135 | 127 u | 🔴 Crítica |
-| Teclado | 120 | 45 | 0 u | 🟢 OK |
-
-**Interpretación:**
-- Mouse: **Solicita 127 unidades** al proveedor ahora
-- Cable HDMI: Solicita 62 unidades esta semana
-- Teclado: No necesita orden en este momento
-
----
-
-### 💡 Cómo Usar Este Reporte
-
-1. Abre el reporte cada lunes o cuando necesites planificar compras
-2. Copia la lista de productos con **urgencia Crítica y Alta**
-3. Contacta a tus proveedores con los números sugeridos
-4. Optimiza entregas agrupando órdenes del mismo proveedor`
-    },
-    {
-      id: "reports-collections-risk",
-      category: "Reportes",
-      role: "admin",
-      title: "💳 Riesgo de Cobranza — Scoring de Deudas",
-      keywords: ["cobranza", "deuda", "riesgo", "antigüedad", "scoring", "crítico", "seguimiento", "cobrar"],
-      related_ids: ["reports-predictive-intro", "quotations-convert", "quotations-states"],
-      content: `## 💳 Riesgo de Cobranza
-
-Un análisis determinístico que **puntúa el riesgo de cada deuda pendiente** y te ayuda a priorizar el cobro.
-
----
-
-### 🎯 Cómo se Calcula el Riesgo
-
-Para cada cotización convertida en venta pero sin pagar:
-
-1. **Antigüedad** — Cuántos días lleva sin cobrar
-2. **Monto** — Valor total de la deuda
-3. **Estado de entrega** — ¿Fue entregada o no?
-
-La fórmula asigna un **riesgo de 0 a 100** considerando todos estos factores.
-
----
-
-### 🎯 Niveles de Riesgo
-
-| Nivel | Rango | Significado | Acción |
-|---|---|---|---|
-| 🔴 **Crítico** | > 80 | Deuda antigua, alto riesgo de no cobro | **Llamar hoy** |
-| 🟠 **Alto** | 60-80 | Deuda moderada, sin justificación para esperar | Seguimiento esta semana |
-| 🟡 **Medio** | 40-60 | Deuda reciente o de monto bajo | Monitorear |
-
----
-
-### 📊 Ejemplo de Tabla
-
-| Folio | Cliente | Monto | Antigüedad | Entrega | Riesgo | Estado |
-|---|---|---|---|---|---|---|
-| COT-001 | Empresa A | $5,000 | 45 días | ✅ Sí | 92 | 🔴 Crítico |
-| COT-002 | Empresa B | $2,000 | 20 días | ✅ Sí | 65 | 🟠 Alto |
-| COT-003 | Empresa C | $800 | 5 días | ❌ No | 25 | 🟡 Medio |
-
----
-
-### 💡 Estrategia de Cobranza
-
-1. **Semana 1:** Cobra los "Críticos" — son de alto riesgo
-2. **Semana 2:** Sigue con los "Altos" — son los próximos en prioridad
-3. **Semana 3+:** Monitorea los "Medios" — aún hay tiempo
-
----
-
-### 📥 Exportar
-
-Descarga a CSV y crea tu lista de seguimiento en Excel.`
-    },
-    {
-      id: "reports-anomalies",
-      category: "Reportes",
-      role: "admin",
-      title: "🔍 Discrepancias/Anomalías — Detección de Irregularidades",
-      keywords: ["anomalía", "discrepancia", "irregular", "error", "inconsistencia", "auditoría", "5 reglas"],
-      related_ids: ["reports-predictive-intro", "movements-overview", "quotations-states"],
-      content: `## 🔍 Discrepancias y Anomalías
-
-Un **detector automático de irregularidades** basado en 5 reglas determinísticas que analiza tu operación.
-
----
-
-### 🎯 Las 5 Reglas de Anomalía
-
-#### 1️⃣ Salida sin Cotización Documentada
-**Qué es:** Una salida de inventario sin referencia clara de cotización.
-**Por qué es anomalía:** Dificulta el seguimiento de ingresos.
-**Acción:** Verifica que la venta esté documentada correctamente.
-
-#### 2️⃣ Throughput Excesivo en un Día
-**Qué es:** Un volumen de movimientos inusualmente alto en 24 horas.
-**Por qué es anomalía:** Podría indicar un error masivo de registro.
-**Acción:** Revisa los movimientos del día para confirmar su validez.
-
-#### 3️⃣ Producto Estancado sin Movimiento
-**Qué es:** Producto sin salidas en 90+ días.
-**Por qué es anomalía:** Posible obsolescencia o error de catálogo.
-**Acción:** Revisa si debe descontinuarse o si hay un error.
-
-#### 4️⃣ Stock Bajo vs Mínimo Invertido
-**Qué es:** Stock actual supera significativamente el mínimo (sobrecargado).
-**Por qué es anomalía:** Capital inmovilizado innecesariamente.
-**Acción:** Considera reducir recompras de este producto.
-
-#### 5️⃣ Cotización Vencida Sin Cancelar
-**Qué es:** Cotización pasó su fecha de vigencia pero no está cancelada.
-**Por qué es anomalía:** Confusión en estado de órdenes.
-**Acción:** Cancela explícitamente las vencidas.
-
----
-
-### 📊 Tabla de Anomalías
-
-| Tipo | Producto | Detalle | Severidad | Acción |
-|---|---|---|---|---|
-| Estancado | Tornillo M4 | 180 días sin venta | 🟠 Alta | Discontinuar o promover |
-| Exceso Stock | Caja | 2,000 u vs mín 200 | 🟡 Media | Revisar cantidad mínima |
-| Cotización vencida | — | 3 cotizaciones vencidas | 🟡 Media | Cancelar explícitamente |
-
----
-
-### 💡 Cómo Usar Este Reporte
-
-1. **Revisa cada anomalía** — entiende qué está pasando
-2. **Clasifica por severidad** — enfócate en los rojos y naranjas
-3. **Documenta tus acciones** — correcciones, cancelaciones, etc.
-4. **Monitorea cambios** — ejecuta el reporte nuevamente en 2 semanas
-
----
-
-### 🔐 Propósito
-
-Este reporte es una **herramienta de auditoría interna** para mantener la integridad operacional de tu negocio.`
     },
 ];

@@ -1,5 +1,24 @@
 # Changelog — StockFlow
 
+## v2.9.2 (2026-04-24)
+
+### 🐛 Correcciones — Pagos a Proveedores
+- **Carga de catálogos**: Proveedores y Métodos de Pago ahora cargan via serviceRole — dropdowns ya no quedan vacíos
+- **Errores visibles**: fallos de carga muestran toast en lugar de fallar silenciosamente
+- **Parámetro sort**: removido parámetro incompatible en filtros de Proveedor y Método de Pago
+
+### 🐛 Correcciones — Panel de Licencias
+- **auto_renewal**: el checkbox ahora persiste correctamente al aprobar o actualizar una licencia
+- **Contraste dark mode**: dropdowns del panel de licencias visibles correctamente en modo oscuro
+- **Partición booleana**: `adminUpdateTenantLicense` reintenta campos booleanos si el SDK los descarta en update multi-campo
+- **UX tolerante**: errores de guardado muestran qué campos específicos fallaron en lugar de éxito silencioso
+
+### 📚 Manual Reorganizado
+- Artículos de Reportes, Configuración y Caja Chica movidos de "Novedades" a sus secciones permanentes
+- Nuevos artículos: Pagos a Proveedores, Auditoría de Inventario, Ciclo de Vida de Cuentas, Múltiples Contactos por Proveedor
+
+---
+
 ## v2.9.1 (2026-04-22)
 
 ### 💳 Módulo Pagos a Proveedores

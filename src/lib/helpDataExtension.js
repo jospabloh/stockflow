@@ -348,6 +348,282 @@ Si hay cobros pendientes (cotizaciones o movimientos directos), el Dashboard mue
 - Solo las salidas **directas** (sin quotation_id) muestran el badge de pago en la tabla de Movimientos.`
   },
 
+  // ─── AUDITORÍA DE INVENTARIO ─────────────────────────────────────────────
+  {
+    id: "inventory-audit",
+    category: "Configuración",
+    role: "admin",
+    title: "🔍 Auditoría de Inventario — Detectar y Resolver Discrepancias",
+    keywords: ["auditoría", "inventario", "discrepancia", "stock", "reconciliación", "direct_edit", "sync_error", "legacy_bug", "corrección"],
+    related_ids: ["products-inventory", "movements-overview", "settings-business"],
+    content: `## 🔍 Auditoría de Inventario
+
+> 📍 *Configuración → Auditoría*
+
+La pestaña **Audit Inventario** compara el stock actual de cada producto con su historial de movimientos registrados y detecta discrepancias automáticamente.
+
+---
+
+### 🎯 ¿Para qué sirve?
+
+El stock de un producto puede desincronizarse del historial de movimientos por múltiples razones (edición directa, bugs anteriores, operaciones fuera de flujo). Esta herramienta identifica y permite resolver esas discrepancias de forma controlada.
+
+---
+
+### 🗂️ Clasificación de Discrepancias
+
+| Tipo | Ícono | Descripción |
+|---|---|---|
+| \`direct_edit\` | 🟠 | El stock fue modificado directamente sin registrar un movimiento |
+| \`sync_error\` | 🔴 | Desincronización entre el campo de stock y el resultado del historial |
+| \`no_movements\` | 🔵 | Producto sin historial de movimientos — stock no es verificable |
+| \`legacy_bug\` | 🟡 | Discrepancia originada por un bug anterior ya corregido |
+
+---
+
+### ✅ Resolver una Discrepancia
+
+Para cada producto con discrepancia, el administrador tiene dos opciones:
+
+| Opción | Resultado |
+|---|---|
+| **Aceptar stock actual** | Se registra que el valor actual es correcto y se cierra la discrepancia |
+| **Revertir al valor calculado** | El stock se actualiza al valor resultante del historial; se crea un movimiento de reconciliación trazable |
+
+> 💡 El movimiento de reconciliación queda registrado en el historial con el tipo "Ajuste" y una nota indicando que fue generado por auditoría.
+
+---
+
+### 📋 Historial de Auditorías
+
+Cada resolución queda guardada en \`InventoryAuditLog\` con:
+- Fecha y hora de la auditoría
+- Tipo de discrepancia detectada
+- Valor previo y valor corregido
+- Usuario que realizó la acción
+
+---
+
+### 💡 Cuándo usar la Auditoría
+
+- Después de una importación masiva de productos
+- Si un proveedor reporta una diferencia de stock
+- Al sospechar que un movimiento se registró incorrectamente
+- Como rutina mensual de control de inventario`
+  },
+
+  // ─── PAGOS A PROVEEDORES ──────────────────────────────────────────────────
+  {
+    id: "supplier-payments-guide",
+    category: "Pagos a Proveedores",
+    role: "admin",
+    title: "💳 Pagos a Proveedores — Guía Completa",
+    keywords: ["pagos proveedores", "desembolso", "supplier payment", "utilidad neta", "caja chica egreso", "proveedor pago", "reportes proveedores"],
+    related_ids: ["petty-cash-overview", "settings-categories", "reports-admin"],
+    content: `## 💳 Pagos a Proveedores
+
+> 📍 *Menú lateral → Pagos a Proveedores*
+
+El módulo de Pagos a Proveedores permite registrar y dar seguimiento a los desembolsos realizados a tus proveedores. Es fundamental para calcular la **utilidad neta real** de tu negocio.
+
+---
+
+### 🎯 ¿Por qué registrar pagos a proveedores?
+
+Sin registrar lo que pagas a tus proveedores, el Dashboard solo muestra ingresos — no la ganancia real. Al registrar cada pago:
+
+- El Dashboard muestra la **Utilidad Neta** = Ingresos − Pagos a proveedores
+- Puedes ver qué proveedores consumen más de tu flujo de efectivo
+- Los reportes comparan pagos vs período anterior
+
+---
+
+### ➕ Registrar un Pago
+
+1. Ve a **Pagos a Proveedores** en el menú lateral
+2. Haz clic en **"+ Nuevo Pago"**
+3. Completa:
+   - **Proveedor** — busca por nombre de negocio o contacto
+   - **Monto** — importe del pago
+   - **Fecha** — fecha del desembolso
+   - **Método de pago** — forma en que se realizó el pago
+   - **Concepto** — descripción breve (ej: "Factura #1234", "Pago parcial")
+   - **Notas** — información adicional opcional
+4. Guarda el pago
+
+---
+
+### 💵 Toggle Caja Chica
+
+Si el pago se realizó con efectivo de la caja chica, activa el toggle **"Descontar de Caja Chica"**:
+
+- Solo aparece cuando el método de pago es **Efectivo**
+- Al activarlo, se crea automáticamente un egreso en Caja Chica vinculado al pago
+- El egreso queda marcado como \`generated_by_system\` — no es editable directamente
+
+> 💡 El toggle se resetea automáticamente si cambias el método de pago a uno que no sea efectivo.
+
+---
+
+### 📊 Dashboard — Sección Pagos a Proveedores
+
+El Dashboard ahora incluye:
+
+| Elemento | Descripción |
+|---|---|
+| **Gráfico de barras** | Pagos por período seleccionado |
+| **Top 5 proveedores** | Los que más recibieron pagos en el período |
+| **Análisis de Ventas** | Nueva línea "Pagos a Proveedores" y línea "Utilidad Neta" |
+| **Badge de impacto** | 🟢 Bajo / 🟡 Medio / 🔴 Alto (>80% de ingresos) |
+
+---
+
+### 📈 Reportes — Pestaña Pagos a Proveedores
+
+En el módulo de Reportes encontrarás la pestaña **Pagos a Proveedores** con:
+
+- Gráfico acumulativo de pagos en el período
+- KPIs de monto total y cantidad de pagos
+- Comparativo vs período anterior (delta en $ y %)
+
+---
+
+### 🔍 Filtros Disponibles
+
+| Filtro | Para qué sirve |
+|---|---|
+| **Proveedor** | Ver solo pagos a un proveedor específico |
+| **Período** | Hoy, Esta semana, Este mes, Rango personalizado |
+| **Método de pago** | Filtrar por forma de pago usada |`
+  },
+
+  // ─── LICENCIAS / CICLO DE VIDA ────────────────────────────────────────────
+  {
+    id: "account-lifecycle",
+    category: "Licencias",
+    role: "admin",
+    title: "🔄 Ciclo de Vida de la Cuenta — Emails y Transiciones Automáticas",
+    keywords: ["ciclo de vida", "email", "trial", "expiración", "renovación", "auto-renovación", "view_only", "archived", "notificación"],
+    related_ids: ["license-overview", "platform-tenant-rules"],
+    content: `## 🔄 Ciclo de Vida de la Cuenta
+
+StockFlow gestiona automáticamente el estado de cada negocio y envía notificaciones por email en cada transición importante.
+
+---
+
+### 📊 Estados de la Cuenta
+
+\`\`\`
+Trial activo → Trial por expirar → Modo Solo Lectura → Archivado → Eliminado
+\`\`\`
+
+| Estado | Descripción | Acceso |
+|---|---|---|
+| **Trial activo** | Período de prueba de 30 días | Acceso completo |
+| **Trial por expirar** | Últimos días del trial | Acceso completo + avisos |
+| **Solo Lectura** | Trial vencido sin licencia | Solo consulta, sin escritura |
+| **Archivado** | Cuenta inactiva prolongada | Solo consulta |
+| **Eliminado** | Datos programados para borrado | Sin acceso |
+
+---
+
+### 📧 Emails Automáticos
+
+El sistema envía notificaciones en español en los siguientes momentos:
+
+| Evento | Destinatario |
+|---|---|
+| Inicio de trial | Administrador del negocio (bienvenida) |
+| 30 días antes de expirar | Administrador del negocio |
+| 15, 7, 3 y 1 días antes | Recordatorios escalonados |
+| Al pasar a Modo Solo Lectura | Notificación + instrucciones de activación |
+| Al archivarse | Aviso de archivado |
+| Renovación mensual | Confirmación de renovación |
+
+---
+
+### ☑️ Auto-Renovación
+
+Los negocios con licencia activa pueden configurar la **auto-renovación mensual**:
+
+- El administrador de plataforma activa el checkbox en el panel de licencias
+- El proceso de renovación se ejecuta automáticamente el día 1 de cada mes
+- Se envía un email de confirmación al renovar
+
+---
+
+### ⏰ Scheduler Diario
+
+Un proceso automático se ejecuta cada día y:
+1. Revisa todos los tenants con trial próximo a vencer
+2. Transiciona automáticamente al estado correspondiente
+3. Activa el envío de los emails de notificación
+
+---
+
+### 🛡️ Modo Solo Lectura
+
+Cuando una cuenta entra en Modo Solo Lectura:
+- Los usuarios pueden iniciar sesión y consultar datos normalmente
+- No es posible crear, editar ni eliminar registros (protegido en frontend y backend)
+- Un banner visible explica la situación con enlace para activar licencia
+
+> Para reactivar el acceso completo, contacta al equipo de StockFlow para confirmar el pago de licencia.`
+  },
+
+  // ─── PROVEEDORES — MÚLTIPLES CONTACTOS ───────────────────────────────────
+  {
+    id: "supplier-multiple-contacts",
+    category: "Configuración",
+    role: "admin",
+    title: "👥 Múltiples Contactos por Proveedor",
+    keywords: ["proveedor", "contacto", "múltiples contactos", "extra_contacts", "contacto adicional", "proveedor contacto"],
+    related_ids: ["settings-categories", "supplier-payments-guide"],
+    content: `## 👥 Múltiples Contactos por Proveedor
+
+> 📍 *Catálogos → Proveedores → Editar proveedor*
+
+Cada proveedor puede tener un **contacto principal** (obligatorio) y cualquier número de **contactos adicionales** opcionales.
+
+---
+
+### 🎯 ¿Para qué sirve?
+
+Antes, si un proveedor tenía varios contactos (gerente de ventas, logística, cobranza), era necesario crear registros duplicados del mismo proveedor. Ahora todos los contactos viven en un único registro.
+
+---
+
+### 📋 Estructura de Contactos
+
+**Contacto Principal** *(obligatorio)*
+- Nombre de contacto
+- Teléfono
+- Email
+
+**Contactos Adicionales** *(opcionales)*
+- Se pueden agregar con el botón **"+ Agregar contacto"**
+- Cada contacto adicional tiene: nombre, teléfono, email y rol/cargo
+- Se pueden eliminar individualmente
+
+---
+
+### ✏️ Cómo Agregar Contactos
+
+1. Ve a **Catálogos → Proveedores**
+2. Edita el proveedor (ícono ✏️)
+3. En la sección **Contactos**, el primer bloque es el contacto principal
+4. Haz clic en **"+ Agregar contacto"** para cada contacto adicional
+5. Llena los datos y guarda
+
+---
+
+### 💡 Buenas Prácticas
+
+- Usa el campo **Rol/Cargo** para identificar rápidamente a quién contactar según la necesidad (Ventas, Logística, Cobranza)
+- Mantén el contacto principal actualizado — es el que aparece en las vistas de lista
+- Los contactos adicionales se guardan en el campo \`extra_contacts\` del proveedor`
+  },
+
   // ─── VERSIÓN ──────────────────────────────────────────────────────────────
   {
     id: "version-about",
@@ -398,4 +674,393 @@ Verás:
 
 La versión siempre está visible en la pestaña **Acerca de**. Contacta al equipo de soporte si tienes dudas.`
   },
+  // ─── REPORTES OPERACIONALES (movido desde Novedades) ─────────────────────
+  {
+    id: "reports-movement-stock",
+    category: "Reportes",
+    role: "almacenista",
+    title: "📊 Reporte de Movimientos de Stock",
+    keywords: ["movimientos", "stock", "entrada", "salida", "historial", "almacenista", "reporte operacional"],
+    related_ids: ["movements-overview", "reports-all"],
+    content: `## 📊 Reporte de Movimientos de Stock
+
+La pestaña **Movimientos de Stock** muestra el historial detallado de entradas, salidas, devoluciones y ajustes del período seleccionado.
+
+---
+
+### 📋 Columnas
+
+| Columna | Descripción |
+|---|---|
+| **Fecha** | Cuándo ocurrió el movimiento |
+| **Producto** | Producto movido |
+| **Tipo** | Entrada, Salida, Devolución o Ajuste |
+| **Cantidad** | Unidades |
+| **Total** | Monto asociado |
+| **Stock Resultante** | Unidades tras el movimiento |
+
+---
+
+### 🎯 Casos de Uso
+
+- **Reconciliar inventario**: filtra por rango de fechas y verifica movimiento por movimiento
+- **Auditoría de entradas**: filtra por tipo "Entrada" para revisar mercancías del proveedor
+- **Análisis de ventas**: filtra por "Salida" para ver volumen sin cotizaciones
+
+Haz clic en **CSV** para descargar el período seleccionado.`
+  },
+  {
+    id: "reports-pending-payment",
+    category: "Reportes",
+    role: "almacenista",
+    title: "💰 Reporte de Pendientes de Cobro",
+    keywords: ["cobranza", "pendiente", "pago", "venta sin cobro", "almacenista", "operación diaria"],
+    related_ids: ["quotations-convert", "reports-all", "quotations-states"],
+    content: `## 💰 Pendientes de Cobro
+
+Muestra todas las ventas sin cobrar para gestionar la cobranza del día a día.
+
+---
+
+### 📊 Tarjetas Resumen
+
+| Tarjeta | Qué muestra |
+|---|---|
+| **Total Ventas** | Cotizaciones convertidas en venta del período |
+| **Cobrado** | Monto ya pagado |
+| **Pendiente de Pago** | Dinero que falta cobrar |
+
+---
+
+### 🔴 Alerta — Entregado sin Cobrar
+
+- El botón de Pago se vuelve **🔴 rojo y pulsante**
+- El folio aparece con la etiqueta **"¡COBRAR!"**
+
+---
+
+### 💡 Consejos
+
+1. Revisa este reporte diariamente
+2. Prioriza los "Entregado sin Cobrar" — son los más urgentes
+3. Registra el pago en el momento para mantener la cobranza al día`
+  },
+  {
+    id: "reports-predictive-intro",
+    category: "Reportes",
+    role: "admin",
+    title: "🔮 Capa Predictiva/Inteligente de Reportes — Introducción",
+    keywords: ["predictivo", "inteligente", "análisis", "admin", "owner", "determinístico", "8 reportes"],
+    related_ids: ["reports-admin", "reports-all", "dashboard-admin"],
+    content: `## 🔮 Capa Predictiva/Inteligente de Reportes
+
+**Disponible solo para Administradores.**
+
+Conjunto de **8 reportes avanzados** con lógica determinística interna, sin APIs externas ni créditos de integración.
+
+---
+
+### 📋 Los 8 Reportes
+
+1. **Análisis Dinámico (Pivot)** — Cruza múltiples dimensiones de datos
+2. **Más Vendidos** — Productos por valor de ventas
+3. **Baja Rotación** — Productos con poco movimiento
+4. **Tendencia** — Evolución diaria de entradas/salidas
+5. **Riesgo de Agotamiento** — Proyección de días para desabasto
+6. **Sugerencia de Resurtido** — Cantidades recomendadas a pedir
+7. **Riesgo de Cobranza** — Scoring de deudas problemáticas
+8. **Discrepancias/Anomalías** — Detección de irregularidades
+
+---
+
+### 🔒 Acceso
+
+- ✅ Admin / Owner
+- ❌ Almacenista / Sales / Storekeeper
+
+Ve a **Reportes → Análisis Inteligente**.`
+  },
+  {
+    id: "reports-prediction-admin",
+    category: "Reportes",
+    role: "admin",
+    title: "🔮 Predicción Inteligente de Pedidos",
+    keywords: ["predicción", "tendencia", "pedidos", "semanas", "stock", "admin", "alerta"],
+    related_ids: ["reports-predictive-intro", "products-inventory", "dashboard-admin"],
+    content: `## 🔮 Predicción Inteligente de Pedidos
+
+Analiza los últimos 60 días de movimientos para indicarte cuándo pedir a cada proveedor sin quedarte sin stock.
+
+---
+
+### 📊 Cálculo
+
+\`\`\`
+Semanas disponibles = Stock actual ÷ (Promedio por venta × Ventas por semana)
+\`\`\`
+
+---
+
+### 🎯 Niveles de Alerta
+
+| Alerta | Rango | Acción |
+|---|---|---|
+| 🔴 **URGENTE** | < 2 semanas | Pedir YA |
+| 🟡 **PRONTO** | 2-4 semanas | Preparar solicitud |
+| 🟢 **OK** | > 4 semanas | Monitorear |
+
+---
+
+### 💡 Rutina Semanal
+
+1. Revisa los 🔴 URGENTE — llama al proveedor hoy
+2. Prepara solicitudes para los 🟡 PRONTO — esta semana
+3. Los 🟢 OK no necesitan atención`
+  },
+  {
+    id: "reports-pivot-analysis",
+    category: "Reportes",
+    role: "admin",
+    title: "📊 Análisis Dinámico (Pivot) — Cruza Tus Datos",
+    keywords: ["pivot", "dinámico", "análisis", "cruzado", "producto", "categoría", "cliente", "mes", "semana"],
+    related_ids: ["reports-predictive-intro", "reports-admin", "movements-overview"],
+    content: `## 📊 Análisis Dinámico (Pivot Table)
+
+Cruza datos de movimientos desde múltiples ángulos sin exportar a Excel.
+
+---
+
+### 🎮 Controles
+
+| Control | Opciones |
+|---|---|
+| **Agrupar Filas** | Producto, Categoría, Cliente |
+| **Agrupar Columnas** | Mes, Semana, Día |
+| **Métrica** | Valor ($), Cantidad (u) |
+| **Agregación** | Suma, Promedio, Mín, Máx, Contar |
+
+---
+
+### 💡 Ejemplos
+
+- Ventas por Categoría × Mes → Filas: Categoría / Columnas: Mes / Valor: Suma
+- Unidades por Producto × Semana → Filas: Producto / Columnas: Semana / Cantidad: Suma
+- Clientes más rentables → Filas: Cliente / Columnas: Mes / Valor: Suma
+
+Haz clic en **CSV** para descargar en Excel.`
+  },
+  {
+    id: "reports-depletion-risk",
+    category: "Reportes",
+    role: "admin",
+    title: "⚠️ Riesgo de Agotamiento — Proyección de Stock",
+    keywords: ["agotamiento", "proyección", "riesgo", "desabasto", "días", "criticidad"],
+    related_ids: ["reports-predictive-intro", "products-inventory", "reports-reorder-suggestion"],
+    content: `## ⚠️ Riesgo de Agotamiento
+
+Predice cuántos días le quedan a cada producto antes de agotarse, basado en el promedio de ventas de los últimos 30 días.
+
+---
+
+### 📊 Cálculo
+
+\`\`\`
+Días restantes = Stock actual ÷ Promedio diario de salidas (30 días)
+\`\`\`
+
+---
+
+### 🎯 Niveles
+
+| Nivel | Rango | Acción |
+|---|---|---|
+| 🔴 **Crítico** | < 7 días | Pedir YA |
+| 🟠 **Alto** | 7-15 días | Preparar orden |
+| 🟡 **Medio** | 15-30 días | Monitorear |
+| 🟢 **Bajo** | > 30 días | Sin urgencia |`
+  },
+  {
+    id: "reports-reorder-suggestion",
+    category: "Reportes",
+    role: "admin",
+    title: "📦 Sugerencia de Resurtido — Cantidades Automáticas",
+    keywords: ["resurtido", "sugerencia", "cantidad", "orden", "compra", "cálculo automático"],
+    related_ids: ["reports-predictive-intro", "reports-depletion-risk", "products-inventory"],
+    content: `## 📦 Sugerencia de Resurtido
+
+Calcula cuántas unidades pedir basándose en consumo histórico y stock actual.
+
+---
+
+### 🧮 Fórmula
+
+\`\`\`
+Sugerencia = Máx(0, Promedio diario × 45 días − Stock actual)
+\`\`\`
+
+---
+
+### 🎯 Urgencias
+
+| Urgencia | Acción |
+|---|---|
+| 🔴 **Crítica** | Llama al proveedor HOY |
+| 🟠 **Alta** | Prepara solicitud esta semana |
+| 🟡 **Media** | Avisa al proveedor pronto |
+
+---
+
+### 💡 Cómo Usar
+
+Abre el reporte cada lunes, copia los productos con urgencia Crítica y Alta, y contacta a tus proveedores con los números sugeridos.`
+  },
+  {
+    id: "reports-collections-risk",
+    category: "Reportes",
+    role: "admin",
+    title: "💳 Riesgo de Cobranza — Scoring de Deudas",
+    keywords: ["cobranza", "deuda", "riesgo", "antigüedad", "scoring", "seguimiento"],
+    related_ids: ["reports-predictive-intro", "quotations-convert", "quotations-states"],
+    content: `## 💳 Riesgo de Cobranza
+
+Puntúa el riesgo de cada deuda pendiente (0-100) considerando antigüedad, monto y estado de entrega.
+
+---
+
+### 🎯 Niveles
+
+| Nivel | Rango | Acción |
+|---|---|---|
+| 🔴 **Crítico** | > 80 | Llamar hoy |
+| 🟠 **Alto** | 60-80 | Seguimiento esta semana |
+| 🟡 **Medio** | 40-60 | Monitorear |
+
+---
+
+### 💡 Estrategia de Cobranza
+
+1. Semana 1: Cobra los Críticos
+2. Semana 2: Sigue con los Altos
+3. Semana 3+: Monitorea los Medios
+
+Exporta a CSV para tu lista de seguimiento en Excel.`
+  },
+  {
+    id: "reports-anomalies",
+    category: "Reportes",
+    role: "admin",
+    title: "🔍 Discrepancias/Anomalías — Detección de Irregularidades",
+    keywords: ["anomalía", "discrepancia", "irregular", "error", "inconsistencia", "auditoría"],
+    related_ids: ["reports-predictive-intro", "movements-overview", "quotations-states"],
+    content: `## 🔍 Discrepancias y Anomalías
+
+Detector automático de irregularidades basado en 5 reglas determinísticas.
+
+---
+
+### 🎯 Las 5 Reglas
+
+| # | Anomalía | Acción |
+|---|---|---|
+| 1️⃣ | Salida sin cotización documentada | Verifica que la venta esté documentada |
+| 2️⃣ | Throughput excesivo en un día | Revisa movimientos del día |
+| 3️⃣ | Producto estancado 90+ días | Evalúa descontinuar o promover |
+| 4️⃣ | Stock muy superior al mínimo | Reduce recompras |
+| 5️⃣ | Cotización vencida sin cancelar | Cancela explícitamente |
+
+---
+
+### 💡 Rutina Recomendada
+
+1. Revisa anomalías por severidad — primero rojos y naranjas
+2. Documenta las correcciones realizadas
+3. Vuelve a ejecutar el reporte en 2 semanas`
+  },
+
+  // ─── CONFIGURACIÓN — ELIMINACIÓN CON RAZÓN (movido desde Novedades) ──────
+  {
+    id: "settings-delete-reason",
+    category: "Configuración",
+    role: "almacenista",
+    title: "🗑️ Eliminar Catálogos — Razón Obligatoria",
+    keywords: ["eliminar", "categoría", "proveedor", "razón", "motivo", "auditoría", "almacenista"],
+    related_ids: ["settings-categories", "settings-business"],
+    content: `## 🗑️ Eliminar Catálogos — Registro de Razón
+
+Cuando un **Almacenista** elimina una categoría, proveedor u otro catálogo, el sistema requiere una razón escrita.
+
+---
+
+### ✅ Por Qué es Obligatorio
+
+- **Auditoría:** Administradores pueden ver quién eliminó qué y por qué
+- **Prevención de errores:** Obliga a reflexionar antes de eliminar
+- **Trazabilidad:** Cada acción queda registrada con su motivo
+
+---
+
+### 📋 Flujo
+
+1. Clic en 🗑️ junto al elemento a eliminar
+2. El diálogo pide **confirmación** + **razón** (campo obligatorio)
+3. Escribe un motivo claro y confirma
+
+---
+
+### 💡 Ejemplos de Razones Válidas
+
+✅ "Categoría obsoleta, descontinuamos esta línea"
+✅ "Proveedor ya no trabaja con nosotros"
+✅ "Producto duplicado — merge con otra categoría"
+
+❌ Evita: frases vacías o sin contexto`
+  },
+
+  // ─── CAJA CHICA — VENTAS EN EFECTIVO (movido desde Novedades) ────────────
+  {
+    id: "tenant-cash-sales-to-petty-cash",
+    category: "Caja Chica",
+    role: "all",
+    visibility_scope: "tenant_rule",
+    required_rule_key: "cash_sales_to_petty_cash",
+    title: "💵 Ventas en efectivo se reflejan automáticamente en Caja Chica",
+    keywords: ["caja chica", "efectivo", "venta", "automático", "ingreso", "cotización", "movimiento", "reconciliación"],
+    related_ids: ["petty-cash-overview", "quotations-convert", "movements-register"],
+    content: `## 💵 Ventas en Efectivo → Caja Chica (Automático)
+
+En este negocio, las ventas cobradas en efectivo se registran automáticamente como ingresos en Caja Chica. **No necesitas hacerlo manualmente.**
+
+---
+
+### ¿Cuándo se genera el ingreso?
+
+| Situación | Resultado |
+|---|---|
+| Cotización convertida con pago en efectivo | ➕ Ingreso automático |
+| Movimiento directo cobrado en efectivo | ➕ Ingreso automático |
+
+---
+
+### ¿Puedo editar o eliminar esos ingresos?
+
+**No directamente.** Están marcados como entradas del sistema para proteger la integridad de la información.
+
+---
+
+### Reconciliación Automática
+
+| Evento | Resultado en Caja Chica |
+|---|---|
+| Cotización cancelada o anulada | ➖ Ingreso eliminado automáticamente |
+| Pago revertido | ➖ Ingreso eliminado automáticamente |
+| Forma de pago cambiada a no-efectivo | ➖ Ingreso eliminado automáticamente |
+| Movimiento directo eliminado | ➖ Ingreso eliminado automáticamente |
+
+---
+
+### 💡 Tip
+
+Los ingresos automáticos aparecen marcados como **"Sistema"** en el historial de Caja Chica para distinguirlos de los manuales.`
+  },
+
 ];
