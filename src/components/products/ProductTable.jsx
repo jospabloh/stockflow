@@ -17,7 +17,7 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import VirtualizedProductTable from "@/components/tables/VirtualizedProductTable";
 
-export default function ProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated, canEdit = true, canDelete = true }) {
+export default function ProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated, canEdit = true, canDelete = true, canShowCost = true }) {
   const navigate = useNavigate();
   const [generatingId, setGeneratingId] = useState(null);
 
@@ -60,7 +60,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
         </TableCell>
         <TableCell className="text-muted-foreground">{product.sku || "—"}</TableCell>
         <TableCell className="text-muted-foreground">{getCategoryName(product.category)}</TableCell>
-        {isAdmin && (
+        {canShowCost && (
           <TableCell className="text-right text-muted-foreground">
             ${product.purchase_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "—"}
           </TableCell>
@@ -245,7 +245,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
                 <TableHead className="font-semibold text-muted-foreground" role="columnheader">Producto</TableHead>
                 <TableHead className="font-semibold text-muted-foreground" role="columnheader">SKU</TableHead>
                 <TableHead className="font-semibold text-muted-foreground" role="columnheader">Categoría</TableHead>
-                {isAdmin && <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Precio Compra</TableHead>}
+                {canShowCost && <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Precio Compra</TableHead>}
                 <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Precio Menudeo</TableHead>
                 <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Stock</TableHead>
                 <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader">Estado</TableHead>

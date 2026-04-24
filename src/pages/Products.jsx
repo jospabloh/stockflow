@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
+import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Download } from "lucide-react";
@@ -23,6 +24,7 @@ import { useNavigate } from "react-router-dom";
 export default function Products() {
   const navigate = useNavigate();
   const { can } = usePermissions();
+  const { canSee } = useFieldVisibility("Productos");
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -190,16 +192,19 @@ export default function Products() {
       </div>
 
       {/* Products table */}
-      <ProductTable
-        products={filteredProducts}
-        categories={categories}
-        onEdit={handleEdit}
-        onDelete={setDeleteProduct}
-        isAdmin={isAdmin}
-        onBarcodeGenerated={() => loadData(businessId)}
-        canEdit={can('Products', 'modificar')}
-        canDelete={can('Products', 'eliminar')}
-      />
+       {canSee("view") && (
+       <ProductTable
+         products={filteredProducts}
+         categories={categories}
+         onEdit={handleEdit}
+         onDelete={setDeleteProduct}
+         isAdmin={isAdmin}
+         canShowCost={canSee("cost_price")}
+         onBarcodeGenerated={() => loadData(businessId)}
+         canEdit={can('Products', 'modificar') && canSee("edit_name")}
+         canDelete={can('Products', 'eliminar') && canSee("delete")}
+       />
+       )}
 
       {/* Delete confirmation */}
       <AlertDialog open={!!deleteProduct} onOpenChange={() => setDeleteProduct(null)}>

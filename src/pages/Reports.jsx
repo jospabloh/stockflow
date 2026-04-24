@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import PredictiveReports from "@/components/reports/PredictiveReports";
 import SupplierPaymentsReportChart from "@/components/dashboard/SupplierPaymentsReportChart";
 
 export default function Reports() {
+  const { canSee } = useFieldVisibility("Reportes");
   const [products, setProducts] = useState([]);
   const [movements, setMovements] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -112,7 +114,7 @@ export default function Reports() {
           <TabsTrigger value="suppliers" className="font-medium">💸 Pagos a Proveedores</TabsTrigger>
 
           {/* PREDICTIVO - solo para admins */}
-          {isAdmin && (
+          {(isAdmin && canSee("margin_analysis")) && (
             <TabsTrigger value="predictive" className="font-medium">🔮 Análisis Inteligente</TabsTrigger>
           )}
         </TabsList>
@@ -137,7 +139,7 @@ export default function Reports() {
         </TabsContent>
 
         {/* LAYER 2: REPORTES PREDICTIVOS / INTELIGENTES - Solo para Admins */}
-        {isAdmin && (
+        {canSee("margin_analysis") && (
           <TabsContent value="predictive">
             <PredictiveReports
               products={products}

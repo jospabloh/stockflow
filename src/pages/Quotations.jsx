@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -45,6 +46,7 @@ const isExpired = (q) => {
 export default function Quotations() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { canSee } = useFieldVisibility("Cotizaciones");
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -263,9 +265,11 @@ export default function Quotations() {
         </Button>
       </div>
 
+      {canSee("view") && (
       <VirtualizedQuotationTable
         quotations={filtered}
         statusConfig={statusConfig}
+        canShowPricing={canSee("pricing")}
         onEdit={handleEdit}
         onPreview={async (q) => {
           setPreviewQuotation(q);
@@ -323,7 +327,8 @@ export default function Quotations() {
         }}
         onDeliveredChange={() => {}}
         isExpired={isExpired}
-      />
+        />
+        )}
 
       <PartialReturnDialog
         open={!!returnQuotation}
