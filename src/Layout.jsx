@@ -236,6 +236,8 @@ export default function Layout({ children, currentPageName }) {
             .filter(item => !item.platformAdminOnly || isPlatformAdmin)
             .filter(item => !item.adminOrPlatformAdmin || isPlatformAdmin || user?.role === 'admin')
             .filter(item => {
+              const isAdmin = isPlatformAdmin || user?.role === 'admin';
+              if (isAdmin) return true;
               if (item.page) return canSee(item.page);
               if (item.submenu) return item.submenu.some(s => canSee(s.page));
               return true;
@@ -245,7 +247,8 @@ export default function Layout({ children, currentPageName }) {
             const hasSubmenu = item.submenu && item.submenu.length > 0;
             const isSubmenuOpen = expandedSubmenu === item.name;
             const currentInSubmenu = item.submenu?.some(s => s.page === currentPageName);
-            const visibleSubitems = item.submenu?.filter(s => canSee(s.page)) || [];
+            const isAdmin = isPlatformAdmin || user?.role === 'admin';
+            const visibleSubitems = isAdmin ? item.submenu : item.submenu?.filter(s => canSee(s.page)) || [];
 
             if (hasSubmenu) {
               return (
