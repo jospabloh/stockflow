@@ -20,8 +20,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'payment_method is required' }, { status: 400 });
     }
 
-    // Fetch quotation to validate ownership
-    const quotations = await base44.entities.Quotation.filter({ id: quotation_id });
+    // Fetch quotation to validate ownership — use asServiceRole to avoid RLS blocking almacenista users
+    const quotations = await base44.asServiceRole.entities.Quotation.filter({ id: quotation_id });
     if (quotations.length === 0) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
