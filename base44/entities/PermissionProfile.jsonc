@@ -1,0 +1,20 @@
+{
+  "name": "PermissionProfile",
+  "type": "object",
+  "properties": {
+    "business_id": { "type": "string" },
+    "role_key": { "type": "string", "enum": ["admin", "almacenista"] },
+    "permissions": { "type": "object" },
+    "schema_version": { "type": "integer" },
+    "is_system_default": { "type": "boolean" },
+    "updated_by": { "type": "string" },
+    "created_by": { "type": "string" }
+  },
+  "required": ["business_id", "role_key", "permissions"],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": { "business_id": "{{user.business_id}}" },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

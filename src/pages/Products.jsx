@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { usePermissions } from "@/lib/PermissionContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Download } from "lucide-react";
@@ -21,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Products() {
   const navigate = useNavigate();
+  const { can } = usePermissions();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -179,7 +181,7 @@ export default function Products() {
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1" /> CSV
           </Button>
-          {isAdmin && (
+          {isAdmin && can('Products', 'escribir') && (
             <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Products/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Producto
             </Button>
@@ -195,6 +197,8 @@ export default function Products() {
         onDelete={setDeleteProduct}
         isAdmin={isAdmin}
         onBarcodeGenerated={() => loadData(businessId)}
+        canEdit={can('Products', 'modificar')}
+        canDelete={can('Products', 'eliminar')}
       />
 
       {/* Delete confirmation */}
