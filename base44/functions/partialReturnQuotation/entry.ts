@@ -21,10 +21,18 @@ function isCashMethod(method: string, allowed: string[] = DEFAULT_CASH_METHODS):
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+     const user = await base44.auth.me();
+     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json();
+     if (user.role !== 'admin') {
+       return Response.json({ error: 'Forbidden: admin role required' }, { status: 403 });
+     }
+
+     if (!user.business_id) {
+       return Response.json({ error: 'User has no business assigned' }, { status: 403 });
+     }
+
+     const body = await req.json();
     const { quotation_id, returned_items, reason, petty_cash_deduction } = body;
     // returned_items: [{ product_id, product_name, quantity, unit_price, tax_rate }]
     // petty_cash_deduction: boolean — si true y la venta fue en efectivo, deduce de caja chica
@@ -36,8 +44,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Motivo de devolución es requerido' }, { status: 400 });
     }
 
-    // Fetch quotation
-    const quotations = await base44.entities.Quotation.filter({ id: quotation_id });
+    // Fetch quotation — use asServiceRole to avoid RLS blocking
+    const quotations = await base44.asServiceRole.entities.Quotation.filter({ id: quotation_id });
     if (quotations.length === 0) return Response.json({ error: 'Cotización no encontrada' }, { status: 404 });
     const quotation = quotations[0];
 

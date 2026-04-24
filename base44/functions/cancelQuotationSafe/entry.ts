@@ -9,15 +9,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { quotation_id, cancellation_reason } = body;
+    if (user.role !== 'admin') {
+       return Response.json({ error: 'Forbidden: admin role required' }, { status: 403 });
+     }
 
-    if (!quotation_id) {
-      return Response.json({ error: 'quotation_id is required' }, { status: 400 });
-    }
+     if (!user.business_id) {
+       return Response.json({ error: 'User has no business assigned' }, { status: 403 });
+     }
 
-    // Fetch quotation to validate ownership
-    const quotations = await base44.entities.Quotation.filter({ id: quotation_id });
+     const body = await req.json();
+     const { quotation_id, cancellation_reason } = body;
+
+     if (!quotation_id) {
+       return Response.json({ error: 'quotation_id is required' }, { status: 400 });
+     }
+
+     // Fetch quotation to validate ownership — use asServiceRole to avoid RLS blocking
+     const quotations = await base44.asServiceRole.entities.Quotation.filter({ id: quotation_id });
     if (quotations.length === 0) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
