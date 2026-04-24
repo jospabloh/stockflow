@@ -2,11 +2,26 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.9.1";
+export const APP_VERSION = "2.9.2";
 
-export const RELEASE_DATE = "2026-04-22";
+export const RELEASE_DATE = "2026-04-24";
 
 export const CHANGELOG = [
+  {
+    version: "2.9.2",
+    date: "2026-04-24",
+    changes: [
+      "🐛 Fix: carga de Proveedores y Métodos de Pago en Pagos a Proveedores mediante serviceRole — dropdowns ya no quedan vacíos",
+      "🐛 Fix: errores de carga de catálogo ahora se muestran como toast en lugar de fallar silenciosamente",
+      "🐛 Fix: removido parámetro sort incompatible en filtros de Proveedor y Método de Pago",
+      "🐛 Fix: checkbox auto-renovación ahora persiste correctamente al aprobar licencia",
+      "🐛 Fix: contraste de dropdowns en panel de licencias — selects correctamente visibles en modo oscuro",
+      "🐛 Fix: partición proactiva booleana en adminUpdateTenantLicense — reintentos dirigidos si el SDK descarta campos",
+      "🐛 Fix: UX tolerante en panel de licencias — errores de guardado muestran campos específicos que fallaron",
+      "📚 Manual reorganizado: artículos de Reportes, Configuración y Caja Chica movidos de Novedades a sus secciones permanentes",
+      "📚 Nuevos artículos: Pagos a Proveedores, Auditoría de Inventario, Ciclo de Vida de Cuentas, Múltiples Contactos por Proveedor",
+    ],
+  },
   {
     version: "2.9.1",
     date: "2026-04-22",
