@@ -127,6 +127,114 @@ export const FIELD_VISIBILITY = {
       edit: [], // Sin permisos de edición
     },
   },
+
+  // Categories
+  Categorías: {
+    admin: {
+      view: ['all'],
+      edit: ['all'],
+      pricing: ['wholesale_min_qty'],
+    },
+    almacenista: {
+      view: ['name', 'description', 'color'],
+      edit: [],
+      pricing: [],
+    },
+  },
+
+  // Suppliers
+  Proveedores: {
+    admin: {
+      view: ['all'],
+      edit: ['all'],
+      contact: ['all'],
+    },
+    almacenista: {
+      view: ['name', 'contact_name', 'phone', 'email'],
+      edit: [],
+      contact: [],
+    },
+  },
+
+  // Clients
+  Clientes: {
+    admin: {
+      view: ['all'],
+      edit: ['all'],
+      pricing: ['force_wholesale_all_products', 'force_purchase_all_products'],
+    },
+    almacenista: {
+      view: ['name', 'business_name', 'phone', 'email', 'status'],
+      edit: [],
+      pricing: [],
+    },
+  },
+
+  // Movements (ya parcial, expandir)
+  Movimientos: {
+    admin: {
+      pricing: ['unit_price', 'cost_price', 'total', 'margin', 'profit'],
+      cost_info: ['cost_breakdown', 'inventory_impact'],
+      edit: ['all'],
+    },
+    almacenista: {
+      pricing: ['unit_price', 'total'],
+      cost_info: [],
+      edit: ['quantity', 'reason', 'payment_method'],
+    },
+    vendedor: {
+      pricing: ['unit_price', 'total'],
+      cost_info: [],
+      edit: [],
+    },
+  },
+
+  // PettyCash (ya parcial, expandir)
+  "Caja Chica": {
+    admin: {
+      view: ['balance', 'movements', 'categories', 'totals', 'profit_impact'],
+      edit: ['all'],
+    },
+    almacenista: {
+      view: ['balance', 'movements', 'categories'],
+      edit: ['income', 'expense'],
+    },
+    vendedor: {
+      view: ['balance'],
+      edit: [],
+    },
+  },
+
+  // SupplierPayments (ya parcial, expandir)
+  "Pagos a Proveedores": {
+    admin: {
+      view: ['supplier', 'amount', 'date', 'payment_method', 'reference', 'concept', 'petty_cash_impact'],
+      financial: ['total_spent', 'supplier_totals', 'payment_trends'],
+      edit: ['all'],
+    },
+    almacenista: {
+      view: ['supplier', 'amount', 'date', 'payment_method', 'concept'],
+      financial: [],
+      edit: ['amount', 'date', 'payment_method'],
+    },
+    vendedor: {
+      view: [],
+      financial: [],
+      edit: [],
+    },
+  },
+
+  // PaymentMethods
+  "Tipo de Pago": {
+    admin: {
+      view: ['all'],
+      edit: ['all'],
+    },
+    almacenista: {
+      view: ['name', 'active'],
+      edit: [],
+    },
+  },
 };
 
 /**
