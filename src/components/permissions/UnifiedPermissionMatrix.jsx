@@ -18,11 +18,12 @@ export const PERMISSION_MATRIX = {
     label: "Dashboard",
     actions: [
       { id: "view", label: "Ver página", icon: "👁️", description: "Acceso a la página principal del dashboard" },
-      { id: "summary", label: "Tarjeta resumen", icon: "📊", description: "Ver resumen rápido de inventario y ventas" },
-      { id: "low_stock", label: "Alerta stock bajo", icon: "⚠️", description: "Ver productos con stock bajo o agotado" },
-      { id: "recent_movements", label: "Movimientos recientes", icon: "📈", description: "Ver últimos movimientos de inventario" },
-      { id: "sales_report", label: "Reporte ventas", icon: "💰", description: "Ver reporte de ventas y cotizaciones" },
-      { id: "financial", label: "Resumen financiero", icon: "💵", description: "Ver resumen financiero y caja chica" },
+      { id: "summary", label: "Ver tarjeta resumen", icon: "📊", description: "Ver resumen rápido de inventario y ventas" },
+      { id: "low_stock", label: "Ver alerta stock bajo", icon: "⚠️", description: "Ver productos con stock bajo o agotado" },
+      { id: "recent_movements", label: "Ver movimientos recientes", icon: "📈", description: "Ver últimos movimientos de inventario" },
+      { id: "sales_report", label: "Ver reporte ventas", icon: "💰", description: "Ver reporte de ventas y cotizaciones" },
+      { id: "unpaid_detail", label: "Ver deudas pendientes", icon: "💳", description: "Ver detalles de ventas no pagadas" },
+      { id: "financial", label: "Ver resumen financiero", icon: "💵", description: "Ver resumen financiero y caja chica" },
     ]
   },
   Productos: {
@@ -53,7 +54,10 @@ export const PERMISSION_MATRIX = {
     actions: [
       { id: "view", label: "Ver lista", icon: "👁️", description: "Acceso a la lista de categorías de productos" },
       { id: "create", label: "Crear", icon: "➕", description: "Crear nuevas categorías de productos" },
-      { id: "edit", label: "Editar", icon: "✏️", description: "Modificar categorías existentes" },
+      { id: "edit_name", label: "Editar nombre", icon: "✏️", description: "Modificar nombre de categoría" },
+      { id: "edit_description", label: "Editar descripción", icon: "📝", description: "Modificar descripción" },
+      { id: "edit_color", label: "Editar color", icon: "🎨", description: "Cambiar color representativo" },
+      { id: "edit_wholesale_min", label: "Editar mín. mayoreo", icon: "📦", description: "Configurar cantidad mínima para precio mayoreo" },
       { id: "delete", label: "Eliminar", icon: "🗑️", description: "Eliminar categorías del sistema" },
     ]
   },
@@ -62,7 +66,11 @@ export const PERMISSION_MATRIX = {
     actions: [
       { id: "view", label: "Ver lista", icon: "👁️", description: "Acceso a la lista de proveedores" },
       { id: "create", label: "Crear", icon: "➕", description: "Agregar nuevos proveedores al catálogo" },
-      { id: "edit", label: "Editar", icon: "✏️", description: "Modificar datos de proveedores" },
+      { id: "edit_name", label: "Editar nombre", icon: "✏️", description: "Modificar nombre del proveedor" },
+      { id: "edit_contact", label: "Editar contacto", icon: "📞", description: "Cambiar nombre, teléfono y email de contacto" },
+      { id: "edit_address", label: "Editar dirección", icon: "📍", description: "Modificar dirección del proveedor" },
+      { id: "edit_rfc", label: "Editar RFC", icon: "📋", description: "Cambiar RFC del proveedor (confidencial)" },
+      { id: "edit_notes", label: "Editar notas", icon: "📝", description: "Agregar o modificar notas adicionales" },
       { id: "delete", label: "Eliminar", icon: "🗑️", description: "Eliminar proveedores del sistema" },
     ]
   },
@@ -71,10 +79,16 @@ export const PERMISSION_MATRIX = {
     actions: [
       { id: "view", label: "Ver lista", icon: "👁️", description: "Acceso a la lista de clientes" },
       { id: "create", label: "Crear", icon: "➕", description: "Registrar nuevos clientes" },
-      { id: "edit", label: "Editar", icon: "✏️", description: "Modificar datos de clientes existentes" },
+      { id: "edit_name", label: "Editar nombre", icon: "✏️", description: "Modificar nombre del cliente" },
+      { id: "edit_business", label: "Editar negocio", icon: "🏢", description: "Cambiar nombre y giro del negocio" },
+      { id: "edit_contact", label: "Editar contacto", icon: "📞", description: "Modificar teléfono y email" },
+      { id: "edit_address", label: "Editar dirección", icon: "📍", description: "Cambiar dirección de entrega" },
+      { id: "edit_rfc", label: "Editar RFC", icon: "📋", description: "Modificar RFC del cliente" },
+      { id: "edit_notes", label: "Editar notas", icon: "📝", description: "Agregar observaciones adicionales" },
+      { id: "edit_status", label: "Cambiar estado", icon: "✓", description: "Activar o desactivar cliente" },
+      { id: "edit_force_wholesale", label: "Forzar mayoreo", icon: "💲", description: "Aplicar precios mayoristas automáticamente" },
+      { id: "edit_force_purchase", label: "Forzar precio compra", icon: "💲", sensitive: true, description: "Aplicar precios de compra (confidencial)" },
       { id: "delete", label: "Eliminar", icon: "🗑️", description: "Eliminar clientes del sistema" },
-      { id: "force_wholesale", label: "Precios mayoreo forzado", icon: "💲", description: "Aplicar precios mayoristas automáticamente a este cliente" },
-      { id: "force_purchase", label: "Precios compra forzado", icon: "💲", sensitive: true, description: "Aplicar precios de compra a cliente (información sensible)" },
     ]
   },
   "Tipo de Pago": {
@@ -82,7 +96,8 @@ export const PERMISSION_MATRIX = {
     actions: [
       { id: "view", label: "Ver lista", icon: "👁️", description: "Ver métodos de pago configurados" },
       { id: "create", label: "Crear", icon: "➕", description: "Crear nuevos métodos de pago" },
-      { id: "edit", label: "Editar", icon: "✏️", description: "Modificar métodos de pago existentes" },
+      { id: "edit_name", label: "Editar nombre", icon: "✏️", description: "Cambiar nombre del método de pago" },
+      { id: "edit_status", label: "Cambiar estado", icon: "✓", description: "Activar o desactivar método de pago" },
       { id: "delete", label: "Eliminar", icon: "🗑️", description: "Eliminar métodos de pago" },
     ]
   },
@@ -95,9 +110,12 @@ export const PERMISSION_MATRIX = {
       { id: "exit", label: "Salida de stock", icon: "⬇️", description: "Registrar salida de productos del almacén" },
       { id: "return", label: "Devolución", icon: "↩️", description: "Procesar devoluciones de productos" },
       { id: "adjustment", label: "Ajuste de inventario", icon: "⚙️", description: "Realizar ajustes manuales de stock" },
-      { id: "edit", label: "Editar", icon: "✏️", description: "Modificar movimientos existentes" },
-      { id: "delete", label: "Eliminar", icon: "🗑️", description: "Eliminar movimientos del registro" },
+      { id: "edit_quantity", label: "Editar cantidad", icon: "📦", description: "Modificar cantidad del movimiento" },
+      { id: "edit_reason", label: "Editar motivo", icon: "📝", description: "Cambiar razón o cliente asociado" },
+      { id: "edit_payment", label: "Editar forma pago", icon: "💳", description: "Modificar método de pago" },
       { id: "confirm_payment", label: "Confirmar pago", icon: "✓", description: "Marcar movimientos como pagados" },
+      { id: "edit_status", label: "Cambiar estado pago", icon: "⚙️", description: "Marcar como pagado o pendiente" },
+      { id: "delete", label: "Eliminar", icon: "🗑️", description: "Eliminar movimientos del registro" },
     ]
   },
   Cotizaciones: {
@@ -105,14 +123,21 @@ export const PERMISSION_MATRIX = {
     actions: [
       { id: "view", label: "Ver lista", icon: "👁️", description: "Acceso al listado de cotizaciones" },
       { id: "create", label: "Crear", icon: "➕", description: "Crear nuevas cotizaciones para clientes" },
-      { id: "edit", label: "Editar", icon: "✏️", description: "Modificar cotizaciones existentes" },
-      { id: "delete", label: "Eliminar", icon: "🗑️", description: "Eliminar cotizaciones" },
+      { id: "edit_items", label: "Editar productos", icon: "📦", description: "Agregar, quitar o modificar productos" },
+      { id: "edit_quantities", label: "Editar cantidades", icon: "🔢", description: "Cambiar cantidades de productos" },
+      { id: "edit_prices", label: "Editar precios", icon: "💵", description: "Modificar precios unitarios" },
+      { id: "edit_client", label: "Editar cliente", icon: "👤", description: "Cambiar cliente de la cotización" },
+      { id: "edit_notes", label: "Editar notas", icon: "📝", description: "Agregar condiciones y observaciones" },
+      { id: "edit_validity", label: "Editar vigencia", icon: "📅", description: "Cambiar fecha de validez" },
+      { id: "edit_payment_method", label: "Editar pago", icon: "💳", description: "Modificar forma de pago" },
+      { id: "confirm_payment", label: "Confirmar pago", icon: "✓", description: "Marcar cotización como pagada" },
       { id: "convert", label: "Convertir a venta", icon: "✓", description: "Convertir cotización a venta confirmada" },
       { id: "cancel", label: "Cancelar", icon: "❌", description: "Cancelar cotizaciones" },
       { id: "return", label: "Procesar devolución", icon: "↩️", description: "Procesar devoluciones parciales de ventas" },
-      { id: "pricing", label: "Ver detalles precio", icon: "💲", sensitive: true, description: "Ver cálculo detallado de precios (información sensible)" },
+      { id: "pricing", label: "Ver detalles precio", icon: "💲", sensitive: true, description: "Ver cálculo detallado de precios (confidencial)" },
       { id: "send", label: "Enviar cotización", icon: "📧", description: "Enviar cotizaciones por correo a clientes" },
       { id: "export", label: "Exportar PDF", icon: "📄", description: "Exportar cotizaciones en formato PDF" },
+      { id: "delete", label: "Eliminar", icon: "🗑️", description: "Eliminar cotizaciones" },
     ]
   },
   "Caja Chica": {
@@ -123,7 +148,11 @@ export const PERMISSION_MATRIX = {
       { id: "add_fund", label: "Agregar fondo", icon: "➕", description: "Agregar fondos iniciales o adicionales a caja" },
       { id: "expense", label: "Registrar egreso", icon: "➖", description: "Registrar gastos o egresos de caja chica" },
       { id: "income", label: "Registrar ingreso", icon: "⬆️", description: "Registrar ingresos a caja chica" },
-      { id: "edit", label: "Editar movimiento", icon: "✏️", description: "Modificar movimientos de caja registrados" },
+      { id: "edit_amount", label: "Editar monto", icon: "💵", description: "Modificar cantidad del movimiento" },
+      { id: "edit_description", label: "Editar descripción", icon: "📝", description: "Cambiar descripción del movimiento" },
+      { id: "edit_category", label: "Editar categoría", icon: "🏷️", description: "Cambiar categoría del movimiento" },
+      { id: "edit_date", label: "Editar fecha", icon: "📅", description: "Modificar fecha del movimiento" },
+      { id: "edit_notes", label: "Editar notas", icon: "📋", description: "Agregar o cambiar notas adicionales" },
       { id: "delete", label: "Eliminar movimiento", icon: "🗑️", description: "Eliminar movimientos de caja" },
     ]
   },
@@ -132,7 +161,14 @@ export const PERMISSION_MATRIX = {
     actions: [
       { id: "view", label: "Ver lista", icon: "👁️", description: "Acceso al registro de pagos a proveedores" },
       { id: "create", label: "Crear pago", icon: "➕", description: "Registrar nuevos pagos a proveedores" },
-      { id: "edit", label: "Editar", icon: "✏️", description: "Modificar pagos registrados" },
+      { id: "edit_supplier", label: "Editar proveedor", icon: "🏢", description: "Cambiar proveedor del pago" },
+      { id: "edit_amount", label: "Editar monto", icon: "💵", description: "Modificar cantidad pagada" },
+      { id: "edit_date", label: "Editar fecha", icon: "📅", description: "Cambiar fecha del pago" },
+      { id: "edit_payment_method", label: "Editar forma pago", icon: "💳", description: "Cambiar método de pago" },
+      { id: "edit_concept", label: "Editar concepto", icon: "📝", description: "Modificar descripción del pago" },
+      { id: "edit_reference", label: "Editar referencia", icon: "🔗", description: "Cambiar número de transacción/recibo" },
+      { id: "edit_notes", label: "Editar notas", icon: "📋", description: "Agregar observaciones adicionales" },
+      { id: "affect_petty_cash", label: "Afectar caja chica", icon: "💰", description: "Registrar egreso automático en caja" },
       { id: "delete", label: "Eliminar", icon: "🗑️", description: "Eliminar registro de pagos" },
     ]
   },
@@ -140,8 +176,11 @@ export const PERMISSION_MATRIX = {
     label: "Reportes",
     actions: [
       { id: "view", label: "Ver reportes", icon: "👁️", description: "Acceso a visualización de reportes" },
-      { id: "operational", label: "Reportes operacionales", icon: "📊", description: "Reportes de operaciones, inventario y ventas" },
-      { id: "predictive", label: "Reportes predictivos", icon: "🔮", description: "Análisis predictivo y tendencias" },
+      { id: "operational", label: "Ver operacionales", icon: "📊", description: "Reportes de operaciones, inventario y ventas" },
+      { id: "supplier", label: "Ver pagos proveedores", icon: "🏢", description: "Reportes de pagos a proveedores" },
+      { id: "predictive", label: "Ver predictivos", icon: "🔮", description: "Análisis predictivo y tendencias" },
+      { id: "cost_view", label: "Ver costos", icon: "💲", sensitive: true, description: "Acceso a reportes con información de costos (confidencial)" },
+      { id: "profit_margin", label: "Ver márgenes", icon: "📈", sensitive: true, description: "Ver cálculos de rentabilidad y márgenes (confidencial)" },
       { id: "export", label: "Exportar datos", icon: "📥", description: "Exportar reportes y datos en Excel/CSV" },
     ]
   },
@@ -149,10 +188,15 @@ export const PERMISSION_MATRIX = {
     label: "Configuración",
     actions: [
       { id: "view", label: "Ver configuración", icon: "⚙️", description: "Acceso a configuración general del sistema" },
-      { id: "business", label: "Datos negocio", icon: "🏢", description: "Editar datos de la empresa (nombre, RFC, etc.)" },
-      { id: "app_settings", label: "Configuración app", icon: "🎨", description: "Personalizar apariencia y configuración de la app" },
+      { id: "edit_company_name", label: "Editar nombre empresa", icon: "🏢", description: "Cambiar nombre y razón social" },
+      { id: "edit_company_rfc", label: "Editar RFC", icon: "📋", description: "Modificar RFC de la empresa" },
+      { id: "edit_company_contact", label: "Editar contacto", icon: "📞", description: "Cambiar teléfono y dirección" },
+      { id: "edit_logo", label: "Cambiar logo", icon: "🖼️", description: "Actualizar logotipo de la empresa" },
+      { id: "edit_colors", label: "Editar colores", icon: "🎨", description: "Personalizar colores de la app" },
+      { id: "edit_tax_rate", label: "Editar IVA", icon: "📊", description: "Cambiar tasa de impuesto" },
+      { id: "edit_currency", label: "Editar moneda", icon: "💱", description: "Cambiar moneda de operación" },
+      { id: "edit_quotation_footer", label: "Editar pie cotizaciones", icon: "📄", description: "Personalizar texto al pie de cotizaciones" },
       { id: "import_products", label: "Importar productos", icon: "📥", description: "Importar catálogo de productos desde archivo" },
-      { id: "manage_clients", label: "Gestionar clientes", icon: "👥", description: "Administrar información de clientes" },
     ]
   },
 };
