@@ -155,7 +155,25 @@ const ROLES = [
 export default function UnifiedPermissionMatrix({ perms, onPermChange, onSave, saving }) {
   const [editMode, setEditMode] = useState(false);
   const [activeRole, setActiveRole] = useState("admin");
-  const currentRolePerms = perms?.[activeRole] || {};
+  
+  // Cargar permisos por defecto de almacenista si está vacío
+  const getDefaultAlmacenista = () => {
+    return {
+      "Productos:view": true,
+      "Productos:barcode": true,
+      "Movimientos:view": true,
+      "Movimientos:entry": true,
+      "Movimientos:exit": true,
+      "Movimientos:adjustment": true,
+      "Cotizaciones:view": true,
+      "Caja Chica:view": true,
+      "Caja Chica:view_history": true,
+    };
+  };
+  
+  const currentRolePerms = activeRole === "almacenista" && (!perms?.[activeRole] || Object.keys(perms[activeRole]).length === 0)
+    ? getDefaultAlmacenista()
+    : (perms?.[activeRole] || {});
 
   // Stats
   const stats = useMemo(() => {
@@ -184,7 +202,7 @@ export default function UnifiedPermissionMatrix({ perms, onPermChange, onSave, s
           });
           return acc;
         }, {})
-      : {}; // Almacenista por defecto sin permisos
+      : getDefaultAlmacenista();
     
     Object.keys(defaults).forEach(key => {
       onPermChange(activeRole, key, defaults[key]);
