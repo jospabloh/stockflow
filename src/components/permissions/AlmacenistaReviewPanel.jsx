@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff, Edit2, Save, X } from "lucide-react";
+import { Eye, EyeOff, Edit2, Save, X, AlertCircle } from "lucide-react";
 import { ARTIFACTS, LEGACY_DEFAULTS } from "@/lib/permissionArtifacts";
 
 const ACTION_LABELS = {
@@ -14,12 +14,12 @@ const ACTION_LABELS = {
   eliminar: "Eliminar",
 };
 
-const ACTION_COLORS = {
-  ver: "bg-blue-50 border-blue-200",
-  leer: "bg-cyan-50 border-cyan-200",
-  escribir: "bg-green-50 border-green-200",
-  modificar: "bg-amber-50 border-amber-200",
-  eliminar: "bg-red-50 border-red-200",
+const ACTION_ICONS = {
+  ver: "👁️",
+  leer: "📖",
+  escribir: "✏️",
+  modificar: "🔧",
+  eliminar: "🗑️",
 };
 
 export default function AlmacenistaReviewPanel({ perms, onPermChange, onSave }) {
@@ -30,19 +30,27 @@ export default function AlmacenistaReviewPanel({ perms, onPermChange, onSave }) 
   const visibleArtifacts = ARTIFACTS.filter(a => defaultPerms[a.key]?.ver);
   const hiddenArtifacts = ARTIFACTS.filter(a => !defaultPerms[a.key]?.ver);
 
-  const handleToggle = (artifact, action) => {
+  const handlePermissionChange = (artifact, action, shouldAllow) => {
     if (!editMode) return;
-    const current = perms?.almacenista?.[artifact]?.[action] ?? false;
-    onPermChange('almacenista', artifact, action, !current);
+    const defaultValue = defaultPerms[artifact][action];
+    
+    // Solo permitir reducir (desactivar), nunca ampliar más del default
+    if (shouldAllow && !defaultValue) {
+      return; // No se puede permitir un permiso que no está permitido por default
+    }
+    
+    onPermChange('almacenista', artifact, action, shouldAllow);
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Revisión de Permisos: Almacenista</h3>
+          <h3 className="text-lg font-semibold">Permisos: Almacenista</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            {editMode ? "Modo edición - Ajusta los permisos según sea necesario" : "Modo vista - Haz clic en Editar para cambiar"}
+            {editMode 
+              ? "Modo edición - Solo puedes reducir permisos (no ampliarlos más del default)" 
+              : "Modo vista - Los permisos están en rojo si están reducidos"}
           </p>
         </div>
         <div className="flex gap-2">
@@ -63,57 +71,97 @@ export default function AlmacenistaReviewPanel({ perms, onPermChange, onSave }) 
         </div>
       </div>
 
+      {/* Info alert */}
+      <Card className="p-3 bg-blue-50 border-blue-200 flex gap-3">
+        <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-blue-700">
+          Los permisos en <strong>verde</strong> son los permitidos por defecto. Los en <strong>rojo</strong> están reducidos. 
+          {editMode && " En modo edición, puedes desactivar permisos pero no otorgar más de lo permitido."}
+        </p>
+      </Card>
+
       {/* Visible sections */}
-      <div className="space-y-2">
-        <h4 className="font-medium text-sm text-slate-600 flex items-center gap-2">
+      <div className="space-y-3">
+        <h4 className="font-semibold text-slate-700 flex items-center gap-2">
           <Eye className="h-4 w-4" /> Secciones Visibles ({visibleArtifacts.length})
         </h4>
-        <div className="grid gap-3">
+        <div className="grid gap-4">
           {visibleArtifacts.map(artifact => {
             const defaultActions = defaultPerms[artifact.key];
             const currentActions = perms?.almacenista?.[artifact.key] || {};
+            const hasChanges = Object.keys(defaultActions).some(
+              action => (currentActions[action] ?? defaultActions[action]) !== defaultActions[action]
+            );
             
             return (
-              <Card key={artifact.key} className="p-4">
-                <div className="flex items-start justify-between mb-3">
+              <Card key={artifact.key} className={`p-4 transition-colors ${hasChanges && editMode ? 'border-amber-300 bg-amber-50' : ''}`}>
+                <div className="flex items-start justify-between mb-4">
                   <div>
-                    <p className="font-medium text-foreground">{artifact.label}</p>
-                    <p className="text-xs text-muted-foreground">{artifact.key}</p>
+                    <p className="font-semibold text-foreground">{artifact.label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{artifact.key}</p>
                   </div>
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                    Visible
-                  </Badge>
+                  <div className="flex gap-2">
+                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                      Visible
+                    </Badge>
+                    {hasChanges && (
+                      <Badge className="bg-amber-100 text-amber-800 border-0">
+                        Modificado
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                {/* Permission toggles */}
+                <div className="space-y-2">
                   {['ver', 'leer', 'escribir', 'modificar', 'eliminar'].map(action => {
                     const isDefault = defaultActions[action];
                     const isCurrent = currentActions[action] ?? isDefault;
-                    const isChanged = isCurrent !== isDefault;
+                    const isReduced = !isCurrent && isDefault;
                     
                     return (
                       <div
                         key={action}
-                        className={`p-2 rounded border-2 transition-colors ${ACTION_COLORS[action]} ${
-                          editMode ? 'cursor-pointer' : ''
-                        }`}
-                        onClick={() => handleToggle(artifact.key, action)}
+                        className={`p-3 rounded-lg border-2 transition-all ${
+                          isReduced 
+                            ? 'bg-red-50 border-red-300' 
+                            : 'bg-emerald-50 border-emerald-300'
+                        } ${editMode && isDefault ? 'cursor-pointer hover:shadow-sm' : ''}`}
+                        onClick={() => {
+                          if (editMode && isDefault) {
+                            handlePermissionChange(artifact.key, action, !isCurrent);
+                          }
+                        }}
                       >
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            checked={isCurrent}
-                            disabled={!editMode}
-                            onCheckedChange={() => handleToggle(artifact.key, action)}
-                          />
-                          <label className="text-xs font-medium cursor-pointer flex-1">
-                            {ACTION_LABELS[action]}
-                          </label>
+                        <div className="flex items-center gap-3">
+                          <div className="text-lg">{ACTION_ICONS[action]}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm">{ACTION_LABELS[action]}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              {isDefault ? (
+                                isCurrent 
+                                  ? "✓ Permitido" 
+                                  : "✗ Reducido"
+                              ) : (
+                                "✗ No disponible"
+                              )}
+                            </div>
+                          </div>
+                          {editMode && isDefault && (
+                            <Checkbox
+                              checked={isCurrent}
+                              onCheckedChange={(checked) => 
+                                handlePermissionChange(artifact.key, action, checked)
+                              }
+                              className="w-5 h-5 flex-shrink-0"
+                            />
+                          )}
+                          {!editMode && isDefault && (
+                            <div className={`text-sm font-semibold ${isCurrent ? 'text-emerald-600' : 'text-red-600'}`}>
+                              {isCurrent ? '✓' : '✗'}
+                            </div>
+                          )}
                         </div>
-                        {isChanged && editMode && (
-                          <p className="text-[10px] text-amber-600 mt-1">
-                            {isDefault ? '↓ Reducido' : '↑ Ampliado'}
-                          </p>
-                        )}
                       </div>
                     );
                   })}
@@ -126,14 +174,18 @@ export default function AlmacenistaReviewPanel({ perms, onPermChange, onSave }) 
 
       {/* Hidden sections */}
       {hiddenArtifacts.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="font-medium text-sm text-slate-500 flex items-center gap-2">
+        <div className="space-y-3">
+          <h4 className="font-semibold text-slate-500 flex items-center gap-2">
             <EyeOff className="h-4 w-4" /> Secciones Ocultas ({hiddenArtifacts.length})
           </h4>
-          <Card className="p-4 bg-slate-50">
-            <p className="text-sm text-slate-600">
-              {hiddenArtifacts.map(a => a.label).join(", ")}
-            </p>
+          <Card className="p-4 bg-slate-50 border-slate-200">
+            <div className="flex gap-2 flex-wrap">
+              {hiddenArtifacts.map(a => (
+                <Badge key={a.key} variant="outline" className="bg-slate-100 text-slate-600">
+                  {a.label}
+                </Badge>
+              ))}
+            </div>
           </Card>
         </div>
       )}
