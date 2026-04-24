@@ -246,7 +246,9 @@ export default function Layout({ children, currentPageName }) {
             const hasSubmenu = item.submenu && item.submenu.length > 0;
             const isSubmenuOpen = expandedSubmenu === item.name;
             const currentInSubmenu = item.submenu?.some(s => s.page === currentPageName);
-            const visibleSubitems = item.submenu?.filter(s => canSee(s.page)) || [];
+            const visibleSubitems = (isPlatformAdmin || user?.role === 'admin') 
+              ? item.submenu 
+              : item.submenu?.filter(s => canSee(s.page)) || [];
 
             if (hasSubmenu) {
               return (
