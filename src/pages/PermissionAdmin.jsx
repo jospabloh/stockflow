@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Shield, RefreshCw, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import AlmacenistaReviewPanel from "@/components/permissions/AlmacenistaReviewPanel";
 
 const ACTION_LABELS = {
   ver: "Ver",
@@ -219,55 +220,61 @@ export default function PermissionAdmin() {
           ))}
         </TabsList>
 
-        {ROLES.map(role => (
-          <TabsContent key={role} value={role}>
-            <Card className="overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-muted/40 border-b border-border">
-                      <th className="text-left px-4 py-3 font-semibold min-w-[160px]">Sección</th>
-                      {ACTIONS.map(action => (
-                        <th key={action} className="text-center px-3 py-3 font-semibold">{ACTION_LABELS[action]}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ARTIFACTS.map(({ key, label }) => (
-                      <tr key={key} className="border-b border-border hover:bg-muted/20 transition-colors">
-                        <td className="px-4 py-3 font-medium text-foreground">{label}</td>
-                        {ACTIONS.map(action => {
-                          const isLocked =
-                            (role === 'admin' && key === 'Settings' && (action === 'ver' || action === 'leer')) ||
-                            ((key === 'About' || key === 'HelpCenter') && (action === 'ver' || action === 'leer'));
-                          return (
-                            <td key={action} className="px-3 py-3 text-center">
-                              <Checkbox
-                                checked={isLocked ? true : (perms[role]?.[key]?.[action] ?? false)}
-                                disabled={isLocked}
-                                onCheckedChange={(checked) => handleToggleAction(role, key, action, !!checked)}
-                                aria-label={`${label} - ${ACTION_LABELS[action]}`}
-                              />
-                            </td>
-                          );
-                        })}
-                      </tr>
+        <TabsContent value="admin">
+          <Card className="overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/40 border-b border-border">
+                    <th className="text-left px-4 py-3 font-semibold min-w-[160px]">Sección</th>
+                    {ACTIONS.map(action => (
+                      <th key={action} className="text-center px-3 py-3 font-semibold">{ACTION_LABELS[action]}</th>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="px-4 py-4 flex justify-end border-t border-border">
-                <Button
-                  onClick={() => handleSave(role)}
-                  disabled={saving}
-                  className="bg-indigo-600 hover:bg-indigo-700"
-                >
-                  {saving ? "Guardando..." : "Guardar cambios"}
-                </Button>
-              </div>
-            </Card>
-          </TabsContent>
-        ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {ARTIFACTS.map(({ key, label }) => (
+                    <tr key={key} className="border-b border-border hover:bg-muted/20 transition-colors">
+                      <td className="px-4 py-3 font-medium text-foreground">{label}</td>
+                      {ACTIONS.map(action => {
+                        const isLocked =
+                          (key === 'Settings' && (action === 'ver' || action === 'leer')) ||
+                          ((key === 'About' || key === 'HelpCenter') && (action === 'ver' || action === 'leer'));
+                        return (
+                          <td key={action} className="px-3 py-3 text-center">
+                            <Checkbox
+                              checked={isLocked ? true : (perms['admin']?.[key]?.[action] ?? false)}
+                              disabled={isLocked}
+                              onCheckedChange={(checked) => handleToggleAction('admin', key, action, !!checked)}
+                              aria-label={`${label} - ${ACTION_LABELS[action]}`}
+                            />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="px-4 py-4 flex justify-end border-t border-border">
+              <Button
+                onClick={() => handleSave('admin')}
+                disabled={saving}
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
+                {saving ? "Guardando..." : "Guardar cambios"}
+              </Button>
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="almacenista">
+          <AlmacenistaReviewPanel 
+            perms={perms} 
+            onPermChange={handleToggleAction}
+            onSave={() => handleSave('almacenista')}
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );
