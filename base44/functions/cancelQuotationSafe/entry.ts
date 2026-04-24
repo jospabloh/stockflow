@@ -9,11 +9,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (user.role !== 'admin') {
-       return Response.json({ error: 'Forbidden: admin role required' }, { status: 403 });
-     }
-
-     if (!user.business_id) {
+    if (!user.business_id) {
        return Response.json({ error: 'User has no business assigned' }, { status: 403 });
      }
 

@@ -24,10 +24,6 @@ Deno.serve(async (req) => {
      const user = await base44.auth.me();
      if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-     if (user.role !== 'admin') {
-       return Response.json({ error: 'Forbidden: admin role required' }, { status: 403 });
-     }
-
      if (!user.business_id) {
        return Response.json({ error: 'User has no business assigned' }, { status: 403 });
      }
@@ -40,8 +36,8 @@ Deno.serve(async (req) => {
     if (!quotation_id || !returned_items?.length) {
       return Response.json({ error: 'quotation_id y returned_items son requeridos' }, { status: 400 });
     }
-    if (!reason?.trim()) {
-      return Response.json({ error: 'Motivo de devolución es requerido' }, { status: 400 });
+    if (!reason || !reason.trim()) {
+      return Response.json({ error: 'Comentario obligatorio requerido' }, { status: 400 });
     }
 
     // Fetch quotation — use asServiceRole to avoid RLS blocking
