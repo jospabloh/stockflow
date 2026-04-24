@@ -177,27 +177,28 @@ export default function AlmacenistaReviewPanel({ perms, onPermChange, onSave }) 
                   })}
                 </div>
                 
-                {/* Summary */}
-                {hasChanges && (
-                  <div className="mt-4 p-3 bg-amber-100/50 border border-amber-300 rounded-lg">
-                    <p className="text-xs font-semibold text-amber-900 mb-1">Resumen de cambios:</p>
-                    <ul className="text-xs text-amber-800 space-y-1">
-                      {['ver', 'leer', 'escribir', 'modificar', 'eliminar'].map(action => {
-                        const isDefault = defaultActions[action];
-                        const isCurrent = currentActions[action] ?? isDefault;
-                        if (isCurrent !== isDefault) {
-                          return (
-                            <li key={action} className="flex gap-2 items-center">
-                              <span className="text-red-600 font-bold">✗</span>
-                              <span>{ACTION_LABELS[action]}: {isDefault ? 'permitido por defecto, ahora bloqueado' : 'no está disponible'}</span>
-                            </li>
-                          );
-                        }
-                        return null;
-                      })}
-                    </ul>
-                  </div>
-                )}
+                {/* Summary - only show reduced permissions */}
+                {(() => {
+                  const reduced = ['ver', 'leer', 'escribir', 'modificar', 'eliminar'].filter(action => {
+                    const isDefault = defaultActions[action];
+                    const isCurrent = currentActions[action] ?? isDefault;
+                    return !isCurrent && isDefault;
+                  });
+                  
+                  return reduced.length > 0 && (
+                    <div className="mt-4 p-3 bg-red-100/60 border border-red-300 rounded-lg">
+                      <p className="text-xs font-semibold text-red-900 mb-2">Restricciones activas:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {reduced.map(action => (
+                          <span key={action} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-200 text-red-800 text-xs font-semibold">
+                            <span>✗</span>
+                            {ACTION_LABELS[action]} bloqueado
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </Card>
             );
           })}
