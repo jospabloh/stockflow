@@ -2,6 +2,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
 // SECURITY: Explicit whitelist of updatable Quotation fields
 const ALLOWED_UPDATE_FIELDS = new Set([
+  // Content fields — edited via QuotationFormDialog
+  'folio',
+  'client_id',
+  'client_name',
+  'client_email',
+  'client_phone',
+  'items',
+  'subtotal',
+  'tax',
+  'total',
+  // Status / workflow fields
   'status',
   'invoice_status',
   'in_route',
