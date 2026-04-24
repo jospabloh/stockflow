@@ -48,6 +48,7 @@ export function PermissionProvider({ children }) {
 
   const can = useCallback((pageName, action = 'ver') => {
     if (userEmail === PLATFORM_OWNER_EMAIL) return true;
+    if (userRole === 'admin') return true;
 
     // Mapear nombre de página a módulo de permisos (ej: "Products" -> "Productos")
     const moduleName = getPermissionModule(pageName);
