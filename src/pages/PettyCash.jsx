@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { usePermissions } from "@/lib/PermissionContext";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import PettyCashHistory from "@/components/petty-cash/PettyCashHistory";
 
 export default function PettyCash() {
   const { businessId } = useBusinessContext();
+  const { can } = usePermissions();
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -126,7 +128,7 @@ export default function PettyCash() {
           <Button onClick={() => openForm("expense")} className="bg-rose-600 hover:bg-rose-700" {...createButtonProps('add')}>
             <Minus className="h-4 w-4 mr-1" /> Egreso
           </Button>
-          {isAdmin && (
+          {isAdmin && can('PettyCash', 'modificar') && (
             <Button onClick={() => openForm("adjustment")} variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50" {...createButtonProps('add')}>
               <SlidersHorizontal className="h-4 w-4 mr-1" /> Ajuste
             </Button>

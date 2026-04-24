@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { usePermissions } from "@/lib/PermissionContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ const emptyForm = { name: "", business_name: "", giro: "", email: "", phone: "",
 
 export default function ClientsManager() {
   const { businessId } = useBusinessContext();
+  const { can } = usePermissions();
   const [clients, setClients] = useState([]);
   const [search, setSearch] = useState("");
   const [formOpen, setFormOpen] = useState(false);
@@ -127,9 +129,11 @@ export default function ClientsManager() {
     <Card className="border-0 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-slate-700 text-lg">Clientes</h3>
+        {can('Clients', 'escribir') && (
         <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={openNew}>
           <Plus className="h-4 w-4 mr-1" /> Nuevo cliente
         </Button>
+        )}
       </div>
       <Input
         placeholder="Buscar cliente..."
@@ -165,12 +169,16 @@ export default function ClientsManager() {
                 </Badge>
               </TableCell>
               <TableCell className="text-center">
+                {can('Clients', 'modificar') && (
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(c)}>
                   <Pencil className="h-4 w-4 text-slate-400" />
                 </Button>
+                )}
+                {can('Clients', 'eliminar') && (
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(c)}>
                   <Trash2 className="h-4 w-4 text-slate-400" />
                 </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}

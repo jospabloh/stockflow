@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { usePermissions } from "@/lib/PermissionContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ import { toast } from "sonner";
 
 export default function Categories() {
   const { businessId } = useBusinessContext();
+  const { can } = usePermissions();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [catFormOpen, setCatFormOpen] = useState(false);
@@ -159,9 +161,11 @@ export default function Categories() {
                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCat(cat); setCatForm({ name: cat.name, description: cat.description || "", color: cat.color || "#6366f1", wholesale_min_qty: cat.wholesale_min_qty ?? "" }); setCatFormOpen(true); }} {...createButtonProps('edit')}>
                      <Pencil className="h-4 w-4 text-slate-400" />
                    </Button>
+                   {can('Categories', 'eliminar') && (
                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteCatId(cat.id)} {...createButtonProps('delete')}>
                      <Trash2 className="h-4 w-4 text-slate-400" />
                    </Button>
+                   )}
                 </TableCell>
               </TableRow>
             ))}

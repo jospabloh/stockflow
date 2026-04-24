@@ -17,7 +17,7 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import VirtualizedProductTable from "@/components/tables/VirtualizedProductTable";
 
-export default function ProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated }) {
+export default function ProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated, canEdit = true, canDelete = true }) {
   const navigate = useNavigate();
   const [generatingId, setGeneratingId] = useState(null);
 
@@ -41,7 +41,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   if (!isMobile && products.length > 20) {
-    return <VirtualizedProductTable products={products} categories={categories} onEdit={onEdit} onDelete={onDelete} isAdmin={isAdmin} onBarcodeGenerated={onBarcodeGenerated} />;
+    return <VirtualizedProductTable products={products} categories={categories} onEdit={onEdit} onDelete={onDelete} isAdmin={isAdmin} onBarcodeGenerated={onBarcodeGenerated} canEdit={canEdit} canDelete={canDelete} />;
   }
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || "—";
 
@@ -113,7 +113,8 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
                 >
                   <History className="h-4 w-4 text-indigo-400" />
                 </Button>
-                <Button
+                {isAdmin && canEdit && (
+                 <Button
                    variant="ghost"
                    size="icon"
                    className="h-8 w-8"
@@ -122,6 +123,8 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
                  >
                    <Pencil className="h-4 w-4 text-slate-400" />
                  </Button>
+                )}
+                {isAdmin && canDelete && (
                  <Button
                    variant="ghost"
                    size="icon"
@@ -131,6 +134,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
                  >
                    <Trash2 className="h-4 w-4 text-slate-400 hover:text-red-500" />
                  </Button>
+                )}
               </>
             )}
           </div>
@@ -193,24 +197,28 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
               >
                 <History className="h-4 w-4 mr-1" /> Historial
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-11 px-3"
-                onClick={() => onEdit(product)}
-                {...createButtonProps('edit')}
-              >
-                <Pencil className="h-4 w-4 text-muted-foreground mr-1" /> Editar
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-11 px-3 text-red-400 hover:text-red-600"
-                onClick={() => onDelete(product)}
-                {...createButtonProps('delete')}
-              >
-                <Trash2 className="h-4 w-4 mr-1" /> Eliminar
-              </Button>
+              {isAdmin && canEdit && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-11 px-3"
+                  onClick={() => onEdit(product)}
+                  {...createButtonProps('edit')}
+                >
+                  <Pencil className="h-4 w-4 text-muted-foreground mr-1" /> Editar
+                </Button>
+              )}
+              {isAdmin && canDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-11 px-3 text-red-400 hover:text-red-600"
+                  onClick={() => onDelete(product)}
+                  {...createButtonProps('delete')}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" /> Eliminar
+                </Button>
+              )}
             </>
           )}
         </div>

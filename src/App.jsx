@@ -12,7 +12,9 @@ import { BusinessProvider } from '@/components/BusinessContext';
 import { LicenseProvider } from '@/lib/LicenseContext';
 const LicenseAdmin = lazy(() => import('./pages/LicenseAdmin'));
 const TenantRulesAdmin = lazy(() => import('./pages/TenantRulesAdmin'));
+const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
 import { NavigationProvider } from '@/lib/NavigationContext';
+import { PermissionProvider } from '@/lib/PermissionContext';
 
 import BusinessSetup from './pages/BusinessSetup';
 
@@ -71,6 +73,7 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <LicenseProvider>
+    <PermissionProvider>
     <Routes>
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
@@ -105,8 +108,10 @@ const AuthenticatedApp = () => {
       <Route path="/SupplierPayments" element={<LayoutWrapper currentPageName="SupplierPayments"><Suspense fallback={<PageLoader />}><SupplierPayments /></Suspense></LayoutWrapper>} />
       <Route path="/LicenseAdmin" element={<LayoutWrapper currentPageName="LicenseAdmin"><Suspense fallback={<PageLoader />}><LicenseAdmin /></Suspense></LayoutWrapper>} />
       <Route path="/TenantRulesAdmin" element={<LayoutWrapper currentPageName="TenantRulesAdmin"><Suspense fallback={<PageLoader />}><TenantRulesAdmin /></Suspense></LayoutWrapper>} />
+      <Route path="/PermissionAdmin" element={<LayoutWrapper currentPageName="PermissionAdmin"><Suspense fallback={<PageLoader />}><PermissionAdmin /></Suspense></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </PermissionProvider>
     </LicenseProvider>
   );
 };

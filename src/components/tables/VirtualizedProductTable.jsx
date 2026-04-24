@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 const ITEM_HEIGHT = 60;
 
-export default function VirtualizedProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated }) {
+export default function VirtualizedProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated, canEdit = true, canDelete = true }) {
   const navigate = useNavigate();
   const [generatingId, setGeneratingId] = useState(null);
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || "—";
@@ -101,24 +101,28 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
               >
                 <History className="h-3.5 w-3.5 text-indigo-400" />
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => onEdit(product)}
-                {...createButtonProps('edit')}
-              >
-                <Pencil className="h-3.5 w-3.5 text-slate-400" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => onDelete(product)}
-                {...createButtonProps('delete')}
-              >
-                <Trash2 className="h-3.5 w-3.5 text-slate-400 hover:text-red-500" />
-              </Button>
+              {isAdmin && canEdit && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => onEdit(product)}
+                  {...createButtonProps('edit')}
+                >
+                  <Pencil className="h-3.5 w-3.5 text-slate-400" />
+                </Button>
+              )}
+              {isAdmin && canDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => onDelete(product)}
+                  {...createButtonProps('delete')}
+                >
+                  <Trash2 className="h-3.5 w-3.5 text-slate-400 hover:text-red-500" />
+                </Button>
+              )}
             </>
           )}
         </div>

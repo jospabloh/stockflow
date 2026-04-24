@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useNavigation } from "@/lib/NavigationContext";
 import { useLicense } from "@/lib/LicenseContext";
+import { usePermissions } from "@/lib/PermissionContext";
 import TrialBanner from "@/components/license/TrialBanner";
 
 // Detect if running as installed PWA / native app (not regular browser tab)
@@ -66,6 +67,7 @@ const navItems = [
   { name: "Pagos a Proveedores", icon: HandCoins, page: "SupplierPayments" },
   { name: "Reportes", icon: BarChart3, page: "Reports" },
   { name: "Configuración", icon: Settings, page: "Settings" },
+  { name: "Permisos", icon: Shield, page: "PermissionAdmin", adminOrPlatformAdmin: true },
   {
     name: "Sistema",
     icon: Shield,
@@ -101,6 +103,7 @@ export default function Layout({ children, currentPageName }) {
   const mainRef = useRef(null);
   const { businessId, businessName, isLoading: bizLoading, user } = useBusinessContext();
   const { isPlatformAdmin } = useLicense();
+  const { canSee } = usePermissions();
   const { sessionStatus, reactivate, sessionExpired, idleState, continueSession } = useSessionManager(!!businessId);
   useRegionalConfig();
   const { goBack, direction, navigationStack } = useNavigation();
@@ -229,7 +232,11 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Navegación principal">
-          {navItems.filter(item => !item.platformAdminOnly || isPlatformAdmin).map((item) => {
+          {navItems
+            .filter(item => !item.platformAdminOnly || isPlatformAdmin)
+            .filter(item => !item.adminOrPlatformAdmin || isPlatformAdmin || user?.role === 'admin')
+            .filter(item => !item.page || item.platformAdminOnly || item.adminOrPlatformAdmin || canSee(item.page))
+            .map((item) => {
             const isActive = currentPageName === item.page;
             const hasSubmenu = item.submenu && item.submenu.length > 0;
             const isSubmenuOpen = expandedSubmenu === item.name;

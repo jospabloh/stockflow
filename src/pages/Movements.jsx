@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { usePermissions } from "@/lib/PermissionContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +52,7 @@ const typeConfig = {
 export default function Movements() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { can } = usePermissions();
   const [movements, setMovements] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -265,7 +267,7 @@ export default function Movements() {
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1" /> CSV
           </Button>
-          {canCreateMovement && (
+          {canCreateMovement && can('Movements', 'escribir') && (
             <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Movements/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Movimiento
             </Button>
