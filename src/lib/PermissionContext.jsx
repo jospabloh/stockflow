@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { LEGACY_DEFAULTS } from "./permissionArtifacts";
+import { getPermissionModule } from "./permissionModuleMap";
 
 const PermissionContext = createContext(null);
 
@@ -45,24 +46,29 @@ export function PermissionProvider({ children }) {
     load();
   }, [load]);
 
-  const can = useCallback((artifact, action) => {
+  const can = useCallback((pageName, action = 'ver') => {
     if (userEmail === PLATFORM_OWNER_EMAIL) return true;
 
-    if (!featureEnabled) return legacyCheck(artifact, action, userRole);
+    // Mapear nombre de página a módulo de permisos (ej: "Products" -> "Productos")
+    const moduleName = getPermissionModule(pageName);
+
+    if (!featureEnabled) return legacyCheck(moduleName, action, userRole);
 
     const roleProfile = profiles[userRole];
-    if (!roleProfile) return legacyCheck(artifact, action, userRole);
+    if (!roleProfile) return legacyCheck(moduleName, action, userRole);
 
-    const artifactProfile = roleProfile[artifact];
-    if (!artifactProfile) return legacyCheck(artifact, action, userRole);
+    // Nuevo formato: claves como "Productos:view" o "Productos:create"
+    const newFormatKey = `${moduleName}:${action}`;
+    const newFormatPerm = roleProfile[newFormatKey];
+    
+    if (newFormatPerm === true) return true;
+    if (newFormatPerm === false) return false;
 
-    if (artifactProfile[action] === false) return false;
-    if (artifactProfile[action] === true) return legacyCheck(artifact, action, userRole);
-
-    return legacyCheck(artifact, action, userRole);
+    // Fallback a legacy checks
+    return legacyCheck(moduleName, action, userRole);
   }, [userEmail, featureEnabled, profiles, userRole]);
 
-  const canSee = useCallback((artifact) => can(artifact, 'ver'), [can]);
+  const canSee = useCallback((pageName) => can(pageName, 'view'), [can]);
 
   return (
     <PermissionContext.Provider value={{

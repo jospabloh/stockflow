@@ -3,27 +3,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
 const VALID_ROLE_KEYS = new Set(['admin', 'almacenista']);
 
-const SAFETY_INVARIANTS: Record<string, Record<string, boolean>> = {
-  admin: { 'Settings.ver': true, 'Settings.leer': true },
-};
+function applySafetyInvariants(role_key: string, permissions: Record<string, boolean>) {
+  const result = { ...permissions };
 
-const ALWAYS_VISIBLE: Record<string, boolean> = {
-  'About.ver': true,
-  'About.leer': true,
-  'HelpCenter.ver': true,
-  'HelpCenter.leer': true,
-};
-
-function applySafetyInvariants(role_key: string, permissions: Record<string, Record<string, boolean>>) {
-  const result: Record<string, Record<string, boolean>> = { ...permissions };
-
+  // Admin siempre puede ver Configuración y Centro de Ayuda
   if (role_key === 'admin') {
-    result['Settings'] = { ...(result['Settings'] || {}), ver: true, leer: true };
+    result['Configuración:view'] = true;
   }
 
-  for (const artifact of ['About', 'HelpCenter']) {
-    result[artifact] = { ...(result[artifact] || {}), ver: true, leer: true };
-  }
+  // Todos pueden ver Centro de Ayuda y Acerca de
+  result['Centro de Ayuda:view'] = true;
+  result['Acerca de:view'] = true;
 
   return result;
 }
@@ -49,7 +39,7 @@ Deno.serve(async (req) => {
     }
 
     if (!permissions || typeof permissions !== 'object' || Array.isArray(permissions)) {
-      return Response.json({ error: 'permissions must be a JSON object' }, { status: 400 });
+      return Response.json({ error: 'permissions must be a flat object with string keys and boolean values' }, { status: 400 });
     }
 
     const business_id = user.business_id;
