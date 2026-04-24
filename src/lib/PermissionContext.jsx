@@ -48,7 +48,6 @@ export function PermissionProvider({ children }) {
 
   const can = useCallback((pageName, action = 'ver') => {
     if (userEmail === PLATFORM_OWNER_EMAIL) return true;
-    if (userRole === 'admin') return true;
 
     // Mapear nombre de página a módulo de permisos (ej: "Products" -> "Productos")
     const moduleName = getPermissionModule(pageName);
@@ -65,8 +64,8 @@ export function PermissionProvider({ children }) {
     if (newFormatPerm === true) return true;
     if (newFormatPerm === false) return false;
 
-    // Si no está explícitamente configurado, permite acceso (asume que falta configuración)
-    return true;
+    // Fallback a legacy checks
+    return legacyCheck(moduleName, action, userRole);
   }, [userEmail, featureEnabled, profiles, userRole]);
 
   const canSee = useCallback((pageName) => can(pageName, 'view'), [can]);
