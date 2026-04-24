@@ -65,8 +65,8 @@ export function PermissionProvider({ children }) {
     if (newFormatPerm === true) return true;
     if (newFormatPerm === false) return false;
 
-    // Fallback a legacy checks
-    return legacyCheck(moduleName, action, userRole);
+    // Si no está explícitamente configurado, permite acceso (asume que falta configuración)
+    return true;
   }, [userEmail, featureEnabled, profiles, userRole]);
 
   const canSee = useCallback((pageName) => can(pageName, 'view'), [can]);
