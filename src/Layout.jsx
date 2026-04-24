@@ -236,7 +236,8 @@ export default function Layout({ children, currentPageName }) {
             .filter(item => !item.platformAdminOnly || isPlatformAdmin)
             .filter(item => !item.adminOrPlatformAdmin || isPlatformAdmin || user?.role === 'admin')
             .filter(item => {
-              if (item.platformAdminOnly || item.adminOrPlatformAdmin) return true;
+              const isAdmin = isPlatformAdmin || user?.role === 'admin';
+              if (isAdmin) return true;
               if (item.page) return canSee(item.page);
               if (item.submenu) return item.submenu.some(s => canSee(s.page));
               return true;
