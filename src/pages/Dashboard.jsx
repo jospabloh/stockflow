@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
+import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Package, ArrowLeftRight, DollarSign, AlertTriangle, TrendingUp, Clock, HandCoins } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import LowStockAlert from "@/components/dashboard/LowStockAlert";
@@ -81,6 +82,7 @@ function getDateRange(period) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { can } = usePermissions();
+  const { canSee } = useFieldVisibility("Dashboard");
   const [products, setProducts] = useState([]);
   const [movements, setMovements] = useState([]);
   const [quotations, setQuotations] = useState([]);
@@ -422,7 +424,7 @@ export default function Dashboard() {
           color="indigo"
           href={createPageUrl("Products")}
         />
-        {can("Reports:view") && (
+        {canSee("total_costs") && (
           <StatCard
             title="Valor Total"
             value={`$${totalValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`}
@@ -544,59 +546,59 @@ export default function Dashboard() {
                     </div>
                   </div>
                 )}
-                {can("Reports:view") && (
+                {canSee("net_profit") && (
                    <>
-                     <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 rounded-lg px-4 py-2.5">
-                       <span className="text-sm text-slate-600 dark:text-slate-400">Costo de lo entregado</span>
-                       <span className="font-bold text-slate-700 dark:text-slate-200">${salesData.salesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-                     </div>
-                     <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 ${salesData.actualMargin >= 0 ? "bg-emerald-50 dark:bg-emerald-950/40" : "bg-red-50 dark:bg-red-950/40"}`}>
-                       <span className={`text-sm font-semibold ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>Utilidad Real</span>
-                       <div className="flex items-center gap-2">
-                         <span className={`font-bold text-lg ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
-                           {salesData.actualMargin >= 0 ? "+" : ""}{salesData.actualProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-                         </span>
-                         <Badge className={`border-0 text-xs font-semibold ${salesData.actualMargin >= 0 ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300" : "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"}`}>
-                           {salesData.actualMargin >= 0 ? "+" : ""}{salesData.actualMargin.toFixed(1)}%
-                         </Badge>
-                       </div>
-                     </div>
-                     {/* Pagos a proveedores del período */}
-                     <div className="flex justify-between items-center bg-orange-50 dark:bg-orange-950/30 rounded-lg px-4 py-2.5">
-                       <span className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                         <HandCoins className="h-3.5 w-3.5 text-orange-500" /> Pagos a proveedores
-                       </span>
-                       <Link
-                         to={createPageUrl("SupplierPayments")}
-                         className="font-bold text-orange-700 dark:text-orange-400 hover:underline"
-                       >
-                         −${salesData.supplierPaymentsTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-                       </Link>
-                     </div>
-                     {/* Utilidad Neta */}
-                     <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 border-t-2 ${salesData.netMargin >= 0 ? "bg-emerald-100/70 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800" : "bg-red-100/70 dark:bg-red-950/60 border-red-300 dark:border-red-800"}`}>
-                       <span className={`text-sm font-bold ${salesData.netMargin >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
-                         Utilidad Neta <span className="text-[10px] font-normal opacity-70">(− prov.)</span>
-                       </span>
-                       <div className="flex items-center gap-2">
-                         <span className={`font-bold text-lg ${salesData.netMargin >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
-                           {salesData.netMargin >= 0 ? "+" : ""}{salesData.netProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-                         </span>
-                         {salesData.supplierPaymentsTotal > 0 && salesData.actualProfit > 0 && (
-                           <Badge className={`border-0 text-xs font-semibold ${
-                             salesData.supplierImpactPct < 30
-                               ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300"
-                               : salesData.supplierImpactPct <= 50
-                               ? "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
-                               : "bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-300"
-                           }`} title={`${salesData.supplierImpactPct.toFixed(1)}% de la utilidad se destinó a pagos a proveedores`}>
-                             {salesData.supplierImpactPct.toFixed(1)}% consumido
-                           </Badge>
-                         )}
-                       </div>
-                     </div>
-                   </>
-                 )}
+                      <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 rounded-lg px-4 py-2.5">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">Costo de lo entregado</span>
+                        <span className="font-bold text-slate-700 dark:text-slate-200">${salesData.salesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 ${salesData.actualMargin >= 0 ? "bg-emerald-50 dark:bg-emerald-950/40" : "bg-red-50 dark:bg-red-950/40"}`}>
+                        <span className={`text-sm font-semibold ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>Utilidad Real</span>
+                        <div className="flex items-center gap-2">
+                          <span className={`font-bold text-lg ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
+                            {salesData.actualMargin >= 0 ? "+" : ""}{salesData.actualProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                          </span>
+                          <Badge className={`border-0 text-xs font-semibold ${salesData.actualMargin >= 0 ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300" : "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"}`}>
+                            {salesData.actualMargin >= 0 ? "+" : ""}{salesData.actualMargin.toFixed(1)}%
+                          </Badge>
+                        </div>
+                      </div>
+                      {/* Pagos a proveedores del período */}
+                      <div className="flex justify-between items-center bg-orange-50 dark:bg-orange-950/30 rounded-lg px-4 py-2.5">
+                        <span className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                          <HandCoins className="h-3.5 w-3.5 text-orange-500" /> Pagos a proveedores
+                        </span>
+                        <Link
+                          to={createPageUrl("SupplierPayments")}
+                          className="font-bold text-orange-700 dark:text-orange-400 hover:underline"
+                        >
+                          −${salesData.supplierPaymentsTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                        </Link>
+                      </div>
+                      {/* Utilidad Neta */}
+                      <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 border-t-2 ${salesData.netMargin >= 0 ? "bg-emerald-100/70 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800" : "bg-red-100/70 dark:bg-red-950/60 border-red-300 dark:border-red-800"}`}>
+                        <span className={`text-sm font-bold ${salesData.netMargin >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
+                          Utilidad Neta <span className="text-[10px] font-normal opacity-70">(− prov.)</span>
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={`font-bold text-lg ${salesData.netMargin >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
+                            {salesData.netMargin >= 0 ? "+" : ""}{salesData.netProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                          </span>
+                          {salesData.supplierPaymentsTotal > 0 && salesData.actualProfit > 0 && (
+                            <Badge className={`border-0 text-xs font-semibold ${
+                              salesData.supplierImpactPct < 30
+                                ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300"
+                                : salesData.supplierImpactPct <= 50
+                                ? "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300"
+                                : "bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-300"
+                            }`} title={`${salesData.supplierImpactPct.toFixed(1)}% de la utilidad se destinó a pagos a proveedores`}>
+                              {salesData.supplierImpactPct.toFixed(1)}% consumido
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
               </div>
             )}
        </Card>
