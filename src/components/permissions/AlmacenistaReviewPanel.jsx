@@ -112,12 +112,21 @@ export default function AlmacenistaReviewPanel({ perms, onPermChange, onSave }) 
                   </div>
                 </div>
                 
-                {/* Permission toggles */}
+                {/* Permission toggles with impact explanation */}
                 <div className="space-y-2">
                   {['ver', 'leer', 'escribir', 'modificar', 'eliminar'].map(action => {
                     const isDefault = defaultActions[action];
                     const isCurrent = currentActions[action] ?? isDefault;
                     const isReduced = !isCurrent && isDefault;
+                    
+                    // Impact messages
+                    const impactMap = {
+                      ver: "No puede acceder a esta sección",
+                      leer: "No puede ver detalles de registros",
+                      escribir: "No puede crear registros nuevos",
+                      modificar: "No puede editar registros existentes",
+                      eliminar: "No puede eliminar registros"
+                    };
                     
                     return (
                       <div
@@ -133,10 +142,13 @@ export default function AlmacenistaReviewPanel({ perms, onPermChange, onSave }) 
                           }
                         }}
                       >
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="text-lg">{ACTION_ICONS[action]}</div>
+                        <div className="flex items-start gap-3">
+                          <div className="text-lg mt-0.5">{ACTION_ICONS[action]}</div>
                           <div className="flex-1 min-w-0">
                             <div className="font-medium text-sm">{ACTION_LABELS[action]}</div>
+                            <div className={`text-xs mt-1 ${isReduced ? 'text-red-700 font-semibold' : 'text-emerald-700'}`}>
+                              {isReduced ? `✗ ${impactMap[action]}` : `✓ Permitido`}
+                            </div>
                           </div>
                           {editMode && isDefault && (
                             <Checkbox
@@ -144,40 +156,21 @@ export default function AlmacenistaReviewPanel({ perms, onPermChange, onSave }) 
                               onCheckedChange={(checked) => 
                                 handlePermissionChange(artifact.key, action, checked)
                               }
-                              className="w-5 h-5 flex-shrink-0"
+                              className="w-5 h-5 flex-shrink-0 mt-0.5"
                             />
                           )}
                           {!editMode && isDefault && (
-                            <div className={`text-sm font-semibold ${isCurrent ? 'text-emerald-600' : 'text-red-600'}`}>
+                            <div className={`text-lg font-bold ${isCurrent ? 'text-emerald-600' : 'text-red-600'}`}>
                               {isCurrent ? '✓' : '✗'}
                             </div>
                           )}
-                        </div>
-                        
-                        {/* Detail row */}
-                        <div className="ml-9 text-xs space-y-0.5">
-                          <div className="flex gap-2">
-                            <span className="font-semibold min-w-fit">Default:</span>
-                            <span className={isDefault ? 'text-emerald-700 font-medium' : 'text-slate-500'}>
-                              {isDefault ? '✓ Permitido' : '✗ No permitido'}
-                            </span>
-                          </div>
-                          <div className="flex gap-2">
-                            <span className="font-semibold min-w-fit">Actual:</span>
-                            <span className={isCurrent ? 'text-emerald-700 font-medium' : 'text-red-600 font-medium'}>
-                              {isCurrent ? '✓ Permitido' : '✗ Bloqueado'}
-                            </span>
-                            {isReduced && (
-                              <span className="text-red-500 font-semibold ml-1">(↓ Reducido)</span>
-                            )}
-                          </div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
                 
-                {/* Summary - only show reduced permissions */}
+                {/* Summary - only show reduced permissions with impact */}
                 {(() => {
                   const reduced = ['ver', 'leer', 'escribir', 'modificar', 'eliminar'].filter(action => {
                     const isDefault = defaultActions[action];
@@ -185,17 +178,25 @@ export default function AlmacenistaReviewPanel({ perms, onPermChange, onSave }) 
                     return !isCurrent && isDefault;
                   });
                   
+                  const impactMap = {
+                    ver: "No puede acceder a esta sección",
+                    leer: "No puede ver detalles",
+                    escribir: "No puede crear registros",
+                    modificar: "No puede editar",
+                    eliminar: "No puede eliminar"
+                  };
+                  
                   return reduced.length > 0 && (
                     <div className="mt-4 p-3 bg-red-100/60 border border-red-300 rounded-lg">
-                      <p className="text-xs font-semibold text-red-900 mb-2">Restricciones activas:</p>
-                      <div className="flex flex-wrap gap-2">
+                      <p className="text-xs font-semibold text-red-900 mb-2">Lo que está BLOQUEADO:</p>
+                      <ul className="space-y-1">
                         {reduced.map(action => (
-                          <span key={action} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-200 text-red-800 text-xs font-semibold">
-                            <span>✗</span>
-                            {ACTION_LABELS[action]} bloqueado
-                          </span>
+                          <li key={action} className="text-xs text-red-800 flex gap-2 items-start">
+                            <span className="font-bold flex-shrink-0">✗</span>
+                            <span>{impactMap[action]}</span>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     </div>
                   );
                 })()}
