@@ -2,19 +2,36 @@
   "name": "PermissionProfile",
   "type": "object",
   "properties": {
-    "business_id": { "type": "string" },
-    "role_key": { "type": "string", "enum": ["admin", "almacenista"] },
-    "permissions": { "type": "object" },
-    "schema_version": { "type": "integer" },
-    "is_system_default": { "type": "boolean" },
-    "updated_by": { "type": "string" },
-    "created_by": { "type": "string" }
+    "role_key": {
+      "type": "string",
+      "description": "Identificador \u00fanico del rol (admin, almacenista, etc)"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece este perfil"
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Objeto con permisos en formato 'M\u00f3dulo:acci\u00f3n' => true/false",
+      "additionalProperties": true
+    }
   },
-  "required": ["business_id", "role_key", "permissions"],
+  "required": [
+    "role_key",
+    "business_id"
+  ],
   "rls": {
-    "create": { "user_condition": { "role": "admin" } },
-    "read": { "business_id": "{{user.business_id}}" },
-    "update": { "user_condition": { "role": "admin" } },
-    "delete": { "user_condition": { "role": "admin" } }
+    "create": {
+      "business_id": "{{user.business_id}}"
+    },
+    "read": {
+      "business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "business_id": "{{user.business_id}}"
+    },
+    "delete": {
+      "business_id": "{{user.business_id}}"
+    }
   }
 }
