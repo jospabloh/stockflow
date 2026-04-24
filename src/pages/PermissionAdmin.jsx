@@ -3,37 +3,21 @@ import { base44 } from "@/api/base44Client";
 import { useLicense } from "@/lib/LicenseContext";
 import { usePermissions } from "@/lib/PermissionContext";
 import { useBusinessContext } from "@/components/BusinessContext";
-import { ARTIFACTS, ACTIONS } from "@/lib/permissionArtifacts";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Shield, RefreshCw, AlertTriangle } from "lucide-react";
+import { Shield, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import AlmacenistaReviewPanel from "@/components/permissions/AlmacenistaReviewPanel";
-import GranularPermissionManager from "@/components/permissions/GranularPermissionManager";
+import UnifiedPermissionMatrix from "@/components/permissions/UnifiedPermissionMatrix";
 
-const ACTION_LABELS = {
-  ver: "Ver",
-  leer: "Leer",
-  escribir: "Escribir",
-  modificar: "Modificar",
-  eliminar: "Eliminar",
-};
 
-const ROLES = ["admin", "almacenista"];
 
-function buildInitialPerms(profile) {
-  const result = {};
-  for (const { key } of ARTIFACTS) {
-    result[key] = {};
-    for (const action of ACTIONS) {
-      result[key][action] = profile?.[key]?.[action] ?? false;
-    }
-  }
-  return result;
+function buildInitialPerms() {
+  return {};
 }
 
 export default function PermissionAdmin() {
@@ -46,8 +30,8 @@ export default function PermissionAdmin() {
   const [featureEnabled, setFeatureEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [perms, setPerms] = useState({
-    admin: buildInitialPerms(null),
-    almacenista: buildInitialPerms(null),
+    admin: {},
+    almacenista: {},
   });
   const [saving, setSaving] = useState(false);
   const [togglingFeature, setTogglingFeature] = useState(false);
@@ -68,8 +52,8 @@ export default function PermissionAdmin() {
       setProfiles(data?.profiles || {});
       setFeatureEnabled(data?.featureEnabled === true);
       setPerms({
-        admin: buildInitialPerms(data?.profiles?.admin || null),
-        almacenista: buildInitialPerms(data?.profiles?.almacenista || null),
+        admin: data?.profiles?.admin || {},
+        almacenista: data?.profiles?.almacenista || {},
       });
     } catch (error) {
       toast.error(`Error al cargar permisos: ${error.message}`);
@@ -92,15 +76,12 @@ export default function PermissionAdmin() {
     seedProfiles().then(() => loadProfiles());
   }, [loadingUser, isPlatformAdmin, user, businessId]);
 
-  const handleToggleAction = (role, artifact, action, checked) => {
+  const handleToggleAction = (role, key, value) => {
     setPerms(prev => ({
       ...prev,
       [role]: {
         ...prev[role],
-        [artifact]: {
-          ...prev[role][artifact],
-          [action]: checked,
-        },
+        [key]: value,
       },
     }));
   };
@@ -206,90 +187,14 @@ export default function PermissionAdmin() {
         </Card>
       )}
 
-      <Card className="p-4 flex items-start gap-3 bg-amber-50 border-amber-200">
-        <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-        <p className="text-sm text-amber-800">
-          Los administradores siempre tendrán acceso a Configuración. Esta sección nunca puede desactivarse para el rol admin.
-          Los permisos son <strong>aditivos</strong>: no pueden otorgar más acceso del que ya existe por defecto en el sistema.
-        </p>
-      </Card>
 
-      <Tabs defaultValue="admin">
-        <TabsList>
-          {ROLES.map(role => (
-            <TabsTrigger key={role} value={role} className="capitalize">{role}</TabsTrigger>
-          ))}
-        </TabsList>
 
-        <TabsContent value="admin">
-          <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-muted/40 border-b border-border">
-                    <th className="text-left px-4 py-3 font-semibold min-w-[160px]">Sección</th>
-                    {ACTIONS.map(action => (
-                      <th key={action} className="text-center px-3 py-3 font-semibold">{ACTION_LABELS[action]}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {ARTIFACTS.map(({ key, label }) => (
-                    <tr key={key} className="border-b border-border hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 font-medium text-foreground">{label}</td>
-                      {ACTIONS.map(action => {
-                        const isLocked =
-                          (key === 'Settings' && (action === 'ver' || action === 'leer')) ||
-                          ((key === 'About' || key === 'HelpCenter') && (action === 'ver' || action === 'leer'));
-                        return (
-                          <td key={action} className="px-3 py-3 text-center">
-                            <Checkbox
-                              checked={isLocked ? true : (perms['admin']?.[key]?.[action] ?? false)}
-                              disabled={isLocked}
-                              onCheckedChange={(checked) => handleToggleAction('admin', key, action, !!checked)}
-                              aria-label={`${label} - ${ACTION_LABELS[action]}`}
-                            />
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="px-4 py-4 flex justify-end border-t border-border">
-              <Button
-                onClick={() => handleSave('admin')}
-                disabled={saving}
-                className="bg-indigo-600 hover:bg-indigo-700"
-              >
-                {saving ? "Guardando..." : "Guardar cambios"}
-              </Button>
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="almacenista" className="space-y-4">
-          <Card className="p-4 bg-blue-50 border-blue-200">
-            <p className="text-sm text-blue-700">
-              <strong>Sistema de permisos por elemento:</strong> Define exactamente qué tarjetas y funciones ve el almacenista en cada página.
-            </p>
-          </Card>
-          <GranularPermissionManager 
-            perms={perms} 
-            onPermChange={(role, key, value) => {
-              setPerms(prev => ({
-                ...prev,
-                [role]: {
-                  ...prev[role],
-                  [key]: value,
-                },
-              }));
-            }}
-            onSave={() => handleSave('almacenista')}
-          />
-        </TabsContent>
-      </Tabs>
+      <UnifiedPermissionMatrix
+        perms={perms}
+        onPermChange={handleToggleAction}
+        onSave={handleSave}
+        saving={saving}
+      />
     </div>
   );
 }
