@@ -663,6 +663,7 @@ export default function Dashboard() {
       </div>
 
       {/* Charts and alerts */}
+      {canSee("sales_trend") && (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
         <Card className="lg:col-span-2 border-0 shadow-sm p-4 md:p-6">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
@@ -699,18 +700,21 @@ export default function Dashboard() {
         </Card>
 
         <div className="space-y-4">
-          <LowStockAlert products={lowStockProducts} />
-          <RecentMovements movements={movements} />
+          {canSee("low_stock") && <LowStockAlert products={lowStockProducts} />}
+          {canSee("recent_movements") && <RecentMovements movements={movements} />}
         </div>
-      </div>
+        </div>
+        )}
 
-      {/* Sección gráfica: Pagos a Proveedores */}
-      <SupplierPaymentsSection
-        payments={periodSupplierPayments}
-        salesPeriod={customDateRange.start && customDateRange.end ? null : salesPeriod}
-        periodStartStr={periodStartStr}
-        periodEndStr={periodEndStr}
-      />
-    </div>
-  );
-}
+        {/* Sección gráfica: Pagos a Proveedores */}
+        {canSee("supplier_payments") && (
+        <SupplierPaymentsSection
+          payments={periodSupplierPayments}
+          salesPeriod={customDateRange.start && customDateRange.end ? null : salesPeriod}
+          periodStartStr={periodStartStr}
+          periodEndStr={periodEndStr}
+        />
+        )}
+        </div>
+        );
+        }
