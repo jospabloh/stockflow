@@ -18,9 +18,8 @@ export default function TeamMembersManager({ businessId, currentUserId }) {
   const loadMembers = async () => {
     setLoading(true);
     try {
-      const users = await base44.asServiceRole
-        ? base44.entities.User.filter({ business_id: businessId })
-        : base44.entities.User.filter({ business_id: businessId });
+      const resp = await base44.functions.invoke("getTeamMembers", {});
+      const users = resp.data?.members || [];
       setMembers(users.sort((a, b) => {
         if (a.id === currentUserId) return -1;
         if (b.id === currentUserId) return 1;
