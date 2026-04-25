@@ -10,6 +10,7 @@ import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key,
 import { Switch } from "@/components/ui/switch";
 import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
+import TeamMembersManager from "@/components/settings/TeamMembersManager";
 import { useBusinessContext } from "@/components/BusinessContext";
 import LicenseInfoCard from "@/components/license/LicenseInfoCard";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 export default function Settings() {
   const { businessId } = useBusinessContext();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [settings, setSettings] = useState(null);
   const [settingsId, setSettingsId] = useState(null);
@@ -56,6 +58,7 @@ export default function Settings() {
          setDiagnosticBusinessId(businessId);
          console.log(`[Settings] Loading for businessId: ${businessId}, user.business_id: ${u?.business_id}`);
          setIsAdmin(u?.role === "admin");
+         setCurrentUserId(u?.id);
          setCheckingAuth(false);
 
 
@@ -492,61 +495,72 @@ export default function Settings() {
 
           {/* Team — Admin only */}
           {isAdmin && <TabsContent value="team">
-          <Card className="border-0 shadow-sm p-6 space-y-6">
-            <h3 className="font-semibold text-slate-700 text-lg">Equipo y Acceso</h3>
-            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 space-y-3">
-              <p className="text-sm text-slate-600">Comparte este código con tu equipo para que puedan unirse a tu negocio en StockFlow.</p>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 bg-white border border-indigo-200 rounded-xl px-4 py-3 font-mono text-2xl tracking-widest text-indigo-700 font-bold text-center">
-                  {business?.invite_code || "—"}
-                </div>
-                <button
-                  onClick={() => {
-                    if (business?.invite_code) {
-                      navigator.clipboard.writeText(business.invite_code);
-                      toast.success("Código copiado");
-                    }
-                  }}
-                  className="h-12 w-12 flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex-shrink-0"
-                  title="Copiar código"
-                >
-                  <Copy className="h-5 w-5" />
-                </button>
-              </div>
-              <p className="text-xs text-slate-400">Al registrarse, los usuarios seleccionan "Unirme a un equipo" e ingresan este código.</p>
-              {/* Toggle activo + renovar código */}
-              <div className="flex items-center justify-between pt-2 border-t border-indigo-100">
+          <div className="space-y-4">
+            {/* Invite code card */}
+            <Card className="border-0 shadow-sm p-6 space-y-4">
+              <h3 className="font-semibold text-slate-700 text-lg">Código de Invitación</h3>
+              <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 space-y-3">
+                <p className="text-sm text-slate-600">Comparte este código con tu equipo para que puedan unirse a tu negocio en StockFlow.</p>
                 <div className="flex items-center gap-3">
-                  <Switch
-                    checked={business?.invite_code_active !== false}
-                    onCheckedChange={handleToggleInviteCode}
-                  />
-                  <span className="text-sm text-slate-600">
-                    {business?.invite_code_active !== false ? "Código activo — acepta nuevos miembros" : "Código desactivado"}
-                  </span>
+                  <div className="flex-1 bg-white border border-indigo-200 rounded-xl px-4 py-3 font-mono text-2xl tracking-widest text-indigo-700 font-bold text-center">
+                    {business?.invite_code || "—"}
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (business?.invite_code) {
+                        navigator.clipboard.writeText(business.invite_code);
+                        toast.success("Código copiado");
+                      }
+                    }}
+                    className="h-12 w-12 flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex-shrink-0"
+                    title="Copiar código"
+                  >
+                    <Copy className="h-5 w-5" />
+                  </button>
                 </div>
-                <button
-                  onClick={handleRotateInviteCode}
-                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors"
-                  title="Generar nuevo código (invalida el anterior)"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  Renovar
-                </button>
+                <p className="text-xs text-slate-400">Al registrarse, los usuarios seleccionan "Unirme a un equipo" e ingresan este código. Entran con rol <strong>Almacenista</strong> por defecto.</p>
+                <div className="flex items-center justify-between pt-2 border-t border-indigo-100">
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      checked={business?.invite_code_active !== false}
+                      onCheckedChange={handleToggleInviteCode}
+                    />
+                    <span className="text-sm text-slate-600">
+                      {business?.invite_code_active !== false ? "Código activo — acepta nuevos miembros" : "Código desactivado"}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleRotateInviteCode}
+                    className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                    title="Generar nuevo código (invalida el anterior)"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    Renovar
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="bg-slate-50 rounded-xl p-4 space-y-2">
-              <p className="text-sm font-semibold text-slate-700">Guía de roles</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
-                <div className="bg-white rounded-lg p-3 border border-slate-200">
-                  <span className="font-semibold text-indigo-700">admin</span> — Acceso total: configura, crea, edita, elimina todo.
-                </div>
-                <div className="bg-white rounded-lg p-3 border border-slate-200">
-                  <span className="font-semibold text-amber-700">almacenista</span> — Productos, movimientos de inventario y cotizaciones (rol de vendedor incluido).
+            </Card>
+
+            {/* Members list with role management */}
+            <Card className="border-0 shadow-sm p-6 space-y-4">
+              <div>
+                <h3 className="font-semibold text-slate-700 text-lg">Miembros del Equipo</h3>
+                <p className="text-sm text-slate-500 mt-0.5">Gestiona los roles de los miembros de tu negocio. Los cambios aplican en su próximo inicio de sesión.</p>
+              </div>
+              <TeamMembersManager businessId={businessId} currentUserId={currentUserId} />
+              <div className="bg-slate-50 rounded-xl p-4 space-y-2">
+                <p className="text-sm font-semibold text-slate-700">Guía de roles</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+                  <div className="bg-white rounded-lg p-3 border border-slate-200">
+                    <span className="font-semibold text-indigo-700">Admin</span> — Acceso total: configura, crea, edita, elimina todo.
+                  </div>
+                  <div className="bg-white rounded-lg p-3 border border-slate-200">
+                    <span className="font-semibold text-amber-700">Almacenista</span> — Productos, movimientos, cotizaciones y caja chica.
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
           </TabsContent>}
 
           {/* Import — Admin only */}
