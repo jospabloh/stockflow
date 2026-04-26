@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useFieldVisibility } from "@/hooks/useFieldVisibility";
+import { usePermissions } from "@/lib/PermissionContext";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,7 @@ import PredictiveReports from "@/components/reports/PredictiveReports";
 import SupplierPaymentsReportChart from "@/components/dashboard/SupplierPaymentsReportChart";
 
 export default function Reports() {
-  const { canSee } = useFieldVisibility("Reportes");
+  const { can } = usePermissions();
   const [products, setProducts] = useState([]);
   const [movements, setMovements] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -107,39 +107,47 @@ export default function Reports() {
       {/* Capas de Reportes */}
       <Tabs defaultValue={isAdmin ? "predictive" : "operational"} className="space-y-6">
         <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1">
-          {/* OPERACIONAL - visible para todos */}
-          <TabsTrigger value="operational" className="font-medium">📊 Reportes Operacionales</TabsTrigger>
-          
-          {/* PAGOS A PROVEEDORES - visible para todos */}
-          <TabsTrigger value="suppliers" className="font-medium">💸 Pagos a Proveedores</TabsTrigger>
+          {/* OPERACIONAL */}
+          {can('Reportes', 'operational') && (
+            <TabsTrigger value="operational" className="font-medium">📊 Reportes Operacionales</TabsTrigger>
+          )}
 
-          {/* PREDICTIVO - solo para admins */}
-          {(isAdmin && canSee("margin_analysis")) && (
+          {/* PAGOS A PROVEEDORES */}
+          {can('Reportes', 'supplier') && (
+            <TabsTrigger value="suppliers" className="font-medium">💸 Pagos a Proveedores</TabsTrigger>
+          )}
+
+          {/* PREDICTIVO */}
+          {can('Reportes', 'predictive') && (
             <TabsTrigger value="predictive" className="font-medium">🔮 Análisis Inteligente</TabsTrigger>
           )}
         </TabsList>
 
         {/* LAYER 1: REPORTES OPERACIONALES */}
-        <TabsContent value="operational">
-          <OperationalReports
-            quotations={quotations}
-            movements={movements}
-            dateFrom={dateFrom}
-            dateTo={dateTo}
-            onDateChange={(df, dt) => {
-              setDateFrom(df);
-              setDateTo(dt);
-            }}
-          />
-        </TabsContent>
+        {can('Reportes', 'operational') && (
+          <TabsContent value="operational">
+            <OperationalReports
+              quotations={quotations}
+              movements={movements}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              onDateChange={(df, dt) => {
+                setDateFrom(df);
+                setDateTo(dt);
+              }}
+            />
+          </TabsContent>
+        )}
 
         {/* LAYER 1.5: PAGOS A PROVEEDORES */}
-        <TabsContent value="suppliers">
-          <SupplierPaymentsReportChart dateFrom={dateFrom} dateTo={dateTo} />
-        </TabsContent>
+        {can('Reportes', 'supplier') && (
+          <TabsContent value="suppliers">
+            <SupplierPaymentsReportChart dateFrom={dateFrom} dateTo={dateTo} />
+          </TabsContent>
+        )}
 
-        {/* LAYER 2: REPORTES PREDICTIVOS / INTELIGENTES - Solo para Admins */}
-        {canSee("margin_analysis") && (
+        {/* LAYER 2: REPORTES PREDICTIVOS / INTELIGENTES */}
+        {can('Reportes', 'predictive') && (
           <TabsContent value="predictive">
             <PredictiveReports
               products={products}

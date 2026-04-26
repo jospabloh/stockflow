@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { usePermissions } from "@/lib/PermissionContext";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ const PETTY_CASH_CATEGORY = "Pago a proveedor";
 
 export default function SupplierPayments() {
   const { businessId } = useBusinessContext();
+  const { can } = usePermissions();
   const [payments, setPayments] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -342,9 +344,11 @@ export default function SupplierPayments() {
             Registra los desembolsos a tus proveedores para calcular la utilidad neta del negocio
           </p>
         </div>
-        <Button onClick={openNew} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('add')}>
-          <Plus className="h-4 w-4 mr-1" /> Nuevo Pago
-        </Button>
+        {can('Pagos a Proveedores', 'create') && (
+          <Button onClick={openNew} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('add')}>
+            <Plus className="h-4 w-4 mr-1" /> Nuevo Pago
+          </Button>
+        )}
       </div>
 
       {/* Summary cards */}
@@ -473,12 +477,16 @@ export default function SupplierPayments() {
                   ${Number(p.amount || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                 </TableCell>
                 <TableCell className="text-center">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(p)} {...createButtonProps('edit')}>
-                    <Pencil className="h-4 w-4 text-slate-400" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeletingPayment(p)} {...createButtonProps('delete')}>
-                    <Trash2 className="h-4 w-4 text-slate-400" />
-                  </Button>
+                  {can('Pagos a Proveedores', 'edit_amount') && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(p)} {...createButtonProps('edit')}>
+                      <Pencil className="h-4 w-4 text-slate-400" />
+                    </Button>
+                  )}
+                  {can('Pagos a Proveedores', 'delete') && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeletingPayment(p)} {...createButtonProps('delete')}>
+                      <Trash2 className="h-4 w-4 text-slate-400" />
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

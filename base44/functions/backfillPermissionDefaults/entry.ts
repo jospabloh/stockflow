@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
 
-// Canonical keys derived from PERMISSION_REGISTRY (duplicated here; Deno cannot import from src/)
+// Canonical keys (duplicated from seed; Deno cannot import from src/)
 const CANONICAL_KEYS: string[] = [
   "Dashboard:view","Dashboard:summary","Dashboard:period_filter","Dashboard:stat_products",
   "Dashboard:stat_total_value","Dashboard:stat_movements","Dashboard:stat_low_stock",
@@ -47,7 +47,6 @@ const CANONICAL_KEYS: string[] = [
   "Configuración:import_products","Configuración:manage_team","Configuración:delete_account",
 ];
 
-// Sensitive keys that almacenista should NOT have by default
 const ALMACENISTA_DENIED = new Set([
   "Dashboard:stat_total_value","Dashboard:supplier_payments_section","Dashboard:financial",
   "Dashboard:sales_cost","Dashboard:sales_actual_profit","Dashboard:sales_net_profit",
@@ -70,15 +69,17 @@ const ALMACENISTA_DENIED = new Set([
   "Configuración:import_products","Configuración:manage_team","Configuración:delete_account",
 ]);
 
-function buildAdminDefaults(): Record<string, boolean> {
-  return CANONICAL_KEYS.reduce((acc: Record<string, boolean>, k) => { acc[k] = true; return acc; }, {});
-}
-
-function buildAlmacenistaDefaults(): Record<string, boolean> {
-  return CANONICAL_KEYS.reduce((acc: Record<string, boolean>, k) => {
-    acc[k] = !ALMACENISTA_DENIED.has(k);
-    return acc;
-  }, {});
+function getCanonicalDefaults(roleKey: string): Record<string, boolean> {
+  if (roleKey === 'admin') {
+    return CANONICAL_KEYS.reduce((acc: Record<string, boolean>, k) => { acc[k] = true; return acc; }, {});
+  }
+  if (roleKey === 'almacenista') {
+    return CANONICAL_KEYS.reduce((acc: Record<string, boolean>, k) => {
+      acc[k] = !ALMACENISTA_DENIED.has(k);
+      return acc;
+    }, {});
+  }
+  return {};
 }
 
 Deno.serve(async (req) => {
@@ -91,7 +92,7 @@ Deno.serve(async (req) => {
     }
 
     if (user.email !== PLATFORM_OWNER_EMAIL && user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+      return Response.json({ error: 'Forbidden — solo admin o platform-owner' }, { status: 403 });
     }
 
     const business_id = user.business_id;
@@ -99,32 +100,37 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'User has no business_id' }, { status: 400 });
     }
 
-    const existing = await base44.asServiceRole.entities.PermissionProfile.filter({ business_id });
+    const profiles = await base44.asServiceRole.entities.PermissionProfile.filter({ business_id });
 
-    if (existing.length > 0) {
-      return Response.json({ success: true, seeded: false });
+    let profilesUpdated = 0;
+    let totalKeysAdded = 0;
+
+    for (const profile of profiles) {
+      const defaults = getCanonicalDefaults(profile.role_key);
+      if (Object.keys(defaults).length === 0) continue;
+
+      const existing: Record<string, boolean> = (profile.permissions as Record<string, boolean>) || {};
+      // Only add new keys — existing values win
+      const merged = { ...defaults, ...existing };
+
+      const keysAdded = Object.keys(defaults).filter(k => !(k in existing)).length;
+      if (keysAdded === 0) continue;
+
+      await base44.asServiceRole.entities.PermissionProfile.update(profile.id, {
+        permissions: merged,
+        schema_version: 2,
+        updated_by: user.email || 'system',
+      });
+
+      profilesUpdated++;
+      totalKeysAdded += keysAdded;
     }
 
-    const profiles = [
-      { role_key: 'admin', permissions: buildAdminDefaults() },
-      { role_key: 'almacenista', permissions: buildAlmacenistaDefaults() },
-    ];
-
-    await Promise.all(
-      profiles.map(({ role_key, permissions }) =>
-        base44.asServiceRole.entities.PermissionProfile.create({
-          business_id,
-          role_key,
-          permissions,
-          schema_version: 2,
-          is_system_default: true,
-          created_by: user.email || 'system',
-          updated_by: user.email || 'system',
-        })
-      )
-    );
-
-    return Response.json({ success: true, seeded: true });
+    return Response.json({
+      success: true,
+      profilesUpdated,
+      keysAdded: totalKeysAdded,
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

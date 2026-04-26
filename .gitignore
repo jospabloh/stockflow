@@ -28,3 +28,6 @@ dist-ssr
 *.sw?
 
 .env
+
+# Generated audit reports
+permissions-audit-report.md

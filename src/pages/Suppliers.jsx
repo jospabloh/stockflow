@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { usePermissions } from "@/lib/PermissionContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ function parseExtraContacts(raw) {
 
 export default function Suppliers() {
   const { businessId } = useBusinessContext();
+  const { can } = usePermissions();
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [supFormOpen, setSupFormOpen] = useState(false);
@@ -159,9 +161,11 @@ export default function Suppliers() {
       <Card className="border-0 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="font-semibold text-slate-700 text-lg">Proveedores</h1>
-          <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={openNew} {...createButtonProps('add')}>
-            <Plus className="h-4 w-4 mr-1" /> Nuevo
-          </Button>
+          {can('Proveedores', 'create') && (
+            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={openNew} {...createButtonProps('add')}>
+              <Plus className="h-4 w-4 mr-1" /> Nuevo
+            </Button>
+          )}
         </div>
         <Table {...createTableProps('suppliers-table')}>
           <TableHeader>
@@ -190,12 +194,16 @@ export default function Suppliers() {
                   <TableCell className="text-slate-500">{sup.email || "—"}</TableCell>
                   <TableCell className="text-slate-500">{sup.phone || "—"}</TableCell>
                   <TableCell className="text-center">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(sup)} {...createButtonProps('edit')}>
-                      <Pencil className="h-4 w-4 text-slate-400" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteSupplier(sup.id)} {...createButtonProps('delete')}>
-                      <Trash2 className="h-4 w-4 text-slate-400" />
-                    </Button>
+                    {can('Proveedores', 'edit_name') && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(sup)} {...createButtonProps('edit')}>
+                        <Pencil className="h-4 w-4 text-slate-400" />
+                      </Button>
+                    )}
+                    {can('Proveedores', 'delete') && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteSupplier(sup.id)} {...createButtonProps('delete')}>
+                        <Trash2 className="h-4 w-4 text-slate-400" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               );

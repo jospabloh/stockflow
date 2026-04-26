@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
-import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Package, ArrowLeftRight, DollarSign, AlertTriangle, TrendingUp, Clock, HandCoins } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import LowStockAlert from "@/components/dashboard/LowStockAlert";
@@ -83,13 +82,12 @@ function getDateRange(period) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { can } = usePermissions();
-  const { canSee } = useFieldVisibility("Dashboard");
   const [products, setProducts] = useState([]);
   const [movements, setMovements] = useState([]);
   const [quotations, setQuotations] = useState([]);
   const [supplierPayments, setSupplierPayments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [_isAdmin, setIsAdmin] = useState(false);
   const [dashboardBusinessId, setDashboardBusinessId] = useState(null);
   const [unpaidModalOpen, setUnpaidModalOpen] = useState(false);
   const [salesPeriod, setSalesPeriod] = useState("day");
@@ -400,34 +398,38 @@ export default function Dashboard() {
   return (
     <div className="space-y-5 max-w-7xl mx-auto">
       {/* FILTRO GLOBAL EN TOP */}
+      {can('Dashboard', 'period_filter') && (
       <div className="sticky top-0 z-10 bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-indigo-950/30 dark:to-cyan-950/30 backdrop-blur-sm border-b border-indigo-200 dark:border-indigo-900 rounded-lg p-3 md:p-4 mb-2">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">Período de análisis</p>
             <p className="hidden sm:block text-sm text-slate-600 dark:text-slate-400 mt-1">Todos los datos se filtran por este período</p>
           </div>
-          <SalesFilterToggle 
-            period={salesPeriod} 
-            onPeriodChange={setSalesPeriod} 
-            startStr={periodStartStr} 
+          <SalesFilterToggle
+            period={salesPeriod}
+            onPeriodChange={setSalesPeriod}
+            startStr={periodStartStr}
             endStr={periodEndStr}
             customDateRange={customDateRange}
             onCustomDateRangeChange={setCustomDateRange}
           />
         </div>
       </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Productos"
-          value={activeProducts.length}
-          subtitle={`${totalStock} unidades en stock`}
-          icon={Package}
-          color="indigo"
-          href={createPageUrl("Products")}
-        />
-        {canSee("total_costs") && (
+        {can('Dashboard', 'stat_products') && (
+          <StatCard
+            title="Productos"
+            value={activeProducts.length}
+            subtitle={`${totalStock} unidades en stock`}
+            icon={Package}
+            color="indigo"
+            href={createPageUrl("Products")}
+          />
+        )}
+        {can('Dashboard', 'stat_total_value') && (
           <StatCard
             title="Valor Total"
             value={`$${totalValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`}
@@ -437,66 +439,74 @@ export default function Dashboard() {
             href={createPageUrl("Reports")}
           />
         )}
-        <StatCard
-          title="Movimientos"
-          value={periodMovementsCount}
-          subtitle={`${["day", "week", "month", "year"].includes(salesPeriod) ? { day: "Hoy", week: "Esta semana", month: "Este mes", year: "Este año" }[salesPeriod] : "En período"}`}
-          icon={ArrowLeftRight}
-          color="cyan"
-          href={createPageUrl("Movements")}
-        />
-        <StatCard
-          title="Stock Bajo"
-          value={lowStockProducts.length}
-          subtitle="Requieren atención"
-          icon={AlertTriangle}
-          color={lowStockProducts.length > 0 ? "amber" : "emerald"}
-          href={createPageUrl("Products") + "?filter=low_stock"}
-        />
+        {can('Dashboard', 'stat_movements') && (
+          <StatCard
+            title="Movimientos"
+            value={periodMovementsCount}
+            subtitle={`${["day", "week", "month", "year"].includes(salesPeriod) ? { day: "Hoy", week: "Esta semana", month: "Este mes", year: "Este año" }[salesPeriod] : "En período"}`}
+            icon={ArrowLeftRight}
+            color="cyan"
+            href={createPageUrl("Movements")}
+          />
+        )}
+        {can('Dashboard', 'stat_low_stock') && (
+          <StatCard
+            title="Stock Bajo"
+            value={lowStockProducts.length}
+            subtitle="Requieren atención"
+            icon={AlertTriangle}
+            color={lowStockProducts.length > 0 ? "amber" : "emerald"}
+            href={createPageUrl("Products") + "?filter=low_stock"}
+          />
+        )}
       </div>
 
       {/* Cobro pendiente */}
-      <UnpaidDetailModal
-        open={unpaidModalOpen}
-        onOpenChange={setUnpaidModalOpen}
-        unpaidConverted={unpaidConverted}
-        unpaidDirectMovements={unpaidDirectMovements}
-      />
-      {unpaidCount > 0 && (
-        <button
-          onClick={() => setUnpaidModalOpen(true)}
-          className="w-full text-left"
-        >
-          <Card className="border-0 shadow-sm p-4 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center flex-shrink-0">
-                  <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+      {can('Dashboard', 'unpaid_alert') && (
+        <>
+          <UnpaidDetailModal
+            open={unpaidModalOpen}
+            onOpenChange={setUnpaidModalOpen}
+            unpaidConverted={unpaidConverted}
+            unpaidDirectMovements={unpaidDirectMovements}
+          />
+          {unpaidCount > 0 && (
+            <button
+              onClick={() => setUnpaidModalOpen(true)}
+              className="w-full text-left"
+            >
+              <Card className="border-0 shadow-sm p-4 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center flex-shrink-0">
+                      <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-orange-800 dark:text-orange-300 text-sm">
+                        {unpaidCount} {unpaidCount === 1 ? "venta sin cobrar" : "ventas sin cobrar"}
+                      </p>
+                      <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">
+                        {unpaidConverted.length > 0 && `${unpaidConverted.length} cotización(es)`}
+                        {unpaidConverted.length > 0 && unpaidDirectMovements.length > 0 && " · "}
+                        {unpaidDirectMovements.length > 0 && `${unpaidDirectMovements.length} movimiento(s) directo(s)`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-xs text-orange-600 dark:text-orange-400">Pendiente por cobrar</p>
+                    <p className="font-bold text-orange-700 dark:text-orange-300 text-lg">
+                      ${unpaidTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold text-orange-800 dark:text-orange-300 text-sm">
-                    {unpaidCount} {unpaidCount === 1 ? "venta sin cobrar" : "ventas sin cobrar"}
-                  </p>
-                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">
-                    {unpaidConverted.length > 0 && `${unpaidConverted.length} cotización(es)`}
-                    {unpaidConverted.length > 0 && unpaidDirectMovements.length > 0 && " · "}
-                    {unpaidDirectMovements.length > 0 && `${unpaidDirectMovements.length} movimiento(s) directo(s)`}
-                  </p>
-                </div>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <p className="text-xs text-orange-600 dark:text-orange-400">Pendiente por cobrar</p>
-                <p className="font-bold text-orange-700 dark:text-orange-300 text-lg">
-                  ${unpaidTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-                </p>
-              </div>
-            </div>
-          </Card>
-        </button>
+              </Card>
+            </button>
+          )}
+        </>
       )}
 
       {/* Alerta de Cobranza Vencida */}
-      {overduePaidQuotations.length > 0 && (
+      {can('Dashboard', 'overdue_alert') && overduePaidQuotations.length > 0 && (
         <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
@@ -518,7 +528,7 @@ export default function Dashboard() {
 
       {/* Sales Breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-       <Card className="border-0 shadow-sm p-4 md:p-5">
+       {can('Dashboard', 'sales_breakdown') && <Card className="border-0 shadow-sm p-4 md:p-5">
          <h3 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-4">
            <TrendingUp className="h-4 w-4 text-indigo-500" /> Análisis de Ventas
          </h3>
@@ -549,15 +559,15 @@ export default function Dashboard() {
                     </div>
                   </div>
                 )}
-                {canSee("net_profit") && (
+                {can('Dashboard', 'sales_net_profit') && (
                    <>
-                      {canSee("profit_margin_percent") && (
+                      {can('Dashboard', 'sales_cost') && (
                       <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 rounded-lg px-4 py-2.5">
                         <span className="text-sm text-slate-600 dark:text-slate-400">Costo de lo entregado</span>
                         <span className="font-bold text-slate-700 dark:text-slate-200">${salesData.salesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                       </div>
                       )}
-                      {canSee("actual_profit") && (<div className={`flex justify-between items-center rounded-lg px-4 py-2.5 ${salesData.actualMargin >= 0 ? "bg-emerald-50 dark:bg-emerald-950/40" : "bg-red-50 dark:bg-red-950/40"}`}>
+                      {can('Dashboard', 'sales_actual_profit') && (<div className={`flex justify-between items-center rounded-lg px-4 py-2.5 ${salesData.actualMargin >= 0 ? "bg-emerald-50 dark:bg-emerald-950/40" : "bg-red-50 dark:bg-red-950/40"}`}>
                         <span className={`text-sm font-semibold ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>Utilidad Real</span>
                         <div className="flex items-center gap-2">
                           <span className={`font-bold text-lg ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
@@ -570,7 +580,7 @@ export default function Dashboard() {
                       </div>
                       )}
                       {/* Pagos a proveedores del período */}
-                      {canSee("net_profit") && (
+                      {can('Dashboard', 'sales_net_profit') && (
                       <div className="flex justify-between items-center bg-orange-50 dark:bg-orange-950/30 rounded-lg px-4 py-2.5">
                         <span className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
                           <HandCoins className="h-3.5 w-3.5 text-orange-500" /> Pagos a proveedores
@@ -609,10 +619,10 @@ export default function Dashboard() {
                   )}
               </div>
             )}
-       </Card>
+       </Card>}
 
         {/* Quotation Semaphore */}
-        <Card className="border-0 shadow-sm p-4 md:p-5">
+        {can('Dashboard', 'quotation_semaphore') && <Card className="border-0 shadow-sm p-4 md:p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-700 dark:text-slate-200">Semáforo de Cotizaciones</h3>
             <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">Últimos 30 días</span>
@@ -667,11 +677,11 @@ export default function Dashboard() {
               </div>
             </div>
           )}
-        </Card>
+        </Card>}
       </div>
 
       {/* Charts and alerts */}
-      {canSee("sales_trend") && (
+      {can('Dashboard', 'movements_chart') && (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
         <Card className="lg:col-span-2 border-0 shadow-sm p-4 md:p-6">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
@@ -708,15 +718,15 @@ export default function Dashboard() {
         </Card>
 
         <div className="space-y-4">
-          {canSee("low_stock") && <LowStockAlert products={lowStockProducts} />}
-          <PendingBalanceAlert businessId={dashboardBusinessId} />
-          {canSee("recent_movements") && <RecentMovements movements={movements} />}
+          {can('Dashboard', 'low_stock') && <LowStockAlert products={lowStockProducts} />}
+          {can('Dashboard', 'pending_balance') && <PendingBalanceAlert businessId={dashboardBusinessId} />}
+          {can('Dashboard', 'recent_movements') && <RecentMovements movements={movements} />}
         </div>
         </div>
         )}
 
         {/* Sección gráfica: Pagos a Proveedores */}
-        {canSee("supplier_payments") && (
+        {can('Dashboard', 'supplier_payments_section') && (
         <SupplierPaymentsSection
           payments={periodSupplierPayments}
           salesPeriod={customDateRange.start && customDateRange.end ? null : salesPeriod}
