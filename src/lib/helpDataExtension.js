@@ -1184,4 +1184,66 @@ El panel de Pendientes On-Demand muestra:
 | Flujo de aprobación | Directo | Requiere revisión previa |`
   },
 
+  {
+    id: "quotation-payments",
+    category: "Cotizaciones",
+    role: "all",
+    title: "Pagos Parciales y Saldo en Cotizaciones",
+    keywords: ["pagos", "abonos", "saldo", "pendiente", "cobro", "cotización", "parcial", "historial", "caja chica"],
+    related_ids: ["quotations-on-demand", "pending-payments", "release-2-11-0"],
+    content: `## Pagos Parciales en Cotizaciones
+
+StockFlow permite registrar **abonos parciales o totales** en cualquier cotización convertida o entregada, con historial completo de pagos y saldo en tiempo real.
+
+---
+
+### ¿Cómo registrar un pago?
+
+1. Abre la cotización desde la página **Cotizaciones**
+2. En la sección **Pagos** (parte inferior del detalle), haz clic en **Registrar Pago**
+3. Completa los campos:
+   - **Monto**: ingresa el importe del abono (no puede superar el saldo pendiente)
+   - **Método de pago**: selecciona el método configurado para tu negocio
+   - **Fecha**: por defecto el día de hoy, editable
+   - **Notas**: campo opcional para referencia interna
+4. Si el método es **Efectivo**, activa el toggle **Registrar en Caja Chica** para crear un ingreso automático
+5. Haz clic en **Guardar Pago**
+
+El sistema actualiza inmediatamente \`amount_paid\`, \`balance\` y, si el saldo llega a 0, marca la cotización como **pagada**.
+
+---
+
+### Historial de Pagos
+
+Cada abono registrado aparece en la lista de pagos con:
+- Monto cobrado
+- Método de pago
+- Fecha del pago
+- Notas (si se ingresaron)
+
+El resumen siempre muestra **Total**, **Cobrado** y **Saldo Pendiente**.
+
+---
+
+### Alerta de Saldo Pendiente — Dashboard
+
+El **Dashboard** incluye una alerta roja automática cuando existen cotizaciones **entregadas con saldo sin cobrar**. La alerta muestra cuántas cotizaciones tienen deuda pendiente y el monto total. Haz clic en **Ver Cotizaciones** para ir directo a gestionarlas.
+
+---
+
+### Permisos
+
+| Acción | Admin | Almacenista |
+|---|---|---|
+| Ver historial de pagos | ✅ | ✅ |
+| Registrar pago | ✅ | ✅ |
+
+Los vendedores sin acceso al panel de pagos ven el saldo pero no pueden registrar abonos.
+
+---
+
+### Compatibilidad con cotizaciones anteriores
+
+Las cotizaciones creadas antes de v2.11.0 (que tenían solo \`paid: true/false\`) son compatibles automáticamente. El sistema calcula \`balance\` y \`amount_paid\` a partir del estado anterior sin necesidad de migración.`
+  },
 ];

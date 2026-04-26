@@ -1,11 +1,68 @@
-// Artículos de ayuda — última versión: v2.10.0
+// Artículos de ayuda — última versión: v2.11.0
 // Solo contiene notas de versión (release notes). Los artículos de manual permanente están en helpDataExtension.js
+// v2.11.0: Pagos Parciales en Cotizaciones, Alerta Saldo Pendiente, On-Demand mejorado
 // v2.10.0: Permisos Granulares, Cotizaciones On-Demand, fixes cotizaciones
 // v2.9.2: Fixes panel licencias (auto_renewal, dropdown dark mode, boolean partition) + fixes catálogos Pagos a Proveedores
 // v2.9.1: Módulo Pagos a Proveedores, búsqueda mejorada, optimizaciones dashboard + dark mode
 // v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor
 
 export const newHelpArticles = [
+    {
+      id: "release-2-11-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.11.0 — Pagos Parciales en Cotizaciones y On-Demand Mejorado",
+      keywords: ["versión", "2.11.0", "pagos", "abonos", "saldo", "pendiente", "on-demand", "entrega", "cobro", "cotización"],
+      related_ids: ["release-2-10-0", "quotations-on-demand", "quotation-payments"],
+      content: `## 🆕 Versión 2.11.0 — 26 de abril de 2026
+
+### ✅ Novedades de esta versión
+
+---
+
+### 💳 Pagos Parciales en Cotizaciones
+
+Ahora puedes registrar **abonos parciales o totales** directamente desde el detalle de cada cotización.
+
+**Cómo funciona:**
+1. Abre cualquier cotización en estado *Convertida* o *Entregada*
+2. En la sección **Pagos**, haz clic en **Registrar Pago**
+3. Ingresa el monto, método de pago, fecha y notas opcionales
+4. Si el método es **Efectivo**, puedes activar el toggle para registrar también en Caja Chica
+5. El sistema calcula automáticamente el saldo restante y marca la cotización como pagada cuando el balance llega a 0
+
+**Campos nuevos en Cotización:**
+- \`payments\` — historial de abonos con id único, monto, método, fecha y autor
+- \`amount_paid\` — total cobrado acumulado
+- \`balance\` — saldo pendiente en tiempo real
+
+---
+
+### 🚨 Alerta de Saldo Pendiente — Dashboard
+
+Cuando hay cotizaciones **entregadas con saldo pendiente**, el Dashboard muestra una alerta roja con el listado y monto total adeudado. Haz clic en "Ver Cotizaciones" para ir directo a gestionar los cobros.
+
+---
+
+### 📦 Flujo On-Demand Mejorado
+
+**Al crear una solicitud On-Demand:**
+- El formulario ahora incluye un **buscador de catálogo** para vincular directamente un producto existente
+- El precio se calcula automáticamente según el rol del cliente (menudeo / mayoreo)
+
+**Al recibir el producto en almacén:**
+- El modal de recepción fue rediseñado: ahora registra la **cantidad recibida** y actualiza el stock del producto vinculado
+
+**Al marcar como entregado:**
+- La función \`deliverQuotationSafe\` verifica que todos los ítems On-Demand hayan sido recibidos en almacén antes de permitir la entrega
+
+---
+
+### 🐛 Correcciones
+
+- Entidad **User** formalizada con campos \`role\` (admin / almacenista) y \`business_id\`
+- **updateQuotationFlagsSafe**: corrección en el manejo de flags de entrega y ruta`,
+    },
     {
       id: "release-2-10-0",
       category: "Novedades",

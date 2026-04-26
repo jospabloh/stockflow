@@ -1,5 +1,28 @@
 # Changelog — StockFlow
 
+## v2.11.0 (2026-04-26)
+
+### 💳 Pagos Parciales en Cotizaciones
+- **QuotationPaymentsSection**: nuevo componente para registrar abonos (parcial o total) con método de pago, fecha y notas
+- **Historial de pagos**: cada abono queda en el array `payments` con id único, monto, método, fecha y autor
+- **Saldo en tiempo real**: campos `amount_paid` y `balance` reflejan el estado exacto de cobro por cotización
+- **Opcional Caja Chica**: toggle para registrar el abono también como ingreso de Caja Chica (método Efectivo)
+
+### 🚨 Alerta de Saldo Pendiente — Dashboard
+- **PendingBalanceAlert**: alerta roja en el Dashboard cuando existen cotizaciones entregadas con saldo sin cobrar
+- **Acceso directo**: enlace desde la alerta a la página de Cotizaciones para gestionar cobros pendientes
+
+### 📦 Mejoras al Flujo On-Demand
+- **Búsqueda de catálogo**: `OnDemandItemForm` permite buscar y vincular un producto existente al registrar solicitud
+- **Recepción en almacén**: `CreateFromOnDemandModal` rediseñado para registrar cantidad recibida y actualizar stock
+- **Entrega segura**: `deliverQuotationSafe` verifica que todos los ítems on-demand estén recibidos antes de marcar entregado
+
+### 🐛 Correcciones
+- **Entidad User**: `role` y `business_id` formalizados en `User.jsonc` (admin / almacenista)
+- **updateQuotationFlagsSafe**: corrección en el manejo de flags de entrega/ruta
+
+---
+
 ## v2.10.0 (2026-04-26)
 
 ### 🔐 Sistema de Permisos Granulares

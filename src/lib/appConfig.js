@@ -2,11 +2,26 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.10.0";
+export const APP_VERSION = "2.11.0";
 
 export const RELEASE_DATE = "2026-04-26";
 
 export const CHANGELOG = [
+  {
+    version: "2.11.0",
+    date: "2026-04-26",
+    changes: [
+      "💳 Pagos Parciales en Cotizaciones: registra abonos con método de pago, fecha y notas; saldo pendiente en tiempo real",
+      "📊 Historial de pagos por cotización: cada abono queda registrado con monto, método, fecha y autor",
+      "💰 Saldo pendiente: campos amount_paid y balance reflejan el estado exacto de cobro por cotización",
+      "🚨 Alerta de Saldo Pendiente en Dashboard: detecta cotizaciones entregadas con saldo sin cobrar",
+      "📦 Entrega segura On-Demand: deliverQuotationSafe valida ítems pendientes antes de marcar como entregado",
+      "🔍 On-Demand mejorado: búsqueda y vinculación de producto existente del catálogo al registrar solicitud",
+      "📥 Recepción On-Demand: modal rediseñado para registrar cantidad recibida en almacén y actualizar stock",
+      "🐛 Fix: entidad User formalizada con campos role y business_id (admin / almacenista)",
+      "🐛 Fix: updateQuotationFlagsSafe — corrección en manejo de flags de entrega",
+    ],
+  },
   {
     version: "2.10.0",
     date: "2026-04-26",
