@@ -1,5 +1,30 @@
 # Changelog — StockFlow
 
+## v2.10.0 (2026-04-26)
+
+### 🔐 Sistema de Permisos Granulares
+- **Panel de Permisos** (`/PermissionAdmin`): matriz visual de permisos por rol y módulo, exclusivo para administradores
+- **Acciones configurables**: ver, leer, escribir, modificar, eliminar — por módulo y por rol
+- **Activación por tenant**: regla `enable_granular_permissions` desactivada por defecto — cero impacto hasta habilitarse
+- **Golden Rule**: los permisos granulares son capas aditivas sobre los controles existentes — un bug solo puede reducir acceso, nunca ampliarlo
+- **PermissionGate** y **PermissionContext**: componentes para control de acceso a páginas y estado global de permisos
+
+### 📋 Cotizaciones por Demanda (On-Demand)
+- **Nuevo flujo On-Demand**: registra productos solicitados por un cliente sin necesidad de stock previo
+- **Panel de Pendientes**: lista de solicitudes On-Demand en espera de aprobación o conversión a cotización
+- **Conversión directa**: un clic para convertir una solicitud on-demand en cotización formal
+
+### 👥 Gestión de Equipo Mejorada
+- **TeamMembersManager**: nuevo componente con cambio de rol, búsqueda y estado de cada miembro
+- **Visibilidad de campos por rol**: precio de compra, márgenes y datos sensibles se ocultan automáticamente según el rol del usuario
+
+### 🐛 Correcciones — Cotizaciones
+- **Fallos silenciosos**: errores en el guardado de cotizaciones ahora siempre muestran detalle — nunca más éxito silencioso
+- **Botón bloqueado**: el botón "Guardar" ya no se bloquea cuando el stock de un producto es 0
+- **Whitelist campos**: `updateQuotationSafe` ya no descarta campos de contenido al actualizar
+
+---
+
 ## v2.9.2 (2026-04-24)
 
 ### 🐛 Correcciones — Pagos a Proveedores
