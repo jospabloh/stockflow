@@ -46,9 +46,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
     }
 
-    // PHASE 1: Validate stock BEFORE any operations — use asServiceRole to avoid RLS blocking
+    // PHASE 1: Validate stock BEFORE any operations — skip on-demand items
     const itemsWithStock = [];
     for (const item of (quotation.items || [])) {
+      // Skip on-demand items — no stock to validate or deduct
+      if (item.is_on_demand) continue;
+
       let prods;
       try {
         prods = await base44.asServiceRole.entities.Product.filter({ id: item.product_id, business_id: user.business_id });
@@ -65,7 +68,7 @@ Deno.serve(async (req) => {
       itemsWithStock.push({ ...item, product });
     }
 
-    // PHASE 2: Create movements — stock update is handled automatically by syncProductStock automation
+    // PHASE 2: Create movements for catalog items only — on-demand items stay pending
     try {
       for (const item of itemsWithStock) {
         await base44.asServiceRole.entities.Movement.create({

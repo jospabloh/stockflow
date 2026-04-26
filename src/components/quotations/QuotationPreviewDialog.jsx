@@ -1,33 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FileDown, Truck, CheckCircle2, DollarSign } from "lucide-react";
+import { FileDown, Truck, CheckCircle2, DollarSign, ShoppingCart, Package } from "lucide-react";
 import { generateQuotationPDF } from "./QuotationPDF";
 import { calculateLineVAT } from "@/lib/vatCalculator";
+import CreateFromOnDemandModal from "./CreateFromOnDemandModal";
 
 function fmt(n) {
   return (n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export default function QuotationPreviewDialog({ quotation, settings, client, open, onOpenChange }) {
+export default function QuotationPreviewDialog({ quotation, settings, client, open, onOpenChange, onOnDemandCreated }) {
   const [downloading, setDownloading] = useState(false);
-  if (!open || !quotation) return null;
+  const [createOnDemand, setCreateOnDemand] = useState(null); // { item, itemIndex }
+  const [localQuotation, setLocalQuotation] = useState(null);
+
+  React.useEffect(() => { setLocalQuotation(quotation); }, [quotation]);
+
+  const q = localQuotation || quotation;
+  if (!open || !q) return null;
 
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      await generateQuotationPDF(quotation, settings, client);
+      await generateQuotationPDF(q, settings, client);
     } finally {
       setDownloading(false);
     }
   };
 
-  const dateStr = new Date(quotation.created_date || Date.now()).toLocaleDateString("es-MX", {
+  const dateStr = new Date(q.created_date || Date.now()).toLocaleDateString("es-MX", {
     day: "2-digit", month: "long", year: "numeric",
   });
 
-  const validStr = quotation.valid_until
-    ? new Date(quotation.valid_until + "T12:00:00").toLocaleDateString("es-MX", {
+  const validStr = q.valid_until
+    ? new Date(q.valid_until + "T12:00:00").toLocaleDateString("es-MX", {
         day: "2-digit", month: "long", year: "numeric",
       })
     : null;
@@ -35,12 +43,14 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
   const businessName = settings?.business_name || "Mi Empresa";
   const primaryColor = settings?.primary_color || "#4F46E5";
   const footerText = settings?.quotation_footer || "Este documento es una cotización y no representa una factura fiscal.";
+  const canCreateFromOnDemand = q.status === "converted" || q.status === "accepted";
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl p-0 max-h-[90vh] overflow-y-auto">
         <DialogHeader className="px-6 pt-5 pb-3 border-b flex flex-row items-center justify-between">
-          <DialogTitle className="text-lg font-semibold">Vista previa — {quotation.folio}</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">Vista previa — {q.folio}</DialogTitle>
           <div className="flex gap-2">
             <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={handleDownload} disabled={downloading}>
               <FileDown className="h-4 w-4 mr-1" /> {downloading ? "Generando..." : "Descargar PDF"}
@@ -65,7 +75,7 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold tracking-wide">COTIZACIÓN</p>
-              <p className="text-indigo-200 font-mono">{quotation.folio}</p>
+              <p className="text-indigo-200 font-mono">{q.folio}</p>
             </div>
           </div>
 
@@ -73,9 +83,9 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-slate-50 rounded-lg p-4">
               <p className="text-[10px] font-bold uppercase text-slate-400 mb-1">Cliente</p>
-              <p className="font-semibold text-slate-800">{quotation.client_name}</p>
-              {quotation.client_email && <p className="text-slate-500 text-xs">{quotation.client_email}</p>}
-              {quotation.client_phone && <p className="text-slate-500 text-xs">{quotation.client_phone}</p>}
+              <p className="font-semibold text-slate-800">{q.client_name}</p>
+              {q.client_email && <p className="text-slate-500 text-xs">{q.client_email}</p>}
+              {q.client_phone && <p className="text-slate-500 text-xs">{q.client_phone}</p>}
             </div>
             <div className="bg-slate-50 rounded-lg p-4 space-y-2">
               <div>
@@ -88,10 +98,10 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                   <p className="text-slate-700 text-xs">{validStr}</p>
                 </div>
               )}
-              {quotation.payment_method && (
+              {q.payment_method && (
                 <div>
                   <p className="text-[10px] font-bold uppercase text-slate-400">Forma de pago</p>
-                  <p className="text-slate-700 text-xs">{quotation.payment_method}</p>
+                  <p className="text-slate-700 text-xs">{q.payment_method}</p>
                 </div>
               )}
             </div>
@@ -113,19 +123,35 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                   <th className="px-3 py-2 text-right w-20">Precio unit.</th>
                   <th className="px-3 py-2 text-center w-16">IVA</th>
                   <th className="px-3 py-2 text-right w-20">Total</th>
+                  {canCreateFromOnDemand && <th className="px-3 py-2 w-28"></th>}
                 </tr>
               </thead>
               <tbody>
-                {(quotation.items || []).map((item, i) => {
+                {(q.items || []).map((item, i) => {
                   const { vat: ivaAmount } = calculateLineVAT(item.total || 0, item.tax_rate);
                   const hasIVA = (item.tax_rate ?? 16) === 16;
                   const totalPrice = item.total || 0;
+                  const isPendingOnDemand = item.is_on_demand && item.on_demand_status === "pending";
+                  const isCreatedOnDemand = item.is_on_demand && item.on_demand_status === "product_created";
 
                   return (
-                    <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                    <tr key={i} className={item.is_on_demand ? "bg-orange-50" : i % 2 === 0 ? "bg-white" : "bg-slate-50"}>
                       <td className="px-3 py-2 text-slate-400">{i + 1}</td>
-                      <td className="px-3 py-2 text-slate-700">{item.product_name}</td>
-                      <td className="px-3 py-2 text-center text-slate-700">{item.quantity}</td>
+                      <td className="px-3 py-2 text-slate-700">
+                        <div className="flex flex-col gap-0.5">
+                          <span>{item.product_name}</span>
+                          {item.is_on_demand && (
+                            <span className="inline-flex items-center gap-1 w-fit bg-orange-500 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full">
+                              <ShoppingCart className="h-2 w-2" />
+                              {isPendingOnDemand ? "Bajo pedido" : "Creado ✓"}
+                            </span>
+                          )}
+                          {item.product_description && (
+                            <span className="text-[10px] text-slate-400 italic">{item.product_description}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 text-center text-slate-700">{item.quantity}{item.unit ? ` ${item.unit}` : ""}</td>
                       <td className="px-3 py-2 text-right text-slate-700">${fmt(item.unit_price)}</td>
                       <td className="px-3 py-2 text-center">
                         {hasIVA ? (
@@ -137,6 +163,23 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                         )}
                       </td>
                       <td className="px-3 py-2 text-right font-medium text-slate-800">${fmt(totalPrice)}</td>
+                      {canCreateFromOnDemand && (
+                        <td className="px-3 py-2 text-center">
+                          {isPendingOnDemand && (
+                            <Button
+                              size="sm"
+                              type="button"
+                              className="bg-orange-500 hover:bg-orange-600 text-white text-[10px] h-7 px-2"
+                              onClick={() => setCreateOnDemand({ item, itemIndex: i })}
+                            >
+                              <Package className="h-3 w-3 mr-1" /> Crear
+                            </Button>
+                          )}
+                          {isCreatedOnDemand && (
+                            <span className="text-emerald-600 text-[10px] font-semibold">✓ En catálogo</span>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -145,17 +188,17 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
           </div>
 
           {/* Delivery & payment status (converted only) */}
-          {quotation.status === "converted" && (
+          {q.status === "converted" && (
             <div className="bg-slate-50 rounded-lg p-4">
               <p className="text-[10px] font-bold uppercase text-slate-400 mb-3">Estado de seguimiento</p>
               <div className="flex flex-wrap gap-3">
-                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${quotation.in_route ? "bg-blue-100 text-blue-700" : "bg-white border text-slate-400"}`}>
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${q.in_route ? "bg-blue-100 text-blue-700" : "bg-white border text-slate-400"}`}>
                   <Truck className="h-4 w-4" /> En ruta
                 </div>
-                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${quotation.delivered ? "bg-emerald-100 text-emerald-700" : "bg-white border text-slate-400"}`}>
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${q.delivered ? "bg-emerald-100 text-emerald-700" : "bg-white border text-slate-400"}`}>
                   <CheckCircle2 className="h-4 w-4" /> Entregado
                 </div>
-                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${quotation.paid ? "bg-green-100 text-green-700" : "bg-white border text-slate-400"}`}>
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${q.paid ? "bg-green-100 text-green-700" : "bg-white border text-slate-400"}`}>
                   <DollarSign className="h-4 w-4" /> Pagado
                 </div>
               </div>
@@ -167,43 +210,43 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
             <div className="w-72 space-y-1">
               <div className="flex justify-between text-slate-600 text-xs py-1">
                 <span>Subtotal (neto)</span>
-                <span>${fmt(quotation.subtotal)}</span>
+                <span>${fmt(q.subtotal)}</span>
               </div>
-              {quotation.tax > 0 && (
+              {q.tax > 0 && (
                 <div className="flex justify-between text-slate-600 text-xs py-1">
                   <span>IVA 16% (desglose)</span>
-                  <span className="text-amber-600 font-semibold">${fmt(quotation.tax)}</span>
+                  <span className="text-amber-600 font-semibold">${fmt(q.tax)}</span>
                 </div>
               )}
-              {client?.force_purchase_all_products && quotation.items?.length > 0 && (
+              {client?.force_purchase_all_products && q.items?.length > 0 && (
                 <div className="flex justify-between text-slate-600 text-xs py-1">
                   <span>Transporte</span>
-                  <span>${fmt(20 * quotation.items.length)}</span>
+                  <span>${fmt(20 * q.items.length)}</span>
                 </div>
               )}
               <div className="flex justify-between text-white font-bold text-sm px-3 py-2 rounded-lg" style={{ backgroundColor: primaryColor }}>
                 <span>TOTAL A PAGAR</span>
-                <span>${fmt(quotation.total)}</span>
+                <span>${fmt(q.total)}</span>
               </div>
               <div className="text-[10px] text-slate-500 pt-1">
-                ✓ {fmt(quotation.subtotal)} + {fmt(quotation.tax)} = {fmt(quotation.total)}
+                ✓ {fmt(q.subtotal)} + {fmt(q.tax)} = {fmt(q.total)}
               </div>
             </div>
           </div>
 
           {/* Cancellation reason */}
-          {quotation.status === "cancelled" && quotation.cancellation_reason && (
+          {q.status === "cancelled" && q.cancellation_reason && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-[10px] font-bold uppercase text-red-400 mb-1">Motivo de cancelación</p>
-              <p className="text-red-700 text-xs whitespace-pre-wrap">{quotation.cancellation_reason}</p>
+              <p className="text-red-700 text-xs whitespace-pre-wrap">{q.cancellation_reason}</p>
             </div>
           )}
 
           {/* Notes */}
-          {quotation.notes && (
+          {q.notes && (
             <div className="bg-slate-50 rounded-lg p-4">
               <p className="text-[10px] font-bold uppercase text-slate-400 mb-1">Notas y condiciones</p>
-              <p className="text-slate-600 text-xs whitespace-pre-wrap">{quotation.notes}</p>
+              <p className="text-slate-600 text-xs whitespace-pre-wrap">{q.notes}</p>
             </div>
           )}
 
@@ -215,5 +258,24 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
         </div>
       </DialogContent>
     </Dialog>
+
+    {createOnDemand && (
+      <CreateFromOnDemandModal
+        open={!!createOnDemand}
+        onOpenChange={(v) => !v && setCreateOnDemand(null)}
+        quotation={q}
+        item={createOnDemand.item}
+        itemIndex={createOnDemand.itemIndex}
+        onSuccess={() => {
+          // Refresh local quotation items to reflect product_created status
+          base44.entities.Quotation.filter({ id: q.id }).then(res => {
+            if (res[0]) setLocalQuotation(res[0]);
+          }).catch(() => {});
+          onOnDemandCreated?.();
+          setCreateOnDemand(null);
+        }}
+      />
+    )}
+    </>
   );
 }

@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Save, ScanLine, AlertTriangle, Info, Truck } from "lucide-react";
+import { Plus, Trash2, Save, ScanLine, AlertTriangle, Info, Truck, ShoppingCart, Package } from "lucide-react";
+import OnDemandItemForm from "@/components/quotations/OnDemandItemForm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import SelectWrapper from "@/components/wrappers/SelectWrapper";
@@ -49,6 +50,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     payment_method: "Por definir",
   });
   const [saving, setSaving] = useState(false);
+  const [addMode, setAddMode] = useState("catalog"); // "catalog" | "on_demand"
 
   useEffect(() => {
     if (open && businessId) {
@@ -271,7 +273,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       toast.error("⚠️ Agrega al menos un producto a la cotización");
       return;
     }
-    const overStock = form.items.find(i => i.available_stock !== undefined && i.quantity > i.available_stock);
+    const overStock = form.items.find(i => !i.is_on_demand && i.available_stock !== undefined && i.quantity > i.available_stock);
     if (overStock) {
       toast.error(`⚠️ Stock insuficiente para "${overStock.product_name}": disponible ${overStock.available_stock}, solicitado ${overStock.quantity}`);
       return;
@@ -429,40 +431,95 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           <div>
             <div className="flex items-center justify-between mb-3">
               <Label className="text-base font-semibold">Productos ({form.items.length})</Label>
-              <Button variant="outline" size="sm" type="button" onClick={addItem}>
-                <Plus className="h-4 w-4 mr-1" /> Agregar manualmente
-              </Button>
+              <div className="flex items-center gap-2">
+                <div className="flex rounded-lg border border-border overflow-hidden text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setAddMode("catalog")}
+                    className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${addMode === "catalog" ? "bg-indigo-600 text-white" : "bg-card text-muted-foreground hover:bg-muted"}`}
+                  >
+                    <Package className="h-3 w-3" /> Catálogo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAddMode("on_demand")}
+                    className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${addMode === "on_demand" ? "bg-orange-500 text-white" : "bg-card text-muted-foreground hover:bg-muted"}`}
+                  >
+                    <ShoppingCart className="h-3 w-3" /> Bajo pedido
+                  </button>
+                </div>
+                {addMode === "catalog" && (
+                  <Button variant="outline" size="sm" type="button" onClick={addItem}>
+                    <Plus className="h-4 w-4 mr-1" /> Agregar
+                  </Button>
+                )}
+              </div>
             </div>
+
+            {addMode === "on_demand" && (
+              <div className="mb-3">
+                <OnDemandItemForm onAdd={(newItem) => {
+                  setForm(prev => ({ ...prev, items: [...prev.items, newItem] }));
+                  setAddMode("catalog");
+                }} />
+              </div>
+            )}
+
             <div className="space-y-2">
               {form.items.map((item, idx) => (
-                <div key={idx} className="grid grid-cols-12 gap-2 items-start bg-card border border-border rounded-xl p-3">
+                <div key={idx} className={`grid grid-cols-12 gap-2 items-start border rounded-xl p-3 ${item.is_on_demand ? "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800" : "bg-card border-border"}`}>
+                  {item.is_on_demand && (
+                    <div className="col-span-12 flex items-center gap-2 mb-1">
+                      <span className="inline-flex items-center gap-1 bg-orange-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                        <ShoppingCart className="h-2.5 w-2.5" /> Bajo pedido
+                      </span>
+                      {item.supplier_name && <span className="text-[10px] text-orange-700">Proveedor: {item.supplier_name}</span>}
+                      {item.product_description && <span className="text-[10px] text-muted-foreground truncate max-w-xs">{item.product_description}</span>}
+                    </div>
+                  )}
                   <div className="col-span-12 md:col-span-4">
                     <Label className="text-xs text-foreground mb-1.5 block" htmlFor={`product-${idx}`}>Producto</Label>
+                    {item.is_on_demand ? (
+                      <p className="h-9 flex items-center text-sm font-medium text-orange-800 dark:text-orange-300 pl-1">{item.product_name}</p>
+                    ) : (
                     <ProductSearchInput
                       products={products}
                       selectedProduct={products.find(p => p.id === item.product_id) || null}
                       onSelect={(pid) => updateItem(idx, "product_id", pid)}
                     />
+                    )}
                   </div>
                   <div className="col-span-4 md:col-span-2">
                     <Label className="text-xs text-foreground mb-1.5 block">Cantidad</Label>
-                    <Input
-                      type="number" min={1}
-                      value={item.quantity}
-                      onChange={(e) => updateItem(idx, "quantity", parseInt(e.target.value) || 1)}
-                      className={item.available_stock !== undefined && item.quantity > item.available_stock ? "border-red-400 focus-visible:ring-red-300" : ""}
-                    />
-                    {item.available_stock !== undefined && item.quantity > item.available_stock && (
-                      <p className="text-[10px] text-red-600 mt-0.5 flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" /> Solo {item.available_stock} en stock
-                      </p>
+                    {item.is_on_demand ? (
+                      <p className="h-9 flex items-center text-sm font-medium pl-1">{item.quantity} {item.unit || ""}</p>
+                    ) : (
+                      <>
+                        <Input
+                          type="number" min={1}
+                          value={item.quantity}
+                          onChange={(e) => updateItem(idx, "quantity", parseInt(e.target.value) || 1)}
+                          className={item.available_stock !== undefined && item.quantity > item.available_stock ? "border-red-400 focus-visible:ring-red-300" : ""}
+                        />
+                        {item.available_stock !== undefined && item.quantity > item.available_stock && (
+                          <p className="text-[10px] text-red-600 mt-0.5 flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" /> Solo {item.available_stock} en stock
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
                   <div className="col-span-4 md:col-span-3">
                     <Label className="text-xs text-foreground mb-1.5 block">Precio aplicado</Label>
-                    <Input type="number" min={0} step="0.01" value={item.unit_price} onChange={(e) => updateItem(idx, "unit_price", parseFloat(e.target.value) || 0)} />
-                    {itemPriceInfo[idx] && (
-                      <PriceInfo rule={itemPriceInfo[idx].rule} origin={itemPriceInfo[idx].origin} warning={itemPriceInfo[idx].warning} />
+                    {item.is_on_demand ? (
+                      <p className="h-9 flex items-center text-sm font-medium pl-1">${(item.unit_price || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
+                    ) : (
+                      <>
+                        <Input type="number" min={0} step="0.01" value={item.unit_price} onChange={(e) => updateItem(idx, "unit_price", parseFloat(e.target.value) || 0)} />
+                        {itemPriceInfo[idx] && (
+                          <PriceInfo rule={itemPriceInfo[idx].rule} origin={itemPriceInfo[idx].origin} warning={itemPriceInfo[idx].warning} />
+                        )}
+                      </>
                     )}
                   </div>
                   <div className="col-span-3 md:col-span-2">

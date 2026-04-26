@@ -45,6 +45,27 @@
           },
           "tax_rate": {
             "type": "number"
+          },
+          "is_on_demand": {
+            "type": "boolean",
+            "description": "true si es un producto bajo pedido que no existe en el cat\u00e1logo",
+            "default": false
+          },
+          "supplier_id": {
+            "type": "string",
+            "description": "ID del proveedor sugerido para este producto bajo pedido (opcional)"
+          },
+          "supplier_name": {
+            "type": "string",
+            "description": "Nombre del proveedor (desnormalizado para display)"
+          },
+          "product_description": {
+            "type": "string",
+            "description": "Especificaciones o descripci\u00f3n del producto bajo pedido"
+          },
+          "on_demand_status": {
+            "type": "string",
+            "description": "Estado del item bajo pedido: pending | product_created"
           }
         }
       }

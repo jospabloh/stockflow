@@ -27,6 +27,7 @@ import QuotationPreviewDialog from "@/components/quotations/QuotationPreviewDial
 import PartialReturnDialog from "@/components/quotations/PartialReturnDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import VirtualizedQuotationTable from "@/components/tables/VirtualizedQuotationTable";
+import OnDemandPendingPanel from "@/components/quotations/OnDemandPendingPanel";
 
 const statusConfig = {
   draft: { label: "Borrador", color: "bg-slate-100 text-slate-700", dot: "bg-slate-400", desc: "Cotización en edición" },
@@ -249,6 +250,7 @@ export default function Quotations() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      <OnDemandPendingPanel />
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-md w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -348,6 +350,7 @@ export default function Quotations() {
             setPreviewClient(null);
           }
         }}
+        onOnDemandCreated={() => loadData(businessId)}
       />
 
       {/* Cancel dialog */}
