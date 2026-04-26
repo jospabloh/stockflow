@@ -1,11 +1,71 @@
-// Artículos de ayuda — última versión: v2.9.2
+// Artículos de ayuda — última versión: v2.10.0
 // Solo contiene notas de versión (release notes). Los artículos de manual permanente están en helpDataExtension.js
+// v2.10.0: Permisos Granulares, Cotizaciones On-Demand, fixes cotizaciones
 // v2.9.2: Fixes panel licencias (auto_renewal, dropdown dark mode, boolean partition) + fixes catálogos Pagos a Proveedores
 // v2.9.1: Módulo Pagos a Proveedores, búsqueda mejorada, optimizaciones dashboard + dark mode
 // v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor
-// v2.8.2: Centro de Ayuda sensible al tenant
 
 export const newHelpArticles = [
+    {
+      id: "release-2-10-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.10.0 — Permisos Granulares y Cotizaciones por Demanda",
+      keywords: ["versión", "2.10.0", "permisos", "granular", "on-demand", "cotización", "demanda", "team", "equipo", "visibilidad campos"],
+      related_ids: ["release-2-9-2", "granular-permissions", "quotations-on-demand"],
+      content: `## 🆕 Versión 2.10.0 — 26 de abril de 2026
+
+### ✅ Novedades de esta versión
+
+---
+
+#### 🔐 Sistema de Permisos Granulares
+
+Nuevo módulo de gestión de accesos con control a nivel de módulo y acción, activable por tenant.
+
+- **Panel de Permisos** en el menú lateral (solo para administradores)
+- **Matriz visual**: configura ver / leer / escribir / modificar / eliminar por módulo y rol
+- **Activación opcional**: regla \`enable_granular_permissions\` — desactivada por defecto, cero impacto hasta habilitarse
+- **Golden Rule**: los permisos granulares solo pueden reducir acceso, nunca ampliarlo — los controles existentes permanecen intactos
+- **Visibilidad de campos**: precio de compra, márgenes y datos sensibles se ocultan automáticamente según el rol
+
+Ver artículo completo: [🔐 Permisos Granulares](/help/granular-permissions)
+
+---
+
+#### 📋 Cotizaciones por Demanda (On-Demand)
+
+Nuevo flujo para registrar solicitudes de clientes sin necesidad de stock previo.
+
+- **Registro On-Demand**: captura productos solicitados que aún no están en catálogo o sin stock disponible
+- **Panel de Pendientes**: cola de solicitudes esperando revisión y aprobación
+- **Conversión directa**: convierte una solicitud on-demand en cotización formal con un clic
+
+Ver artículo completo: [📋 Cotizaciones On-Demand](/help/quotations-on-demand)
+
+---
+
+#### 👥 Gestión de Equipo Mejorada
+
+- **TeamMembersManager**: nuevo componente para gestión de equipo con búsqueda, cambio de rol y estado por miembro
+
+---
+
+### 🐛 Correcciones — Cotizaciones
+
+| Fix | Descripción |
+|---|---|
+| Fallos silenciosos | Errores en guardado de cotizaciones ahora siempre son visibles con detalle |
+| Botón bloqueado | "Guardar" ya no se bloquea cuando el stock de un producto es 0 |
+| Whitelist campos | \`updateQuotationSafe\` ya no descarta campos de contenido al actualizar |
+
+---
+
+### 📦 Versión Anterior — v2.9.2 (24 de abril de 2026)
+
+Fixes en panel de licencias (auto_renewal, dark mode, boolean partition) y carga de catálogos en Pagos a Proveedores.
+`
+    },
     {
       id: "release-2-9-2",
       category: "Novedades",

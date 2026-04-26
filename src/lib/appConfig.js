@@ -2,11 +2,28 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.9.2";
+export const APP_VERSION = "2.10.0";
 
-export const RELEASE_DATE = "2026-04-24";
+export const RELEASE_DATE = "2026-04-26";
 
 export const CHANGELOG = [
+  {
+    version: "2.10.0",
+    date: "2026-04-26",
+    changes: [
+      "🔐 Sistema de Permisos Granulares: gestión de accesos por módulo y acción (ver/leer/escribir/modificar/eliminar) por rol",
+      "🛡️ Panel de Permisos exclusivo para administradores: matriz visual de permisos con activación por tenant",
+      "⚙️ Regla tenant enable_granular_permissions: permisos granulares desactivados por defecto — cero impacto hasta habilitarse",
+      "🔒 PermissionGate: componente de control de acceso a páginas; PermissionContext: estado global de permisos",
+      "📋 Cotizaciones por Demanda (On-Demand): nuevo flujo para registrar productos solicitados sin stock previo",
+      "🗂️ Panel de Pendientes On-Demand: lista de solicitudes en espera de aprobación o conversión a cotización",
+      "👥 Nuevo componente TeamMembersManager: gestión de equipo mejorada con cambio de rol y búsqueda",
+      "🔍 Visibilidad de campos configurable por rol: precio de compra, márgenes y datos sensibles ocultos según rol",
+      "🐛 Fix: fallos silenciosos en guardado de cotizaciones eliminados — errores ahora visibles con detalle",
+      "🐛 Fix: botón 'Guardar' en cotizaciones ya no se bloquea cuando el stock de un producto es 0",
+      "🐛 Fix: updateQuotationSafe — whitelist de campos corregida para no descartar campos de contenido",
+    ],
+  },
   {
     version: "2.9.2",
     date: "2026-04-24",

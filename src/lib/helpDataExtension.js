@@ -1063,4 +1063,125 @@ En este negocio, las ventas cobradas en efectivo se registran automáticamente c
 Los ingresos automáticos aparecen marcados como **"Sistema"** en el historial de Caja Chica para distinguirlos de los manuales.`
   },
 
+  // ─── PERMISOS GRANULARES ─────────────────────────────────────────────────
+  {
+    id: "granular-permissions",
+    category: "Configuración",
+    role: "admin",
+    title: "🔐 Permisos Granulares — Control de Acceso por Módulo y Rol",
+    keywords: ["permisos", "granular", "acceso", "rol", "módulo", "matrix", "admin", "almacenista", "visibility", "escritura", "eliminar"],
+    related_ids: ["settings-team", "roles-overview", "platform-tenant-rules"],
+    content: `## 🔐 Permisos Granulares
+
+> 📍 *Menú lateral → Permisos* (visible solo para Administradores)
+
+El sistema de Permisos Granulares permite controlar exactamente qué puede hacer cada rol en cada módulo de StockFlow, con granularidad a nivel de acción.
+
+---
+
+### ⚠️ Activación
+
+Los permisos granulares están **desactivados por defecto**. Para activarlos, el administrador de plataforma debe habilitar la regla \`enable_granular_permissions\` para el tenant.
+
+> Mientras esté desactivada, el comportamiento de la app es exactamente igual al anterior — sin impacto en los usuarios.
+
+---
+
+### 🎯 ¿Qué se puede controlar?
+
+Para cada módulo (Productos, Movimientos, Cotizaciones, Caja Chica, Reportes, etc.) y para cada rol (Admin, Almacenista), puedes configurar:
+
+| Acción | Descripción |
+|---|---|
+| **Ver** | Acceso a la página o sección |
+| **Leer** | Leer datos y listas |
+| **Escribir** | Crear nuevos registros |
+| **Modificar** | Editar registros existentes |
+| **Eliminar** | Borrar registros |
+
+---
+
+### 🛡️ Golden Rule
+
+Los permisos granulares son **capas aditivas** sobre los controles de acceso existentes. Nunca los reemplazan.
+
+- Un bug en los datos de permisos solo puede **reducir** el acceso — nunca ampliarlo
+- Los controles \`isAdmin\` originales permanecen intactos como guardia de seguridad
+
+---
+
+### 📋 Cómo Configurar
+
+1. Ve a **Permisos** en el menú lateral
+2. Selecciona el rol a configurar (Admin o Almacenista)
+3. En la matriz, activa o desactiva las acciones por módulo
+4. Haz clic en **Guardar perfil**
+5. Los cambios aplican inmediatamente para todos los usuarios de ese rol
+
+---
+
+### 🔍 Visibilidad de Campos
+
+Además de controlar el acceso a páginas y acciones, el sistema puede ocultar campos sensibles según el rol:
+
+| Campo | Admin | Almacenista |
+|---|---|---|
+| Precio de compra | ✅ Visible | ❌ Oculto |
+| Margen de ganancia | ✅ Visible | ❌ Oculto |
+| Costo de lo vendido | ✅ Visible | ❌ Oculto |
+
+> Esta configuración es automática cuando los permisos granulares están activos.`
+  },
+
+  // ─── COTIZACIONES ON-DEMAND ───────────────────────────────────────────────
+  {
+    id: "quotations-on-demand",
+    category: "Cotizaciones",
+    role: "all",
+    title: "📋 Cotizaciones por Demanda (On-Demand)",
+    keywords: ["on-demand", "demanda", "cotización", "solicitud", "pendiente", "aprobación", "sin stock", "pedido especial"],
+    related_ids: ["quotations-create", "quotations-states", "quotations-convert"],
+    content: `## 📋 Cotizaciones por Demanda (On-Demand)
+
+El flujo **On-Demand** permite registrar productos solicitados por un cliente antes de que estén en el catálogo o cuando el stock no es relevante en el momento de la solicitud.
+
+---
+
+### 🎯 ¿Para qué sirve?
+
+- Registrar solicitudes de clientes que piden productos fuera de catálogo
+- Capturar pedidos especiales sin necesidad de crear el producto primero
+- Gestionar solicitudes en cola antes de confirmar disponibilidad
+
+---
+
+### 📋 Flujo On-Demand
+
+1. **Registrar solicitud**: en el módulo de Cotizaciones, usa el botón **"+ On-Demand"** para capturar la solicitud del cliente
+2. **Panel de Pendientes**: las solicitudes quedan en el panel **"Pendientes On-Demand"** esperando revisión
+3. **Revisar y aprobar**: el administrador revisa la solicitud y puede:
+   - **Convertir a cotización formal** — genera una cotización con los productos solicitados
+   - **Rechazar** — descarta la solicitud con una nota
+
+---
+
+### 🗂️ Panel de Pendientes
+
+El panel de Pendientes On-Demand muestra:
+- Cliente solicitante
+- Productos solicitados y cantidades
+- Fecha de solicitud
+- Acciones disponibles (Convertir / Rechazar)
+
+---
+
+### 💡 Diferencia con una Cotización Normal
+
+| Aspecto | Cotización Normal | On-Demand |
+|---|---|---|
+| Stock requerido | Sí (valida disponibilidad) | No (solo registra la solicitud) |
+| Efecto en inventario | Inmediato al convertir | Ninguno hasta convertir a cotización |
+| Flujo de aprobación | Directo | Requiere revisión previa |`
+  },
+
 ];
