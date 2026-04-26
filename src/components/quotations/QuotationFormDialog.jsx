@@ -458,7 +458,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
 
             {addMode === "on_demand" && (
               <div className="mb-3">
-                <OnDemandItemForm onAdd={(newItem) => {
+                <OnDemandItemForm selectedClient={selectedClient} onAdd={(newItem) => {
                   setForm(prev => ({ ...prev, items: [...prev.items, newItem] }));
                   setAddMode("catalog");
                 }} />

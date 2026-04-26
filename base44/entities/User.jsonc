@@ -1,0 +1,20 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "almacenista"
+      ],
+      "default": "almacenista",
+      "description": "Rol del usuario: admin (acceso total), almacenista (productos, movimientos, cotizaciones y clientes)"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece el usuario"
+    }
+  },
+  "required": []
+}
