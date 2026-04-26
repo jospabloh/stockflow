@@ -129,7 +129,7 @@
     "paid": {
       "type": "boolean",
       "default": false,
-      "description": "Pago recibido efectivamente"
+      "description": "Pago recibido efectivamente (balance <= 0)"
     },
     "cancellation_reason": {
       "type": "string",
@@ -138,6 +138,54 @@
     "business_id": {
       "type": "string",
       "description": "ID del negocio al que pertenece"
+    },
+    "payments": {
+      "type": "array",
+      "description": "Historial de pagos registrados contra esta cotizaci\u00f3n",
+      "default": [],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID \u00fanico del pago"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Monto del pago"
+          },
+          "payment_method": {
+            "type": "string",
+            "description": "Forma de pago (snapshot)"
+          },
+          "paid_at": {
+            "type": "string",
+            "description": "Fecha y hora del pago (ISO)"
+          },
+          "registered_by": {
+            "type": "string",
+            "description": "user_id quien registr\u00f3"
+          },
+          "petty_cash_movement_id": {
+            "type": "string",
+            "description": "ID del PettyCashMovement si aplica"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Notas opcionales del pago"
+          }
+        }
+      }
+    },
+    "amount_paid": {
+      "type": "number",
+      "description": "Suma total de todos los pagos registrados (campo cacheado)",
+      "default": 0
+    },
+    "balance": {
+      "type": "number",
+      "description": "Saldo pendiente: total - amount_paid (campo cacheado)",
+      "default": 0
     }
   },
   "required": [

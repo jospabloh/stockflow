@@ -65,10 +65,12 @@ export default function Quotations() {
   const [returnQuotation, setReturnQuotation] = useState(null);
   const [settings, setSettings] = useState(null);
   const [businessId, setBusinessId] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(u => {
       setBusinessId(u?.business_id || null);
+      setUserRole(u?.role || null);
       base44.entities.AppSettings.filter({ business_id: u?.business_id }).then(s => setSettings(s[0] || null)).catch(() => {});
     }).catch(() => {});
   }, []);
@@ -313,19 +315,34 @@ export default function Quotations() {
           if (response.data.success) loadData(businessId);
         }}
         onInRouteChange={async (q, action) => {
-          let updates;
-          if (action === "in_route") {
-            updates = { in_route: true, delivered: false };
-          } else if (action === "delivered") {
-            updates = { delivered: true, in_route: false };
+          if (action === "delivered") {
+            // Use deliverQuotationSafe to handle on-demand EXIT movements
+            const response = await base44.functions.invoke('deliverQuotationSafe', {
+              quotation_id: q.id,
+            });
+            if (response.data?.warning) {
+              toast.error(response.data.message);
+              return;
+            }
+            if (!response.data?.success) {
+              toast.error(response.data?.message || response.data?.error || "Error al marcar entregado");
+              return;
+            }
+            toast.success("✓ Pedido marcado como entregado");
+            loadData(businessId);
           } else {
-            updates = { in_route: false, delivered: false };
+            let updates;
+            if (action === "in_route") {
+              updates = { in_route: true, delivered: false };
+            } else {
+              updates = { in_route: false, delivered: false };
+            }
+            const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
+              quotation_id: q.id,
+              updates
+            });
+            if (response.data.success) loadData(businessId);
           }
-          const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
-            quotation_id: q.id,
-            updates
-          });
-          if (response.data.success) loadData(businessId);
         }}
         onDeliveredChange={() => {}}
         isExpired={isExpired}
@@ -344,8 +361,11 @@ export default function Quotations() {
         settings={settings}
         client={previewClient}
         open={!!previewQuotation}
+        userRole={userRole}
         onOpenChange={(v) => {
           if (!v) {
+            // Reload to pick up payment changes
+            loadData(businessId);
             setPreviewQuotation(null);
             setPreviewClient(null);
           }

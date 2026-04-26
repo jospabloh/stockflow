@@ -6,12 +6,13 @@ import { FileDown, Truck, CheckCircle2, DollarSign, ShoppingCart, Package } from
 import { generateQuotationPDF } from "./QuotationPDF";
 import { calculateLineVAT } from "@/lib/vatCalculator";
 import CreateFromOnDemandModal from "./CreateFromOnDemandModal";
+import QuotationPaymentsSection from "./QuotationPaymentsSection";
 
 function fmt(n) {
   return (n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export default function QuotationPreviewDialog({ quotation, settings, client, open, onOpenChange, onOnDemandCreated }) {
+export default function QuotationPreviewDialog({ quotation, settings, client, open, onOpenChange, onOnDemandCreated, userRole }) {
   const [downloading, setDownloading] = useState(false);
   const [createOnDemand, setCreateOnDemand] = useState(null); // { item, itemIndex }
   const [localQuotation, setLocalQuotation] = useState(null);
@@ -233,6 +234,23 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
               </div>
             </div>
           </div>
+
+          {/* Payments section — visible for converted/accepted */}
+          {(q.status === "converted" || q.status === "accepted") && (
+            <div className="bg-card border border-border rounded-lg p-4">
+              <p className="text-[10px] font-bold uppercase text-slate-400 mb-3">Pagos</p>
+              <QuotationPaymentsSection
+                quotation={q}
+                userRole={userRole}
+                onPaymentRegistered={() => {
+                  base44.entities.Quotation.filter({ id: q.id }).then(res => {
+                    if (res[0]) setLocalQuotation(res[0]);
+                  }).catch(() => {});
+                  onOnDemandCreated?.();
+                }}
+              />
+            </div>
+          )}
 
           {/* Cancellation reason */}
           {q.status === "cancelled" && q.cancellation_reason && (

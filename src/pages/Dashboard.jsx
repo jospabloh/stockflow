@@ -5,6 +5,7 @@ import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Package, ArrowLeftRight, DollarSign, AlertTriangle, TrendingUp, Clock, HandCoins } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import LowStockAlert from "@/components/dashboard/LowStockAlert";
+import PendingBalanceAlert from "@/components/quotations/PendingBalanceAlert";
 import RecentMovements from "@/components/dashboard/RecentMovements";
 import SalesFilterToggle from "@/components/dashboard/SalesFilterToggle";
 import SupplierPaymentsSection from "@/components/dashboard/SupplierPaymentsSection";
@@ -89,6 +90,7 @@ export default function Dashboard() {
   const [supplierPayments, setSupplierPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [dashboardBusinessId, setDashboardBusinessId] = useState(null);
   const [unpaidModalOpen, setUnpaidModalOpen] = useState(false);
   const [salesPeriod, setSalesPeriod] = useState("day");
   const [customDateRange, setCustomDateRange] = useState({ start: null, end: null });
@@ -107,6 +109,7 @@ export default function Dashboard() {
       const admin = u?.role === "admin";
       const bId = u?.business_id;
       setIsAdmin(admin);
+      setDashboardBusinessId(bId);
       const [prods, movs, pays] = await Promise.all([
         base44.entities.Product.filter({ business_id: bId }, "-created_date", 500),
         base44.entities.Movement.filter({ business_id: bId }, "-created_date", 1000),
@@ -706,6 +709,7 @@ export default function Dashboard() {
 
         <div className="space-y-4">
           {canSee("low_stock") && <LowStockAlert products={lowStockProducts} />}
+          <PendingBalanceAlert businessId={dashboardBusinessId} />
           {canSee("recent_movements") && <RecentMovements movements={movements} />}
         </div>
         </div>

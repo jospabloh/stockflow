@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // Whitelist for quotation flag updates
-const ALLOWED_FLAG_FIELDS = ['invoice_status', 'in_route', 'delivered', 'paid', 'payment_method'];
+const ALLOWED_FLAG_FIELDS = ['invoice_status', 'in_route', 'delivered', 'paid', 'payment_method', 'payments', 'amount_paid', 'balance'];
 
 Deno.serve(async (req) => {
   try {
