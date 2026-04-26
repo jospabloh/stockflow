@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { usePermissions } from "@/lib/PermissionContext";
 import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +48,7 @@ const isExpired = (q) => {
 export default function Quotations() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { can } = usePermissions();
   const { canSee } = useFieldVisibility("Cotizaciones");
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -264,16 +266,25 @@ export default function Quotations() {
             aria-label="Buscar cotizaciones por cliente o folio"
           />
         </div>
-        <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Quotations/new")}>
-          <Plus className="h-4 w-4 mr-1" /> Nueva Cotización
-        </Button>
+        {can('Cotizaciones', 'create') && (
+          <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Quotations/new")}>
+            <Plus className="h-4 w-4 mr-1" /> Nueva Cotización
+          </Button>
+        )}
       </div>
 
-      {canSee("view") && (
+      {can('Cotizaciones', 'view') && (
       <VirtualizedQuotationTable
         quotations={filtered}
         statusConfig={statusConfig}
-        canShowPricing={canSee("pricing")}
+        canShowPricing={can('Cotizaciones', 'pricing')}
+        canConvert={can('Cotizaciones', 'convert')}
+        canCancel={can('Cotizaciones', 'cancel')}
+        canConfirmPayment={can('Cotizaciones', 'confirm_payment')}
+        canReturn={can('Cotizaciones', 'return')}
+        canSend={can('Cotizaciones', 'send')}
+        canExport={can('Cotizaciones', 'export')}
+        canDelete={can('Cotizaciones', 'delete')}
         onEdit={handleEdit}
         onPreview={async (q) => {
           setPreviewQuotation(q);

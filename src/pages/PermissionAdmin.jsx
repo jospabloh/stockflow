@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Shield, RefreshCw } from "lucide-react";
+import { Shield, RefreshCw, Download } from "lucide-react";
 import { toast } from "sonner";
 import UnifiedPermissionMatrix from "@/components/permissions/UnifiedPermissionMatrix";
 import { PERMISSION_MATRIX } from "@/components/permissions/UnifiedPermissionMatrix";
@@ -37,6 +37,7 @@ export default function PermissionAdmin() {
   const [saving, setSaving] = useState(false);
   const [togglingFeature, setTogglingFeature] = useState(false);
   const [seeded, setSeeded] = useState(false);
+  const [backfilling, setBackfilling] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -177,9 +178,36 @@ export default function PermissionAdmin() {
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">Configura qué puede ver y hacer cada rol en el sistema.</p>
         </div>
-        <Button variant="outline" onClick={loadProfiles} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Actualizar
-        </Button>
+        <div className="flex gap-2">
+          {(isPlatformAdmin || user?.role === 'admin') && (
+            <Button
+              variant="outline"
+              onClick={async () => {
+                setBackfilling(true);
+                try {
+                  const res = await base44.functions.invoke('backfillPermissionDefaults', {});
+                  if (res.data?.success) {
+                    toast.success(`Backfill completado: ${res.data.profilesUpdated} perfiles, ${res.data.keysAdded} claves nuevas`);
+                    await loadProfiles();
+                  } else {
+                    toast.error(res.data?.error || 'Error en backfill');
+                  }
+                } catch (e) {
+                  toast.error(`Error: ${e.message}`);
+                } finally {
+                  setBackfilling(false);
+                }
+              }}
+              disabled={backfilling}
+            >
+              <Download className={`h-4 w-4 mr-1 ${backfilling ? "animate-spin" : ""}`} />
+              {backfilling ? "Aplicando..." : "Aplicar nuevos permisos"}
+            </Button>
+          )}
+          <Button variant="outline" onClick={loadProfiles} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Actualizar
+          </Button>
+        </div>
       </div>
 
       {isPlatformAdmin && (

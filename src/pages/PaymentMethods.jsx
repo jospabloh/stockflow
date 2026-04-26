@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { usePermissions } from "@/lib/PermissionContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ import { toast } from "sonner";
 
 export default function PaymentMethods() {
   const { businessId } = useBusinessContext();
+  const { can } = usePermissions();
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pmFormOpen, setPmFormOpen] = useState(false);
@@ -107,14 +109,16 @@ export default function PaymentMethods() {
             <h1 className="font-semibold text-slate-700 text-lg">Formas de Pago</h1>
             <p className="text-xs text-muted-foreground mt-0.5">Se usan en movimientos y cotizaciones</p>
           </div>
-          <Button 
-            size="sm" 
-            className="bg-indigo-600 hover:bg-indigo-700" 
-            onClick={() => { setEditingPm(null); setPmForm({ name: "" }); setPmFormOpen(true); }}
-            {...createButtonProps('add')}
-          >
-            <Plus className="h-4 w-4 mr-1" /> Nueva
-          </Button>
+          {can('Tipo de Pago', 'create') && (
+            <Button
+              size="sm"
+              className="bg-indigo-600 hover:bg-indigo-700"
+              onClick={() => { setEditingPm(null); setPmForm({ name: "" }); setPmFormOpen(true); }}
+              {...createButtonProps('add')}
+            >
+              <Plus className="h-4 w-4 mr-1" /> Nueva
+            </Button>
+          )}
         </div>
         <Table {...createTableProps('payment-methods-table')}>
           <TableHeader>
@@ -139,12 +143,16 @@ export default function PaymentMethods() {
                   <Switch checked={pm.active !== false} onCheckedChange={() => handleTogglePaymentMethod(pm)} />
                 </TableCell>
                 <TableCell className="text-center">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingPm(pm); setPmForm({ name: pm.name }); setPmFormOpen(true); }} {...createButtonProps('edit')}>
-                    <Pencil className="h-4 w-4 text-slate-400" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeletePaymentMethod(pm.id)} {...createButtonProps('delete')}>
-                    <Trash2 className="h-4 w-4 text-slate-400" />
-                  </Button>
+                  {can('Tipo de Pago', 'edit_name') && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingPm(pm); setPmForm({ name: pm.name }); setPmFormOpen(true); }} {...createButtonProps('edit')}>
+                      <Pencil className="h-4 w-4 text-slate-400" />
+                    </Button>
+                  )}
+                  {can('Tipo de Pago', 'delete') && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeletePaymentMethod(pm.id)} {...createButtonProps('delete')}>
+                      <Trash2 className="h-4 w-4 text-slate-400" />
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
