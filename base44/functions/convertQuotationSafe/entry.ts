@@ -87,10 +87,14 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Update quotation status
+      // Update quotation status — initialize payment fields to prevent false "paid" state
       await base44.asServiceRole.entities.Quotation.update(quotation.id, {
         status: 'converted',
-        payment_method: payment_method.trim()
+        payment_method: payment_method.trim(),
+        paid: false,
+        amount_paid: 0,
+        balance: quotation.total || 0,
+        payments: quotation.payments || [],
       });
 
       return Response.json({ success: true, quotation_id });
