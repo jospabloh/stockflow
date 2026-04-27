@@ -49,7 +49,7 @@ export function PermissionProvider({ children }) {
   const can = useCallback((pageName, action = 'ver') => {
     if (userEmail === PLATFORM_OWNER_EMAIL) return true;
 
-    // Admin siempre tiene acceso completo — nunca bloquearlo por permisos
+    // Admin siempre tiene acceso completo
     if (userRole === 'admin') return true;
 
     // Mapear nombre de página a módulo de permisos (ej: "Products" -> "Productos")
@@ -63,17 +63,51 @@ export function PermissionProvider({ children }) {
     // Nuevo formato: claves como "Productos:view" o "Productos:create"
     const newFormatKey = `${moduleName}:${action}`;
     const newFormatPerm = roleProfile[newFormatKey];
-    
     if (newFormatPerm === true) return true;
     if (newFormatPerm === false) return false;
 
-    // También verificar formato legacy (claves en inglés con acciones en español)
+    // Formato legacy: el perfil guardado en BD usa nombre de página en inglés
+    // y acciones en español (ver, escribir, modificar, eliminar)
     const legacyRoleObj = roleProfile[pageName] || roleProfile[moduleName] || {};
-    const legacyPerm = legacyRoleObj[action];
+
+    // Mapa de acciones nuevas -> acciones legacy
+    const ACTION_MAP = {
+      view: 'ver',
+      create: 'escribir',
+      edit_name: 'modificar',
+      edit_description: 'modificar',
+      edit_stock_quantity: 'modificar',
+      edit_min_stock: 'modificar',
+      edit_sku: 'modificar',
+      edit_retail_price: 'modificar',
+      edit_wholesale_price: 'modificar',
+      edit_cost_price: 'modificar',
+      delete: 'eliminar',
+      entry: 'escribir',
+      exit: 'escribir',
+      return: 'modificar',
+      adjustment: 'modificar',
+      confirm_payment: 'modificar',
+      convert: 'escribir',
+      cancel: 'eliminar',
+      send: 'modificar',
+      export: 'leer',
+      pricing: 'leer',
+      edit_items: 'modificar',
+      edit_quantities: 'modificar',
+      edit_prices: 'modificar',
+      edit_client: 'modificar',
+      edit_notes: 'modificar',
+      edit_payment_method: 'modificar',
+    };
+
+    const legacyAction = ACTION_MAP[action] || action;
+    const legacyPerm = legacyRoleObj[legacyAction] ?? legacyRoleObj[action];
+
     if (legacyPerm === true) return true;
     if (legacyPerm === false) return false;
 
-    // Fallback a legacy checks
+    // Fallback final
     return legacyCheck(moduleName, action, userRole);
   }, [userEmail, featureEnabled, profiles, userRole]);
 
