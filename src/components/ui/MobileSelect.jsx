@@ -72,10 +72,10 @@ export function MobileSelect({
           <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
         </button>
 
-        <Sheet open={open} onOpenChange={setOpen}>
+        <Sheet open={open} onOpenChange={setOpen} modal={false}>
           <SheetContent
             side="bottom"
-            className="max-h-[70vh] overflow-y-auto rounded-t-2xl pb-safe"
+            className="max-h-[70vh] overflow-y-auto rounded-t-2xl pb-safe z-[200]"
           >
             <SheetHeader className="pb-2">
               <SheetTitle>{placeholder}</SheetTitle>
