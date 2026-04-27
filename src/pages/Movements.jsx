@@ -267,7 +267,7 @@ export default function Movements() {
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1" /> CSV
           </Button>
-          {canCreateMovement && can('Movements', 'escribir') && (
+          {can('Movements', 'create') && (
             <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Movements/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Movimiento
             </Button>

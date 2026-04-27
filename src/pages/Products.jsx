@@ -183,7 +183,7 @@ export default function Products() {
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1" /> CSV
           </Button>
-          {isAdmin && can('Products', 'escribir') && (
+          {can('Products', 'create') && (
             <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Products/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Producto
             </Button>
@@ -201,8 +201,8 @@ export default function Products() {
          isAdmin={isAdmin}
          canShowCost={canSee("cost_price")}
          onBarcodeGenerated={() => loadData(businessId)}
-         canEdit={can('Products', 'modificar') && canSee("edit_name")}
-         canDelete={can('Products', 'eliminar') && canSee("delete")}
+         canEdit={can('Products', 'edit_name') && canSee("edit_name")}
+          canDelete={can('Products', 'delete') && canSee("delete")}
        />
        )}
 

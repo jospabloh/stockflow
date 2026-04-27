@@ -49,6 +49,9 @@ export function PermissionProvider({ children }) {
   const can = useCallback((pageName, action = 'ver') => {
     if (userEmail === PLATFORM_OWNER_EMAIL) return true;
 
+    // Admin siempre tiene acceso completo — nunca bloquearlo por permisos
+    if (userRole === 'admin') return true;
+
     // Mapear nombre de página a módulo de permisos (ej: "Products" -> "Productos")
     const moduleName = getPermissionModule(pageName);
 
@@ -63,6 +66,12 @@ export function PermissionProvider({ children }) {
     
     if (newFormatPerm === true) return true;
     if (newFormatPerm === false) return false;
+
+    // También verificar formato legacy (claves en inglés con acciones en español)
+    const legacyRoleObj = roleProfile[pageName] || roleProfile[moduleName] || {};
+    const legacyPerm = legacyRoleObj[action];
+    if (legacyPerm === true) return true;
+    if (legacyPerm === false) return false;
 
     // Fallback a legacy checks
     return legacyCheck(moduleName, action, userRole);
