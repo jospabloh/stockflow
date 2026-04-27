@@ -197,11 +197,11 @@ export default function OnDemandItemForm({ onAdd, selectedClient }) {
         <div>
           <Label className="text-xs mb-1 block">Proveedor sugerido</Label>
           <SelectWrapper
-            value={form.supplier_id}
-            onValueChange={v => set("supplier_id", v)}
+            value={form.supplier_id || "__none__"}
+            onValueChange={v => set("supplier_id", v === "__none__" ? "" : v)}
             placeholder="Sin proveedor"
             options={[
-              { value: "", label: "Sin proveedor" },
+              { value: "__none__", label: "Sin proveedor" },
               ...suppliers.map(s => ({ value: s.id, label: s.name }))
             ]}
           />
