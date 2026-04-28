@@ -7,6 +7,23 @@ const BRAND_COLOR = '#4F46E5';
 const UPGRADE_URL = 'https://www.acaciaco.com.mx/stockflow';
 const MAX_RETRIES = 3;
 
+const PLAN_LABELS: Record<string, string> = {
+  start: 'Start',
+  growth: 'Growth',
+  pro: 'Pro',
+  founder: 'Founder',
+};
+
+function planLabel(licensePlan: string | null | undefined): string {
+  if (!licensePlan) return '';
+  return PLAN_LABELS[licensePlan] || licensePlan;
+}
+
+function firstName(fullName: string | null | undefined): string {
+  if (!fullName) return '';
+  return String(fullName).trim().split(/\s+/)[0] || '';
+}
+
 function formatDate(isoString: string | null | undefined): string {
   if (!isoString) return '—';
   try {
@@ -50,6 +67,8 @@ function getEmailTemplate(
   emailType: string,
   ctx: {
     businessName: string;
+    recipientName?: string | null;
+    licensePlan?: string | null;
     appUrl: string;
     supportEmail: string;
     upgradeUrl: string;
@@ -57,8 +76,10 @@ function getEmailTemplate(
     scheduledDeleteAt?: string | null;
   }
 ): { subject: string; html: string } | null {
-  const { businessName, appUrl, upgradeUrl, licenseExpiresAt, scheduledDeleteAt } = ctx;
+  const { businessName, recipientName, licensePlan, appUrl, upgradeUrl, licenseExpiresAt, scheduledDeleteAt } = ctx;
   const name = businessName || 'tu negocio';
+  const greetName = firstName(recipientName) || name;
+  const planName = planLabel(licensePlan);
 
   switch (emailType) {
     case 'trial_welcome':
@@ -199,10 +220,10 @@ function getEmailTemplate(
 
     case 'license_activated':
       return {
-        subject: `✅ Tu licencia de ${APP_NAME} está activa por 30 días`,
+        subject: `✅ Tu licencia de ${APP_NAME}${planName ? ` ${planName}` : ''} está activa por 30 días`,
         html: wrap(`
-          <h2 style="color:#059669;margin-top:0">✅ ¡Tu licencia de ${APP_NAME} ya está activa!</h2>
-          <p style="color:#374151;line-height:1.6">Hola, ${name}. Tu licencia ha sido activada por <strong>30 días</strong>. Tienes acceso completo a todas las funciones de ${APP_NAME}.</p>
+          <h2 style="color:#059669;margin-top:0">✅ ¡Bienvenido a ${APP_NAME}${planName ? ` ${planName}` : ''}!</h2>
+          <p style="color:#374151;line-height:1.6">Hola, ${greetName}. Tu licencia${planName ? ` <strong>${APP_NAME} ${planName}</strong>` : ''} para <strong>${name}</strong> ha sido activada por <strong>30 días</strong>. Tienes acceso completo a todas las funciones.</p>
           <p style="color:#374151;line-height:1.6">Fecha de vencimiento: <strong>${formatDate(licenseExpiresAt)}</strong></p>
           ${ctaButton('Ir a mi cuenta', appUrl)}
           <p style="color:#6b7280;font-size:13px">¿Tienes preguntas? Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:#059669">${SUPPORT_EMAIL}</a></p>
@@ -211,10 +232,10 @@ function getEmailTemplate(
 
     case 'renewal_charge_reminder_3':
       return {
-        subject: `Recordatorio: cobro automático en 3 días`,
+        subject: `Recordatorio: tu plan ${APP_NAME}${planName ? ` ${planName}` : ''} se renueva en 3 días`,
         html: wrap(`
-          <h2 style="color:#d97706;margin-top:0">Aviso: tu suscripción se cobra en 3 días</h2>
-          <p style="color:#374151;line-height:1.6">Hola, ${name}. Te recordamos que Mercado Pago realizará el cobro automático de tu suscripción a ${APP_NAME} en <strong>3 días</strong>.</p>
+          <h2 style="color:#d97706;margin-top:0">Tu plan ${APP_NAME}${planName ? ` ${planName}` : ''} se renueva en 3 días</h2>
+          <p style="color:#374151;line-height:1.6">Hola, ${greetName}. Te recordamos que Mercado Pago realizará el cobro automático de tu plan${planName ? ` <strong>${APP_NAME} ${planName}</strong>` : ` ${APP_NAME}`} para <strong>${name}</strong> en <strong>3 días</strong>.</p>
           <p style="color:#374151;line-height:1.6">Fecha programada del cobro: <strong>${formatDate(licenseExpiresAt)}</strong></p>
           <p style="color:#374151;line-height:1.6">Asegúrate de que tu método de pago en Mercado Pago esté vigente y con fondos suficientes.</p>
           ${ctaButton('Ir a mi cuenta', appUrl)}
@@ -224,10 +245,10 @@ function getEmailTemplate(
 
     case 'renewal_charge_reminder_2':
       return {
-        subject: `Recordatorio: cobro automático en 2 días`,
+        subject: `Recordatorio: tu plan ${APP_NAME}${planName ? ` ${planName}` : ''} se renueva en 2 días`,
         html: wrap(`
-          <h2 style="color:#d97706;margin-top:0">Aviso: tu suscripción se cobra en 2 días</h2>
-          <p style="color:#374151;line-height:1.6">Hola, ${name}. Mercado Pago realizará el cobro automático de tu suscripción a ${APP_NAME} en <strong>2 días</strong>.</p>
+          <h2 style="color:#d97706;margin-top:0">Tu plan ${APP_NAME}${planName ? ` ${planName}` : ''} se renueva en 2 días</h2>
+          <p style="color:#374151;line-height:1.6">Hola, ${greetName}. Mercado Pago realizará el cobro automático de tu plan${planName ? ` <strong>${APP_NAME} ${planName}</strong>` : ` ${APP_NAME}`} para <strong>${name}</strong> en <strong>2 días</strong>.</p>
           <p style="color:#374151;line-height:1.6">Fecha programada del cobro: <strong>${formatDate(licenseExpiresAt)}</strong></p>
           <p style="color:#374151;line-height:1.6">Asegúrate de que tu método de pago en Mercado Pago esté vigente y con fondos suficientes.</p>
           ${ctaButton('Ir a mi cuenta', appUrl)}
@@ -237,10 +258,10 @@ function getEmailTemplate(
 
     case 'renewal_charge_reminder_1':
       return {
-        subject: `Recordatorio: cobro automático mañana`,
+        subject: `Recordatorio: tu plan ${APP_NAME}${planName ? ` ${planName}` : ''} se renueva mañana`,
         html: wrap(`
-          <h2 style="color:#dc2626;margin-top:0">⚠️ Tu suscripción se cobra mañana</h2>
-          <p style="color:#374151;line-height:1.6">Hola, ${name}. Mañana Mercado Pago realizará el cobro automático de tu suscripción a ${APP_NAME}.</p>
+          <h2 style="color:#dc2626;margin-top:0">⚠️ Tu plan ${APP_NAME}${planName ? ` ${planName}` : ''} se renueva mañana</h2>
+          <p style="color:#374151;line-height:1.6">Hola, ${greetName}. Mañana Mercado Pago realizará el cobro automático de tu plan${planName ? ` <strong>${APP_NAME} ${planName}</strong>` : ` ${APP_NAME}`} para <strong>${name}</strong>.</p>
           <p style="color:#374151;line-height:1.6">Fecha programada del cobro: <strong>${formatDate(licenseExpiresAt)}</strong></p>
           <p style="color:#374151;line-height:1.6">Si tu método de pago no es válido o no tiene fondos suficientes, tu acceso podría verse afectado.</p>
           ${ctaButton('Ir a mi cuenta', appUrl)}
@@ -250,10 +271,10 @@ function getEmailTemplate(
 
     case 'payment_received':
       return {
-        subject: `✅ Pago recibido — Tu licencia de ${APP_NAME} se renovó`,
+        subject: `✅ Pago recibido — Tu plan ${APP_NAME}${planName ? ` ${planName}` : ''} se renovó`,
         html: wrap(`
-          <h2 style="color:#059669;margin-top:0">✅ Pago recibido y licencia renovada</h2>
-          <p style="color:#374151;line-height:1.6">Hola, ${name}. Hemos confirmado la recepción de tu cobro en Mercado Pago. Tu licencia de ${APP_NAME} ha sido renovada exitosamente.</p>
+          <h2 style="color:#059669;margin-top:0">✅ Pago recibido y plan renovado</h2>
+          <p style="color:#374151;line-height:1.6">Hola, ${greetName}. Hemos confirmado la recepción de tu cobro en Mercado Pago. Tu plan${planName ? ` <strong>${APP_NAME} ${planName}</strong>` : ` ${APP_NAME}`} para <strong>${name}</strong> ha sido renovado exitosamente.</p>
           <p style="color:#374151;line-height:1.6">Tu licencia está activa hasta: <strong>${formatDate(licenseExpiresAt)}</strong></p>
           <p style="color:#374151;line-height:1.6">Gracias por confiar en ${APP_NAME} para gestionar tu inventario.</p>
           ${ctaButton('Ir a mi cuenta', appUrl)}
@@ -353,7 +374,9 @@ Deno.serve(async (req: Request) => {
     let finalBatch: Array<{
       email_type: string;
       recipient_email: string;
+      recipient_name?: string | null;
       business_name: string;
+      license_plan?: string | null;
       license_expires_at?: string | null;
       scheduled_delete_at?: string | null;
     }> = [];
@@ -390,6 +413,8 @@ Deno.serve(async (req: Request) => {
     for (const job of finalBatch) {
       const ctx = {
         businessName: job.business_name || 'tu negocio',
+        recipientName: job.recipient_name || null,
+        licensePlan: job.license_plan || null,
         appUrl,
         supportEmail: SUPPORT_EMAIL,
         upgradeUrl: UPGRADE_URL,

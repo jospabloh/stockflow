@@ -6,16 +6,25 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 interface EmailJob {
   email_type: string;
   recipient_email: string;
+  recipient_name?: string | null;
   business_id: string;
   business_name: string;
+  license_plan?: string | null;
   license_expires_at?: string | null;
   scheduled_delete_at?: string | null;
 }
 
-async function getAdminEmails(base44: any, businessId: string): Promise<string[]> {
+interface AdminInfo {
+  email: string;
+  full_name: string | null;
+}
+
+async function getAdmins(base44: any, businessId: string): Promise<AdminInfo[]> {
   try {
     const users = await base44.asServiceRole.entities.User.filter({ business_id: businessId });
-    return users.filter((u: any) => u.role === 'admin').map((u: any) => u.email).filter(Boolean);
+    return users
+      .filter((u: any) => u.role === 'admin' && u.email)
+      .map((u: any) => ({ email: u.email, full_name: u.full_name || null }));
   } catch (_) {
     return [];
   }
@@ -25,18 +34,20 @@ function scheduleEmail(
   jobs: EmailJob[],
   seen: Set<string>,
   emailType: string,
-  recipientEmail: string,
+  admin: AdminInfo,
   biz: any
 ): boolean {
-  if (!recipientEmail) return false;
-  const key = `${biz.id}:${emailType}:${recipientEmail}`;
+  if (!admin?.email) return false;
+  const key = `${biz.id}:${emailType}:${admin.email}`;
   if (seen.has(key)) return false;
   seen.add(key);
   jobs.push({
     email_type: emailType,
-    recipient_email: recipientEmail,
+    recipient_email: admin.email,
+    recipient_name: admin.full_name,
     business_id: biz.id,
     business_name: biz.name || 'tu negocio',
+    license_plan: biz.license_plan ?? null,
     license_expires_at: biz.license_expires_at ?? null,
     scheduled_delete_at: biz.scheduled_delete_at ?? null,
   });
@@ -81,7 +92,7 @@ Deno.serve(async (req: Request) => {
 
       const trialStart = new Date(biz.trial_start_at);
       const daysElapsed = Math.floor((now.getTime() - trialStart.getTime()) / DAY_MS);
-      const adminEmails = await getAdminEmails(base44, biz.id);
+      const admins = await getAdmins(base44, biz.id);
 
       // Trial expired — transition to view_only
       if (biz.trial_end_at && new Date(biz.trial_end_at) <= now) {
@@ -90,9 +101,9 @@ Deno.serve(async (req: Request) => {
           view_only_since: nowISO,
         });
         results.trial.transitioned++;
-        for (const email of adminEmails) {
-          if (scheduleEmail(emailJobs, seen, 'trial_expired', email, biz)) results.trial.emails_queued++;
-          if (scheduleEmail(emailJobs, seen, 'account_view_only', email, biz)) results.trial.emails_queued++;
+        for (const admin of admins) {
+          if (scheduleEmail(emailJobs, seen, 'trial_expired', admin, biz)) results.trial.emails_queued++;
+          if (scheduleEmail(emailJobs, seen, 'account_view_only', admin, biz)) results.trial.emails_queued++;
         }
         continue;
       }
@@ -106,8 +117,8 @@ Deno.serve(async (req: Request) => {
       ];
       for (const m of milestones) {
         if (daysElapsed === m.day) {
-          for (const email of adminEmails) {
-            if (scheduleEmail(emailJobs, seen, m.type, email, biz)) results.trial.emails_queued++;
+          for (const admin of admins) {
+            if (scheduleEmail(emailJobs, seen, m.type, admin, biz)) results.trial.emails_queued++;
           }
         }
       }
@@ -125,12 +136,12 @@ Deno.serve(async (req: Request) => {
 
       const viewOnlySince = new Date(biz.view_only_since);
       const daysInViewOnly = Math.floor((now.getTime() - viewOnlySince.getTime()) / DAY_MS);
-      const adminEmails = await getAdminEmails(base44, biz.id);
+      const admins = await getAdmins(base44, biz.id);
 
       // Day 10: warn about upcoming archival (exact day to avoid daily re-sends)
       if (daysInViewOnly === 10) {
-        for (const email of adminEmails) {
-          if (scheduleEmail(emailJobs, seen, 'archive_warning', email, biz)) results.view_only.emails_queued++;
+        for (const admin of admins) {
+          if (scheduleEmail(emailJobs, seen, 'archive_warning', admin, biz)) results.view_only.emails_queued++;
         }
       }
 
@@ -145,8 +156,8 @@ Deno.serve(async (req: Request) => {
           scheduled_delete_at: scheduledDelete.toISOString(),
         });
         results.view_only.archived++;
-        for (const email of adminEmails) {
-          if (scheduleEmail(emailJobs, seen, 'account_archived', email, updatedBiz)) results.view_only.emails_queued++;
+        for (const admin of admins) {
+          if (scheduleEmail(emailJobs, seen, 'account_archived', admin, updatedBiz)) results.view_only.emails_queued++;
         }
       }
     }
@@ -158,19 +169,19 @@ Deno.serve(async (req: Request) => {
 
       const scheduledDelete = new Date(biz.scheduled_delete_at);
       const daysUntilDelete = Math.ceil((scheduledDelete.getTime() - now.getTime()) / DAY_MS);
-      const adminEmails = await getAdminEmails(base44, biz.id);
+      const admins = await getAdmins(base44, biz.id);
 
       // Exactly 7 days before: warn
       if (daysUntilDelete === 7) {
-        for (const email of adminEmails) {
-          if (scheduleEmail(emailJobs, seen, 'delete_warning', email, biz)) results.archived.emails_queued++;
+        for (const admin of admins) {
+          if (scheduleEmail(emailJobs, seen, 'delete_warning', admin, biz)) results.archived.emails_queued++;
         }
       }
 
       // Deletion day reached
       if (scheduledDelete <= now) {
-        for (const email of adminEmails) {
-          scheduleEmail(emailJobs, seen, 'account_deleted_confirmation', email, biz);
+        for (const admin of admins) {
+          scheduleEmail(emailJobs, seen, 'account_deleted_confirmation', admin, biz);
           results.archived.emails_queued++;
         }
 
@@ -200,7 +211,7 @@ Deno.serve(async (req: Request) => {
       results.active.processed++;
       const expiresAt = new Date(biz.license_expires_at);
       const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / DAY_MS);
-      const adminEmails = await getAdminEmails(base44, biz.id);
+      const admins = await getAdmins(base44, biz.id);
 
       // Expired: transition to view_only
       if (expiresAt <= now) {
@@ -209,9 +220,9 @@ Deno.serve(async (req: Request) => {
           view_only_since: nowISO,
         });
         results.active.transitioned++;
-        for (const email of adminEmails) {
-          if (scheduleEmail(emailJobs, seen, 'license_expired', email, biz)) results.active.emails_queued++;
-          if (scheduleEmail(emailJobs, seen, 'account_view_only', email, biz)) results.active.emails_queued++;
+        for (const admin of admins) {
+          if (scheduleEmail(emailJobs, seen, 'license_expired', admin, biz)) results.active.emails_queued++;
+          if (scheduleEmail(emailJobs, seen, 'account_view_only', admin, biz)) results.active.emails_queued++;
         }
         continue;
       }
@@ -224,8 +235,8 @@ Deno.serve(async (req: Request) => {
       ];
       for (const m of milestones) {
         if (daysUntilExpiry === m.threshold) {
-          for (const email of adminEmails) {
-            if (scheduleEmail(emailJobs, seen, m.type, email, biz)) results.active.emails_queued++;
+          for (const admin of admins) {
+            if (scheduleEmail(emailJobs, seen, m.type, admin, biz)) results.active.emails_queued++;
           }
         }
       }
@@ -237,7 +248,7 @@ Deno.serve(async (req: Request) => {
     )) {
       const expiresAt = new Date(biz.license_expires_at);
       const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / DAY_MS);
-      const adminEmails = await getAdminEmails(base44, biz.id);
+      const admins = await getAdmins(base44, biz.id);
 
       const chargeReminders = [
         { threshold: 3, type: 'renewal_charge_reminder_3' },
@@ -246,8 +257,8 @@ Deno.serve(async (req: Request) => {
       ];
       for (const r of chargeReminders) {
         if (daysUntilExpiry === r.threshold) {
-          for (const email of adminEmails) {
-            if (scheduleEmail(emailJobs, seen, r.type, email, biz)) results.active.emails_queued++;
+          for (const admin of admins) {
+            if (scheduleEmail(emailJobs, seen, r.type, admin, biz)) results.active.emails_queued++;
           }
         }
       }

@@ -189,17 +189,18 @@ Deno.serve(async (req) => {
     if (previousBillingStatus !== 'active' && fresh.billing_status === 'active') {
       try {
         const tenantUsers = await base44.asServiceRole.entities.User.filter({ business_id });
-        const adminEmails: string[] = tenantUsers
-          .filter((u: any) => u.role === 'admin')
-          .map((u: any) => u.email)
-          .filter(Boolean);
+        const admins = tenantUsers
+          .filter((u: any) => u.role === 'admin' && u.email)
+          .map((u: any) => ({ email: u.email, full_name: u.full_name || null }));
 
-        if (adminEmails.length > 0) {
-          const jobs = adminEmails.map((email: string) => ({
+        if (admins.length > 0) {
+          const jobs = admins.map((a: { email: string; full_name: string | null }) => ({
             email_type: 'license_activated',
-            recipient_email: email,
+            recipient_email: a.email,
+            recipient_name: a.full_name,
             business_id,
             business_name: fresh.name || 'tu negocio',
+            license_plan: fresh.license_plan ?? null,
             license_expires_at: fresh.license_expires_at ?? null,
           }));
 
