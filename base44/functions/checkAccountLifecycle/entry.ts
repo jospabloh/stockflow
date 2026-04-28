@@ -239,10 +239,16 @@ Deno.serve(async (req: Request) => {
       const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / DAY_MS);
       const adminEmails = await getAdminEmails(base44, biz.id);
 
-      // FYI: renewal in 7 days
-      if (daysUntilExpiry === 7) {
-        for (const email of adminEmails) {
-          if (scheduleEmail(emailJobs, seen, 'renewal_upcoming', email, biz)) results.active.emails_queued++;
+      const chargeReminders = [
+        { threshold: 3, type: 'renewal_charge_reminder_3' },
+        { threshold: 2, type: 'renewal_charge_reminder_2' },
+        { threshold: 1, type: 'renewal_charge_reminder_1' },
+      ];
+      for (const r of chargeReminders) {
+        if (daysUntilExpiry === r.threshold) {
+          for (const email of adminEmails) {
+            if (scheduleEmail(emailJobs, seen, r.type, email, biz)) results.active.emails_queued++;
+          }
         }
       }
     }

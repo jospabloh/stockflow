@@ -197,6 +197,69 @@ function getEmailTemplate(
         `, appUrl),
       };
 
+    case 'license_activated':
+      return {
+        subject: `✅ Tu licencia de ${APP_NAME} está activa por 30 días`,
+        html: wrap(`
+          <h2 style="color:#059669;margin-top:0">✅ ¡Tu licencia de ${APP_NAME} ya está activa!</h2>
+          <p style="color:#374151;line-height:1.6">Hola, ${name}. Tu licencia ha sido activada por <strong>30 días</strong>. Tienes acceso completo a todas las funciones de ${APP_NAME}.</p>
+          <p style="color:#374151;line-height:1.6">Fecha de vencimiento: <strong>${formatDate(licenseExpiresAt)}</strong></p>
+          ${ctaButton('Ir a mi cuenta', appUrl)}
+          <p style="color:#6b7280;font-size:13px">¿Tienes preguntas? Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:#059669">${SUPPORT_EMAIL}</a></p>
+        `, appUrl),
+      };
+
+    case 'renewal_charge_reminder_3':
+      return {
+        subject: `Recordatorio: cobro automático en 3 días`,
+        html: wrap(`
+          <h2 style="color:#d97706;margin-top:0">Aviso: tu suscripción se cobra en 3 días</h2>
+          <p style="color:#374151;line-height:1.6">Hola, ${name}. Te recordamos que Mercado Pago realizará el cobro automático de tu suscripción a ${APP_NAME} en <strong>3 días</strong>.</p>
+          <p style="color:#374151;line-height:1.6">Fecha programada del cobro: <strong>${formatDate(licenseExpiresAt)}</strong></p>
+          <p style="color:#374151;line-height:1.6">Asegúrate de que tu método de pago en Mercado Pago esté vigente y con fondos suficientes.</p>
+          ${ctaButton('Ir a mi cuenta', appUrl)}
+          <p style="color:#6b7280;font-size:13px">¿Tienes preguntas? Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND_COLOR}">${SUPPORT_EMAIL}</a></p>
+        `, appUrl),
+      };
+
+    case 'renewal_charge_reminder_2':
+      return {
+        subject: `Recordatorio: cobro automático en 2 días`,
+        html: wrap(`
+          <h2 style="color:#d97706;margin-top:0">Aviso: tu suscripción se cobra en 2 días</h2>
+          <p style="color:#374151;line-height:1.6">Hola, ${name}. Mercado Pago realizará el cobro automático de tu suscripción a ${APP_NAME} en <strong>2 días</strong>.</p>
+          <p style="color:#374151;line-height:1.6">Fecha programada del cobro: <strong>${formatDate(licenseExpiresAt)}</strong></p>
+          <p style="color:#374151;line-height:1.6">Asegúrate de que tu método de pago en Mercado Pago esté vigente y con fondos suficientes.</p>
+          ${ctaButton('Ir a mi cuenta', appUrl)}
+          <p style="color:#6b7280;font-size:13px">¿Tienes preguntas? Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND_COLOR}">${SUPPORT_EMAIL}</a></p>
+        `, appUrl),
+      };
+
+    case 'renewal_charge_reminder_1':
+      return {
+        subject: `Recordatorio: cobro automático mañana`,
+        html: wrap(`
+          <h2 style="color:#dc2626;margin-top:0">⚠️ Tu suscripción se cobra mañana</h2>
+          <p style="color:#374151;line-height:1.6">Hola, ${name}. Mañana Mercado Pago realizará el cobro automático de tu suscripción a ${APP_NAME}.</p>
+          <p style="color:#374151;line-height:1.6">Fecha programada del cobro: <strong>${formatDate(licenseExpiresAt)}</strong></p>
+          <p style="color:#374151;line-height:1.6">Si tu método de pago no es válido o no tiene fondos suficientes, tu acceso podría verse afectado.</p>
+          ${ctaButton('Ir a mi cuenta', appUrl)}
+          <p style="color:#6b7280;font-size:13px">¿Necesitas ayuda? Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND_COLOR}">${SUPPORT_EMAIL}</a></p>
+        `, appUrl),
+      };
+
+    case 'payment_received':
+      return {
+        subject: `✅ Pago recibido — Tu licencia de ${APP_NAME} se renovó`,
+        html: wrap(`
+          <h2 style="color:#059669;margin-top:0">✅ Pago recibido y licencia renovada</h2>
+          <p style="color:#374151;line-height:1.6">Hola, ${name}. Hemos confirmado la recepción de tu cobro en Mercado Pago. Tu licencia de ${APP_NAME} ha sido renovada exitosamente.</p>
+          <p style="color:#374151;line-height:1.6">Tu licencia está activa hasta: <strong>${formatDate(licenseExpiresAt)}</strong></p>
+          <p style="color:#374151;line-height:1.6">Gracias por confiar en ${APP_NAME} para gestionar tu inventario.</p>
+          ${ctaButton('Ir a mi cuenta', appUrl)}
+        `, appUrl),
+      };
+
     case 'account_view_only':
       return {
         subject: `Tu cuenta de ${APP_NAME} está en modo Solo Lectura`,
