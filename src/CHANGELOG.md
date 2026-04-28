@@ -1,5 +1,21 @@
 # Changelog — StockFlow
 
+## v2.12.0 (2026-04-28)
+
+### 📧 Emails de Ciclo de Vida — Expansión MercadoPago
+- **5 nuevos tipos de email** en entidad `EmailNotification`: `license_activated`, `renewal_charge_reminder_3/2/1`, `payment_received`
+- **`sendLifecycleEmails`**: 5 nuevas plantillas HTML en español — activación de licencia, recordatorios de cobro (3/2/1 día), confirmación de pago recibido
+- **`adminUpdateTenantLicense`**: dispara automáticamente email `license_activated` al cambiar `billing_status` a `active`
+- **`checkAccountLifecycle`**: envía `renewal_charge_reminder_3/2/1` para tenants `active + auto_renewal` con 3, 2 y 1 días antes del vencimiento
+- **`confirmRenewalPayment`**: nueva función para confirmar pago de MP manualmente — envía `payment_received` a todos los admins del tenant
+- **Panel de Licencias**: botón ✅ "Confirmar pago recibido" en filas de tenants `active + auto_renewal`
+
+### ⏰ Automatizaciones Diarias
+- **Cron `checkAccountLifecycle`**: corre diario a las 08:00 CDMX (14:00 UTC)
+- **Cron `processMonthlyRenewal`**: corre diario a las 09:00 CDMX (15:00 UTC), actúa solo el día 1 del mes
+
+---
+
 ## v2.11.0 (2026-04-26)
 
 ### 💳 Pagos Parciales en Cotizaciones
