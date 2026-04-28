@@ -16,6 +16,7 @@ import { base44 } from "@/api/base44Client";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { useSessionManager } from "@/hooks/useSessionManager";
 import { useRegionalConfig } from "@/hooks/useRegionalConfig";
+import { useActivityTracker } from "@/hooks/useActivityTracker";
 import SessionBanner from "@/components/SessionBanner";
 import SessionExpiredDialog from "@/components/SessionExpiredDialog";
 import IdleWarningDialog from "@/components/IdleWarningDialog";
@@ -106,6 +107,7 @@ export default function Layout({ children, currentPageName }) {
   const { canSee } = usePermissions();
   const { sessionStatus, reactivate, sessionExpired, idleState, continueSession } = useSessionManager(!!businessId);
   useRegionalConfig();
+  useActivityTracker(!!businessId);
   const { goBack, direction, navigationStack } = useNavigation();
   const navigate = useNavigate();
   const location = useLocation();

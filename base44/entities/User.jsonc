@@ -14,6 +14,21 @@
     "business_id": {
       "type": "string",
       "description": "ID del negocio al que pertenece el usuario"
+    },
+    "last_active_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u00daltima vez que el usuario tuvo actividad significativa en la app (actualizado con throttle \u2265 15 min)"
+    },
+    "last_trial_reactivation_email_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha del \u00faltimo email de reactivaci\u00f3n de trial enviado a este usuario"
+    },
+    "trial_reactivation_email_count": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de emails de reactivaci\u00f3n de trial enviados durante este per\u00edodo de prueba"
     }
   },
   "required": []

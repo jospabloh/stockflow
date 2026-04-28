@@ -333,6 +333,30 @@ function getEmailTemplate(emailType, ctx) {
         `, appUrl),
       };
 
+    case 'trial_reactivation': {
+      const daysLeft = ctx.daysLeft ?? 0;
+      return {
+        subject: `Te extrañamos en ${APP_NAME} — aún tienes ${daysLeft} ${daysLeft === 1 ? 'día' : 'días'} de prueba`,
+        html: wrap(`
+          <h2 style="color:#111827;margin-top:0">¡Hola ${greetName}, te extrañamos en ${APP_NAME}! 👋</h2>
+          <p style="color:#374151;line-height:1.6">Vimos que no has usado ${APP_NAME} en los últimos días y queríamos recordarte que tu prueba gratuita sigue activa.</p>
+          <div style="background:#eff6ff;border-left:4px solid ${BRAND_COLOR};padding:14px 18px;border-radius:4px;margin:16px 0">
+            <p style="margin:0;color:#1e40af;font-size:18px;font-weight:700">⏰ Te quedan ${daysLeft} ${daysLeft === 1 ? 'día' : 'días'} de prueba</p>
+          </div>
+          <ul style="color:#374151;line-height:1.8;padding-left:20px">
+            <li>Controlar tu inventario</li>
+            <li>Registrar entradas y salidas de productos</li>
+            <li>Crear y administrar cotizaciones</li>
+            <li>Dar seguimiento a clientes y proveedores</li>
+            <li>Recibir alertas de stock bajo</li>
+            <li>Consultar reportes para tomar mejores decisiones</li>
+          </ul>
+          ${ctaButton('Volver a StockFlow', appUrl)}
+          <p style="color:#9ca3af;font-size:12px">Equipo ${APP_NAME}</p>
+        `, appUrl),
+      };
+    }
+
     default:
       return null;
   }

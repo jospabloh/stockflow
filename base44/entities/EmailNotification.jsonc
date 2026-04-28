@@ -15,6 +15,7 @@
         "trial_day_28",
         "trial_day_30",
         "trial_expired",
+        "trial_reactivation",
         "license_expiring_7",
         "license_expiring_3",
         "license_expiring_1",
@@ -43,7 +44,8 @@
       "enum": [
         "pending",
         "sent",
-        "failed"
+        "failed",
+        "skipped"
       ],
       "default": "pending",
       "description": "Estado de envio"
@@ -66,6 +68,18 @@
     "error_message": {
       "type": "string",
       "description": "Mensaje de error del ultimo intento fallido"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Clave de idempotencia para prevenir duplicados: email_type:user_id:business_id:YYYY-MM-DD"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID del usuario destinatario (para trail reactivation y notificaciones por usuario)"
+    },
+    "skip_reason": {
+      "type": "string",
+      "description": "Raz\u00f3n por la que el email fue omitido (para logs)"
     }
   },
   "required": [

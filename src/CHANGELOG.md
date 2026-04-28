@@ -2,6 +2,18 @@
 
 ## v2.12.0 (2026-04-28)
 
+### 📧 Reactivación Automática de Trial (nueva feature)
+- **`processTrialReactivationEmails`**: job diario que detecta usuarios con trial activo e inactivos >24 h y les envía un email amigable de reactivación
+- **Email bilingüe**: plantilla en español (es-MX) e inglés (en-US) según locale del tenant; sin hardcoding de un solo idioma
+- **Reglas anti-spam**: máximo 3 emails por trial, mínimo 48 h entre envíos, no envía si el usuario estuvo activo recientemente
+- **Idempotencia**: clave única `trial_reactivation:user_id:business_id:YYYY-MM-DD` previene duplicados aunque el cron corra dos veces
+- **`trackUserActivity`**: función backend con throttle de 15 min; actualiza `last_active_at` del usuario autenticado sin tocar otros campos
+- **`useActivityTracker`**: hook React que dispara el tracker en cada carga de página/navegación (máx. 1 vez cada 15 min por sesión)
+- **Entidad User**: 3 nuevos campos — `last_active_at`, `last_trial_reactivation_email_at`, `trial_reactivation_email_count` (sin romper campos existentes)
+- **Entidad EmailNotification**: nuevo tipo `trial_reactivation` + campos `idempotency_key`, `user_id`, `skip_reason` para auditoría
+- **Tenant isolation preservada**: el job solo lee usuarios filtrados por `business_id`; no hay leaks entre tenants
+- **Cron**: diario a las 10:00 CDMX (16:00 UTC)
+
 ### 📧 Emails de Ciclo de Vida — Expansión MercadoPago
 - **5 nuevos tipos de email** en entidad `EmailNotification`: `license_activated`, `renewal_charge_reminder_3/2/1`, `payment_received`
 - **`sendLifecycleEmails`**: 5 nuevas plantillas HTML en español — activación de licencia, recordatorios de cobro (3/2/1 día), confirmación de pago recibido
@@ -13,6 +25,7 @@
 ### ⏰ Automatizaciones Diarias
 - **Cron `checkAccountLifecycle`**: corre diario a las 08:00 CDMX (14:00 UTC)
 - **Cron `processMonthlyRenewal`**: corre diario a las 09:00 CDMX (15:00 UTC), actúa solo el día 1 del mes
+- **Cron `processTrialReactivationEmails`**: corre diario a las 10:00 CDMX (16:00 UTC)
 
 ---
 
