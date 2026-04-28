@@ -35,6 +35,7 @@ export default function LicenseAdmin() {
   const [editForm, setEditForm] = useState({});
   const [sendingTestEmails, setSendingTestEmails] = useState(false);
   const [confirmingPayment, setConfirmingPayment] = useState(null);
+  const [saveWarning, setSaveWarning] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -98,8 +99,6 @@ export default function LicenseAdmin() {
     });
     setEditTarget(biz);
   };
-
-  const [saveWarning, setSaveWarning] = useState(null);
 
   const handleSave = async () => {
     setSaving(true);
@@ -187,7 +186,6 @@ export default function LicenseAdmin() {
         </div>
       </div>
 
-      {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {Object.entries(STATUS_CONFIG).map(([status, cfg]) => {
           const count = businesses.filter(b => b.billing_status === status).length;
@@ -204,7 +202,6 @@ export default function LicenseAdmin() {
         })}
       </div>
 
-      {/* Search + table */}
       <div className="space-y-3">
         <div className="relative max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -228,9 +225,9 @@ export default function LicenseAdmin() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={7} className="text-center py-12 text-muted-foreground">Cargando...</td></tr>
+                  <tr><td colSpan={8} className="text-center py-12 text-muted-foreground">Cargando...</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center py-12 text-muted-foreground">Sin resultados</td></tr>
+                  <tr><td colSpan={8} className="text-center py-12 text-muted-foreground">Sin resultados</td></tr>
                 ) : (
                   filtered.map(biz => {
                     const sCfg = STATUS_CONFIG[biz.billing_status] || STATUS_CONFIG.active;
@@ -303,7 +300,6 @@ export default function LicenseAdmin() {
         </div>
       </div>
 
-      {/* Edit dialog */}
       <Dialog open={!!editTarget} onOpenChange={o => { if (!o) { setEditTarget(null); setEditForm({}); setSaveWarning(null); } }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -416,7 +412,7 @@ export default function LicenseAdmin() {
               </p>
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => { setEditTarget(null); setEditForm({}); }} disabled={saving}>Cancelar</Button>
+              <Button variant="outline" onClick={() => { setEditTarget(null); setEditForm({}); setSaveWarning(null); }} disabled={saving}>Cancelar</Button>
               <Button variant="outline" onClick={() => { load(); setEditTarget(null); setEditForm({}); setSaveWarning(null); }} disabled={saving}>Cerrar</Button>
               <Button onClick={handleSave} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
                 {saving ? "Guardando..." : "Guardar Cambios"}

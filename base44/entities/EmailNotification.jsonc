@@ -40,7 +40,11 @@
     },
     "status": {
       "type": "string",
-      "enum": ["pending", "sent", "failed"],
+      "enum": [
+        "pending",
+        "sent",
+        "failed"
+      ],
       "default": "pending",
       "description": "Estado de envio"
     },
@@ -64,19 +68,31 @@
       "description": "Mensaje de error del ultimo intento fallido"
     }
   },
-  "required": ["business_id", "email_type", "recipient_email"],
+  "required": [
+    "business_id",
+    "email_type",
+    "recipient_email"
+  ],
   "rls": {
     "read": {
-      "user_condition": { "role": "admin" }
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "create": {
-      "user_condition": { "role": "admin" }
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "update": {
-      "user_condition": { "role": "admin" }
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
-      "user_condition": { "role": "admin" }
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }

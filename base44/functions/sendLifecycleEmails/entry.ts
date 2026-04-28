@@ -7,24 +7,24 @@ const BRAND_COLOR = '#4F46E5';
 const UPGRADE_URL = 'https://www.acaciaco.com.mx/stockflow';
 const MAX_RETRIES = 3;
 
-const PLAN_LABELS: Record<string, string> = {
+const PLAN_LABELS = {
   start: 'Start',
   growth: 'Growth',
   pro: 'Pro',
   founder: 'Founder',
 };
 
-function planLabel(licensePlan: string | null | undefined): string {
+function planLabel(licensePlan) {
   if (!licensePlan) return '';
   return PLAN_LABELS[licensePlan] || licensePlan;
 }
 
-function firstName(fullName: string | null | undefined): string {
+function firstName(fullName) {
   if (!fullName) return '';
   return String(fullName).trim().split(/\s+/)[0] || '';
 }
 
-function formatDate(isoString: string | null | undefined): string {
+function formatDate(isoString) {
   if (!isoString) return '—';
   try {
     return new Date(isoString).toLocaleDateString('es-MX', {
@@ -35,7 +35,7 @@ function formatDate(isoString: string | null | undefined): string {
   }
 }
 
-function wrap(bodyHtml: string, appUrl: string): string {
+function wrap(bodyHtml, appUrl) {
   return `<!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -57,25 +57,13 @@ function wrap(bodyHtml: string, appUrl: string): string {
 </html>`;
 }
 
-function ctaButton(label: string, url: string): string {
+function ctaButton(label, url) {
   return `<div style="text-align:center;margin:24px 0">
     <a href="${url}" style="background:${BRAND_COLOR};color:#ffffff;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block">${label}</a>
   </div>`;
 }
 
-function getEmailTemplate(
-  emailType: string,
-  ctx: {
-    businessName: string;
-    recipientName?: string | null;
-    licensePlan?: string | null;
-    appUrl: string;
-    supportEmail: string;
-    upgradeUrl: string;
-    licenseExpiresAt?: string | null;
-    scheduledDeleteAt?: string | null;
-  }
-): { subject: string; html: string } | null {
+function getEmailTemplate(emailType, ctx) {
   const { businessName, recipientName, licensePlan, appUrl, upgradeUrl, licenseExpiresAt, scheduledDeleteAt } = ctx;
   const name = businessName || 'tu negocio';
   const greetName = firstName(recipientName) || name;
@@ -350,7 +338,7 @@ function getEmailTemplate(
   }
 }
 
-Deno.serve(async (req: Request) => {
+Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
@@ -369,29 +357,18 @@ Deno.serve(async (req: Request) => {
 
     const appUrl = Deno.env.get('APP_URL') || UPGRADE_URL;
 
-    // Mode 1: jobs passed directly in body (called from checkAccountLifecycle / expireTrials)
-    // Mode 2: standalone scheduler run — read from EmailNotification entity if available
-    let finalBatch: Array<{
-      email_type: string;
-      recipient_email: string;
-      recipient_name?: string | null;
-      business_name: string;
-      license_plan?: string | null;
-      license_expires_at?: string | null;
-      scheduled_delete_at?: string | null;
-    }> = [];
+    let finalBatch = [];
 
     if (Array.isArray(body.jobs) && body.jobs.length > 0) {
       finalBatch = body.jobs;
       console.log(`[sendLifecycleEmails] Using ${finalBatch.length} inline jobs from request body`);
     } else {
-      // Try reading from EmailNotification entity (optional — entity may not exist yet)
       try {
         const allNotifications = await base44.asServiceRole.entities.EmailNotification.list();
         const toProcess = allNotifications.filter(
-          (n: any) => n.status === 'pending' || (n.status === 'failed' && (n.retry_count || 0) < MAX_RETRIES)
+          (n) => n.status === 'pending' || (n.status === 'failed' && (n.retry_count || 0) < MAX_RETRIES)
         );
-        const seenKeys = new Set<string>();
+        const seenKeys = new Set();
         for (const n of toProcess) {
           const key = `${n.business_id}:${n.email_type}:${n.recipient_email}`;
           if (!seenKeys.has(key)) {
@@ -400,7 +377,7 @@ Deno.serve(async (req: Request) => {
           }
         }
         console.log(`[sendLifecycleEmails] Using ${finalBatch.length} jobs from EmailNotification entity`);
-      } catch (entityErr: any) {
+      } catch (entityErr) {
         console.warn(`[sendLifecycleEmails] EmailNotification entity not available: ${entityErr.message}`);
         return Response.json({ success: true, sent: 0, failed: 0, batch_size: 0, note: 'EmailNotification entity not available' });
       }
@@ -408,7 +385,7 @@ Deno.serve(async (req: Request) => {
 
     let sent = 0;
     let failed = 0;
-    const errors: any[] = [];
+    const errors = [];
 
     for (const job of finalBatch) {
       const ctx = {
@@ -439,7 +416,7 @@ Deno.serve(async (req: Request) => {
         });
         sent++;
         console.log(`[sendLifecycleEmails] Sent ${job.email_type} to ${job.recipient_email}`);
-      } catch (err: any) {
+      } catch (err) {
         failed++;
         errors.push({ type: job.email_type, recipient: job.recipient_email, error: String(err?.message || err) });
         console.error(`[sendLifecycleEmails] Failed ${job.email_type} to ${job.recipient_email}:`, err?.message);
@@ -449,7 +426,7 @@ Deno.serve(async (req: Request) => {
     console.log(`[sendLifecycleEmails] sent=${sent} failed=${failed} batch=${finalBatch.length}`);
     return Response.json({ success: true, sent, failed, batch_size: finalBatch.length, errors });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('[sendLifecycleEmails] Error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }

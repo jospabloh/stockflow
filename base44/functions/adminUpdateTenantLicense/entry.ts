@@ -1,9 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
-/**
- * Platform admin only: manually update a tenant license.
- * Used to activate licenses, change plans, add payment references, etc.
- */
 const ALLOWED_FIELDS = [
   'billing_status',
   'license_plan',
@@ -20,23 +16,19 @@ const ALLOWED_FIELDS = [
   'scheduled_delete_at',
 ];
 
-// Fields that must be persisted as strict booleans — SDK may drop them in multi-field
-// updates if the column was added after initial records were created.
 const BOOLEAN_FIELDS = ['auto_renewal'];
-
 const PLAN_LIMITS = { start: 4, growth: 10, pro: 20 };
 
-function datesEqual(a: unknown, b: unknown): boolean {
+function datesEqual(a, b) {
   try {
-    return new Date(a as string).toISOString() === new Date(b as string).toISOString();
+    return new Date(a).toISOString() === new Date(b).toISOString();
   } catch {
     return false;
   }
 }
 
-function valuesMatch(key: string, want: unknown, got: unknown): boolean {
+function valuesMatch(key, want, got) {
   if (want === got) return true;
-  // Normalize date-time strings to avoid format/timezone false positives
   if (typeof want === 'string' && typeof got === 'string') return datesEqual(want, got);
   return false;
 }
@@ -55,27 +47,25 @@ Deno.serve(async (req) => {
     if (!business_id) return Response.json({ error: 'business_id is required' }, { status: 400 });
     if (!updates || typeof updates !== 'object') return Response.json({ error: 'updates required' }, { status: 400 });
 
-    const [businessBefore] = await base44.asServiceRole.entities.Business.filter({ id: business_id });
+    const bizBefores = await base44.asServiceRole.entities.Business.filter({ id: business_id });
+    const businessBefore = bizBefores[0];
     if (!businessBefore) return Response.json({ error: 'Business not found' }, { status: 404 });
     const previousBillingStatus = businessBefore.billing_status;
 
-    const sanitized: Record<string, unknown> = {};
+    const sanitized = {};
     for (const key of ALLOWED_FIELDS) {
       if (key in updates) sanitized[key] = updates[key];
     }
 
     if (Object.keys(sanitized).length === 0) return Response.json({ error: 'No valid fields to update' }, { status: 400 });
 
-    // Explicit boolean coercion — prevents SDK from silently dropping typed booleans
     for (const f of BOOLEAN_FIELDS) {
       if (f in sanitized) sanitized[f] = Boolean(sanitized[f]);
     }
 
-    // Auto-set license_activated_at and activated_by_admin when activating
     if (sanitized.billing_status === 'active') {
       if (!sanitized.license_activated_at) sanitized.license_activated_at = new Date().toISOString();
       if (!sanitized.activated_by_admin) sanitized.activated_by_admin = user.email || 'platform-admin';
-      // Default license_expires_at to 30 days from now if not provided and not already set
       if (!sanitized.license_expires_at && !businessBefore.license_expires_at) {
         const expiry = new Date();
         expiry.setDate(expiry.getDate() + 30);
@@ -83,17 +73,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Auto-set licensed_user_limit based on plan if plan changes
     if (sanitized.license_plan && !('licensed_user_limit' in sanitized)) {
-      sanitized.licensed_user_limit = PLAN_LIMITS[sanitized.license_plan as string] || 4;
+      sanitized.licensed_user_limit = PLAN_LIMITS[sanitized.license_plan] || 4;
     }
 
     console.log('[adminUpdateTenantLicense] updating', business_id, 'with', sanitized);
 
-    // Proactive partition: apply non-boolean fields first, then boolean fields separately.
-    // This prevents SDK from silently dropping new boolean columns in mixed-type updates.
-    const booleanUpdates: Record<string, unknown> = {};
-    const otherUpdates: Record<string, unknown> = {};
+    const booleanUpdates = {};
+    const otherUpdates = {};
     for (const [k, v] of Object.entries(sanitized)) {
       if (BOOLEAN_FIELDS.includes(k)) booleanUpdates[k] = v;
       else otherUpdates[k] = v;
@@ -103,45 +90,42 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.Business.update(business_id, otherUpdates);
     }
 
-    let boolUpdateError: Error | null = null;
+    let boolUpdateError = null;
     if (Object.keys(booleanUpdates).length > 0) {
       try {
         await base44.asServiceRole.entities.Business.update(business_id, booleanUpdates);
       } catch (e) {
-        boolUpdateError = e as Error;
+        boolUpdateError = e;
         console.warn('[adminUpdateTenantLicense] boolean update failed', boolUpdateError?.message);
       }
     }
 
-    // Brief delay to mitigate read-after-write inconsistency
     await new Promise(r => setTimeout(r, 50));
 
-    // Re-fetch to verify persistence — SDK may silently drop some fields
-    let fresh = (await base44.asServiceRole.entities.Business.filter({ id: business_id }))[0];
+    const freshArr = await base44.asServiceRole.entities.Business.filter({ id: business_id });
+    let fresh = freshArr[0];
     if (!fresh) {
       return Response.json({ error: 'Business not found after update' }, { status: 500 });
     }
 
-    // Detect any field that didn't persist (compare sanitized → fresh)
-    const mismatches: Array<{ field: string; requested: unknown; persisted: unknown }> = [];
+    const mismatches = [];
     for (const key of Object.keys(sanitized)) {
       if (!valuesMatch(key, sanitized[key], fresh[key])) {
         mismatches.push({ field: key, requested: sanitized[key], persisted: fresh[key] });
       }
     }
 
-    // Targeted retry for boolean fields that weren't persisted
     const boolMismatches = mismatches.filter(m => BOOLEAN_FIELDS.includes(m.field));
     if (boolMismatches.length > 0) {
-      const retryPayload: Record<string, unknown> = {};
+      const retryPayload = {};
       for (const m of boolMismatches) retryPayload[m.field] = Boolean(m.requested);
       console.warn('[adminUpdateTenantLicense] retry boolean-only update', retryPayload);
       await base44.asServiceRole.entities.Business.update(business_id, retryPayload);
-      fresh = (await base44.asServiceRole.entities.Business.filter({ id: business_id }))[0];
+      const freshArr2 = await base44.asServiceRole.entities.Business.filter({ id: business_id });
+      fresh = freshArr2[0];
     }
 
-    // Final mismatch check after retry
-    const finalMismatches: Array<{ field: string; requested: unknown; persisted: unknown }> = [];
+    const finalMismatches = [];
     for (const key of Object.keys(sanitized)) {
       if (!valuesMatch(key, sanitized[key], fresh[key])) {
         finalMismatches.push({ field: key, requested: sanitized[key], persisted: fresh[key] });
@@ -156,7 +140,6 @@ Deno.serve(async (req) => {
     });
 
     if (finalMismatches.length > 0) {
-      // If only boolean fields failed, the primary status change succeeded — return 200 with warning
       const nonBoolFinalMismatches = finalMismatches.filter(m => !BOOLEAN_FIELDS.includes(m.field));
       if (nonBoolFinalMismatches.length === 0) {
         return Response.json({
@@ -185,16 +168,16 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
 
-    let emailDispatch: { sent: number; failed: number } | null = null;
+    let emailDispatch = null;
     if (previousBillingStatus !== 'active' && fresh.billing_status === 'active') {
       try {
         const tenantUsers = await base44.asServiceRole.entities.User.filter({ business_id });
         const admins = tenantUsers
-          .filter((u: any) => u.role === 'admin' && u.email)
-          .map((u: any) => ({ email: u.email, full_name: u.full_name || null }));
+          .filter((u) => u.role === 'admin' && u.email)
+          .map((u) => ({ email: u.email, full_name: u.full_name || null }));
 
         if (admins.length > 0) {
-          const jobs = admins.map((a: { email: string; full_name: string | null }) => ({
+          const jobs = admins.map((a) => ({
             email_type: 'license_activated',
             recipient_email: a.email,
             recipient_name: a.full_name,
@@ -206,7 +189,7 @@ Deno.serve(async (req) => {
 
           const appUrl = Deno.env.get('APP_URL');
           const cronSecret = Deno.env.get('CRON_SECRET');
-          const sendHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+          const sendHeaders = { 'Content-Type': 'application/json' };
           if (cronSecret) sendHeaders['x-cron-secret'] = cronSecret;
           const authHeader = req.headers.get('authorization');
           if (authHeader) sendHeaders['Authorization'] = authHeader;
@@ -220,7 +203,7 @@ Deno.serve(async (req) => {
           emailDispatch = { sent: sendData.sent ?? 0, failed: sendData.failed ?? 0 };
           console.log('[adminUpdateTenantLicense] license_activated emails dispatched:', JSON.stringify(emailDispatch));
         }
-      } catch (emailErr: any) {
+      } catch (emailErr) {
         console.error('[adminUpdateTenantLicense] email dispatch failed (non-fatal):', emailErr.message);
         emailDispatch = { sent: 0, failed: -1 };
       }
@@ -244,6 +227,6 @@ Deno.serve(async (req) => {
       },
     });
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    return Response.json({ error: error.message }, { status: 500 });
   }
 });

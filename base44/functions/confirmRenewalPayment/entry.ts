@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
 const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
 
-Deno.serve(async (req: Request) => {
+Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -14,7 +14,8 @@ Deno.serve(async (req: Request) => {
 
     if (!business_id) return Response.json({ error: 'business_id is required' }, { status: 400 });
 
-    const [business] = await base44.asServiceRole.entities.Business.filter({ id: business_id });
+    const businesses = await base44.asServiceRole.entities.Business.filter({ id: business_id });
+    const business = businesses[0];
     if (!business) return Response.json({ error: 'Business not found' }, { status: 404 });
 
     if (business.billing_status !== 'active') {
@@ -27,10 +28,10 @@ Deno.serve(async (req: Request) => {
 
     const tenantUsers = await base44.asServiceRole.entities.User.filter({ business_id });
     const admins = tenantUsers
-      .filter((u: any) => u.role === 'admin' && u.email)
-      .map((u: any) => ({ email: u.email, full_name: u.full_name || null }));
+      .filter((u) => u.role === 'admin' && u.email)
+      .map((u) => ({ email: u.email, full_name: u.full_name || null }));
 
-    const jobs = admins.map((a: { email: string; full_name: string | null }) => ({
+    const jobs = admins.map((a) => ({
       email_type: 'payment_received',
       recipient_email: a.email,
       recipient_name: a.full_name,
@@ -40,12 +41,12 @@ Deno.serve(async (req: Request) => {
       license_expires_at: business.license_expires_at ?? null,
     }));
 
-    let dispatchResult: any = null;
+    let dispatchResult = null;
     const appUrl = Deno.env.get('APP_URL');
     const cronSecret = Deno.env.get('CRON_SECRET');
 
     if (jobs.length > 0 && appUrl) {
-      const sendHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+      const sendHeaders = { 'Content-Type': 'application/json' };
       if (cronSecret) sendHeaders['x-cron-secret'] = cronSecret;
       const authHeader = req.headers.get('authorization');
       if (authHeader) sendHeaders['Authorization'] = authHeader;
@@ -66,7 +67,7 @@ Deno.serve(async (req: Request) => {
       dispatch: dispatchResult,
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('[confirmRenewalPayment] Error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }

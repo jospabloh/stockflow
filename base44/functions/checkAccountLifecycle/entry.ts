@@ -3,40 +3,18 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-interface EmailJob {
-  email_type: string;
-  recipient_email: string;
-  recipient_name?: string | null;
-  business_id: string;
-  business_name: string;
-  license_plan?: string | null;
-  license_expires_at?: string | null;
-  scheduled_delete_at?: string | null;
-}
-
-interface AdminInfo {
-  email: string;
-  full_name: string | null;
-}
-
-async function getAdmins(base44: any, businessId: string): Promise<AdminInfo[]> {
+async function getAdmins(base44, businessId) {
   try {
     const users = await base44.asServiceRole.entities.User.filter({ business_id: businessId });
     return users
-      .filter((u: any) => u.role === 'admin' && u.email)
-      .map((u: any) => ({ email: u.email, full_name: u.full_name || null }));
+      .filter((u) => u.role === 'admin' && u.email)
+      .map((u) => ({ email: u.email, full_name: u.full_name || null }));
   } catch (_) {
     return [];
   }
 }
 
-function scheduleEmail(
-  jobs: EmailJob[],
-  seen: Set<string>,
-  emailType: string,
-  admin: AdminInfo,
-  biz: any
-): boolean {
+function scheduleEmail(jobs, seen, emailType, admin, biz) {
   if (!admin?.email) return false;
   const key = `${biz.id}:${emailType}:${admin.email}`;
   if (seen.has(key)) return false;
@@ -54,7 +32,7 @@ function scheduleEmail(
   return true;
 }
 
-Deno.serve(async (req: Request) => {
+Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
@@ -75,8 +53,8 @@ Deno.serve(async (req: Request) => {
     const nowISO = now.toISOString();
     const businesses = await base44.asServiceRole.entities.Business.list();
 
-    const emailJobs: EmailJob[] = [];
-    const seen = new Set<string>();
+    const emailJobs = [];
+    const seen = new Set();
 
     const results = {
       trial:     { processed: 0, transitioned: 0, emails_queued: 0 },
@@ -85,8 +63,8 @@ Deno.serve(async (req: Request) => {
       active:    { processed: 0, transitioned: 0,  emails_queued: 0 },
     };
 
-    // === SECTION A: TRIAL BUSINESSES ===
-    for (const biz of businesses.filter((b: any) => b.billing_status === 'trial')) {
+    // TRIAL businesses
+    for (const biz of businesses.filter((b) => b.billing_status === 'trial')) {
       results.trial.processed++;
       if (!biz.trial_start_at) continue;
 
@@ -94,7 +72,6 @@ Deno.serve(async (req: Request) => {
       const daysElapsed = Math.floor((now.getTime() - trialStart.getTime()) / DAY_MS);
       const admins = await getAdmins(base44, biz.id);
 
-      // Trial expired — transition to view_only
       if (biz.trial_end_at && new Date(biz.trial_end_at) <= now) {
         await base44.asServiceRole.entities.Business.update(biz.id, {
           billing_status: 'view_only',
@@ -108,7 +85,6 @@ Deno.serve(async (req: Request) => {
         continue;
       }
 
-      // Reminder milestones — exact-day matching prevents daily re-sends without persistent dedup
       const milestones = [
         { day: 15, type: 'trial_day_15' },
         { day: 25, type: 'trial_day_25' },
@@ -124,8 +100,8 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // === SECTION B: VIEW_ONLY BUSINESSES ===
-    for (const biz of businesses.filter((b: any) => b.billing_status === 'view_only')) {
+    // VIEW_ONLY businesses
+    for (const biz of businesses.filter((b) => b.billing_status === 'view_only')) {
       results.view_only.processed++;
 
       if (!biz.view_only_since) {
@@ -138,14 +114,12 @@ Deno.serve(async (req: Request) => {
       const daysInViewOnly = Math.floor((now.getTime() - viewOnlySince.getTime()) / DAY_MS);
       const admins = await getAdmins(base44, biz.id);
 
-      // Day 10: warn about upcoming archival (exact day to avoid daily re-sends)
       if (daysInViewOnly === 10) {
         for (const admin of admins) {
           if (scheduleEmail(emailJobs, seen, 'archive_warning', admin, biz)) results.view_only.emails_queued++;
         }
       }
 
-      // 15+ days: archive
       if (daysInViewOnly >= 15) {
         const scheduledDelete = new Date(now);
         scheduledDelete.setDate(scheduledDelete.getDate() + 30);
@@ -162,8 +136,8 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // === SECTION C: ARCHIVED BUSINESSES ===
-    for (const biz of businesses.filter((b: any) => b.billing_status === 'archived')) {
+    // ARCHIVED businesses
+    for (const biz of businesses.filter((b) => b.billing_status === 'archived')) {
       results.archived.processed++;
       if (!biz.scheduled_delete_at) continue;
 
@@ -171,14 +145,12 @@ Deno.serve(async (req: Request) => {
       const daysUntilDelete = Math.ceil((scheduledDelete.getTime() - now.getTime()) / DAY_MS);
       const admins = await getAdmins(base44, biz.id);
 
-      // Exactly 7 days before: warn
       if (daysUntilDelete === 7) {
         for (const admin of admins) {
           if (scheduleEmail(emailJobs, seen, 'delete_warning', admin, biz)) results.archived.emails_queued++;
         }
       }
 
-      // Deletion day reached
       if (scheduledDelete <= now) {
         for (const admin of admins) {
           scheduleEmail(emailJobs, seen, 'account_deleted_confirmation', admin, biz);
@@ -204,16 +176,15 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // === SECTION D: ACTIVE BUSINESSES WITH EXPIRING LICENSES (manual renewal only) ===
+    // ACTIVE without auto_renewal — expiry reminders
     for (const biz of businesses.filter(
-      (b: any) => b.billing_status === 'active' && b.license_expires_at && !b.auto_renewal
+      (b) => b.billing_status === 'active' && b.license_expires_at && !b.auto_renewal
     )) {
       results.active.processed++;
       const expiresAt = new Date(biz.license_expires_at);
       const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / DAY_MS);
       const admins = await getAdmins(base44, biz.id);
 
-      // Expired: transition to view_only
       if (expiresAt <= now) {
         await base44.asServiceRole.entities.Business.update(biz.id, {
           billing_status: 'view_only',
@@ -227,7 +198,6 @@ Deno.serve(async (req: Request) => {
         continue;
       }
 
-      // Expiry reminders — exact-day matching
       const milestones = [
         { threshold: 7, type: 'license_expiring_7' },
         { threshold: 3, type: 'license_expiring_3' },
@@ -242,9 +212,9 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // === SECTION E: ACTIVE BUSINESSES WITH AUTO-RENEWAL ===
+    // ACTIVE with auto_renewal — charge reminders
     for (const biz of businesses.filter(
-      (b: any) => b.billing_status === 'active' && b.license_expires_at && b.auto_renewal
+      (b) => b.billing_status === 'active' && b.license_expires_at && b.auto_renewal
     )) {
       const expiresAt = new Date(biz.license_expires_at);
       const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / DAY_MS);
@@ -267,7 +237,7 @@ Deno.serve(async (req: Request) => {
     console.log(`[checkAccountLifecycle] Done:`, JSON.stringify(results));
     return Response.json({ success: true, checked_at: nowISO, results, emails_to_send: emailJobs });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('[checkAccountLifecycle] Error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
