@@ -25,7 +25,7 @@ export function calculatePrice({ product, client, quantity, category, categoryQt
   const catQty = categoryQty != null ? Number(categoryQty) : qty;
 
   const retail = product.retail_sale_price ?? product.sale_price ?? 0;
-  const wholesale = product.wholesale_sale_price ?? null;
+  const wholesale = (product.wholesale_sale_price != null && product.wholesale_sale_price > 0) ? product.wholesale_sale_price : null;
   const purchase = product.purchase_price ?? null;
 
   // Read threshold from Category (new source of truth)
