@@ -34,6 +34,7 @@ export default function LicenseAdmin() {
   const [saving, setSaving] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [sendingTestEmails, setSendingTestEmails] = useState(false);
+  const [confirmingPayment, setConfirmingPayment] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -69,6 +70,19 @@ export default function LicenseAdmin() {
       console.error("[sendTestLifecycleEmails] exception:", err);
     } finally {
       setSendingTestEmails(false);
+    }
+  };
+
+  const handleConfirmPayment = async (biz) => {
+    if (!window.confirm(`Confirmar que recibiste el pago de MP para ${biz.name}? Se enviará correo de pago recibido a los admins.`)) return;
+    setConfirmingPayment(biz.id);
+    try {
+      const r = await base44.functions.invoke("confirmRenewalPayment", { business_id: biz.id });
+      toast.success(`Correo de pago recibido enviado a ${r.data.recipients} admins`);
+    } catch (err) {
+      toast.error(`Error al confirmar pago: ${err?.message || err}`);
+    } finally {
+      setConfirmingPayment(null);
     }
   };
 
@@ -269,10 +283,15 @@ export default function LicenseAdmin() {
                         <td className="px-4 py-3 text-xs text-muted-foreground max-w-[120px] truncate">
                           {biz.payment_reference || "—"}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 flex items-center gap-1">
                           <Button variant="ghost" size="sm" onClick={() => openEdit(biz)}>
                             <Edit className="h-3.5 w-3.5" />
                           </Button>
+                          {biz.billing_status === "active" && biz.auto_renewal && (
+                            <Button variant="ghost" size="sm" title="Confirmar pago recibido" disabled={confirmingPayment === biz.id} onClick={() => handleConfirmPayment(biz)}>
+                              <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                            </Button>
+                          )}
                         </td>
                       </tr>
                     );

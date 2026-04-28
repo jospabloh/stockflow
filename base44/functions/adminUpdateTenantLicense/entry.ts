@@ -55,6 +55,10 @@ Deno.serve(async (req) => {
     if (!business_id) return Response.json({ error: 'business_id is required' }, { status: 400 });
     if (!updates || typeof updates !== 'object') return Response.json({ error: 'updates required' }, { status: 400 });
 
+    const [businessBefore] = await base44.asServiceRole.entities.Business.filter({ id: business_id });
+    if (!businessBefore) return Response.json({ error: 'Business not found' }, { status: 404 });
+    const previousBillingStatus = businessBefore.billing_status;
+
     const sanitized: Record<string, unknown> = {};
     for (const key of ALLOWED_FIELDS) {
       if (key in updates) sanitized[key] = updates[key];
@@ -71,6 +75,12 @@ Deno.serve(async (req) => {
     if (sanitized.billing_status === 'active') {
       if (!sanitized.license_activated_at) sanitized.license_activated_at = new Date().toISOString();
       if (!sanitized.activated_by_admin) sanitized.activated_by_admin = user.email || 'platform-admin';
+      // Default license_expires_at to 30 days from now if not provided and not already set
+      if (!sanitized.license_expires_at && !businessBefore.license_expires_at) {
+        const expiry = new Date();
+        expiry.setDate(expiry.getDate() + 30);
+        sanitized.license_expires_at = expiry.toISOString();
+      }
     }
 
     // Auto-set licensed_user_limit based on plan if plan changes
@@ -175,10 +185,52 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
 
+    let emailDispatch: { sent: number; failed: number } | null = null;
+    if (previousBillingStatus !== 'active' && fresh.billing_status === 'active') {
+      try {
+        const tenantUsers = await base44.asServiceRole.entities.User.filter({ business_id });
+        const admins = tenantUsers
+          .filter((u: any) => u.role === 'admin' && u.email)
+          .map((u: any) => ({ email: u.email, full_name: u.full_name || null }));
+
+        if (admins.length > 0) {
+          const jobs = admins.map((a: { email: string; full_name: string | null }) => ({
+            email_type: 'license_activated',
+            recipient_email: a.email,
+            recipient_name: a.full_name,
+            business_id,
+            business_name: fresh.name || 'tu negocio',
+            license_plan: fresh.license_plan ?? null,
+            license_expires_at: fresh.license_expires_at ?? null,
+          }));
+
+          const appUrl = Deno.env.get('APP_URL');
+          const cronSecret = Deno.env.get('CRON_SECRET');
+          const sendHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+          if (cronSecret) sendHeaders['x-cron-secret'] = cronSecret;
+          const authHeader = req.headers.get('authorization');
+          if (authHeader) sendHeaders['Authorization'] = authHeader;
+
+          const sendResp = await fetch(`${appUrl}/functions/v1/sendLifecycleEmails`, {
+            method: 'POST',
+            headers: sendHeaders,
+            body: JSON.stringify({ jobs }),
+          });
+          const sendData = await sendResp.json();
+          emailDispatch = { sent: sendData.sent ?? 0, failed: sendData.failed ?? 0 };
+          console.log('[adminUpdateTenantLicense] license_activated emails dispatched:', JSON.stringify(emailDispatch));
+        }
+      } catch (emailErr: any) {
+        console.error('[adminUpdateTenantLicense] email dispatch failed (non-fatal):', emailErr.message);
+        emailDispatch = { sent: 0, failed: -1 };
+      }
+    }
+
     return Response.json({
       success: true,
       business_id,
       updated_fields: Object.keys(sanitized),
+      ...(emailDispatch !== null && { email_dispatch: emailDispatch }),
       persisted: {
         auto_renewal: fresh.auto_renewal,
         billing_status: fresh.billing_status,
