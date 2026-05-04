@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -235,7 +235,39 @@ Deno.serve(async (req) => {
     }
 
     console.log(`[checkAccountLifecycle] Done:`, JSON.stringify(results));
-    return Response.json({ success: true, checked_at: nowISO, results, emails_to_send: emailJobs });
+
+    // ── Dispatch email jobs immediately via sendLifecycleEmails ──────────────
+    let emailResult = { sent: 0, failed: 0, batch_size: 0 };
+    if (emailJobs.length > 0) {
+      try {
+        const sendResp = await base44.asServiceRole.functions.invoke('sendLifecycleEmails', {
+          jobs: emailJobs,
+        });
+        emailResult = sendResp || emailResult;
+        console.log(`[checkAccountLifecycle] sendLifecycleEmails result:`, JSON.stringify(emailResult));
+      } catch (sendErr) {
+        console.error(`[checkAccountLifecycle] Failed to invoke sendLifecycleEmails:`, sendErr?.message);
+      }
+
+      // ── Persist audit log in EmailNotification entity ────────────────────
+      const nowAudit = new Date().toISOString();
+      for (const job of emailJobs) {
+        try {
+          await base44.asServiceRole.entities.EmailNotification.create({
+            business_id: job.business_id,
+            email_type: job.email_type,
+            recipient_email: job.recipient_email,
+            status: 'sent',
+            sent_at: nowAudit,
+            idempotency_key: `${job.email_type}:${job.business_id}:${job.recipient_email}:${nowAudit.slice(0, 10)}`,
+          });
+        } catch (_) { /* non-critical audit log */ }
+      }
+    } else {
+      console.log(`[checkAccountLifecycle] No email jobs to send today.`);
+    }
+
+    return Response.json({ success: true, checked_at: nowISO, results, emails_sent: emailResult });
 
   } catch (error) {
     console.error('[checkAccountLifecycle] Error:', error);
