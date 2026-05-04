@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
 
@@ -42,22 +42,30 @@ Deno.serve(async (req) => {
     }));
 
     let dispatchResult = null;
-    const appUrl = Deno.env.get('APP_URL');
-    const cronSecret = Deno.env.get('CRON_SECRET');
 
-    if (jobs.length > 0 && appUrl) {
-      const sendHeaders = { 'Content-Type': 'application/json' };
-      if (cronSecret) sendHeaders['x-cron-secret'] = cronSecret;
-      const authHeader = req.headers.get('authorization');
-      if (authHeader) sendHeaders['Authorization'] = authHeader;
+    if (jobs.length > 0) {
+      try {
+        dispatchResult = await base44.asServiceRole.functions.invoke('sendLifecycleEmails', { jobs });
+        console.log('[confirmRenewalPayment] payment_received dispatched:', JSON.stringify(dispatchResult));
 
-      const sendResp = await fetch(`${appUrl}/functions/v1/sendLifecycleEmails`, {
-        method: 'POST',
-        headers: sendHeaders,
-        body: JSON.stringify({ jobs }),
-      });
-      dispatchResult = await sendResp.json();
-      console.log('[confirmRenewalPayment] payment_received dispatched:', JSON.stringify(dispatchResult));
+        // Audit log in EmailNotification
+        const nowAudit = new Date().toISOString();
+        for (const job of jobs) {
+          try {
+            await base44.asServiceRole.entities.EmailNotification.create({
+              business_id: job.business_id,
+              email_type: job.email_type,
+              recipient_email: job.recipient_email,
+              status: 'sent',
+              sent_at: nowAudit,
+              idempotency_key: `${job.email_type}:${job.business_id}:${job.recipient_email}:${nowAudit.slice(0, 10)}`,
+            });
+          } catch (_) {}
+        }
+      } catch (sendErr) {
+        console.error('[confirmRenewalPayment] sendLifecycleEmails error:', sendErr?.message);
+        dispatchResult = { error: sendErr?.message };
+      }
     }
 
     return Response.json({
