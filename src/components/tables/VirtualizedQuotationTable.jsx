@@ -136,6 +136,11 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
       {/* Payment (converted only) */}
       <div className="w-24">
         {q.status === "converted" && (
+          q.total === 0 ? (
+            <span className="inline-flex items-center gap-1 text-[10px] bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-2 py-0.5 rounded-full font-medium">
+              Sin cargo
+            </span>
+          ) : (
           <button
             onClick={() => {
               const isPaid = q.paid && q.payment_method && !["Por definir", "Pendiente de confirmar", ""].includes(q.payment_method);
@@ -161,6 +166,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
                   ? "Confirmar"
                   : "Pago"}
           </button>
+          )
         )}
       </div>
 
@@ -204,7 +210,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
                 <ShoppingCart className="h-3 w-3 mr-2" /> Venta
               </DropdownMenuItem>
             )}
-            {q.status === "converted" && !q.paid && (
+            {q.status === "converted" && !q.paid && q.total > 0 && (
               <DropdownMenuItem onClick={() => onPay(q)}>
                 <DollarSign className="h-3 w-3 mr-2" /> Pago
               </DropdownMenuItem>
@@ -280,7 +286,7 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
                   <ShoppingCart className="h-3.5 w-3.5 mr-2" /> Convertir en venta
                 </DropdownMenuItem>
               )}
-              {q.status === "converted" && !q.paid && (
+              {q.status === "converted" && !q.paid && q.total > 0 && (
                 <DropdownMenuItem onClick={() => onPay(q)}>
                   <DollarSign className="h-3.5 w-3.5 mr-2" /> Confirmar pago
                 </DropdownMenuItem>
@@ -331,12 +337,18 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
             >
               <CheckCircle2 className="h-3 w-3" /> Entregado
             </button>
+            {q.total === 0 ? (
+              <span className="inline-flex items-center gap-1 text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-2 py-1 rounded-lg font-medium">
+                Sin cargo
+              </span>
+            ) : (
             <button
               onClick={() => { const isPaid = q.paid && q.payment_method && !["Por definir", "Pendiente de confirmar", ""].includes(q.payment_method); if (!isPaid) onPay(q); }}
               className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-medium transition-colors ${q.paid && q.payment_method && !["Por definir", "Pendiente de confirmar", ""].includes(q.payment_method) ? "bg-green-100 text-green-700" : q.delivered && !q.paid ? "bg-red-100 text-red-700 animate-pulse" : "bg-muted text-muted-foreground"}`}
             >
               <DollarSign className="h-3 w-3" /> {q.paid ? "Pagado" : "Cobrar"}
             </button>
+            )}
           </div>
         )}
       </div>
