@@ -168,9 +168,16 @@ export default function ClientsManager() {
               <TableCell className="text-slate-500">{c.phone || "—"}</TableCell>
               <TableCell className="text-slate-500">{c.rfc || "—"}</TableCell>
               <TableCell>
-                <Badge className={c.status === "active" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}>
-                  {c.status === "active" ? <><UserCheck className="h-3 w-3 mr-1 inline" />Activo</> : <><UserX className="h-3 w-3 mr-1 inline" />Inactivo</>}
-                </Badge>
+                <div className="flex flex-col gap-1">
+                  <Badge className={c.status === "active" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}>
+                    {c.status === "active" ? <><UserCheck className="h-3 w-3 mr-1 inline" />Activo</> : <><UserX className="h-3 w-3 mr-1 inline" />Inactivo</>}
+                  </Badge>
+                  {c.force_zero_price && (
+                    <Badge className="bg-orange-100 text-orange-700 border-0 text-[10px] w-fit">
+                      🔁 Cliente interno · $0
+                    </Badge>
+                  )}
+                </div>
               </TableCell>
               <TableCell className="text-center">
                 {can('Clients', 'modificar') && (
