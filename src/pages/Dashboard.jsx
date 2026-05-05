@@ -274,9 +274,9 @@ export default function Dashboard() {
     };
   }, [periodMovements, periodQuotations, periodSupplierPayments, products]);
 
-  // Cotizaciones concretadas sin pagar — GLOBAL
-  const unpaidConverted = quotations.filter(q => q.status === "converted" && !q.paid);
-  const unpaidDirectMovements = movements.filter(m => m.type === "exit" && !m.quotation_id && !m.paid);
+  // Cotizaciones concretadas sin pagar — GLOBAL (excluir force_zero_price / total === 0)
+  const unpaidConverted = quotations.filter(q => q.status === "converted" && !q.paid && (q.total || 0) > 0);
+  const unpaidDirectMovements = movements.filter(m => m.type === "exit" && !m.quotation_id && !m.paid && (m.total || 0) > 0);
 
   const unpaidCount = unpaidConverted.length + unpaidDirectMovements.length;
   const unpaidTotal =
@@ -299,7 +299,7 @@ export default function Dashboard() {
   
   const overduePaidQuotations = quotations.filter(q => {
     const dateStr = getDateStringMexico(q.created_date);
-    return dateStr < thirtyDaysAgoStr && q.status === "converted" && !q.paid;
+    return dateStr < thirtyDaysAgoStr && q.status === "converted" && !q.paid && (q.total || 0) > 0;
   });
 
   // Chart data: movements per day (dinámico según período)
