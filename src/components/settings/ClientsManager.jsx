@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 
-const emptyForm = { name: "", business_name: "", giro: "", email: "", phone: "", address: "", rfc: "", notes: "", status: "active", force_wholesale_all_products: false, force_purchase_all_products: false };
+const emptyForm = { name: "", business_name: "", giro: "", email: "", phone: "", address: "", rfc: "", notes: "", status: "active", force_wholesale_all_products: false, force_purchase_all_products: false, force_zero_price: false };
 
 export default function ClientsManager() {
   const { businessId } = useBusinessContext();
@@ -40,7 +40,7 @@ export default function ClientsManager() {
   useEffect(() => { load(); }, []);
 
   const openNew = () => { setEditing(null); setForm(emptyForm); setFieldErrors({}); setFormOpen(true); };
-  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, business_name: c.business_name || "", giro: c.giro || "", email: c.email || "", phone: c.phone || "", address: c.address || "", rfc: c.rfc || "", notes: c.notes || "", status: c.status || "active", force_wholesale_all_products: c.force_wholesale_all_products || false, force_purchase_all_products: c.force_purchase_all_products || false }); setFieldErrors({}); setFormOpen(true); };
+  const openEdit = (c) => { setEditing(c); setForm({ name: c.name, business_name: c.business_name || "", giro: c.giro || "", email: c.email || "", phone: c.phone || "", address: c.address || "", rfc: c.rfc || "", notes: c.notes || "", status: c.status || "active", force_wholesale_all_products: c.force_wholesale_all_products || false, force_purchase_all_products: c.force_purchase_all_products || false, force_zero_price: c.force_zero_price || false }); setFieldErrors({}); setFormOpen(true); };
 
   const handleSave = async () => {
     // Validate required fields
@@ -59,6 +59,10 @@ export default function ClientsManager() {
     // Frontend: mutually exclusive flags
     if (form.force_wholesale_all_products && form.force_purchase_all_products) {
       toast.error('No es posible activar "precio mayoreo" y "precio de compra" al mismo tiempo.');
+      return;
+    }
+    if (form.force_zero_price && (form.force_wholesale_all_products || form.force_purchase_all_products)) {
+      toast.error('Precio $0 no puede combinarse con precio mayoreo o precio de compra.');
       return;
     }
 
@@ -269,11 +273,12 @@ export default function ClientsManager() {
                 <Checkbox
                   id="force_wholesale"
                   checked={form.force_wholesale_all_products}
+                  disabled={form.force_zero_price}
                   onCheckedChange={(checked) => {
                     setForm(prev => ({ ...prev, force_wholesale_all_products: !!checked, ...(checked ? { force_purchase_all_products: false } : {}) }));
                   }}
                 />
-                <Label htmlFor="force_wholesale" className="text-sm leading-snug cursor-pointer">
+                <Label htmlFor="force_wholesale" className={`text-sm leading-snug cursor-pointer ${form.force_zero_price ? "opacity-40" : ""}`}>
                   Aplicar precio mayoreo en todos los productos y en cualquier cantidad
                 </Label>
               </div>
@@ -281,20 +286,38 @@ export default function ClientsManager() {
                 <Checkbox
                   id="force_purchase"
                   checked={form.force_purchase_all_products}
+                  disabled={form.force_zero_price}
                   onCheckedChange={(checked) => {
                     setForm(prev => ({ ...prev, force_purchase_all_products: !!checked, ...(checked ? { force_wholesale_all_products: false } : {}) }));
                   }}
                 />
-                <Label htmlFor="force_purchase" className="text-sm leading-snug cursor-pointer">
+                <Label htmlFor="force_purchase" className={`text-sm leading-snug cursor-pointer ${form.force_zero_price ? "opacity-40" : ""}`}>
                     Aplicar precio de compra en todos los productos y en cualquier cantidad
                   </Label>
                 </div>
-                {(form.force_wholesale_all_products || form.force_purchase_all_products) && (
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="force_zero_price"
+                  checked={form.force_zero_price}
+                  onCheckedChange={(checked) => {
+                    setForm(prev => ({ ...prev, force_zero_price: !!checked, ...(checked ? { force_wholesale_all_products: false, force_purchase_all_products: false } : {}) }));
+                  }}
+                />
+                <Label htmlFor="force_zero_price" className="text-sm leading-snug cursor-pointer">
+                  Precio $0 (transferencia interna / muestra)
+                </Label>
+              </div>
+                {form.force_zero_price && (
+                  <div className="bg-orange-50 border border-orange-200 rounded p-2">
+                    <p className="text-xs text-orange-700">🔁 <strong>Sin cargo:</strong> todas las ventas a este cliente serán registradas en $0. No genera movimiento en caja chica.</p>
+                  </div>
+                )}
+                {!form.force_zero_price && (form.force_wholesale_all_products || form.force_purchase_all_products) && (
                   <p className="text-xs text-indigo-600 font-medium">
                     ⚡ {form.force_purchase_all_products ? "Precio de compra + 20 MXN transporte/producto" : "Precio mayoreo"} activo para este cliente
                   </p>
                 )}
-                {form.force_purchase_all_products && (
+                {!form.force_zero_price && form.force_purchase_all_products && (
                   <div className="bg-amber-50 border border-amber-200 rounded p-2">
                     <p className="text-xs text-amber-700">🚚 <strong>Transporte:</strong> 20 MXN por producto</p>
                   </div>

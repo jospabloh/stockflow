@@ -325,7 +325,13 @@ export default function Movements() {
                         </span>
                       </TableCell>
                       <TableCell className="text-right font-semibold text-slate-800">
-                        ${getFinalTotal(m).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                        {m.unit_price === 0 && m.type === "exit" ? (
+                          <span className="inline-flex items-center gap-1 text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-2 py-0.5 rounded-full font-medium">
+                            Muestra / Interno
+                          </span>
+                        ) : (
+                          `$${getFinalTotal(m).toLocaleString("es-MX", { minimumFractionDigits: 2 })}`
+                        )}
                       </TableCell>
                       <TableCell className="text-slate-500 text-sm">{m.type === "adjustment" ? <span className="text-blue-500 text-xs font-medium">Ajuste admin</span> : (m.reference || "—")}</TableCell>
                       <TableCell className="text-slate-500 text-sm">{m.type === "adjustment" ? <span className="text-muted-foreground text-xs">Stock = {m.stock_after}</span> : (m.reason || "—")}</TableCell>

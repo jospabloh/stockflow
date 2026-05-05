@@ -141,16 +141,21 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   // Cliente seleccionado (objeto completo) para aplicar reglas de precio
   const selectedClient = useMemo(() => clients.find(c => c.id === clientId) || null, [clients, clientId]);
 
+  const isZeroPriceClient = selectedClient?.force_zero_price === true;
+
   // Total general
   const grandTotal = useMemo(() => {
+    if (isZeroPriceClient && movType === "exit") return 0;
     return items.reduce((sum, item) => {
       const price = calcPrice(item.product, movType, item.quantity, categories, selectedClient);
       return sum + (item.quantity * price);
     }, 0);
-  }, [items, movType, categories, selectedClient]);
+  }, [items, movType, categories, selectedClient, isZeroPriceClient]);
 
   const isAdjustment = movType === "adjustment";
-  const needsParty = !isAdjustment; // entrada/salida/devolución requieren forma de pago y cliente/proveedor
+  // Para clientes con force_zero_price en salidas, la forma de pago no es requerida
+  const needsParty = !isAdjustment;
+  const paymentRequired = needsParty && !(isZeroPriceClient && movType === "exit");
 
   const selectedPmName = paymentMethods.find(p => p.id === paymentMethodId)?.name || "";
   const isReturnWithCash =
@@ -160,7 +165,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
   const canSave =
     items.some(i => i.product) &&
-    (!needsParty || (paymentMethodId && clientId)) &&
+    (!needsParty || ((!paymentRequired || paymentMethodId) && clientId)) &&
     !(isReturnWithCash && pettyCashDeduct === null) &&
     !saving;
 
@@ -179,7 +184,9 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
     }
 
     setSaving(true);
-    const pmName = paymentMethods.find(p => p.id === paymentMethodId)?.name || "";
+    const pmName = isZeroPriceClient && movType === "exit"
+      ? "Sin cargo"
+      : (paymentMethods.find(p => p.id === paymentMethodId)?.name || "");
     let clientName = "";
     if (movType === "entry") {
       const sup = suppliers.find(s => s.id === clientId);
@@ -207,10 +214,10 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       for (const item of validItems) {
         const product = item.product;
         const qty = item.quantity;
-        const unitPrice = calcPrice(product, movType, qty, categories, selectedClient);
+        const unitPrice = isZeroPriceClient && movType === "exit" ? 0 : calcPrice(product, movType, qty, categories, selectedClient);
         const taxRate = product.tax_rate || 0;
         const totalWithoutTax = qty * unitPrice;
-        const totalWithTax = totalWithoutTax * (1 + taxRate / 100);
+        const totalWithTax = isZeroPriceClient && movType === "exit" ? 0 : totalWithoutTax * (1 + taxRate / 100);
         let newStock = product.stock || 0;
 
         if (movType === "exit" || movType === "return") {
@@ -404,8 +411,8 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
             </p>
           </div>
 
-          {/* Forma de pago — oculto en ajuste */}
-          {!isAdjustment && (
+          {/* Forma de pago — oculto en ajuste; opcional para clientes force_zero_price */}
+          {!isAdjustment && !(isZeroPriceClient && movType === "exit") && (
             <div>
               <Label className="text-foreground mb-1.5 block">{movType === "return" ? "Método de reembolso *" : "Forma de pago *"}</Label>
               <SearchableSelect
@@ -417,6 +424,11 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
               {paymentMethods.length === 0 && (
                 <p className="text-xs text-muted-foreground mt-1">No hay formas de pago. Agrégalas en Configuración → Pagos.</p>
               )}
+            </div>
+          )}
+          {isZeroPriceClient && movType === "exit" && (
+            <div className="bg-muted/50 rounded-lg px-4 py-2.5 text-sm text-muted-foreground">
+              Forma de pago: <span className="font-semibold text-foreground">Sin cargo</span>
             </div>
           )}
 
@@ -435,6 +447,11 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
                   : clients.map((c) => ({ value: c.id, label: c.name, searchLabel: c.business_name || c.name }))
                 }
               />
+              {isZeroPriceClient && movType === "exit" && (
+                <div className="mt-2 inline-flex items-center gap-1.5 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-3 py-1 rounded-full text-xs font-semibold">
+                  <span>🔁</span> Transferencia interna · $0
+                </div>
+              )}
             </div>
           )}
 
@@ -481,8 +498,8 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
             </div>
           )}
 
-          {/* Confirmación de pago — solo para salidas */}
-          {movType === "exit" && (
+          {/* Confirmación de pago — solo para salidas que no sean transferencias internas */}
+          {movType === "exit" && !isZeroPriceClient && (
             <button
               type="button"
               onClick={() => setIsPaid(!isPaid)}
@@ -506,10 +523,10 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
         </div>
 
         {/* OB4: resumen de qué falta */}
-        {(!items.some(i => i.product) || (needsParty && (!paymentMethodId || !clientId))) && (
+        {(!items.some(i => i.product) || (needsParty && ((!paymentRequired || !paymentMethodId) || !clientId))) && (
           <div className="px-6 pb-2 shrink-0 space-y-0.5">
             {!items.some(i => i.product) && <p className="text-xs text-red-500">• Selecciona al menos un producto</p>}
-            {needsParty && !paymentMethodId && paymentMethods.length > 0 && <p className="text-xs text-red-500">• Selecciona {movType === "return" ? "el método de reembolso" : "la forma de pago"}</p>}
+            {paymentRequired && !paymentMethodId && paymentMethods.length > 0 && <p className="text-xs text-red-500">• Selecciona {movType === "return" ? "el método de reembolso" : "la forma de pago"}</p>}
             {needsParty && !clientId && <p className="text-xs text-red-500">• Selecciona el {movType === "entry" ? "proveedor" : "cliente"}</p>}
           </div>
         )}

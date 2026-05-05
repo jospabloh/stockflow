@@ -62,12 +62,14 @@ Deno.serve(async (req) => {
     });
 
     // If this is a paid direct exit, reconcile petty cash based on tenant rule + payment method
-    if (movement.type === 'exit' && !movement.quotation_id && movement.paid) {
+    // Skip when total is 0 (force_zero_price / internal transfer)
+    const movementTotal = (movement.quantity || 0) * (movement.unit_price || 0);
+    if (movement.type === 'exit' && !movement.quotation_id && movement.paid && movementTotal > 0) {
       base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
         action: 'reconcile',
         origin_type: 'movement',
         origin_id: movement.id,
-        amount: (movement.quantity || 0) * (movement.unit_price || 0),
+        amount: movementTotal,
         payment_method: movement.reference || '',
         description: `Venta directa — ${movement.product_name || ''} (${movement.reason || ''})`,
         folio_or_ref: movement.reference || movement.id,

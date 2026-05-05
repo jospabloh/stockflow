@@ -36,7 +36,13 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
 
       {/* Total */}
       <div className="w-28 text-right font-semibold text-foreground text-xs">
-        ${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+        {q.total === 0 ? (
+          <span className="inline-flex items-center gap-1 text-[10px] bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-2 py-0.5 rounded-full font-medium">
+            Muestra / Interno
+          </span>
+        ) : (
+          `$${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`
+        )}
       </div>
 
       {/* Status */}
@@ -303,7 +309,13 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
       {/* Total + tracking */}
       <div className="flex items-center justify-between">
         <span className="font-bold text-foreground text-base">
-          ${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+          {q.total === 0 ? (
+            <span className="inline-flex items-center gap-1 text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-2 py-0.5 rounded-full font-medium">
+              Muestra / Interno
+            </span>
+          ) : (
+            `$${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`
+          )}
         </span>
         {q.status === "converted" && (
           <div className="flex gap-1.5">

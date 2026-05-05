@@ -112,10 +112,16 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
     return m;
   }, [categories]);
 
+  const isZeroPriceClient = selectedClient?.force_zero_price === true;
+
   // Recalculate a set of items applying category-level qty wholesale logic
   const recalcAllItems = (items, newPriceInfo = {}) => {
     const catQtyMap = computeCategoryQtyMap(items, productMap);
     const recalcedItems = items.map((item, idx) => {
+      if (isZeroPriceClient) {
+        newPriceInfo[idx] = { rule: 'zero_price', origin: 'Transferencia interna / Muestra', warning: null };
+        return { ...item, unit_price: 0, total: 0 };
+      }
       const product = productMap[item.product_id];
       if (!product) return item;
       const category = categoryMap[product.category];
@@ -380,7 +386,10 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                         {(c.email || c.phone) && (
                           <p className="text-xs text-slate-400">{[c.email, c.phone].filter(Boolean).join(" · ")}</p>
                         )}
-                        {(c.force_purchase_all_products || c.force_wholesale_all_products) && (
+                        {c.force_zero_price && (
+                          <p className="text-[10px] text-orange-500 font-medium">🔁 Transferencia interna · $0</p>
+                        )}
+                        {!c.force_zero_price && (c.force_purchase_all_products || c.force_wholesale_all_products) && (
                           <p className="text-[10px] text-indigo-500 font-medium">
                             ⚡ {c.force_purchase_all_products ? "Precio compra forzado" : "Precio mayoreo forzado"}
                           </p>
@@ -390,10 +399,15 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                   })()}
                 </div>
               )}
-              {selectedClient && (selectedClient.force_purchase_all_products || selectedClient.force_wholesale_all_products) && (
+              {selectedClient && (selectedClient.force_purchase_all_products || selectedClient.force_wholesale_all_products) && !isZeroPriceClient && (
                 <p className="text-[10px] text-indigo-600 font-medium mt-1">
                   ⚡ {selectedClient.force_purchase_all_products ? "Precio de compra activo para este cliente" : "Precio mayoreo activo para este cliente"}
                 </p>
+              )}
+              {isZeroPriceClient && (
+                <div className="mt-2 inline-flex items-center gap-1.5 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-3 py-1 rounded-full text-xs font-semibold">
+                  <span>🔁</span> Transferencia interna · $0
+                </div>
               )}
             </div>
             <div>
@@ -511,8 +525,14 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                   </div>
                   <div className="col-span-4 md:col-span-3">
                     <Label className="text-xs text-foreground mb-1.5 block">Precio aplicado</Label>
-                    {item.is_on_demand ? (
-                      <p className="h-9 flex items-center text-sm font-medium pl-1">${(item.unit_price || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
+                    {item.is_on_demand || isZeroPriceClient ? (
+                      <p className="h-9 flex items-center text-sm font-medium pl-1">
+                        {isZeroPriceClient ? (
+                          <span className="text-orange-600 font-semibold">$0.00</span>
+                        ) : (
+                          `$${(item.unit_price || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}`
+                        )}
+                      </p>
                     ) : (
                       <>
                         <Input type="number" min={0} step="0.01" value={item.unit_price} onChange={(e) => updateItem(idx, "unit_price", parseFloat(e.target.value) || 0)} />
@@ -602,6 +622,11 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="payment-method" className="text-foreground mb-1.5 block">Forma de pago</Label>
+              {isZeroPriceClient ? (
+                <div className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm items-center text-muted-foreground">
+                  Sin cargo
+                </div>
+              ) : (
               <SelectWrapper
                 id="payment-method"
                 value={form.payment_method}
@@ -610,6 +635,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                 options={paymentMethods.map(m => ({ value: m.name, label: m.name }))}
                 aria-label="Método de pago"
               />
+              )}
             </div>
             <div>
               <Label className="text-foreground mb-1.5 block">Vigencia</Label>
