@@ -235,21 +235,29 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
             </div>
           </div>
 
-          {/* Payments section — visible for converted/accepted */}
+          {/* Payments section — visible for converted/accepted, hidden for force_zero_price / total === 0 */}
           {(q.status === "converted" || q.status === "accepted") && (
-            <div className="bg-card border border-border rounded-lg p-4">
-              <p className="text-[10px] font-bold uppercase text-slate-400 mb-3">Pagos</p>
-              <QuotationPaymentsSection
-                quotation={q}
-                userRole={userRole}
-                onPaymentRegistered={() => {
-                  base44.entities.Quotation.filter({ id: q.id }).then(res => {
-                    if (res[0]) setLocalQuotation(res[0]);
-                  }).catch(() => {});
-                  onOnDemandCreated?.();
-                }}
-              />
-            </div>
+            (q.total || 0) === 0 || client?.force_zero_price ? (
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 bg-slate-200 dark:bg-slate-700 px-2.5 py-1 rounded-full">
+                  🎁 Muestra / Interno · Sin cargo
+                </span>
+              </div>
+            ) : (
+              <div className="bg-card border border-border rounded-lg p-4">
+                <p className="text-[10px] font-bold uppercase text-slate-400 mb-3">Pagos</p>
+                <QuotationPaymentsSection
+                  quotation={q}
+                  userRole={userRole}
+                  onPaymentRegistered={() => {
+                    base44.entities.Quotation.filter({ id: q.id }).then(res => {
+                      if (res[0]) setLocalQuotation(res[0]);
+                    }).catch(() => {});
+                    onOnDemandCreated?.();
+                  }}
+                />
+              </div>
+            )
           )}
 
           {/* Cancellation reason */}

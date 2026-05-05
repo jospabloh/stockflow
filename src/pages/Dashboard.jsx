@@ -199,7 +199,8 @@ export default function Dashboard() {
 
   // Calcular ventas según período
   const salesData = useMemo(() => {
-    const periodConvertedQuotations = periodQuotations.filter((q) => q.status === "converted");
+    // Exclude zero-price / internal (force_zero_price) from all commercial metrics
+    const periodConvertedQuotations = periodQuotations.filter((q) => q.status === "converted" && (q.total || 0) > 0 && q.payment_method !== "Sin cargo");
     const periodExits = periodMovements.filter((m) => m.type === "exit");
     const periodDirectExits = periodExits.filter((m) => m && !m.quotation_id);
 
@@ -274,8 +275,8 @@ export default function Dashboard() {
     };
   }, [periodMovements, periodQuotations, periodSupplierPayments, products]);
 
-  // Cotizaciones concretadas sin pagar — GLOBAL (excluir force_zero_price / total === 0)
-  const unpaidConverted = quotations.filter(q => q.status === "converted" && !q.paid && (q.total || 0) > 0);
+  // Cotizaciones concretadas sin pagar — GLOBAL (excluir force_zero_price / total === 0 / "Sin cargo")
+  const unpaidConverted = quotations.filter(q => q.status === "converted" && !q.paid && (q.total || 0) > 0 && q.payment_method !== "Sin cargo");
   const unpaidDirectMovements = movements.filter(m => m.type === "exit" && !m.quotation_id && !m.paid && (m.total || 0) > 0);
 
   const unpaidCount = unpaidConverted.length + unpaidDirectMovements.length;
@@ -299,7 +300,7 @@ export default function Dashboard() {
   
   const overduePaidQuotations = quotations.filter(q => {
     const dateStr = getDateStringMexico(q.created_date);
-    return dateStr < thirtyDaysAgoStr && q.status === "converted" && !q.paid && (q.total || 0) > 0;
+    return dateStr < thirtyDaysAgoStr && q.status === "converted" && !q.paid && (q.total || 0) > 0 && q.payment_method !== "Sin cargo";
   });
 
   // Chart data: movements per day (dinámico según período)

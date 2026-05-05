@@ -26,7 +26,7 @@ export default function PendingBalanceAlert({ businessId }) {
       "-created_date",
       50
     ).then(qs => {
-      const withBalance = qs.filter(q => getBalance(q) > 0.01 && (q.total || 0) > 0);
+      const withBalance = qs.filter(q => getBalance(q) > 0.01 && (q.total || 0) > 0 && q.payment_method !== "Sin cargo");
       setPendingQuotations(withBalance);
     }).catch(() => {});
   }, [businessId]);

@@ -28,7 +28,9 @@ export default function OperationalReports({
     const clientMatch = qClientFilter === "all" || q.client_name === qClientFilter;
     const paymentMatch = qPaymentFilter === "all" || q.payment_method === qPaymentFilter;
     const paidMatch = qPaidFilter === "all" || (qPaidFilter === "paid" && q.paid) || (qPaidFilter === "pending" && !q.paid);
-    return inRange && statusMatch && clientMatch && paymentMatch && paidMatch;
+    // Exclude zero-price / internal transfers from commercial metrics
+    const isCommercial = (q.total || 0) > 0 && q.payment_method !== "Sin cargo";
+    return inRange && statusMatch && clientMatch && paymentMatch && paidMatch && isCommercial;
   });
 
   const PLACEHOLDER_METHODS = ["Pendiente de confirmar", "Por definir", ""];

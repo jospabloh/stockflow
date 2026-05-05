@@ -87,13 +87,21 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Update quotation status — initialize payment fields to prevent false "paid" state
+      // Check if client has force_zero_price — if so, mark as paid automatically with "Sin cargo"
+      const clientId = quotation.client_id;
+      let isZeroPrice = (quotation.total || 0) === 0;
+      if (!isZeroPrice && clientId) {
+        const clients = await base44.asServiceRole.entities.Client.filter({ id: clientId, business_id: user.business_id });
+        if (clients[0]?.force_zero_price) isZeroPrice = true;
+      }
+
+      // Update quotation status
       await base44.asServiceRole.entities.Quotation.update(quotation.id, {
         status: 'converted',
-        payment_method: payment_method.trim(),
-        paid: false,
+        payment_method: isZeroPrice ? 'Sin cargo' : payment_method.trim(),
+        paid: isZeroPrice ? true : false,
         amount_paid: 0,
-        balance: quotation.total || 0,
+        balance: isZeroPrice ? 0 : (quotation.total || 0),
         payments: quotation.payments || [],
       });
 
