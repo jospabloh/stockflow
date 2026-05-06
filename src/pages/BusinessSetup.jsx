@@ -50,6 +50,8 @@ export default function BusinessSetup() {
     await base44.auth.updateMe({ business_id: business.id, role: "admin" });
     // Initialize 30-day trial using server-side time
     await base44.functions.invoke("initTenantTrial", { business_id: business.id }).catch(() => {});
+    // Seed default permission profiles (admin + almacenista) for the new business
+    await base44.functions.invoke("seedDefaultPermissionProfiles", {}).catch(() => {});
     await refreshBusiness();
     toast.success("¡Negocio creado! Bienvenido a StockFlow. Tienes 30 días de prueba.");
     navigate("/Dashboard");

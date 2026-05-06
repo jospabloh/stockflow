@@ -1133,6 +1133,78 @@ Además de controlar el acceso a páginas y acciones, el sistema puede ocultar c
 > Esta configuración es automática cuando los permisos granulares están activos.`
   },
 
+  // ─── CLIENTES — PRECIO CERO / MUESTRAS / INTERNOS ────────────────────────
+  {
+    id: "client-force-zero-price",
+    category: "Clientes",
+    role: "admin",
+    title: "🎁 Clientes con Precio $0 — Transferencias Internas y Muestras",
+    keywords: ["precio cero", "force_zero_price", "muestra", "sample", "transferencia interna", "sin cargo", "gratis", "caja chica", "interno", "sucursal"],
+    related_ids: ["pricing-clients", "settings-clients", "quotations-convert"],
+    content: `## 🎁 Clientes con Precio $0 — Transferencias Internas y Muestras
+
+Algunos clientes representan **destinatarios internos o de cortesía** que reciben mercancía sin costo: otra sucursal del negocio, un empleado que recibe muestras, o un cliente especial con acuerdo de cortesía.
+
+---
+
+### ⚙️ La opción "Forzar precio $0"
+
+En el perfil del cliente, existe la bandera **"Forzar precio $0 en todas las ventas"** (\`force_zero_price\`).
+
+Cuando está activada:
+
+| Comportamiento | Resultado |
+|---|---|
+| **Total de cualquier cotización** | Siempre $0.00 — sin importar los productos o cantidades |
+| **Conversión a venta** | Se registra automáticamente como **pagada** y con método "Sin cargo" — sin necesidad de confirmar pago |
+| **Caja Chica** | **No genera ningún movimiento** — el sistema no registra ingresos de $0 |
+| **Seguimiento de cobranza** | La cotización queda excluida de todas las alertas de cobro pendiente |
+| **Reportes de ventas** | La cotización NO aparece en los reportes de ventas ni en los totales de ingresos |
+
+---
+
+### 🎯 Casos de uso típicos
+
+| Situación | Ejemplo |
+|---|---|
+| **Transferencia interna entre sucursales** | Enviar mercancía del almacén central a una sucursal propia |
+| **Muestras de producto** | Entregar muestras a clientes potenciales o a un promotor |
+| **Consumo interno del negocio** | Productos usados por el equipo (papelería, herramientas propias) |
+| **Cortesía acordada** | Cliente VIP con acuerdo especial de costo cero en ciertas líneas |
+
+---
+
+### 🔒 Diferencias con otras opciones de precio
+
+| Opción del cliente | Precio aplicado | Genera caja chica | Aparece en reportes |
+|---|---|---|---|
+| Sin configuración | Menudeo / Mayoreo | Sí (si es efectivo) | Sí |
+| Forzar precio mayoreo | Precio mayoreo | Sí (si es efectivo) | Sí |
+| Forzar precio de compra | Precio de compra | Sí (si es efectivo) | Sí |
+| **Forzar precio $0** | **$0.00 siempre** | **No — nunca** | **No — excluida** |
+
+---
+
+### ✏️ Cómo configurar
+
+1. Ve a **Catálogos → Clientes**
+2. Edita el cliente (ícono ✏️)
+3. En la sección "Configuración de Precios", activa **"Forzar precio $0 (transferencias / muestras)"**
+4. Guarda los cambios
+
+> ⚠️ Esta opción es **mutuamente excluyente** con "Forzar precio mayoreo" y "Forzar precio de compra". Solo una puede estar activa a la vez.
+
+---
+
+### 📋 Identificación en cotizaciones
+
+Las cotizaciones de clientes con \`force_zero_price\` muestran un chip especial:
+
+**🎁 Muestra / Interno · Sin cargo**
+
+En lugar del botón de pago habitual — confirma visualmente que la operación es no comercial.`,
+  },
+
   // ─── COTIZACIONES ON-DEMAND ───────────────────────────────────────────────
   {
     id: "quotations-on-demand",
