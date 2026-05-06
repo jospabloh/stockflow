@@ -9,6 +9,10 @@ const STALE_DOCS_DAYS = 60;
 const SNAPSHOT_VERSION = "2.12.0";
 const SNAPSHOT_RELEASE_DATE = "2026-04-28";
 const SNAPSHOT_GIT_LOG = `
+33aaece Merge pull request #49 from jospabloh/claude/nightly-automation-setup-ZagxP
+773941d Merge branch 'main' into claude/nightly-automation-setup-ZagxP
+c7a462d File changes
+c0bcbcb Add nightly permission & documentation audit automations
 8fa5cfc File changes
 a305d74 File changes
 f36c1cf File changes
@@ -30,10 +34,6 @@ dfcd21b Add MP-aligned license email flow
 3637b21 File changes
 0edcc70 File changes
 e815d7f File changes
-0e4ef13 File changes
-bd3baea File changes
-9de4c26 File changes
-fabea82 Merge pull request #46 from jospabloh/claude/add-component-permissions-AKBeg
 `;
 const SNAPSHOT_LATEST_CHANGES = [
   "📧 Sistema de reactivación de trial: emails automáticos a usuarios inactivos con prueba activa (sin afectar cuentas pagadas, vencidas, archivadas o suspendidas)",
@@ -56,8 +56,8 @@ function daysBetween(a: Date, b: Date): number {
 }
 
 async function callAnthropic(gitLog: string, version: string, existingChanges: string[]): Promise<string[]> {
-  const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY no configurada');
+  const apiKey = Deno.env.get('ANTHROPIC_API_KEY_SF');
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY_SF no configurada');
 
   const systemPrompt = `Eres un redactor técnico que genera changelogs de software en español (es-MX) para StockFlow, un sistema de inventario SaaS multi-tenant.
 Escribe cambios concisos, orientados al usuario final, usando emojis al inicio de cada línea como en este ejemplo:

@@ -12,7 +12,7 @@ Configúralas en Base44 → Settings → Environment Variables **antes** de crea
 | Variable | Descripción |
 |---|---|
 | `CRON_SECRET` | Cadena aleatoria ≥32 chars. Genera con `openssl rand -hex 32`. Mismo valor ya usado por `checkAccountLifecycle` y `processMonthlyRenewal`. |
-| `ANTHROPIC_API_KEY` | API key de Anthropic para generación de changelogs. Solo la necesita `dailyDocumentationAudit`. |
+| `ANTHROPIC_API_KEY_SF_SF` | API key de Anthropic para generación de changelogs. Solo la necesita `dailyDocumentationAudit`. |
 
 ---
 
@@ -54,7 +54,7 @@ CRON 2 — dailyDocumentationAudit
     Content-Type: application/json
     x-cron-secret: ${CRON_SECRET}
 - Body: {}
-- Requiere secreto adicional: ANTHROPIC_API_KEY configurado como variable de entorno.
+- Requiere secreto adicional: ANTHROPIC_API_KEY_SF configurado como variable de entorno.
 - Qué hace:
     * Compara la versión en código (SNAPSHOT_VERSION baked en la función) vs AppChangelog en BD
     * Si desincronizado: llama Anthropic claude-haiku-4-5 con el git log capturado en el build,
@@ -73,7 +73,7 @@ VERIFICACIÓN (ejecuta después de configurar)
 NO HAGAS
 - No modifiques el código de las funciones.
 - No uses el mismo horario que checkAccountLifecycle (08:00) ni processMonthlyRenewal (09:00 si ya existe).
-- No configures ANTHROPIC_API_KEY si no la tienes; dailyDocumentationAudit degradará
+- No configures ANTHROPIC_API_KEY_SF si no la tienes; dailyDocumentationAudit degradará
   graciosamente usando los cambios del snapshot en lugar de generarlos con IA.
 
 REPORTA AL TERMINAR
