@@ -1,0 +1,35 @@
+{
+  "name": "AppChangelog",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Versión de la app (ej: 2.12.0)"
+    },
+    "release_date": {
+      "type": "string",
+      "description": "Fecha de la release (YYYY-MM-DD)"
+    },
+    "changes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Lista de cambios de esta versión (generados por IA o capturados manualmente)"
+    },
+    "generated_by": {
+      "type": "string",
+      "enum": ["automation", "manual"],
+      "description": "Origen del registro"
+    },
+    "source_git_log": {
+      "type": "string",
+      "description": "Fragmento de git log usado para generar el changelog automático"
+    }
+  },
+  "required": ["version"],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": {},
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
