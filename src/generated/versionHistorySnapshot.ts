@@ -1,12 +1,12 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-05-06T17:05:04.872Z
+// Generado: 2026-05-06T17:18:41.773Z
 
 export const SNAPSHOT_VERSION = "2.12.0";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-04-28";
 
-export const SNAPSHOT_GIT_LOG = "8fa5cfc File changes\na305d74 File changes\nf36c1cf File changes\nb3bf822 File changes\n9f46dca File changes\n9ffddb8 File changes\n05acb72 Merge pull request #48 from jospabloh/claude/check-renewal-emails-L83pp\n3342d49 Add queueBillingReminders function to fix missing automation target\n101da53 File changes\n4c7d408 File changes\n51a7bce Update base44 packages\n22c0687 File changes\n6ac0977 File changes\n1895bde File changes\n4073f34 Merge pull request #47 from jospabloh/claude/mercado-pago-checkout-ATHGT\n8f4eace Personalize lifecycle emails with app + plan + recipient name\n46c0afb Add 'Confirmar pago recibido' trigger in LicenseAdmin\ndfcd21b Add MP-aligned license email flow\n3637b21 File changes\n0edcc70 File changes\ne815d7f File changes\n0e4ef13 File changes\nbd3baea File changes\n9de4c26 File changes\nfabea82 Merge pull request #46 from jospabloh/claude/add-component-permissions-AKBeg";
+export const SNAPSHOT_GIT_LOG = "33aaece Merge pull request #49 from jospabloh/claude/nightly-automation-setup-ZagxP\n773941d Merge branch 'main' into claude/nightly-automation-setup-ZagxP\nc7a462d File changes\nc0bcbcb Add nightly permission & documentation audit automations\n8fa5cfc File changes\na305d74 File changes\nf36c1cf File changes\nb3bf822 File changes\n9f46dca File changes\n9ffddb8 File changes\n05acb72 Merge pull request #48 from jospabloh/claude/check-renewal-emails-L83pp\n3342d49 Add queueBillingReminders function to fix missing automation target\n101da53 File changes\n4c7d408 File changes\n51a7bce Update base44 packages\n22c0687 File changes\n6ac0977 File changes\n1895bde File changes\n4073f34 Merge pull request #47 from jospabloh/claude/mercado-pago-checkout-ATHGT\n8f4eace Personalize lifecycle emails with app + plan + recipient name\n46c0afb Add 'Confirmar pago recibido' trigger in LicenseAdmin\ndfcd21b Add MP-aligned license email flow\n3637b21 File changes\n0edcc70 File changes\ne815d7f File changes";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
   "📧 Sistema de reactivación de trial: emails automáticos a usuarios inactivos con prueba activa (sin afectar cuentas pagadas, vencidas, archivadas o suspendidas)",
