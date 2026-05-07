@@ -29,11 +29,11 @@
     },
     "concept": {
       "type": "string",
-      "description": "Concepto o descripción del pago"
+      "description": "Concepto o descripci\u00f3n del pago"
     },
     "reference": {
       "type": "string",
-      "description": "Referencia, folio o número de transacción (opcional)"
+      "description": "Referencia, folio o n\u00famero de transacci\u00f3n (opcional)"
     },
     "notes": {
       "type": "string",
@@ -42,7 +42,7 @@
     "affects_petty_cash": {
       "type": "boolean",
       "default": false,
-      "description": "Si el pago generó un egreso automático en caja chica"
+      "description": "Si el pago gener\u00f3 un egreso autom\u00e1tico en caja chica"
     },
     "petty_cash_movement_id": {
       "type": "string",

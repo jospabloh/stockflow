@@ -20,7 +20,7 @@
         "direct_edit",
         "system_correction"
       ],
-      "description": "Tipo de evento: edición directa sin movimiento o corrección de auditoría"
+      "description": "Tipo de evento: edici\u00f3n directa sin movimiento o correcci\u00f3n de auditor\u00eda"
     },
     "stock_before": {
       "type": "number",
@@ -28,15 +28,15 @@
     },
     "stock_after": {
       "type": "number",
-      "description": "Stock después del cambio"
+      "description": "Stock despu\u00e9s del cambio"
     },
     "notes": {
       "type": "string",
-      "description": "Descripción legible del motivo del cambio"
+      "description": "Descripci\u00f3n legible del motivo del cambio"
     },
     "performed_by": {
       "type": "string",
-      "description": "Email del usuario que realizó el cambio"
+      "description": "Email del usuario que realiz\u00f3 el cambio"
     }
   },
   "required": [

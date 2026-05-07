@@ -17,18 +17,10 @@ Deno.serve(async (req) => {
       return Response.json({ skipped: true, reason: 'unauthenticated' }, { status: 200 });
     }
 
-    // Fetch current user record to check last_active_at (throttle check)
-    let currentUser = null;
-    try {
-      const users = await base44.entities.User.filter({ id: user.id });
-      currentUser = users?.[0] || null;
-    } catch (_) {
-      // If we can't fetch, proceed to update anyway (safe fallback)
-    }
-
+    // Use the already-fetched user object — avoids a forbidden User.list() call
     const nowMs = Date.now();
-    if (currentUser?.last_active_at) {
-      const lastActiveMs = new Date(currentUser.last_active_at).getTime();
+    if (user?.last_active_at) {
+      const lastActiveMs = new Date(user.last_active_at).getTime();
       if (!isNaN(lastActiveMs) && nowMs - lastActiveMs < THROTTLE_MINUTES * 60 * 1000) {
         return Response.json({ skipped: true, reason: 'throttled', next_update_in_ms: (THROTTLE_MINUTES * 60 * 1000) - (nowMs - lastActiveMs) });
       }

@@ -53,6 +53,11 @@
       "default": false,
       "description": "Aplicar precio de compra en todos los productos y en cualquier cantidad; suma +20 MXN de transporte por producto"
     },
+    "force_zero_price": {
+      "type": "boolean",
+      "default": false,
+      "description": "Forzar precio $0 en todas las ventas (transferencias internas / muestras). No genera movimiento en caja chica."
+    },
     "business_id": {
       "type": "string",
       "description": "ID del negocio al que pertenece"
