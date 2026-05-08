@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import { toast } from "sonner";
-import { DollarSign, Plus, CreditCard } from "lucide-react";
+import { Plus, CreditCard, Pencil, Trash2 } from "lucide-react";
 import { useBusinessContext } from "@/components/BusinessContext";
 
 function fmt(n) {
@@ -30,11 +30,13 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
   const { businessId } = useBusinessContext();
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingPayment, setEditingPayment] = useState(null); // null = new, object = editing
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("");
   const [paidAt, setPaidAt] = useState(new Date().toLocaleDateString("en-CA"));
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const canRegisterPayment = !userRole || userRole === "admin" || userRole === "almacenista";
 
@@ -54,7 +56,8 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
   const total = quotation.total || 0;
   const isCash = method.toLowerCase().includes("efectivo"); // kept for info display
 
-  const openModal = () => {
+  const openNew = () => {
+    setEditingPayment(null);
     setAmount(String(balance > 0 ? balance.toFixed(2) : ""));
     setMethod(quotation.payment_method || "");
     setPaidAt(new Date().toLocaleDateString("en-CA"));
@@ -62,34 +65,77 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
     setModalOpen(true);
   };
 
+  const openEdit = (p) => {
+    setEditingPayment(p);
+    setAmount(String(p.amount || ""));
+    setMethod(p.payment_method || "");
+    setPaidAt(p.paid_at ? p.paid_at.split("T")[0] : new Date().toLocaleDateString("en-CA"));
+    setNotes(p.notes || "");
+    setModalOpen(true);
+  };
+
+  const handleDelete = async (p) => {
+    if (!window.confirm(`¿Eliminar el pago de $${fmt(p.amount)} (${p.payment_method})?`)) return;
+    setDeletingId(p.id);
+    try {
+      const res = await base44.functions.invoke("deleteQuotationPayment", {
+        quotation_id: quotation.id,
+        payment_id: p.id,
+      });
+      if (!res.data.success) throw new Error(res.data.error || "Error al eliminar");
+      toast.success("Pago eliminado");
+      onPaymentRegistered?.();
+    } catch (err) {
+      toast.error(`Error: ${err.message}`);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleSave = async () => {
     const amt = Number(amount);
     if (!amt || amt <= 0) { toast.error("El monto debe ser mayor a 0"); return; }
-    if (amt > balance + 0.01) { toast.error(`El monto no puede superar el saldo pendiente ($${fmt(balance)})`); return; }
     if (!method) { toast.error("Selecciona una forma de pago"); return; }
+
+    if (!editingPayment && amt > balance + 0.01) {
+      toast.error(`El monto no puede superar el saldo pendiente ($${fmt(balance)})`);
+      return;
+    }
 
     setSaving(true);
     try {
-      const response = await base44.functions.invoke("registerQuotationPayment", {
-        quotation_id: quotation.id,
-        amount: amt,
-        payment_method: method,
-        paid_at: paidAt,
-        notes,
-        // petty cash auto-handled by backend
-      });
+      let data;
+      if (editingPayment) {
+        const response = await base44.functions.invoke("editQuotationPayment", {
+          quotation_id: quotation.id,
+          payment_id: editingPayment.id,
+          amount: amt,
+          payment_method: method,
+          paid_at: paidAt,
+          notes,
+        });
+        data = response.data;
+      } else {
+        const response = await base44.functions.invoke("registerQuotationPayment", {
+          quotation_id: quotation.id,
+          amount: amt,
+          payment_method: method,
+          paid_at: paidAt,
+          notes,
+        });
+        data = response.data;
+      }
 
-      const data = response.data;
-      if (!data.success) throw new Error(data.error || "Error al registrar");
+      if (!data.success) throw new Error(data.error || "Error al guardar");
 
-      const isFullyPaid = data.is_paid_full;
       const msg = isCash
-        ? `✅ Pago de $${fmt(amt)} registrado e integrado a caja chica`
-        : `✅ Pago de $${fmt(amt)} registrado`;
+        ? `✅ Pago de $${fmt(amt)} ${editingPayment ? "actualizado" : "registrado"} e integrado a caja chica`
+        : `✅ Pago de $${fmt(amt)} ${editingPayment ? "actualizado" : "registrado"}`;
       toast.success(msg);
-      if (isFullyPaid) toast.success("🎉 Cotización pagada en su totalidad");
+      if (data.is_paid_full) toast.success("🎉 Cotización pagada en su totalidad");
 
       setModalOpen(false);
+      setEditingPayment(null);
       onPaymentRegistered?.();
     } catch (err) {
       toast.error(`Error: ${err.message}`);
@@ -128,6 +174,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
                 <th className="px-3 py-2 text-right">Monto</th>
                 <th className="px-3 py-2 text-left">Forma de pago</th>
                 <th className="px-3 py-2 text-left hidden md:table-cell">Notas</th>
+                {canRegisterPayment && <th className="px-3 py-2 w-16"></th>}
               </tr>
             </thead>
             <tbody>
@@ -141,6 +188,27 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
                   </td>
                   <td className="px-3 py-2 text-foreground">{p.payment_method}</td>
                   <td className="px-3 py-2 text-muted-foreground hidden md:table-cell">{p.notes || "—"}</td>
+                  {canRegisterPayment && (
+                    <td className="px-2 py-1">
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => openEdit(p)}
+                          className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-indigo-600 transition-colors"
+                          title="Editar pago"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(p)}
+                          disabled={deletingId === p.id}
+                          className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-red-600 transition-colors disabled:opacity-40"
+                          title="Eliminar pago"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -156,7 +224,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
       {balance > 0.01 && canRegisterPayment && (
         <Button
           size="sm"
-          onClick={openModal}
+          onClick={openNew}
           className="bg-green-600 hover:bg-green-700 text-white w-full text-sm font-semibold py-5"
         >
           <Plus className="h-4 w-4 mr-1" /> Registrar Pago{balance < total ? " Parcial" : ""}
@@ -179,7 +247,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-green-600" />
-              Registrar Pago — {quotation.folio}
+              {editingPayment ? "Editar Pago" : "Registrar Pago"} — {quotation.folio}
             </DialogTitle>
           </DialogHeader>
 
@@ -280,7 +348,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
               disabled={saving || !amount || !method}
               className="bg-green-600 hover:bg-green-700 text-white"
             >
-              {saving ? "Guardando..." : "Guardar pago"}
+              {saving ? "Guardando..." : editingPayment ? "Actualizar pago" : "Guardar pago"}
             </Button>
           </div>
         </DialogContent>
