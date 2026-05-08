@@ -255,10 +255,17 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                 <QuotationPaymentsSection
                   quotation={q}
                   userRole={userRole}
-                  onPaymentRegistered={() => {
-                    base44.entities.Quotation.filter({ id: q.id }).then(res => {
-                      if (res[0]) setLocalQuotation(res[0]);
-                    }).catch(() => {});
+                  onPaymentRegistered={async () => {
+                    try {
+                      const updated = await base44.entities.Quotation.get(q.id);
+                      if (updated) setLocalQuotation(updated);
+                    } catch {
+                      // fallback: try filter
+                      base44.entities.Quotation.filter({ business_id: q.business_id }).then(res => {
+                        const found = res.find(r => r.id === q.id);
+                        if (found) setLocalQuotation(found);
+                      }).catch(() => {});
+                    }
                     onOnDemandCreated?.();
                   }}
                 />
@@ -300,8 +307,8 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
         itemIndex={createOnDemand.itemIndex}
         onSuccess={() => {
           // Refresh local quotation items to reflect product_created status
-          base44.entities.Quotation.filter({ id: q.id }).then(res => {
-            if (res[0]) setLocalQuotation(res[0]);
+          base44.entities.Quotation.get(q.id).then(updated => {
+            if (updated) setLocalQuotation(updated);
           }).catch(() => {});
           onOnDemandCreated?.();
           setCreateOnDemand(null);
