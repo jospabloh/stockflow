@@ -99,23 +99,49 @@ Deno.serve(async (req) => {
       }
     }
 
-    // PHASE 2: Mark quotation as cancelled
-    try {
-      await base44.asServiceRole.entities.Quotation.update(quotation.id, {
-        status: 'cancelled',
-        cancellation_reason: cancellation_reason || ''
-      });
+    // PHASE 2: Reverse all registered payments from petty cash (if any)
+     try {
+       // CRITICAL FIX: Clean up ALL cash payments registered against this quotation
+       // Each payment in quotation.payments may have generated a petty cash movement
+       const payments = quotation.payments || [];
+       for (const payment of payments) {
+         const isCashPayment = payment.payment_method && payment.payment_method.toLowerCase().includes('efectivo');
+         if (isCashPayment && payment.petty_cash_movement_id) {
+           try {
+             // Delete the linked petty cash movement
+             await base44.asServiceRole.entities.PettyCashMovement.delete(payment.petty_cash_movement_id);
+           } catch (e) {
+             console.error(`Failed to delete petty cash movement ${payment.petty_cash_movement_id}:`, e?.message);
+           }
+         }
+       }
 
-      // TENANT-SCOPED: Reverse any system-generated petty cash income linked to this quotation
-      // Only relevant if the quotation was previously paid (cash income already recorded)
-      if (quotation.paid) {
-        base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
-          action: 'reverse',
-          origin_type: 'quotation',
-          origin_id: quotation.id,
-          business_id: user.business_id,
-        }).catch(() => {});
-      }
+       // Also use syncCashSaleToPettyCash to reverse any remaining system-generated income
+       if (quotation.paid) {
+         try {
+           await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+             action: 'reverse',
+             origin_type: 'quotation',
+             origin_id: quotation.id,
+             business_id: user.business_id,
+           });
+         } catch (e) {
+           console.error('syncCashSaleToPettyCash reverse error:', e?.message);
+         }
+       }
+     } catch (err) {
+       console.error('Payment cleanup error:', err?.message);
+     }
+
+     // Mark quotation as cancelled
+     try {
+       await base44.asServiceRole.entities.Quotation.update(quotation.id, {
+         status: 'cancelled',
+         cancellation_reason: cancellation_reason || '',
+         payments: [], // Clear all payments on cancellation
+         amount_paid: 0,
+         balance: quotation.total || 0,
+       });
 
       return Response.json({
         success: true,

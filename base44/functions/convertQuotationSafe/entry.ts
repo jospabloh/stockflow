@@ -98,37 +98,17 @@ Deno.serve(async (req) => {
       const finalPaymentMethod = isZeroPrice ? 'Sin cargo' : payment_method.trim();
 
       // Update quotation status
-      await base44.asServiceRole.entities.Quotation.update(quotation.id, {
-        status: 'converted',
-        payment_method: finalPaymentMethod,
-        paid: isZeroPrice ? true : false,
-        amount_paid: 0,
-        balance: isZeroPrice ? 0 : (quotation.total || 0),
-        payments: quotation.payments || [],
-      });
-
-      // Auto-register in petty cash if efectivo and full payment at conversion (isZeroPrice is excluded)
-      const isCash = finalPaymentMethod.toLowerCase().includes('efectivo');
-      if (isCash && !isZeroPrice) {
-        try {
-          await base44.asServiceRole.entities.PettyCashMovement.create({
-            business_id: user.business_id,
-            movement_type: 'income',
-            amount: quotation.total || 0,
-            description: `Venta efectivo — ${quotation.folio} | ${quotation.client_name}`,
-            category: 'Venta efectivo',
-            movement_date: new Date().toLocaleDateString('en-CA'),
-            reference: quotation.folio,
-            notes: `Cotización ${quotation.folio} · Cliente: ${quotation.client_name} · Convertida en venta`,
-            generated_by_system: true,
-            origin_type: 'quotation',
-            origin_id: quotation.id,
-            payment_method_snapshot: finalPaymentMethod,
-          });
-        } catch (e) {
-          console.error('PettyCash auto-create on conversion error:', e?.message);
-        }
-      }
+       // CRITICAL FIX: DO NOT auto-register petty cash on conversion
+       // Petty cash income is only registered when payments are actually confirmed
+       // This prevents the bug where the FULL amount was registered as cash when only partial payment was cash
+       await base44.asServiceRole.entities.Quotation.update(quotation.id, {
+         status: 'converted',
+         payment_method: finalPaymentMethod,
+         paid: isZeroPrice ? true : false,
+         amount_paid: isZeroPrice ? (quotation.total || 0) : 0,
+         balance: isZeroPrice ? 0 : (quotation.total || 0),
+         payments: quotation.payments || [],
+       });
 
       return Response.json({ success: true, quotation_id });
     } catch (error) {
