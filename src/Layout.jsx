@@ -5,6 +5,7 @@ import { useNavigation } from "@/lib/NavigationContext";
 import { useLicense } from "@/lib/LicenseContext";
 import { usePermissions } from "@/lib/PermissionContext";
 import TrialBanner from "@/components/license/TrialBanner";
+import FloatingHelpChat from "@/components/chat/FloatingHelpChat";
 
 // Detect if running as installed PWA / native app (not regular browser tab)
 const IS_NATIVE_APP = typeof window !== "undefined" && (
@@ -452,6 +453,9 @@ export default function Layout({ children, currentPageName }) {
 
 
       </div>
+
+      {/* Floating Help Chat */}
+      <FloatingHelpChat />
 
       {/* Bottom Tab Bar — mobile only */}
       <nav
