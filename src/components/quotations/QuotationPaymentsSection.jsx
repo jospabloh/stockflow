@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import { toast } from "sonner";
-import { Plus, CreditCard, Pencil, Trash2 } from "lucide-react";
+import { DollarSign, Plus, CreditCard } from "lucide-react";
 import { useBusinessContext } from "@/components/BusinessContext";
 
 function fmt(n) {
@@ -36,20 +36,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Edit payment state
-  const [editPayment, setEditPayment] = useState(null); // payment object being edited
-  const [editAmount, setEditAmount] = useState("");
-  const [editMethod, setEditMethod] = useState("");
-  const [editPaidAt, setEditPaidAt] = useState("");
-  const [editNotes, setEditNotes] = useState("");
-  const [editSaving, setEditSaving] = useState(false);
-
-  // Delete payment state
-  const [deletePayment, setDeletePayment] = useState(null);
-  const [deleteConfirming, setDeleteConfirming] = useState(false);
-
   const canRegisterPayment = !userRole || userRole === "admin" || userRole === "almacenista";
-  const canEditPayment = !userRole || userRole === "admin" || userRole === "almacenista";
 
   useEffect(() => {
     if (businessId) {
@@ -73,59 +60,6 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
     setPaidAt(new Date().toLocaleDateString("en-CA"));
     setNotes("");
     setModalOpen(true);
-  };
-
-  const openEditModal = (p) => {
-    setEditPayment(p);
-    setEditAmount(String(p.amount));
-    setEditMethod(p.payment_method || "");
-    setEditPaidAt(p.paid_at ? p.paid_at.split("T")[0] : new Date().toLocaleDateString("en-CA"));
-    setEditNotes(p.notes || "");
-  };
-
-  const handleEditSave = async () => {
-    const amt = Number(editAmount);
-    if (!amt || amt <= 0) { toast.error("El monto debe ser mayor a 0"); return; }
-    if (!editMethod) { toast.error("Selecciona una forma de pago"); return; }
-    setEditSaving(true);
-    try {
-      const res = await base44.functions.invoke("editQuotationPayment", {
-        quotation_id: quotation.id,
-        payment_id: editPayment.id,
-        amount: amt,
-        payment_method: editMethod,
-        paid_at: editPaidAt,
-        notes: editNotes,
-      });
-      if (!res.data.success) throw new Error(res.data.error || "Error al editar");
-      toast.success("✅ Pago actualizado");
-      setEditPayment(null);
-      onPaymentRegistered?.();
-    } catch (err) {
-      toast.error(`Error: ${err.message}`);
-    } finally {
-      setEditSaving(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!deletePayment) return;
-    setDeleteConfirming(true);
-    try {
-      const res = await base44.functions.invoke("deleteQuotationPayment", {
-        quotation_id: quotation.id,
-        payment_id: deletePayment.id,
-      });
-      if (!res.data.success) throw new Error(res.data.error || "Error al eliminar");
-      const isCash = deletePayment.payment_method?.toLowerCase().includes("efectivo");
-      toast.success(isCash ? "✅ Pago eliminado y revertido de caja chica" : "✅ Pago eliminado");
-      setDeletePayment(null);
-      onPaymentRegistered?.();
-    } catch (err) {
-      toast.error(`Error: ${err.message}`);
-    } finally {
-      setDeleteConfirming(false);
-    }
   };
 
   const handleSave = async () => {
@@ -194,7 +128,6 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
                 <th className="px-3 py-2 text-right">Monto</th>
                 <th className="px-3 py-2 text-left">Forma de pago</th>
                 <th className="px-3 py-2 text-left hidden md:table-cell">Notas</th>
-                {canEditPayment && <th className="px-2 py-2 w-16"></th>}
               </tr>
             </thead>
             <tbody>
@@ -208,28 +141,6 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
                   </td>
                   <td className="px-3 py-2 text-foreground">{p.payment_method}</td>
                   <td className="px-3 py-2 text-muted-foreground hidden md:table-cell">{p.notes || "—"}</td>
-                  {canEditPayment && (
-                    <td className="px-2 py-1">
-                      <div className="flex gap-1">
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(p)}
-                          className="p-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-indigo-500"
-                          title="Editar pago"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeletePayment(p)}
-                          className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500"
-                          title="Eliminar pago"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  )}
                 </tr>
               ))}
             </tbody>
@@ -261,128 +172,6 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
           ✅ Cotización pagada en su totalidad
         </div>
       )}
-
-      {/* Delete confirmation */}
-      <AlertDialog open={!!deletePayment} onOpenChange={(v) => !v && setDeletePayment(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar este pago?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Se eliminará el pago de <strong>${fmt(deletePayment?.amount)}</strong> ({deletePayment?.payment_method}).
-              {deletePayment?.payment_method?.toLowerCase().includes("efectivo") && (
-                <span className="block mt-1 text-amber-700 dark:text-amber-400">
-                  ⚠️ Este pago en efectivo también se revertirá de caja chica automáticamente.
-                </span>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={deleteConfirming}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {deleteConfirming ? "Eliminando..." : "Eliminar pago"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Edit payment modal */}
-      <Dialog open={!!editPayment} onOpenChange={(v) => !v && setEditPayment(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Pencil className="h-4 w-4 text-indigo-500" />
-              Editar pago
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div>
-              <Label className="mb-1 block">Monto <span className="text-red-500">*</span></Label>
-              <Input
-                type="number"
-                min={0.01}
-                step="0.01"
-                value={editAmount}
-                onChange={e => setEditAmount(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label className="mb-2 block">Forma de pago <span className="text-red-500">*</span></Label>
-              <div className="grid grid-cols-2 gap-2 mb-2">
-                {(paymentMethods.length > 0
-                  ? paymentMethods.map(m => m.name)
-                  : ["Efectivo", "Transferencia", "Tarjeta débito", "Tarjeta crédito"]
-                ).map(m => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setEditMethod(m)}
-                    className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
-                      editMethod === m
-                        ? "bg-indigo-600 text-white border-indigo-600"
-                        : "bg-card text-foreground border-border hover:border-indigo-300"
-                    }`}
-                  >
-                    {m}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setEditMethod("")}
-                  className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
-                    editMethod !== "" && !paymentMethods.map(m=>m.name).includes(editMethod) && !["Efectivo","Transferencia","Tarjeta débito","Tarjeta crédito"].includes(editMethod)
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "bg-card text-foreground border-border hover:border-indigo-300"
-                  }`}
-                >
-                  Otro...
-                </button>
-              </div>
-              {!paymentMethods.map(m=>m.name).includes(editMethod) &&
-               !["Efectivo","Transferencia","Tarjeta débito","Tarjeta crédito"].includes(editMethod) && (
-                <Input
-                  placeholder="Escribe otro método..."
-                  value={editMethod}
-                  onChange={e => setEditMethod(e.target.value)}
-                  className="text-sm"
-                  autoFocus
-                />
-              )}
-              {editMethod?.toLowerCase().includes("efectivo") && editMethod !== editPayment?.payment_method && (
-                <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1">
-                  💵 Este cambio registrará un nuevo ingreso en caja chica.
-                </p>
-              )}
-              {!editMethod?.toLowerCase().includes("efectivo") && editPayment?.payment_method?.toLowerCase().includes("efectivo") && (
-                <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
-                  ⚠️ Al cambiar de Efectivo, se revertirá el movimiento de caja chica.
-                </p>
-              )}
-            </div>
-            <div>
-              <Label className="mb-1 block">Fecha del pago <span className="text-red-500">*</span></Label>
-              <Input type="date" value={editPaidAt} onChange={e => setEditPaidAt(e.target.value)} />
-            </div>
-            <div>
-              <Label className="mb-1 block">Notas (opcional)</Label>
-              <Textarea value={editNotes} onChange={e => setEditNotes(e.target.value)} rows={2} />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setEditPayment(null)}>Cancelar</Button>
-            <Button
-              onClick={handleEditSave}
-              disabled={editSaving || !editAmount || !editMethod}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
-            >
-              {editSaving ? "Guardando..." : "Guardar cambios"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Payment modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
@@ -447,29 +236,13 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
                     {m}
                   </button>
                 ))}
-                <button
-                  type="button"
-                  onClick={() => setMethod("")}
-                  className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
-                    method !== "" && !paymentMethods.map(m=>m.name).includes(method) && !["Efectivo","Transferencia","Tarjeta débito","Tarjeta crédito"].includes(method)
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "bg-card text-foreground border-border hover:border-indigo-300"
-                  }`}
-                >
-                  Otro...
-                </button>
               </div>
-              {/* Campo libre solo si el método seleccionado no es ninguno de los botones */}
-              {!paymentMethods.map(m=>m.name).includes(method) &&
-               !["Efectivo","Transferencia","Tarjeta débito","Tarjeta crédito"].includes(method) && (
-                <Input
-                  placeholder="Escribe otro método..."
-                  value={method}
-                  onChange={e => setMethod(e.target.value)}
-                  className="text-sm"
-                  autoFocus
-                />
-              )}
+              <Input
+                placeholder="Otro método..."
+                value={["Efectivo","Transferencia","Tarjeta débito","Tarjeta crédito"].includes(method) || paymentMethods.map(m=>m.name).includes(method) ? "" : method}
+                onChange={e => setMethod(e.target.value)}
+                className="text-sm"
+              />
             </div>
 
             <div>

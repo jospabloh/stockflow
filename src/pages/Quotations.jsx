@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 
-import { Plus, Search, Banknote, HandCoins } from "lucide-react";
+import { Plus, Search, Banknote } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -440,7 +440,7 @@ export default function Quotations() {
               <div className="space-y-2">
                 <p>Total: <strong>${payQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong> · Cliente: {payQuotation?.client_name}</p>
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2 text-sm text-blue-800 dark:text-blue-300">
-                  💡 <strong>¿Pago parcial o con varios métodos?</strong> Abre la cotización y usa la sección <em>Pagos</em> para registrar abonos con diferentes métodos.
+                  💡 <strong>¿Pago parcial o con varios métodos?</strong> Abre la cotización (👁) y usa la sección <em>Pagos</em> para registrar abonos con diferentes métodos.
                 </div>
               </div>
             </AlertDialogDescription>
@@ -479,9 +479,9 @@ export default function Quotations() {
                   }).catch(() => setPreviewClient(null));
                 }
               }}
-              className="px-4 py-2 rounded-md text-sm font-medium border border-indigo-300 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors flex items-center gap-2"
+              className="px-4 py-2 rounded-md text-sm font-medium border border-indigo-300 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
             >
-              <HandCoins className="h-4 w-4" /> Ver cotización (pagos parciales)
+              👁 Ver cotización (pagos parciales)
             </button>
             <AlertDialogAction
               onClick={handleConfirmPayment}
