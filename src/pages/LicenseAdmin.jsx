@@ -237,6 +237,10 @@ export default function LicenseAdmin() {
                         <td className="px-4 py-3">
                           <p className="font-medium text-foreground">{biz.name}</p>
                           <p className="text-xs text-muted-foreground">{moment(biz.created_date).format("DD/MM/YYYY")}</p>
+                          <p className="text-xs text-muted-foreground font-mono truncate max-w-[200px]" title={biz.id}>ID: {biz.id}</p>
+                          {biz.created_by && (
+                            <p className="text-xs text-muted-foreground truncate max-w-[200px]" title={biz.created_by}>Creada por: {biz.created_by}</p>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <Badge className={`${sCfg.color} border-0 text-xs flex items-center gap-1 w-fit`}>
