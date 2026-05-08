@@ -1,5 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+function normalizePaymentMethod(method) {
+  return String(method || '').trim().toLowerCase().includes('efectivo');
+}
+
 function getBalance(q) {
   const total = q.total || 0;
   if (q.balance != null) return q.balance;
@@ -23,7 +27,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { quotation_id, amount, payment_method, paid_at, notes, register_in_petty_cash } = body;
+    const { quotation_id, amount, payment_method, paid_at, notes } = body;
 
     if (!quotation_id) return Response.json({ error: 'quotation_id is required' }, { status: 400 });
     if (!amount || Number(amount) <= 0) return Response.json({ error: 'amount must be > 0' }, { status: 400 });
@@ -69,30 +73,34 @@ Deno.serve(async (req) => {
       paid: isPaidFull,
     });
 
-    // Optionally register in petty cash
+    // Auto-register in petty cash if payment method is cash (efectivo)
     let pettyCashMovementId = null;
-    if (register_in_petty_cash) {
+    const isCash = normalizePaymentMethod(payment_method);
+    if (isCash) {
       const movDate = paid_at ? paid_at.split('T')[0] : new Date().toLocaleDateString('en-CA');
-      const pcm = await base44.asServiceRole.entities.PettyCashMovement.create({
-        business_id: user.business_id,
-        movement_type: 'income',
-        amount: Number(amount),
-        description: `Pago de cotización #${q.folio} - ${q.client_name}`,
-        category: 'Ventas',
-        movement_date: movDate,
-        reference: q.folio,
-        generated_by_system: false,
-        origin_type: 'quotation',
-        origin_id: q.id,
-        payment_method_snapshot: payment_method,
-      });
-      pettyCashMovementId = pcm.id;
+      try {
+        const syncResult = await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+          action: 'reconcile',
+          origin_type: 'quotation',
+          origin_id: q.id,
+          amount: Number(amount),
+          payment_method,
+          description: `Pago de cotización ${q.folio} — ${q.client_name}`,
+          folio_or_ref: q.folio,
+          movement_date: movDate,
+          business_id: q.business_id,
+        });
+        pettyCashMovementId = syncResult?.petty_cash_id || null;
+      } catch (e) {
+        console.error('syncCashSaleToPettyCash error:', e?.message);
+      }
 
-      // Patch payment record with petty_cash_movement_id
-      const patchedPayments = updatedPayments.map(p =>
-        p.id === paymentId ? { ...p, petty_cash_movement_id: pettyCashMovementId } : p
-      );
-      await base44.asServiceRole.entities.Quotation.update(q.id, { payments: patchedPayments });
+      if (pettyCashMovementId) {
+        const patchedPayments = updatedPayments.map(p =>
+          p.id === paymentId ? { ...p, petty_cash_movement_id: pettyCashMovementId } : p
+        );
+        await base44.asServiceRole.entities.Quotation.update(q.id, { payments: patchedPayments });
+      }
     }
 
     return Response.json({

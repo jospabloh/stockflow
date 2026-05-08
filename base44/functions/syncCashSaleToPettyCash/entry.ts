@@ -72,7 +72,9 @@ Deno.serve(async (req) => {
       business_id,
     } = body;
 
-    if (!business_id || business_id !== user.business_id) {
+    // Allow service role calls (no business_id on user) or direct user calls
+    const isServiceRole = !user.business_id;
+    if (!business_id || (!isServiceRole && business_id !== user.business_id)) {
       return Response.json({ error: 'Forbidden: business_id mismatch' }, { status: 403 });
     }
 

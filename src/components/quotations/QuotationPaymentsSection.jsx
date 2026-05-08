@@ -34,7 +34,6 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
   const [method, setMethod] = useState("");
   const [paidAt, setPaidAt] = useState(new Date().toLocaleDateString("en-CA"));
   const [notes, setNotes] = useState("");
-  const [registerPettyCash, setRegisterPettyCash] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const canRegisterPayment = userRole === "admin" || userRole === "almacenista";
@@ -53,14 +52,13 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
   const amountPaid = getAmountPaid(quotation);
   const balance = getBalance(quotation);
   const total = quotation.total || 0;
-  const isCash = method.toLowerCase().includes("efectivo");
+  const isCash = method.toLowerCase().includes("efectivo"); // kept for info display
 
   const openModal = () => {
     setAmount(String(balance > 0 ? balance.toFixed(2) : ""));
     setMethod(quotation.payment_method || "");
     setPaidAt(new Date().toLocaleDateString("en-CA"));
     setNotes("");
-    setRegisterPettyCash(false);
     setModalOpen(true);
   };
 
@@ -78,15 +76,16 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
         payment_method: method,
         paid_at: paidAt,
         notes,
-        register_in_petty_cash: isCash && registerPettyCash,
+        // petty cash auto-handled by backend
       });
 
       const data = response.data;
       if (!data.success) throw new Error(data.error || "Error al registrar");
 
       const isFullyPaid = data.is_paid_full;
-      let msg = `✅ Pago de $${fmt(amt)} registrado`;
-      if (isCash && registerPettyCash) msg = "✅ Pago registrado e ingresado a caja chica";
+      const msg = isCash
+        ? `✅ Pago de $${fmt(amt)} registrado e integrado a caja chica`
+        : `✅ Pago de $${fmt(amt)} registrado`;
       toast.success(msg);
       if (isFullyPaid) toast.success("🎉 Cotización pagada en su totalidad");
 
@@ -227,17 +226,11 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
             </div>
 
             {isCash && (
-              <label className="flex items-center gap-3 cursor-pointer bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2">
-                <input
-                  type="checkbox"
-                  checked={registerPettyCash}
-                  onChange={e => setRegisterPettyCash(e.target.checked)}
-                  className="h-4 w-4 rounded border-input"
-                />
-                <span className="text-sm text-amber-800 dark:text-amber-300">
-                  ¿Integrar este ingreso a caja chica?
+              <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg px-3 py-2">
+                <span className="text-sm text-emerald-700 dark:text-emerald-300">
+                  💵 Este pago en efectivo se registrará automáticamente en caja chica.
                 </span>
-              </label>
+              </div>
             )}
           </div>
 
