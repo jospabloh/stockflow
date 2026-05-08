@@ -375,13 +375,13 @@ export default function Quotations() {
         userRole={userRole}
         onOpenChange={(v) => {
           if (!v) {
-            // Reload to pick up payment changes
             loadData(businessId);
             setPreviewQuotation(null);
             setPreviewClient(null);
           }
         }}
         onOnDemandCreated={() => loadData(businessId)}
+        onQuotationUpdated={(updated) => setPreviewQuotation(updated)}
       />
 
       {/* Cancel dialog */}

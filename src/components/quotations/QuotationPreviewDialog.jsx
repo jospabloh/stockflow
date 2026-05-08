@@ -12,12 +12,15 @@ function fmt(n) {
   return (n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export default function QuotationPreviewDialog({ quotation, settings, client, open, onOpenChange, onOnDemandCreated, userRole }) {
+export default function QuotationPreviewDialog({ quotation, settings, client, open, onOpenChange, onOnDemandCreated, onQuotationUpdated, userRole }) {
   const [downloading, setDownloading] = useState(false);
   const [createOnDemand, setCreateOnDemand] = useState(null); // { item, itemIndex }
   const [localQuotation, setLocalQuotation] = useState(null);
 
-  React.useEffect(() => { setLocalQuotation(quotation); }, [quotation]);
+  // Only sync from parent when the dialog opens or when the folio changes (new quotation)
+  React.useEffect(() => {
+    if (open) setLocalQuotation(quotation);
+  }, [open, quotation?.id]);
 
   const rawQ = localQuotation || quotation;
   if (!open || !rawQ) return null;
@@ -257,9 +260,11 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                   userRole={userRole}
                   onPaymentRegistered={() => {
                     base44.entities.Quotation.get(q.id).then(updated => {
-                      if (updated) setLocalQuotation(updated);
+                      if (updated) {
+                        setLocalQuotation(updated);
+                        onQuotationUpdated?.(updated);
+                      }
                     }).catch(() => {});
-                    onOnDemandCreated?.();
                   }}
                 />
               </div>
