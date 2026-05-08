@@ -56,22 +56,29 @@ Deno.serve(async (req) => {
     // - Changing payment method while already paid
     const effectivePaid = ('paid' in sanitizedUpdates) ? Boolean(sanitizedUpdates.paid) : Boolean(quotation.paid);
     const paymentMethodAfter = String(sanitizedUpdates.payment_method || quotation.payment_method || '');
+    // Use business_id from the quotation itself (more reliable than user.business_id in service role context)
+    const bizId = quotation.business_id || user.business_id;
     const shouldReconcilePettyCash = quotation.status === 'converted' && (quotation.paid || effectivePaid) && (
       'paid' in sanitizedUpdates || 'payment_method' in sanitizedUpdates
     );
 
-    if (shouldReconcilePettyCash) {
-      base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
-        action: 'reconcile',
-        origin_type: 'quotation',
-        origin_id: quotation.id,
-        amount: effectivePaid ? (quotation.total || 0) : 0,
-        payment_method: paymentMethodAfter,
-        description: `Venta cotización ${quotation.folio} — ${quotation.client_name || ''}`,
-        folio_or_ref: quotation.folio,
-        movement_date: new Date().toLocaleDateString('en-CA'),
-        business_id: user.business_id,
-      }).catch(() => {});
+    if (shouldReconcilePettyCash && bizId) {
+      try {
+        await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+          action: effectivePaid ? 'reconcile' : 'reverse',
+          origin_type: 'quotation',
+          origin_id: quotation.id,
+          amount: effectivePaid ? (quotation.total || 0) : 0,
+          payment_method: paymentMethodAfter,
+          description: `Venta cotización ${quotation.folio} — ${quotation.client_name || ''}`,
+          folio_or_ref: quotation.folio,
+          movement_date: new Date().toLocaleDateString('en-CA'),
+          business_id: bizId,
+        });
+      } catch (pettyCashError) {
+        // Log but don't fail the main operation
+        console.error('syncCashSaleToPettyCash failed:', pettyCashError?.message);
+      }
     }
 
     return Response.json({
