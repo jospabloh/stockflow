@@ -503,15 +503,18 @@ export default function Quotations() {
               Se descontará el stock de los {convertQuotation?.items?.length || 0} producto(s) de la cotización {convertQuotation?.folio}. Total: ${convertQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="px-1 py-3 space-y-2">
-            <p className="text-sm font-medium text-slate-700">Método de pago <span className="text-red-500">*</span></p>
+          <div className="px-1 py-3 space-y-3">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2 text-xs text-blue-800 dark:text-blue-300">
+              💡 Selecciona el método principal. Si el cliente paga con <strong>varios métodos o en parcialidades</strong>, registra los cobros desde la cotización una vez concretada.
+            </div>
+            <p className="text-sm font-medium">Método de pago <span className="text-red-500">*</span></p>
             <div className="grid grid-cols-2 gap-2">
               {["Efectivo", "Transferencia", "Tarjeta débito", "Tarjeta crédito", "Cheque", "Otro"].map((m) => (
                 <button
                   key={m}
                   type="button"
                   onClick={() => { setConvertPaymentMethod(m); setConvertError(""); }}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${convertPaymentMethod === m ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300"}`}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${convertPaymentMethod === m ? "bg-indigo-600 text-white border-indigo-600" : "bg-card text-foreground border-border hover:border-indigo-300"}`}
                 >
                   {m}
                 </button>
@@ -521,7 +524,6 @@ export default function Quotations() {
               placeholder="Otro método..."
               value={convertPaymentMethod}
               onChange={(e) => { setConvertPaymentMethod(e.target.value); setConvertError(""); }}
-              className="mt-1"
             />
             {convertError && <p className="text-sm text-red-600">{convertError}</p>}
           </div>

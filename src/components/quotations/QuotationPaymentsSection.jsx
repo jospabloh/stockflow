@@ -216,12 +216,32 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
             </div>
 
             <div>
-              <Label className="mb-1 block">Forma de pago <span className="text-red-500">*</span></Label>
-              <SelectWrapper
-                value={method}
-                onValueChange={setMethod}
-                placeholder="Seleccionar método"
-                options={paymentMethods.map(m => ({ value: m.name, label: m.name }))}
+              <Label className="mb-2 block">Forma de pago <span className="text-red-500">*</span></Label>
+              {/* Siempre mostrar botones rápidos + los métodos del negocio */}
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                {(paymentMethods.length > 0
+                  ? paymentMethods.map(m => m.name)
+                  : ["Efectivo", "Transferencia", "Tarjeta débito", "Tarjeta crédito"]
+                ).map(m => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMethod(m)}
+                    className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+                      method === m
+                        ? "bg-indigo-600 text-white border-indigo-600"
+                        : "bg-card text-foreground border-border hover:border-indigo-300"
+                    }`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+              <Input
+                placeholder="Otro método..."
+                value={["Efectivo","Transferencia","Tarjeta débito","Tarjeta crédito"].includes(method) || paymentMethods.map(m=>m.name).includes(method) ? "" : method}
+                onChange={e => setMethod(e.target.value)}
+                className="text-sm"
               />
             </div>
 
