@@ -100,38 +100,65 @@ Deno.serve(async (req) => {
     }
 
     // PHASE 2: Reverse all registered payments from petty cash (if any)
-     try {
-       // CRITICAL FIX: Clean up ALL cash payments registered against this quotation
-       // Each payment in quotation.payments may have generated a petty cash movement
-       const payments = quotation.payments || [];
-       for (const payment of payments) {
-         const isCashPayment = payment.payment_method && payment.payment_method.toLowerCase().includes('efectivo');
-         if (isCashPayment && payment.petty_cash_movement_id) {
-           try {
-             // Delete the linked petty cash movement
-             await base44.asServiceRole.entities.PettyCashMovement.delete(payment.petty_cash_movement_id);
-           } catch (e) {
-             console.error(`Failed to delete petty cash movement ${payment.petty_cash_movement_id}:`, e?.message);
-           }
-         }
-       }
+      try {
+        // CRITICAL FIX: Clean up ALL cash payments registered against this quotation
+        // Each payment in quotation.payments may have generated a petty cash movement
+        const payments = quotation.payments || [];
+        for (const payment of payments) {
+          const isCashPayment = payment.payment_method && payment.payment_method.toLowerCase().includes('efectivo');
+          if (isCashPayment && payment.petty_cash_movement_id) {
+            try {
+              // Delete the linked petty cash movement
+              await base44.asServiceRole.entities.PettyCashMovement.delete(payment.petty_cash_movement_id);
+            } catch (e) {
+              console.error(`Failed to delete petty cash movement ${payment.petty_cash_movement_id}:`, e?.message);
+            }
+          }
+        }
 
-       // Also use syncCashSaleToPettyCash to reverse any remaining system-generated income
-       if (quotation.paid) {
-         try {
-           await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
-             action: 'reverse',
-             origin_type: 'quotation',
-             origin_id: quotation.id,
-             business_id: user.business_id,
-           });
-         } catch (e) {
-           console.error('syncCashSaleToPettyCash reverse error:', e?.message);
-         }
-       }
-     } catch (err) {
-       console.error('Payment cleanup error:', err?.message);
-     }
+        // ALSO: Clean up ANY orphaned petty cash movements that reference this quotation folio
+        // These are remnants from before the fix (entries without matching payments)
+        try {
+          const orphanedMovements = await base44.asServiceRole.entities.PettyCashMovement.filter({
+            business_id: quotation.business_id,
+            reference: quotation.folio,
+            generated_by_system: true,
+            origin_type: 'quotation',
+          });
+
+          for (const mov of orphanedMovements) {
+            // Check if this movement is linked to any payment
+            const isLinked = payments.some(p => p.petty_cash_movement_id === mov.id);
+            if (!isLinked) {
+              // Orphaned entry - delete it
+              try {
+                await base44.asServiceRole.entities.PettyCashMovement.delete(mov.id);
+                console.log(`Deleted orphaned petty cash movement ${mov.id} for ${quotation.folio}`);
+              } catch (e) {
+                console.error(`Failed to delete orphaned movement ${mov.id}:`, e?.message);
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Could not clean up orphaned petty cash movements:', e?.message);
+        }
+
+        // Also use syncCashSaleToPettyCash to reverse any remaining system-generated income
+        if (quotation.paid) {
+          try {
+            await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+              action: 'reverse',
+              origin_type: 'quotation',
+              origin_id: quotation.id,
+              business_id: user.business_id,
+            });
+          } catch (e) {
+            console.error('syncCashSaleToPettyCash reverse error:', e?.message);
+          }
+        }
+      } catch (err) {
+        console.error('Payment cleanup error:', err?.message);
+      }
 
      // Mark quotation as cancelled
      try {
