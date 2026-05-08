@@ -46,6 +46,7 @@ Deno.serve(async (req) => {
       return {
         id: biz.id,
         name: biz.name,
+        created_by: biz.created_by || '',
         billing_status: billingStatus,
         license_plan: biz.license_plan || 'start',
         licensed_user_limit: biz.licensed_user_limit || 4,
