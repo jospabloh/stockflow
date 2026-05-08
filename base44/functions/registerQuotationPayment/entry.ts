@@ -74,25 +74,29 @@ Deno.serve(async (req) => {
     });
 
     // Auto-register in petty cash if payment method is cash (efectivo)
+    // Each payment gets its own petty cash entry using paymentId as origin_id (avoids duplicate prevention issues)
     let pettyCashMovementId = null;
     const isCash = normalizePaymentMethod(payment_method);
     if (isCash) {
       const movDate = paid_at ? paid_at.split('T')[0] : new Date().toLocaleDateString('en-CA');
       try {
-        const syncResult = await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
-          action: 'reconcile',
-          origin_type: 'quotation',
-          origin_id: q.id,
-          amount: Number(amount),
-          payment_method,
-          description: `Pago de cotización ${q.folio} — ${q.client_name}`,
-          folio_or_ref: q.folio,
-          movement_date: movDate,
+        const pcm = await base44.asServiceRole.entities.PettyCashMovement.create({
           business_id: q.business_id,
+          movement_type: 'income',
+          amount: Number(amount),
+          description: `Pago efectivo — ${q.folio} | ${q.client_name}`,
+          category: 'Venta efectivo',
+          movement_date: movDate,
+          reference: q.folio,
+          notes: `Cotización ${q.folio} · Cliente: ${q.client_name} · Registrado por sistema`,
+          generated_by_system: true,
+          origin_type: 'quotation',
+          origin_id: paymentId,
+          payment_method_snapshot: payment_method,
         });
-        pettyCashMovementId = syncResult?.petty_cash_id || null;
+        pettyCashMovementId = pcm.id;
       } catch (e) {
-        console.error('syncCashSaleToPettyCash error:', e?.message);
+        console.error('PettyCash auto-create error:', e?.message);
       }
 
       if (pettyCashMovementId) {

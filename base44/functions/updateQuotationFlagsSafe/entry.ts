@@ -63,20 +63,36 @@ Deno.serve(async (req) => {
     );
 
     if (shouldReconcilePettyCash && bizId) {
+      const isCashPayment = paymentMethodAfter.toLowerCase().includes('efectivo');
       try {
-        await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
-          action: effectivePaid ? 'reconcile' : 'reverse',
-          origin_type: 'quotation',
-          origin_id: quotation.id,
-          amount: effectivePaid ? (quotation.total || 0) : 0,
-          payment_method: paymentMethodAfter,
-          description: `Venta cotización ${quotation.folio} — ${quotation.client_name || ''}`,
-          folio_or_ref: quotation.folio,
-          movement_date: new Date().toLocaleDateString('en-CA'),
-          business_id: bizId,
-        });
+        if (effectivePaid && isCashPayment) {
+          // Use quotation.id as origin_id so this single "full payment confirmed" entry is idempotent
+          await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+            action: 'reconcile',
+            origin_type: 'quotation',
+            origin_id: quotation.id,
+            amount: quotation.total || 0,
+            payment_method: paymentMethodAfter,
+            description: `Venta confirmada — ${quotation.folio} | ${quotation.client_name || ''}`,
+            folio_or_ref: quotation.folio,
+            movement_date: new Date().toLocaleDateString('en-CA'),
+            business_id: bizId,
+          });
+        } else if (!effectivePaid || !isCashPayment) {
+          // Reverse: payment undone or method changed away from cash
+          await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+            action: 'reverse',
+            origin_type: 'quotation',
+            origin_id: quotation.id,
+            amount: 0,
+            payment_method: paymentMethodAfter,
+            description: `Reverso — ${quotation.folio}`,
+            folio_or_ref: quotation.folio,
+            movement_date: new Date().toLocaleDateString('en-CA'),
+            business_id: bizId,
+          });
+        }
       } catch (pettyCashError) {
-        // Log but don't fail the main operation
         console.error('syncCashSaleToPettyCash failed:', pettyCashError?.message);
       }
     }
