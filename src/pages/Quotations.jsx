@@ -435,19 +435,24 @@ export default function Quotations() {
       <AlertDialog open={!!payQuotation} onOpenChange={(v) => { if (!v) { setPayQuotation(null); setPaymentMethod(""); setPayMarkDelivered(false); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{payMarkDelivered ? "Registrar entrega y pago" : "Confirmar pago"} — {payQuotation?.folio}</AlertDialogTitle>
-            <AlertDialogDescription>
-              Total: ${payQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })} · Cliente: {payQuotation?.client_name}
+            <AlertDialogTitle>Confirmar pago — {payQuotation?.folio}</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>Total: <strong>${payQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong> · Cliente: {payQuotation?.client_name}</p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2 text-sm text-blue-800 dark:text-blue-300">
+                  💡 <strong>¿Pago parcial o con varios métodos?</strong> Abre la cotización (👁) y usa la sección <em>Pagos</em> para registrar abonos con diferentes métodos.
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="px-1 py-3 space-y-2">
-            <p className="text-sm font-medium text-slate-700">Método de pago</p>
+            <p className="text-sm font-medium">Método de pago — pago total</p>
             <div className="grid grid-cols-2 gap-2">
               {["Efectivo", "Transferencia", "Tarjeta débito", "Tarjeta crédito", "Cheque", "Otro"].map((m) => (
                 <button
                   key={m}
                   onClick={() => setPaymentMethod(m)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${paymentMethod === m ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300"}`}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${paymentMethod === m ? "bg-indigo-600 text-white border-indigo-600" : "bg-card text-foreground border-border hover:border-indigo-300"}`}
                 >
                   {m}
                 </button>
@@ -460,14 +465,30 @@ export default function Quotations() {
               className="mt-2"
             />
           </div>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <button
+              onClick={() => {
+                const q = payQuotation;
+                setPayQuotation(null);
+                setPaymentMethod("");
+                setPreviewQuotation(q);
+                if (q.client_id) {
+                  base44.entities.Client.list().then(cs => {
+                    setPreviewClient(cs.find(c => c.id === q.client_id) || null);
+                  }).catch(() => setPreviewClient(null));
+                }
+              }}
+              className="px-4 py-2 rounded-md text-sm font-medium border border-indigo-300 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+            >
+              👁 Ver cotización (pagos parciales)
+            </button>
             <AlertDialogAction
               onClick={handleConfirmPayment}
               disabled={!paymentMethod.trim()}
               className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
             >
-              Confirmar Pago
+              Confirmar Pago Total
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
