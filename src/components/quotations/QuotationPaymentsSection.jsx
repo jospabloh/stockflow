@@ -236,13 +236,29 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
                     {m}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => setMethod("")}
+                  className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+                    method !== "" && !paymentMethods.map(m=>m.name).includes(method) && !["Efectivo","Transferencia","Tarjeta débito","Tarjeta crédito"].includes(method)
+                      ? "bg-indigo-600 text-white border-indigo-600"
+                      : "bg-card text-foreground border-border hover:border-indigo-300"
+                  }`}
+                >
+                  Otro...
+                </button>
               </div>
-              <Input
-                placeholder="Otro método..."
-                value={["Efectivo","Transferencia","Tarjeta débito","Tarjeta crédito"].includes(method) || paymentMethods.map(m=>m.name).includes(method) ? "" : method}
-                onChange={e => setMethod(e.target.value)}
-                className="text-sm"
-              />
+              {/* Campo libre solo si el método seleccionado no es ninguno de los botones */}
+              {!paymentMethods.map(m=>m.name).includes(method) &&
+               !["Efectivo","Transferencia","Tarjeta débito","Tarjeta crédito"].includes(method) && (
+                <Input
+                  placeholder="Escribe otro método..."
+                  value={method}
+                  onChange={e => setMethod(e.target.value)}
+                  className="text-sm"
+                  autoFocus
+                />
+              )}
             </div>
 
             <div>
