@@ -36,7 +36,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const canRegisterPayment = userRole === "admin" || userRole === "almacenista";
+  const canRegisterPayment = !userRole || userRole === "admin" || userRole === "almacenista";
 
   useEffect(() => {
     if (businessId) {
@@ -157,10 +157,15 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
         <Button
           size="sm"
           onClick={openModal}
-          className="bg-green-600 hover:bg-green-700 text-white w-full"
+          className="bg-green-600 hover:bg-green-700 text-white w-full text-sm font-semibold py-5"
         >
-          <Plus className="h-4 w-4 mr-1" /> Registrar Pago
+          <Plus className="h-4 w-4 mr-1" /> Registrar Pago{balance < total ? " Parcial" : ""}
         </Button>
+      )}
+      {balance > 0.01 && canRegisterPayment && payments.length === 0 && (
+        <p className="text-[11px] text-muted-foreground text-center">
+          💡 Puedes registrar pagos parciales con diferentes métodos de pago
+        </p>
       )}
       {quotation.paid && balance <= 0.01 && (
         <div className="text-center text-xs text-emerald-700 dark:text-emerald-400 font-semibold py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
@@ -179,9 +184,23 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="bg-muted rounded-lg px-3 py-2 text-xs text-muted-foreground">
-              Saldo pendiente: <strong className="text-red-600">${fmt(balance)}</strong>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-muted rounded-lg px-2 py-2">
+                <p className="text-[10px] text-muted-foreground">Total</p>
+                <p className="font-bold text-xs">${fmt(total)}</p>
+              </div>
+              <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg px-2 py-2">
+                <p className="text-[10px] text-emerald-600">Pagado</p>
+                <p className="font-bold text-xs text-emerald-700">${fmt(amountPaid)}</p>
+              </div>
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg px-2 py-2">
+                <p className="text-[10px] text-red-500">Saldo</p>
+                <p className="font-bold text-xs text-red-700">${fmt(balance)}</p>
+              </div>
             </div>
+            <p className="text-[11px] text-muted-foreground bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded px-2 py-1.5">
+              💡 Puedes ingresar un monto menor al saldo para registrar un <strong>pago parcial</strong>. Puedes usar diferentes métodos de pago.
+            </p>
 
             <div>
               <Label className="mb-1 block">Monto <span className="text-red-500">*</span></Label>
@@ -192,7 +211,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
                 step="0.01"
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
-                placeholder={fmt(balance)}
+                placeholder={`Ej: ${fmt(balance / 2)} (parcial) o ${fmt(balance)} (total)`}
               />
             </div>
 

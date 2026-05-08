@@ -19,8 +19,14 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
 
   React.useEffect(() => { setLocalQuotation(quotation); }, [quotation]);
 
-  const q = localQuotation || quotation;
-  if (!open || !q) return null;
+  const rawQ = localQuotation || quotation;
+  if (!open || !rawQ) return null;
+  // Normalize balance/amount_paid for legacy quotations that may lack these fields
+  const q = {
+    ...rawQ,
+    amount_paid: rawQ.amount_paid ?? (rawQ.paid ? (rawQ.total || 0) : 0),
+    balance: rawQ.balance ?? ((rawQ.paid ? 0 : (rawQ.total || 0)) - (rawQ.amount_paid ?? 0)),
+  };
 
   const handleDownload = async () => {
     setDownloading(true);
