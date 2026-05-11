@@ -47,15 +47,15 @@ const SNAPSHOT_LATEST_CHANGES = [
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
-function fmtDate(d: Date): string {
+function fmtDate(d) {
   return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function daysBetween(a: Date, b: Date): number {
+function daysBetween(a, b) {
   return Math.floor((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-async function callAnthropic(gitLog: string, version: string, existingChanges: string[]): Promise<string[]> {
+async function callAnthropic(gitLog, version, existingChanges) {
   const apiKey = Deno.env.get('ANTHROPIC_API_KEY_SF');
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY_SF no configurada');
 
@@ -99,34 +99,27 @@ Responde ÚNICAMENTE con un array JSON de strings, por ejemplo:
   }
 
   const data = await res.json();
-  const text: string = data.content?.[0]?.text ?? '[]';
+  const text = data.content?.[0]?.text ?? '[]';
 
-  // Extract JSON array from response
   const match = text.match(/\[[\s\S]*\]/);
   if (!match) throw new Error(`Respuesta inesperada de Anthropic: ${text.slice(0, 200)}`);
-  return JSON.parse(match[0]) as string[];
+  return JSON.parse(match[0]);
 }
 
-interface DocAuditStats {
-  runAt: string;
-  snapshotVersion: string;
-  dbVersion: string | null;
-  changelogSynced: boolean;
-  changelogCreated: boolean;
-  appVersionUpdated: boolean;
-  daysSinceLastRelease: number | null;
-  staleDocsWarning: boolean;
-  errors: string[];
-}
-
-function buildEmail(s: DocAuditStats): string {
+// Badge states: "synced" | "created" | "error"
+function buildEmail(s) {
   const hasErrors = s.errors.length > 0;
   const statusColor = hasErrors ? '#dc2626' : '#16a34a';
   const statusLabel = hasErrors ? `⚠️ ${s.errors.length} error(es)` : '✅ Sin errores';
 
-  const syncBadge = s.changelogSynced
-    ? '<span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:12px;font-size:12px">✅ Sincronizado</span>'
-    : '<span style="background:#fef9c3;color:#ca8a04;padding:2px 8px;border-radius:12px;font-size:12px">⚙️ Se actualizó</span>';
+  let syncBadge;
+  if (s.changelogBadge === 'synced') {
+    syncBadge = '<span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:12px;font-size:12px">✅ Al día</span>';
+  } else if (s.changelogBadge === 'created') {
+    syncBadge = '<span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:12px;font-size:12px">🆕 Se creó</span>';
+  } else {
+    syncBadge = '<span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:12px;font-size:12px">❌ Error</span>';
+  }
 
   const staleSection = s.staleDocsWarning
     ? `<div style="margin-top:16px;padding:12px;background:#fefce8;border-left:3px solid #ca8a04;border-radius:4px">
@@ -200,12 +193,13 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const stats: DocAuditStats = {
-    runAt: new Date().toISOString(),
+  const runAt = new Date().toISOString();
+  const stats = {
+    runAt,
     snapshotVersion: SNAPSHOT_VERSION,
     dbVersion: null,
-    changelogSynced: false,
-    changelogCreated: false,
+    // "synced" | "created" | "error"
+    changelogBadge: 'error',
     appVersionUpdated: false,
     daysSinceLastRelease: null,
     staleDocsWarning: false,
@@ -213,89 +207,104 @@ Deno.serve(async (req) => {
   };
 
   try {
-    // 1. Check AppChangelog for snapshot version
-    let changelogs: Record<string, unknown>[] = [];
+    // ── FIX 2: Check AppChangelog by version (filter, not list-all) ──────────
+    let existingChangelogs = [];
     try {
-      changelogs = await base44.asServiceRole.entities.AppChangelog.list();
+      existingChangelogs = await base44.asServiceRole.entities.AppChangelog.filter({
+        version: SNAPSHOT_VERSION,
+      });
     } catch (e) {
-      stats.errors.push(`list AppChangelog: ${(e as Error).message}`);
+      stats.errors.push(`filter AppChangelog: ${e.message}`);
     }
 
-    const existingEntry = changelogs.find(c => c.version === SNAPSHOT_VERSION);
+    const existingEntry = existingChangelogs.length > 0 ? existingChangelogs[0] : null;
 
-    if (!existingEntry) {
-      // 2. Version not in DB — generate changelog via Anthropic and sync
-      let generatedChanges: string[] = SNAPSHOT_LATEST_CHANGES;
+    if (existingEntry) {
+      // ── FIX 3: Badge "Al día" → ya existía antes de esta ejecución ──────
+      stats.changelogBadge = 'synced';
+    } else {
+      // Need to create — first get AppVersion for released_at and notes
+      let appVersionRecord = null;
+      try {
+        const versions = await base44.asServiceRole.entities.AppVersion.list();
+        if (versions.length > 0) appVersionRecord = versions[0];
+      } catch (e) {
+        stats.errors.push(`list AppVersion: ${e.message}`);
+      }
 
+      // Generate changelog text via Anthropic (fallback to snapshot)
+      let generatedChanges = SNAPSHOT_LATEST_CHANGES;
       try {
         generatedChanges = await callAnthropic(SNAPSHOT_GIT_LOG, SNAPSHOT_VERSION, SNAPSHOT_LATEST_CHANGES);
       } catch (e) {
-        stats.errors.push(`Anthropic API: ${(e as Error).message} — usando cambios del snapshot`);
+        stats.errors.push(`Anthropic API: ${e.message} — usando cambios del snapshot`);
       }
 
-      // 3. Create AppChangelog record
-      try {
-        await base44.asServiceRole.entities.AppChangelog.create({
-          version: SNAPSHOT_VERSION,
-          release_date: SNAPSHOT_RELEASE_DATE,
-          changes: generatedChanges,
-          generated_by: 'automation',
-          source_git_log: SNAPSHOT_GIT_LOG.trim().slice(0, 2000),
-        });
-        stats.changelogCreated = true;
-      } catch (e) {
-        stats.errors.push(`create AppChangelog: ${(e as Error).message}`);
-      }
+      // ── FIX 1: Only update AppVersion if version actually changed ────────
+      const releasedAt = appVersionRecord?.released_at
+        ?? new Date(SNAPSHOT_RELEASE_DATE).toISOString();
+      const releaseNotes = generatedChanges.slice(0, 5).join('\n');
 
-      // 4. Update AppVersion in DB
-      try {
-        const versions = await base44.asServiceRole.entities.AppVersion.list();
-        const releaseNotes = generatedChanges.slice(0, 5).join('\n');
-
-        if (versions.length > 0) {
-          await base44.asServiceRole.entities.AppVersion.update(versions[0].id as string, {
-            version: SNAPSHOT_VERSION,
-            release_notes: releaseNotes,
-            released_at: new Date(SNAPSHOT_RELEASE_DATE).toISOString(),
-          });
-        } else {
+      if (appVersionRecord) {
+        if (appVersionRecord.version !== SNAPSHOT_VERSION) {
+          try {
+            await base44.asServiceRole.entities.AppVersion.update(appVersionRecord.id, {
+              version: SNAPSHOT_VERSION,
+              release_notes: releaseNotes,
+              released_at: new Date(SNAPSHOT_RELEASE_DATE).toISOString(),
+            });
+            stats.appVersionUpdated = true;
+          } catch (e) {
+            stats.errors.push(`update AppVersion: ${e.message}`);
+          }
+        }
+        // If version matches, skip update entirely (Fix 1)
+      } else {
+        // No AppVersion record at all — create it
+        try {
           await base44.asServiceRole.entities.AppVersion.create({
             version: SNAPSHOT_VERSION,
             release_notes: releaseNotes,
             released_at: new Date(SNAPSHOT_RELEASE_DATE).toISOString(),
           });
+          stats.appVersionUpdated = true;
+        } catch (e) {
+          stats.errors.push(`create AppVersion: ${e.message}`);
         }
-        stats.appVersionUpdated = true;
+      }
+
+      // ── FIX 2: Write AppChangelog with correct schema fields ─────────────
+      try {
+        await base44.asServiceRole.entities.AppChangelog.create({
+          version: SNAPSHOT_VERSION,
+          released_at: new Date(SNAPSHOT_RELEASE_DATE).toISOString(),
+          notes: generatedChanges.join('\n'),
+          synced_at: runAt,
+          source: 'cron',
+        });
+        // ── FIX 3: Badge "Se creó" → se escribió un registro nuevo ahora ──
+        stats.changelogBadge = 'created';
       } catch (e) {
-        stats.errors.push(`update AppVersion: ${(e as Error).message}`);
-      }
-    } else {
-      stats.changelogSynced = true;
-    }
-
-    // 5. Compute latest DB version and check staleness
-    const allChangelogs = existingEntry
-      ? changelogs
-      : [...changelogs, { version: SNAPSHOT_VERSION, release_date: SNAPSHOT_RELEASE_DATE }];
-
-    // Sort by release_date descending
-    const sorted = [...allChangelogs].sort((a, b) => {
-      const da = String(a.release_date ?? '');
-      const db = String(b.release_date ?? '');
-      return db.localeCompare(da);
-    });
-
-    if (sorted.length > 0) {
-      const latest = sorted[0];
-      stats.dbVersion = String(latest.version ?? SNAPSHOT_VERSION);
-      const latestDate = new Date(String(latest.release_date ?? SNAPSHOT_RELEASE_DATE));
-      if (!isNaN(latestDate.getTime())) {
-        stats.daysSinceLastRelease = daysBetween(latestDate, new Date());
-        stats.staleDocsWarning = stats.daysSinceLastRelease > STALE_DOCS_DAYS;
+        stats.errors.push(`create AppChangelog: ${e.message}`);
+        // Badge remains "error"
+        stats.changelogBadge = 'error';
       }
     }
+
+    // ── Compute staleness using released_at from AppChangelog ────────────────
+    const releaseDate = existingEntry
+      ? new Date(existingEntry.released_at ?? SNAPSHOT_RELEASE_DATE)
+      : new Date(SNAPSHOT_RELEASE_DATE);
+
+    stats.dbVersion = SNAPSHOT_VERSION;
+    if (!isNaN(releaseDate.getTime())) {
+      stats.daysSinceLastRelease = daysBetween(releaseDate, new Date());
+      stats.staleDocsWarning = stats.daysSinceLastRelease > STALE_DOCS_DAYS;
+    }
+
   } catch (e) {
-    stats.errors.push(`fatal: ${(e as Error).message}`);
+    stats.errors.push(`fatal: ${e.message}`);
+    stats.changelogBadge = 'error';
   }
 
   // Send email report
@@ -311,7 +320,7 @@ Deno.serve(async (req) => {
       from_name: APP_NAME,
     });
   } catch (e) {
-    stats.errors.push(`email: ${(e as Error).message}`);
+    stats.errors.push(`email: ${e.message}`);
   }
 
   return Response.json({ success: true, ...stats });
