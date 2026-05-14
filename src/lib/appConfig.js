@@ -2,11 +2,22 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.12.0";
+export const APP_VERSION = "2.13.0";
 
-export const RELEASE_DATE = "2026-04-28";
+export const RELEASE_DATE = "2026-05-14";
 
 export const CHANGELOG = [
+  {
+    version: "2.13.0",
+    date: "2026-05-14",
+    changes: [
+      "🔐 Permisos granulares: política oficial de defaults — Admin inicia con acceso total (true) en todos los módulos, visuales y acciones",
+      "👥 Member/Almacenista mantiene acceso operativo; permisos sensibles o nuevos no se elevan automáticamente",
+      "🆕 Nuevo módulo, visual o acción: default para member en false hasta otorgamiento explícito por admin",
+      "🧩 Matriz de permisos alineada a acciones estándar: view, add, modify, delete",
+      "📚 Manual de permisos actualizado con cobertura completa de módulos activos y reglas de gobernanza",
+    ],
+  },
   {
     version: "2.12.0",
     date: "2026-04-28",

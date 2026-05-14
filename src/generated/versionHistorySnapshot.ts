@@ -1,22 +1,19 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-05-06T17:18:41.773Z
+// Generado: 2026-05-14T17:25:49.224Z
 
-export const SNAPSHOT_VERSION = "2.12.0";
+export const SNAPSHOT_VERSION = "2.13.0";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-04-28";
+export const SNAPSHOT_RELEASE_DATE = "2026-05-14";
 
-export const SNAPSHOT_GIT_LOG = "33aaece Merge pull request #49 from jospabloh/claude/nightly-automation-setup-ZagxP\n773941d Merge branch 'main' into claude/nightly-automation-setup-ZagxP\nc7a462d File changes\nc0bcbcb Add nightly permission & documentation audit automations\n8fa5cfc File changes\na305d74 File changes\nf36c1cf File changes\nb3bf822 File changes\n9f46dca File changes\n9ffddb8 File changes\n05acb72 Merge pull request #48 from jospabloh/claude/check-renewal-emails-L83pp\n3342d49 Add queueBillingReminders function to fix missing automation target\n101da53 File changes\n4c7d408 File changes\n51a7bce Update base44 packages\n22c0687 File changes\n6ac0977 File changes\n1895bde File changes\n4073f34 Merge pull request #47 from jospabloh/claude/mercado-pago-checkout-ATHGT\n8f4eace Personalize lifecycle emails with app + plan + recipient name\n46c0afb Add 'Confirmar pago recibido' trigger in LicenseAdmin\ndfcd21b Add MP-aligned license email flow\n3637b21 File changes\n0edcc70 File changes\ne815d7f File changes";
+export const SNAPSHOT_GIT_LOG = "4b94c9e Update base44 packages\na8b8493 Update base44 packages\n76f17f8 File changes\n79308ce chore: add base44 CLI config files\n49bf5c7 Update base44 packages\n3080ae0 Merge pull request #51 from jospabloh/claude/add-family-id-creator-email-W5D90\n9abb358 Mostrar ID del negocio y correo del creador en panel de Licencias\n8e1483b File changes\n93071a9 File changes\n5ccf920 File changes\n2e23157 File changes\n14c4f54 File changes\nbbf2f64 File changes\nb447ef0 File changes\n3c108ef File changes\n6baa123 File changes\naeed444 Gestión de pagos implementada\n1114423 File changes\n086cfef File changes\nd5cef20 File changes\n262c4db File changes\n68aa765 File changes\n451be9d File changes\n4e7bfd4 File changes\n3356a4d File changes";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "📧 Sistema de reactivación de trial: emails automáticos a usuarios inactivos con prueba activa (sin afectar cuentas pagadas, vencidas, archivadas o suspendidas)",
-  "⏰ Job diario processTrialReactivationEmails: detecta usuarios inactivos >24 h, respeta límite de 3 emails por trial y mínimo 48 h entre envíos",
-  "🔒 Idempotencia garantizada: clave única por usuario/negocio/día previene duplicados aunque el job corra dos veces",
-  "🌐 Email bilingüe: plantilla en español (es-MX) e inglés (en-US) según configuración regional del tenant",
-  "📊 Rastreo de actividad seguro: hook useActivityTracker + función trackUserActivity con throttle de 15 min; no bloquea UI",
-  "🛡️ Tenant isolation preservada: trackUserActivity solo actualiza al usuario autenticado; job lee users filtrados por business_id",
-  "📋 Entidad User actualizada: campos last_active_at, last_trial_reactivation_email_at, trial_reactivation_email_count (no rompe campos existentes)",
-  "📋 Entidad EmailNotification: nuevo tipo trial_reactivation + campos idempotency_key, user_id, skip_reason para auditoría",
+  "🔐 Permisos granulares: política oficial de defaults — Admin inicia con acceso total (true) en todos los módulos, visuales y acciones",
+  "👥 Member/Almacenista mantiene acceso operativo; permisos sensibles o nuevos no se elevan automáticamente",
+  "🆕 Nuevo módulo, visual o acción: default para member en false hasta otorgamiento explícito por admin",
+  "🧩 Matriz de permisos alineada a acciones estándar: view, add, modify, delete",
+  "📚 Manual de permisos actualizado con cobertura completa de módulos activos y reglas de gobernanza",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -24,6 +21,17 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.13.0",
+    date: "2026-05-14",
+    changes: [
+    "🔐 Permisos granulares: política oficial de defaults — Admin inicia con acceso total (true) en todos los módulos, visuales y acciones",
+    "👥 Member/Almacenista mantiene acceso operativo; permisos sensibles o nuevos no se elevan automáticamente",
+    "🆕 Nuevo módulo, visual o acción: default para member en false hasta otorgamiento explícito por admin",
+    "🧩 Matriz de permisos alineada a acciones estándar: view, add, modify, delete",
+    "📚 Manual de permisos actualizado con cobertura completa de módulos activos y reglas de gobernanza"
+    ]
+  },
   {
     version: "2.12.0",
     date: "2026-04-28",

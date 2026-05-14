@@ -1,5 +1,21 @@
 # Changelog — StockFlow
 
+## v2.13.0 (2026-05-14)
+
+### 🔐 Permisos Granulares — Política de Defaults y Matriz Completa
+- **Admin por defecto con acceso total**: todos los permisos de módulos, visuales y acciones quedan en `true` para el rol admin por diseño
+- **Member/Almacenista con acceso operativo**: conserva su acceso actual para operar el negocio sin elevar permisos sensibles automáticamente
+- **Nuevos permisos en falso para member**: cuando se crea un módulo, visual o acción nueva, su default para member queda en `false` hasta autorización explícita del admin
+- **Acciones estándar consolidadas**: matriz documentada con las 4 acciones base `view`, `add`, `modify`, `delete` para asegurar criterio uniforme
+- **Cobertura actualizada de módulos activos**: Dashboard, Productos, Categorías, Proveedores, Clientes, Tipo de Pago, Movimientos, Cotizaciones, Caja Chica, Pagos a Proveedores, Reportes y Configuración
+
+### 📚 Manual Actualizado
+- Se actualizó la guía de Permisos Granulares con la política oficial de defaults por rol
+- Se añadió listado completo de módulos activos y su alcance (visual + acción)
+- Se aclaró el flujo de gobernanza: nuevos accesos no se habilitan para member hasta aprobación del admin
+
+---
+
 ## v2.12.0 (2026-04-28)
 
 ### 📧 Reactivación Automática de Trial (nueva feature)
