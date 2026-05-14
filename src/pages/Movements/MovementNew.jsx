@@ -17,7 +17,7 @@ export default function MovementNew() {
 
   return (
     <MovementFormDialog
-      open={true}
+      open
       onOpenChange={(open) => {
         if (!open) goBackToMovements();
       }}

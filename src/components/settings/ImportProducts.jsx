@@ -273,7 +273,7 @@ export default function ImportProducts() {
           const c = COLOR_MAP[cfg.color];
           const isActive = activeType === key;
           return (
-            <button
+            <button type="button"
               key={key}
               onClick={() => handleTypeChange(key)}
               className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all text-sm font-medium

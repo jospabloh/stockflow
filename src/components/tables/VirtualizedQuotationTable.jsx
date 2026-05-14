@@ -17,7 +17,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
     <div className="flex items-center border-b border-border hover:bg-muted/40 transition-colors px-4 py-3">
       {/* Folio */}
       <div className="w-24">
-        <button
+        <button type="button"
           onClick={() => onPreview(q)}
           className="font-mono text-xs text-indigo-600 cursor-pointer hover:underline flex items-center gap-1"
         >
@@ -63,7 +63,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
       {/* Invoice Status */}
       <div className="w-24 text-center flex gap-0.5 justify-center flex-wrap">
         {["pendiente", "emitida", "no_requerida"].map((opt) => (
-          <button
+          <button type="button"
             key={opt}
             onClick={() => {
               const newVal = q.invoice_status === opt ? null : opt;
@@ -91,7 +91,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
           <div className="flex items-center justify-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
+                <button type="button"
                   className={`flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-1 rounded transition-colors ${
                     q.delivered
                       ? "bg-emerald-100 text-emerald-700"
@@ -160,7 +160,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
             }
             const hasPartial = payments && !q.paid;
             return (
-              <button
+              <button type="button"
                 onClick={() => { if (!isPaid) onPay(q); }}
                 className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-1 rounded transition-colors ${
                   isPaid
@@ -256,7 +256,7 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
       {/* Top row: folio + status + actions */}
       <div className="flex items-center justify-between">
-        <button
+        <button type="button"
           onClick={() => onPreview(q)}
           className="font-mono text-sm font-bold text-indigo-600 hover:underline flex items-center gap-1"
         >
@@ -341,13 +341,13 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
         </span>
         {q.status === "converted" && (
           <div className="flex gap-1.5">
-            <button
+            <button type="button"
               onClick={() => onInRouteChange(q, q.in_route && !q.delivered ? "none" : "in_route")}
               className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-medium transition-colors ${q.in_route && !q.delivered ? "bg-blue-100 text-blue-700" : "bg-muted text-muted-foreground"}`}
             >
               <Truck className="h-3 w-3" /> Ruta
             </button>
-            <button
+            <button type="button"
               onClick={() => onInRouteChange(q, q.delivered ? "none" : "delivered")}
               className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-medium transition-colors ${q.delivered ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"}`}
             >
@@ -368,7 +368,7 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
               else if (hasPartial) label = "Pago parcial";
               else label = "Cobrar";
               return (
-                <button
+                <button type="button"
                   onClick={() => { if (!isPaid) onPay(q); }}
                   title={isPaid && uniqueMethods?.length > 1 ? uniqueMethods.join(", ") : hasPartial ? `$${(q.amount_paid||0).toLocaleString("es-MX",{minimumFractionDigits:2})} de $${(q.total||0).toLocaleString("es-MX",{minimumFractionDigits:2})}` : undefined}
                   className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-medium transition-colors ${isPaid ? "bg-green-100 text-green-700" : q.delivered && !q.paid ? "bg-red-100 text-red-700 animate-pulse" : hasPartial ? "bg-amber-100 text-amber-700" : "bg-muted text-muted-foreground"}`}

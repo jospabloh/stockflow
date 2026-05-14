@@ -17,7 +17,7 @@ export default function QuotationNew() {
 
   return (
     <QuotationFormDialog
-      open={true}
+      open
       onOpenChange={(open) => {
         if (!open) goBackToQuotations();
       }}

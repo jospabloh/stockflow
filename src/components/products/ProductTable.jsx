@@ -38,7 +38,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
     }
   };
   // Use virtualized table for desktop, card layout for mobile
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const isMobile = typeof globalThis !== "undefined" && globalThis.innerWidth < 768;
 
   if (!isMobile && products.length > 20) {
     return <VirtualizedProductTable products={products} categories={categories} onEdit={onEdit} onDelete={onDelete} isAdmin={isAdmin} onBarcodeGenerated={onBarcodeGenerated} canEdit={canEdit} canDelete={canDelete} />;
