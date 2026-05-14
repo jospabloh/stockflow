@@ -74,7 +74,7 @@ export default function TeamMembersManager({ businessId, currentUserId }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500">{members.length} miembro{members.length !== 1 ? "s" : ""} en este negocio</p>
-        <button onClick={loadMembers} className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1">
+        <button type="button" onClick={loadMembers} className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1">
           <RefreshCw className="h-3 w-3" /> Actualizar
         </button>
       </div>

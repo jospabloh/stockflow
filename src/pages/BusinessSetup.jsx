@@ -132,7 +132,7 @@ export default function BusinessSetup() {
               <p className="text-slate-500 text-sm">Para comenzar, crea tu negocio o únete a uno existente con un código de invitación.</p>
             </div>
             <div className="space-y-4">
-              <button onClick={() => setMode("create")} className="group w-full text-left">
+              <button type="button" onClick={() => setMode("create")} className="group w-full text-left">
                 <Card className="border-2 border-transparent hover:border-indigo-300 hover:shadow-md transition-all p-6">
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-xl bg-indigo-100 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-200 transition-colors">
@@ -147,7 +147,7 @@ export default function BusinessSetup() {
                 </Card>
               </button>
 
-              <button onClick={() => setMode("join")} className="group w-full text-left">
+              <button type="button" onClick={() => setMode("join")} className="group w-full text-left">
                 <Card className="border-2 border-transparent hover:border-cyan-300 hover:shadow-md transition-all p-6">
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-xl bg-cyan-100 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-200 transition-colors">
@@ -167,7 +167,7 @@ export default function BusinessSetup() {
 
         {mode === "create" && (
           <Card className="border-0 shadow-lg p-6 space-y-5">
-            <button onClick={() => setMode(null)} className="text-sm text-slate-400 hover:text-slate-600">← Volver</button>
+            <button type="button" onClick={() => setMode(null)} className="text-sm text-slate-400 hover:text-slate-600">← Volver</button>
             <div>
               <h3 className="font-semibold text-slate-800 text-lg">Datos del negocio</h3>
               <p className="text-sm text-slate-500 mt-0.5">Se generará un código de invitación para tu equipo</p>
@@ -211,7 +211,7 @@ export default function BusinessSetup() {
 
         {mode === "join" && (
           <Card className="border-0 shadow-lg p-6 space-y-5">
-            <button onClick={() => setMode(null)} className="text-sm text-slate-400 hover:text-slate-600">← Volver</button>
+            <button type="button" onClick={() => setMode(null)} className="text-sm text-slate-400 hover:text-slate-600">← Volver</button>
             <div>
               <h3 className="font-semibold text-slate-800 text-lg">Código de invitación</h3>
               <p className="text-sm text-slate-500 mt-0.5">Pide el código a tu administrador (formato: BSNS-XXXXXX)</p>

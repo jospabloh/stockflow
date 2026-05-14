@@ -75,7 +75,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
   };
 
   const handleDelete = async (p) => {
-    if (!window.confirm(`¿Eliminar el pago de $${fmt(p.amount)} (${p.payment_method})?`)) return;
+    if (!globalThis.confirm(`¿Eliminar el pago de $${fmt(p.amount)} (${p.payment_method})?`)) return;
     setDeletingId(p.id);
     try {
       const res = await base44.functions.invoke("deleteQuotationPayment", {
@@ -191,14 +191,14 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
                   {canRegisterPayment && (
                     <td className="px-2 py-1">
                       <div className="flex gap-1">
-                        <button
+                        <button type="button"
                           onClick={() => openEdit(p)}
                           className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-indigo-600 transition-colors"
                           title="Editar pago"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
-                        <button
+                        <button type="button"
                           onClick={() => handleDelete(p)}
                           disabled={deletingId === p.id}
                           className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-red-600 transition-colors disabled:opacity-40"

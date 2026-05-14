@@ -85,8 +85,8 @@ const SidebarProvider = React.forwardRef((
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    globalThis.addEventListener("keydown", handleKeyDown)
+    return () => globalThis.removeEventListener("keydown", handleKeyDown);
   }, [toggleSidebar])
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
@@ -249,7 +249,7 @@ const SidebarRail = React.forwardRef(({ className, ...props }, ref) => {
   const { toggleSidebar } = useSidebar()
 
   return (
-    (<button
+    (<button type="button"
       ref={ref}
       data-sidebar="rail"
       aria-label="Toggle Sidebar"

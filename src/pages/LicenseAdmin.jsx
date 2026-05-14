@@ -75,7 +75,7 @@ export default function LicenseAdmin() {
   };
 
   const handleConfirmPayment = async (biz) => {
-    if (!window.confirm(`Confirmar que recibiste el pago de MP para ${biz.name}? Se enviará correo de pago recibido a los admins.`)) return;
+    if (!globalThis.confirm(`Confirmar que recibiste el pago de MP para ${biz.name}? Se enviará correo de pago recibido a los admins.`)) return;
     setConfirmingPayment(biz.id);
     try {
       const r = await base44.functions.invoke("confirmRenewalPayment", { business_id: biz.id });

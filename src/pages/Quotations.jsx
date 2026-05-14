@@ -461,7 +461,7 @@ export default function Quotations() {
             <p className="text-sm font-medium">Método de pago — pago total</p>
             <div className="grid grid-cols-2 gap-2">
               {paymentMethodsCatalog.map((pm) => (
-                <button
+                <button type="button"
                   key={pm.id || pm.name}
                   onClick={() => setPaymentMethod(pm.name)}
                   className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${paymentMethod === pm.name ? "bg-indigo-600 text-white border-indigo-600" : "bg-card text-foreground border-border hover:border-indigo-300"}`}
@@ -483,7 +483,7 @@ export default function Quotations() {
           </div>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <button
+            <button type="button"
               onClick={() => {
                 const q = payQuotation;
                 setPayQuotation(null);
