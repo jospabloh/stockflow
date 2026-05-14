@@ -6,44 +6,41 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_DOCS_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const SNAPSHOT_VERSION = "2.12.0";
-const SNAPSHOT_RELEASE_DATE = "2026-04-28";
+const SNAPSHOT_VERSION = "2.13.0";
+const SNAPSHOT_RELEASE_DATE = "2026-05-14";
 const SNAPSHOT_GIT_LOG = `
-33aaece Merge pull request #49 from jospabloh/claude/nightly-automation-setup-ZagxP
-773941d Merge branch 'main' into claude/nightly-automation-setup-ZagxP
-c7a462d File changes
-c0bcbcb Add nightly permission & documentation audit automations
-8fa5cfc File changes
-a305d74 File changes
-f36c1cf File changes
-b3bf822 File changes
-9f46dca File changes
-9ffddb8 File changes
-05acb72 Merge pull request #48 from jospabloh/claude/check-renewal-emails-L83pp
-3342d49 Add queueBillingReminders function to fix missing automation target
-101da53 File changes
-4c7d408 File changes
-51a7bce Update base44 packages
-22c0687 File changes
-6ac0977 File changes
-1895bde File changes
-4073f34 Merge pull request #47 from jospabloh/claude/mercado-pago-checkout-ATHGT
-8f4eace Personalize lifecycle emails with app + plan + recipient name
-46c0afb Add 'Confirmar pago recibido' trigger in LicenseAdmin
-dfcd21b Add MP-aligned license email flow
-3637b21 File changes
-0edcc70 File changes
-e815d7f File changes
+4b94c9e Update base44 packages
+a8b8493 Update base44 packages
+76f17f8 File changes
+79308ce chore: add base44 CLI config files
+49bf5c7 Update base44 packages
+3080ae0 Merge pull request #51 from jospabloh/claude/add-family-id-creator-email-W5D90
+9abb358 Mostrar ID del negocio y correo del creador en panel de Licencias
+8e1483b File changes
+93071a9 File changes
+5ccf920 File changes
+2e23157 File changes
+14c4f54 File changes
+bbf2f64 File changes
+b447ef0 File changes
+3c108ef File changes
+6baa123 File changes
+aeed444 Gestión de pagos implementada
+1114423 File changes
+086cfef File changes
+d5cef20 File changes
+262c4db File changes
+68aa765 File changes
+451be9d File changes
+4e7bfd4 File changes
+3356a4d File changes
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "📧 Sistema de reactivación de trial: emails automáticos a usuarios inactivos con prueba activa (sin afectar cuentas pagadas, vencidas, archivadas o suspendidas)",
-  "⏰ Job diario processTrialReactivationEmails: detecta usuarios inactivos >24 h, respeta límite de 3 emails por trial y mínimo 48 h entre envíos",
-  "🔒 Idempotencia garantizada: clave única por usuario/negocio/día previene duplicados aunque el job corra dos veces",
-  "🌐 Email bilingüe: plantilla en español (es-MX) e inglés (en-US) según configuración regional del tenant",
-  "📊 Rastreo de actividad seguro: hook useActivityTracker + función trackUserActivity con throttle de 15 min; no bloquea UI",
-  "🛡️ Tenant isolation preservada: trackUserActivity solo actualiza al usuario autenticado; job lee users filtrados por business_id",
-  "📋 Entidad User actualizada: campos last_active_at, last_trial_reactivation_email_at, trial_reactivation_email_count (no rompe campos existentes)",
-  "📋 Entidad EmailNotification: nuevo tipo trial_reactivation + campos idempotency_key, user_id, skip_reason para auditoría",
+  "🔐 Permisos granulares: política oficial de defaults — Admin inicia con acceso total (true) en todos los módulos, visuales y acciones",
+  "👥 Member/Almacenista mantiene acceso operativo; permisos sensibles o nuevos no se elevan automáticamente",
+  "🆕 Nuevo módulo, visual o acción: default para member en false hasta otorgamiento explícito por admin",
+  "🧩 Matriz de permisos alineada a acciones estándar: view, add, modify, delete",
+  "📚 Manual de permisos actualizado con cobertura completa de módulos activos y reglas de gobernanza",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

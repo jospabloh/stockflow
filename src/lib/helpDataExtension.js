@@ -1089,15 +1089,36 @@ Los permisos granulares están **desactivados por defecto**. Para activarlos, el
 
 ### 🎯 ¿Qué se puede controlar?
 
-Para cada módulo (Productos, Movimientos, Cotizaciones, Caja Chica, Reportes, etc.) y para cada rol (Admin, Almacenista), puedes configurar:
+Para cada módulo y para cada rol (Admin, Almacenista/Member), puedes configurar accesos de visualización y operación.
 
-| Acción | Descripción |
+**Módulos activos cubiertos por la matriz:**
+- Dashboard
+- Productos
+- Categorías
+- Proveedores
+- Clientes
+- Tipo de Pago
+- Movimientos
+- Cotizaciones
+- Caja Chica
+- Pagos a Proveedores
+- Reportes
+- Configuración
+
+| Acción estándar | Descripción |
 |---|---|
-| **Ver** | Acceso a la página o sección |
-| **Leer** | Leer datos y listas |
-| **Escribir** | Crear nuevos registros |
-| **Modificar** | Editar registros existentes |
-| **Eliminar** | Borrar registros |
+| **View** | Ver página, tarjetas, tablas y visuales del módulo |
+| **Add** | Crear nuevos registros |
+| **Modify** | Editar registros existentes |
+| **Delete** | Eliminar registros |
+
+---
+
+### 🧭 Política de Defaults por Rol
+
+- **Admin:** todos los permisos inician en **true** por defecto.
+- **Member/Almacenista:** mantiene acceso operativo; los permisos sensibles y cualquier permiso **nuevo** inician en **false**.
+- **Regla de crecimiento:** cuando se crea un módulo, visual o acción nueva, el default para member queda en **false** hasta que un admin lo otorgue explícitamente.
 
 ---
 
