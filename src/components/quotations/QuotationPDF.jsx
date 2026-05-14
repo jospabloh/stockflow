@@ -194,11 +194,15 @@ export async function generateQuotationPDF(quotation, settings, client) {
     doc.text(nameClipped, cols.name, y + 5.5);
     doc.text(String(item.quantity || 0), cols.qty, y + 5.5);
     // IVA label
-    const ivaLabel = ((item.tax_rate ?? 16) > 0) ? "16%" : "Exento";
-    doc.setTextColor(...((item.tax_rate > 0) ? [180, 120, 0] : mutedText));
+    const taxRate = Number(item.tax_rate ?? 0);
+    const ivaLabel = taxRate > 0 ? `${taxRate}%` : "Exento";
+    doc.setTextColor(...(taxRate > 0 ? [180, 120, 0] : mutedText));
     doc.text(ivaLabel, cols.iva, y + 5.5);
     doc.setTextColor(...darkText);
-    doc.text(`$${fmt(item.unit_price)}`, cols.price, y + 5.5);
+    const unitPriceRaw = item.unit_price || 0;
+    const hasTax = taxRate > 0;
+    const displayUnitPrice = hasTax ? (unitPriceRaw / (1 + taxRate / 100)) : unitPriceRaw;
+    doc.text(`$${fmt(displayUnitPrice)}`, cols.price, y + 5.5);
     doc.text(`$${fmt(item.total)}`, cols.total, y + 5.5, { align: "right" });
     y += rowH;
   });

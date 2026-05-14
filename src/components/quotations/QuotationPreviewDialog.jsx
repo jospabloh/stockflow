@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -117,9 +117,9 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
             </div>
           </div>
 
-          {/* Info note: Precios incluyen IVA */}
+          {/* Info note: Precio unitario neto + IVA desglosado */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-[11px] text-blue-700"><strong>ℹ️ Nota:</strong> Los precios mostrados para productos con IVA ya incluyen el impuesto. Ver desglose en la columna de totales.</p>
+            <p className="text-[11px] text-blue-700"><strong>ℹ️ Nota:</strong> El precio unitario se muestra sin IVA cuando aplica. El IVA se desglosa por renglón en su columna.</p>
           </div>
 
           {/* Items table with IVA breakdown */}
@@ -139,8 +139,11 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
               <tbody>
                 {(q.items || []).map((item, i) => {
                   const { vat: ivaAmount } = calculateLineVAT(item.total || 0, item.tax_rate);
-                  const hasIVA = (item.tax_rate ?? 16) === 16;
+                  const taxRate = Number(item.tax_rate ?? 0);
+                  const hasTax = taxRate > 0;
                   const totalPrice = item.total || 0;
+                  const unitPriceRaw = item.unit_price || 0;
+                  const displayUnitPrice = hasTax ? (unitPriceRaw / (1 + taxRate / 100)) : unitPriceRaw;
                   const isPendingOnDemand = item.is_on_demand && item.on_demand_status === "pending";
                   const isCreatedOnDemand = item.is_on_demand && item.on_demand_status === "product_created";
 
@@ -162,9 +165,9 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                         </div>
                       </td>
                       <td className="px-3 py-2 text-center text-slate-700">{item.quantity}{item.unit ? ` ${item.unit}` : ""}</td>
-                      <td className="px-3 py-2 text-right text-slate-700">${fmt(item.unit_price)}</td>
+                      <td className="px-3 py-2 text-right text-slate-700">${fmt(displayUnitPrice)}</td>
                       <td className="px-3 py-2 text-center">
-                        {hasIVA ? (
+                        {hasTax ? (
                           <span className="bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded text-[10px]">
                             ${fmt(ivaAmount)}
                           </span>
