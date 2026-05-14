@@ -27,7 +27,7 @@ function datesEqual(a, b) {
   }
 }
 
-function valuesMatch(key, want, got) {
+function valuesMatch(_key, want, got) {
   if (want === got) return true;
   if (typeof want === 'string' && typeof got === 'string') return datesEqual(want, got);
   return false;

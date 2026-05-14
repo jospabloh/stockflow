@@ -132,7 +132,7 @@ export function useSessionManager(enabled = true) {
 
     // Escuchar actividad del usuario
     const handleActivity = () => resetIdleTimers();
-    ACTIVITY_EVENTS.forEach(evt => window.addEventListener(evt, handleActivity, { passive: true }));
+    ACTIVITY_EVENTS.forEach(evt => globalThis.addEventListener(evt, handleActivity, { passive: true }));
 
     // Arrancar timers de idle
     resetIdleTimers();
@@ -154,7 +154,7 @@ export function useSessionManager(enabled = true) {
     }, HEARTBEAT_INTERVAL_MS);
 
     return () => {
-      ACTIVITY_EVENTS.forEach(evt => window.removeEventListener(evt, handleActivity));
+      ACTIVITY_EVENTS.forEach(evt => globalThis.removeEventListener(evt, handleActivity));
       clearTimeout(idleWarningTimerRef.current);
       clearTimeout(idleLogoutTimerRef.current);
       clearInterval(heartbeatIntervalRef.current);

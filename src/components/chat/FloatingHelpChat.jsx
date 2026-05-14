@@ -32,8 +32,8 @@ export default function FloatingHelpChat() {
     // Set default position bottom-right on mount
     useEffect(() => {
         setPosition({
-            x: window.innerWidth - 380,
-            y: window.innerHeight - 520
+            x: globalThis.innerWidth - 380,
+            y: globalThis.innerHeight - 520
         });
     }, []);
 
@@ -193,8 +193,8 @@ export default function FloatingHelpChat() {
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         const chatW = chatRef.current?.offsetWidth || 360;
         const chatH = chatRef.current?.offsetHeight || 480;
-        const newX = Math.max(0, Math.min(window.innerWidth - chatW, clientX - dragOffset.current.x));
-        const newY = Math.max(0, Math.min(window.innerHeight - chatH, clientY - dragOffset.current.y));
+        const newX = Math.max(0, Math.min(globalThis.innerWidth - chatW, clientX - dragOffset.current.x));
+        const newY = Math.max(0, Math.min(globalThis.innerHeight - chatH, clientY - dragOffset.current.y));
         setPosition({ x: newX, y: newY });
     }, [dragging]);
 
@@ -204,16 +204,16 @@ export default function FloatingHelpChat() {
 
     useEffect(() => {
         if (dragging) {
-            window.addEventListener('mousemove', handleDragMove);
-            window.addEventListener('mouseup', handleDragEnd);
-            window.addEventListener('touchmove', handleDragMove, { passive: false });
-            window.addEventListener('touchend', handleDragEnd);
+            globalThis.addEventListener('mousemove', handleDragMove);
+            globalThis.addEventListener('mouseup', handleDragEnd);
+            globalThis.addEventListener('touchmove', handleDragMove, { passive: false });
+            globalThis.addEventListener('touchend', handleDragEnd);
         }
         return () => {
-            window.removeEventListener('mousemove', handleDragMove);
-            window.removeEventListener('mouseup', handleDragEnd);
-            window.removeEventListener('touchmove', handleDragMove);
-            window.removeEventListener('touchend', handleDragEnd);
+            globalThis.removeEventListener('mousemove', handleDragMove);
+            globalThis.removeEventListener('mouseup', handleDragEnd);
+            globalThis.removeEventListener('touchmove', handleDragMove);
+            globalThis.removeEventListener('touchend', handleDragEnd);
         };
     }, [dragging, handleDragMove, handleDragEnd]);
 
@@ -223,7 +223,7 @@ export default function FloatingHelpChat() {
     // Floating button (closed state)
     if (!isOpen) {
         return (
-            <button
+            <button type="button"
                 onClick={() => setIsOpen(true)}
                 className={cn(
                     "fixed z-[100] w-14 h-14 rounded-full shadow-2xl",
@@ -321,7 +321,7 @@ export default function FloatingHelpChat() {
                                         "¿Cómo convierto una cotización en venta?",
                                         "¿Qué cotizaciones están pendientes de pago?"
                                     ].map((q) => (
-                                        <button
+                                        <button type="button"
                                             key={q}
                                             onClick={() => setInput(q)}
                                             className="text-xs text-left px-3 py-2 rounded-xl bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors"
@@ -364,7 +364,7 @@ export default function FloatingHelpChat() {
                                     <div key={i} className="flex items-center gap-1 bg-indigo-50 dark:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-700 rounded-lg px-2 py-1 text-xs text-indigo-700 dark:text-indigo-300 max-w-[140px]">
                                         {f.type.startsWith('image/') ? <ImageIcon className="h-3 w-3 flex-shrink-0" /> : <Mic className="h-3 w-3 flex-shrink-0" />}
                                         <span className="truncate">{f.name}</span>
-                                        <button onClick={() => removeAttachedFile(i)} className="ml-0.5 text-indigo-400 hover:text-red-500 flex-shrink-0">×</button>
+                                        <button type="button" onClick={() => removeAttachedFile(i)} className="ml-0.5 text-indigo-400 hover:text-red-500 flex-shrink-0">×</button>
                                     </div>
                                 ))}
                             </div>

@@ -106,7 +106,7 @@ export default function PredictiveReports({
     const csv = `${headers}\n${rows}`;
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    window.open(url, "_blank");
+    globalThis.open?.(url, "_blank");
   };
 
   return (

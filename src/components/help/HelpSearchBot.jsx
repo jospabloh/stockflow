@@ -5,7 +5,7 @@ export default function HelpSearchBot() {
   const [open, setOpen] = useState(false);
 
   return (
-    <button
+    <button type="button"
       onClick={() => setOpen(true)}
       className={`fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-110 ${
         open ? "hidden" : ""

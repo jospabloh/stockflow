@@ -17,12 +17,12 @@ import { cn } from "@/lib/utils";
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" ? window.innerWidth < 768 : false
+    () => typeof globalThis !== "undefined" ? globalThis.innerWidth < 768 : false
   );
   useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
+    const handler = () => setIsMobile(globalThis.innerWidth < 768);
+    globalThis.addEventListener("resize", handler);
+    return () => globalThis.removeEventListener("resize", handler);
   }, []);
   return isMobile;
 }

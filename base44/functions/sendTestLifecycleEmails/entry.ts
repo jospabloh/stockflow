@@ -330,8 +330,8 @@ Deno.serve(async (req: Request) => {
         results.push({ type: emailType, subject, status: 'sent' });
         sent++;
         console.log(`[sendTestLifecycleEmails] Sent ${emailType}`);
-      } catch (err: any) {
-        const error = String(err?.message || err);
+      } catch (err: Error | unknown) {
+        const error = err instanceof Error ? err.message : String(err);
         results.push({ type: emailType, subject, status: 'failed', error });
         failed++;
         console.error(`[sendTestLifecycleEmails] Failed ${emailType}: ${error}`);
@@ -347,8 +347,9 @@ Deno.serve(async (req: Request) => {
       results,
     });
 
-  } catch (error: any) {
-    console.error('[sendTestLifecycleEmails] Error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+  } catch (error: Error | unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error('[sendTestLifecycleEmails] Error:', err);
+    return Response.json({ error: err.message }, { status: 500 });
   }
 });

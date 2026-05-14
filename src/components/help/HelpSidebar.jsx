@@ -67,7 +67,7 @@ export default function HelpSidebar({ articles, activeId, onSelectArticle, searc
           categories.map(category => (
             <div key={category} className="border-b border-border/50">
               {/* Category Header */}
-              <button
+              <button type="button"
                 onClick={() => toggleCategory(category)}
                 className="w-full px-4 py-3 flex items-center gap-2 hover:bg-muted text-sm font-medium text-foreground transition-colors"
               >
@@ -87,7 +87,7 @@ export default function HelpSidebar({ articles, activeId, onSelectArticle, searc
               {expandedCategories[category] && (
                 <div className="bg-muted/30">
                   {filtered[category].map(article => (
-                    <button
+                    <button type="button"
                       key={article.id}
                       onClick={() => onSelectArticle(article.id)}
                       className={`w-full text-left px-6 py-2.5 text-sm border-l-2 transition-all ${

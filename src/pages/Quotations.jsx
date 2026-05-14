@@ -68,12 +68,14 @@ export default function Quotations() {
   const [settings, setSettings] = useState(null);
   const [businessId, setBusinessId] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [paymentMethodsCatalog, setPaymentMethodsCatalog] = useState([]);
 
   useEffect(() => {
     base44.auth.me().then(u => {
       setBusinessId(u?.business_id || null);
       setUserRole(u?.role || null);
       base44.entities.AppSettings.filter({ business_id: u?.business_id }).then(s => setSettings(s[0] || null)).catch(() => {});
+      base44.entities.PaymentMethod.filter({ business_id: u?.business_id, active: true }).then(setPaymentMethodsCatalog).catch(() => setPaymentMethodsCatalog([]));
     }).catch(() => {});
   }, []);
 
@@ -113,6 +115,8 @@ export default function Quotations() {
     
     return matchSearch && matchStatus;
   });
+  const activePaymentMethodNames = paymentMethodsCatalog.map((pm) => pm.name);
+  const hasActivePaymentCatalog = activePaymentMethodNames.length > 0;
 
   const handleConvertToSale = async () => {
     if (!convertQuotation) return;
@@ -123,6 +127,10 @@ export default function Quotations() {
     // Validar que la cotización no esté ya convertida
     if (convertQuotation.status === "converted") {
       setConvertError("Esta cotización ya fue convertida en venta.");
+      return;
+    }
+    if (hasActivePaymentCatalog && !activePaymentMethodNames.includes(convertPaymentMethod.trim())) {
+      setConvertError("Debes seleccionar una forma de pago activa del catálogo.");
       return;
     }
 
@@ -187,6 +195,10 @@ export default function Quotations() {
 
   const handleConfirmPayment = async () => {
    if (!payQuotation) return;
+   if (hasActivePaymentCatalog && !activePaymentMethodNames.includes(paymentMethod.trim())) {
+     toast.error("Debes seleccionar una forma de pago activa del catálogo.");
+     return;
+   }
    // CRITICAL FIX: Validate ownership before payment
    if (payQuotation.business_id !== businessId) {
      toast.error("No tienes permiso para confirmar el pago de esta cotización");
@@ -448,26 +460,30 @@ export default function Quotations() {
           <div className="px-1 py-3 space-y-2">
             <p className="text-sm font-medium">Método de pago — pago total</p>
             <div className="grid grid-cols-2 gap-2">
-              {["Efectivo", "Transferencia", "Tarjeta débito", "Tarjeta crédito", "Cheque", "Otro"].map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setPaymentMethod(m)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${paymentMethod === m ? "bg-indigo-600 text-white border-indigo-600" : "bg-card text-foreground border-border hover:border-indigo-300"}`}
+              {paymentMethodsCatalog.map((pm) => (
+                <button type="button"
+                  key={pm.id || pm.name}
+                  onClick={() => setPaymentMethod(pm.name)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${paymentMethod === pm.name ? "bg-indigo-600 text-white border-indigo-600" : "bg-card text-foreground border-border hover:border-indigo-300"}`}
                 >
-                  {m}
+                  {pm.name}
                 </button>
               ))}
             </div>
+            {paymentMethodsCatalog.length === 0 && (
+              <p className="text-sm text-amber-600">No hay formas de pago activas en catálogo.</p>
+            )}
             <Input
               placeholder="Otro método de pago..."
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
               className="mt-2"
+              disabled={paymentMethodsCatalog.length > 0}
             />
           </div>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <button
+            <button type="button"
               onClick={() => {
                 const q = payQuotation;
                 setPayQuotation(null);
@@ -485,7 +501,7 @@ export default function Quotations() {
             </button>
             <AlertDialogAction
               onClick={handleConfirmPayment}
-              disabled={!paymentMethod.trim()}
+              disabled={!paymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(paymentMethod.trim()))}
               className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
             >
               Confirmar Pago Total
@@ -509,27 +525,31 @@ export default function Quotations() {
             </div>
             <p className="text-sm font-medium">Método de pago <span className="text-red-500">*</span></p>
             <div className="grid grid-cols-2 gap-2">
-              {["Efectivo", "Transferencia", "Tarjeta débito", "Tarjeta crédito", "Cheque", "Otro"].map((m) => (
+              {paymentMethodsCatalog.map((pm) => (
                 <button
-                  key={m}
+                  key={pm.id || pm.name}
                   type="button"
-                  onClick={() => { setConvertPaymentMethod(m); setConvertError(""); }}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${convertPaymentMethod === m ? "bg-indigo-600 text-white border-indigo-600" : "bg-card text-foreground border-border hover:border-indigo-300"}`}
+                  onClick={() => { setConvertPaymentMethod(pm.name); setConvertError(""); }}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${convertPaymentMethod === pm.name ? "bg-indigo-600 text-white border-indigo-600" : "bg-card text-foreground border-border hover:border-indigo-300"}`}
                 >
-                  {m}
+                  {pm.name}
                 </button>
               ))}
             </div>
+            {paymentMethodsCatalog.length === 0 && (
+              <p className="text-sm text-amber-600">No hay formas de pago activas en catálogo.</p>
+            )}
             <Input
               placeholder="Otro método..."
               value={convertPaymentMethod}
               onChange={(e) => { setConvertPaymentMethod(e.target.value); setConvertError(""); }}
+              disabled={paymentMethodsCatalog.length > 0}
             />
             {convertError && <p className="text-sm text-red-600">{convertError}</p>}
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConvertToSale} disabled={!convertPaymentMethod.trim()} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50">
+            <AlertDialogAction onClick={handleConvertToSale} disabled={!convertPaymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(convertPaymentMethod.trim()))} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50">
               Confirmar Venta
             </AlertDialogAction>
           </AlertDialogFooter>

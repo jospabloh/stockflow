@@ -8,5 +8,10 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - run: deno linter
-      - run: deno test
+      - run: deno lint
+      - run: |
+          if rg -l --glob '*_test.ts' --glob '*_test.js' --glob '*.test.ts' --glob '*.test.js' . > /dev/null; then
+            deno test
+          else
+            echo "No Deno test modules found; skipping deno test."
+          fi

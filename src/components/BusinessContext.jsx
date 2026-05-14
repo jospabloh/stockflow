@@ -30,7 +30,7 @@ export function BusinessProvider({ children }) {
     load();
   }, []);
 
-  const refreshBusiness = () => window.location.reload();
+  const refreshBusiness = () => globalThis.location.reload();
 
   return (
     <BusinessContext.Provider value={{ user, businessId, businessName, isLoading, refreshBusiness }}>

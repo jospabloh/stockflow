@@ -246,7 +246,7 @@ export default function Settings() {
                   </span>
                 </label>
                 {settings?.logo_url && (
-                  <button onClick={() => updateSettings("logo_url", "")} className="block text-xs text-red-400 hover:text-red-600">
+                  <button type="button" onClick={() => updateSettings("logo_url", "")} className="block text-xs text-red-400 hover:text-red-600">
                     Quitar logo
                   </button>
                 )}
@@ -507,7 +507,7 @@ export default function Settings() {
                   <div className="flex-1 bg-white border border-indigo-200 rounded-xl px-4 py-3 font-mono text-2xl tracking-widest text-indigo-700 font-bold text-center">
                     {business?.invite_code || "—"}
                   </div>
-                  <button
+                  <button type="button"
                     onClick={() => {
                       if (business?.invite_code) {
                         navigator.clipboard.writeText(business.invite_code);
@@ -531,7 +531,7 @@ export default function Settings() {
                       {business?.invite_code_active !== false ? "Código activo — acepta nuevos miembros" : "Código desactivado"}
                     </span>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={handleRotateInviteCode}
                     className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors"
                     title="Generar nuevo código (invalida el anterior)"

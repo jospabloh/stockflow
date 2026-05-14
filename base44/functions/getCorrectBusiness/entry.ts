@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
           }
         });
       }
-    } catch (e) {
+    } catch (_e) {
       // Fallback to service role if user-scoped fails
       const allBusinesses = await base44.asServiceRole.entities.Business.list();
       const correctBusiness = allBusinesses.find(b => b.id === user.business_id);

@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
         const lifecycleData = await lifecycleResp.json();
         console.log('[expireTrials] checkAccountLifecycle:', JSON.stringify(lifecycleData));
 
-        let sendData: any = null;
+        let sendData: unknown = null;
         try {
           const emailJobs = lifecycleData?.emails_to_send ?? [];
           const sendResp = await fetch(`${appUrl}/functions/v1/sendLifecycleEmails`, {
@@ -45,14 +45,16 @@ Deno.serve(async (req) => {
           });
           sendData = await sendResp.json();
           console.log('[expireTrials] sendLifecycleEmails:', JSON.stringify(sendData));
-        } catch (sendErr: any) {
-          console.error('[expireTrials] sendLifecycleEmails failed:', sendErr.message);
-          sendData = { error: sendErr.message };
+        } catch (sendErr: Error | unknown) {
+          const sendError = sendErr instanceof Error ? sendErr.message : String(sendErr);
+          console.error('[expireTrials] sendLifecycleEmails failed:', sendError);
+          sendData = { error: sendError };
         }
 
         return Response.json({ success: true, delegated: true, lifecycle: lifecycleData, emails: sendData });
-      } catch (fetchErr: any) {
-        console.error('[expireTrials] Delegation fetch failed, running fallback:', fetchErr.message);
+      } catch (fetchErr: Error | unknown) {
+        const fetchError = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
+        console.error('[expireTrials] Delegation fetch failed, running fallback:', fetchError);
       }
     }
 
@@ -87,8 +89,9 @@ Deno.serve(async (req) => {
       expired_businesses: expiredNames,
       checked_at: now,
     });
-  } catch (error: any) {
-    console.error('[expireTrials] Error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+  } catch (error: Error | unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error('[expireTrials] Error:', err);
+    return Response.json({ error: err.message }, { status: 500 });
   }
 });

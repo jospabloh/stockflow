@@ -5,10 +5,11 @@ const NavigationContext = createContext();
 
 // Detect Android hardware back button
 const setupAndroidBackButton = (navigationStack, goBackCallback) => {
+  if (typeof globalThis === "undefined") return () => {};
   const handleBackButton = (event) => {
     // Respect navigation stack: only go back if there's history to go to
     // and current path is not root
-    const path = window.location.pathname;
+    const path = globalThis.location?.pathname || "/";
     const isRoot = path === '/' || path === '/Dashboard';
     
     // Strict validation: only proceed if there's actual navigation history
@@ -19,17 +20,17 @@ const setupAndroidBackButton = (navigationStack, goBackCallback) => {
   };
 
   // Listen for popstate (browser back button)
-  window.addEventListener('popstate', handleBackButton);
+  globalThis.addEventListener('popstate', handleBackButton);
   
   // For Android WebView/Cordova support
-  if (window.document && window.document.addEventListener) {
-    window.document.addEventListener('backbutton', handleBackButton, false);
+  if (globalThis.document && globalThis.document.addEventListener) {
+    globalThis.document.addEventListener('backbutton', handleBackButton, false);
   }
 
   return () => {
-    window.removeEventListener('popstate', handleBackButton);
-    if (window.document && window.document.removeEventListener) {
-      window.document.removeEventListener('backbutton', handleBackButton);
+    globalThis.removeEventListener('popstate', handleBackButton);
+    if (globalThis.document && globalThis.document.removeEventListener) {
+      globalThis.document.removeEventListener('backbutton', handleBackButton);
     }
   };
 };
@@ -64,7 +65,7 @@ export function NavigationProvider({ children }) {
   const goBack = useCallback(() => {
     setDirection('back');
     if (navigationStack.length > 1) {
-      window.history.back();
+      globalThis.history?.back?.();
     }
   }, [navigationStack.length]);
 

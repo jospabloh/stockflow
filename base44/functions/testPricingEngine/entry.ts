@@ -6,6 +6,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
  * Uses asServiceRole.entities directly (bypasses auth, tests logic directly)
  */
 Deno.serve(async (req) => {
+  const results: Array<{ id: string | number; status: 'PASS' | 'FAIL'; description: string; result: string; observation: string }> = [];
+  function pass(id: string | number, description: string, result: unknown, observation: string) {
+    results.push({ id, status: 'PASS', description, result: String(result), observation });
+  }
+  function fail(id: string | number, description: string, result: unknown, observation: string) {
+    results.push({ id, status: 'FAIL', description, result: String(result), observation });
+  }
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -13,15 +21,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin required' }, { status: 403 });
     }
 
-    const results = [];
     const bizId = user.business_id;
-
-    function pass(id, description, result, observation) {
-      results.push({ id, status: 'PASS', description, result: String(result), observation });
-    }
-    function fail(id, description, result, observation) {
-      results.push({ id, status: 'FAIL', description, result: String(result), observation });
-    }
 
     // --- Inline pricing logic (mirrors pricingEngine.js) ---
     function calcPrice({ product, client, quantity }) {
@@ -212,7 +212,8 @@ Deno.serve(async (req) => {
       results,
       cleanup: { status: 'COMPLETE', log: cleanupLog, non_acacia_data: 'None created' }
     });
-  } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+  } catch (error: Error | unknown) {
+    const err = error instanceof Error ? error.message : String(error);
+    return Response.json({ error: err }, { status: 500 });
   }
 });

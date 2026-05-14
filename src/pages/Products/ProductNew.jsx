@@ -17,7 +17,7 @@ export default function ProductNew() {
 
   return (
     <ProductFormDialog
-      open={true}
+      open
       onOpenChange={(open) => {
         if (!open) goBackToProducts();
       }}

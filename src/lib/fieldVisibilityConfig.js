@@ -189,41 +189,6 @@ export const FIELD_VISIBILITY = {
     },
   },
 
-  // PettyCash (ya parcial, expandir)
-  "Caja Chica": {
-    admin: {
-      view: ['balance', 'movements', 'categories', 'totals', 'profit_impact'],
-      edit: ['all'],
-    },
-    almacenista: {
-      view: ['balance', 'movements', 'categories'],
-      edit: ['income', 'expense'],
-    },
-    vendedor: {
-      view: ['balance'],
-      edit: [],
-    },
-  },
-
-  // SupplierPayments (ya parcial, expandir)
-  "Pagos a Proveedores": {
-    admin: {
-      view: ['supplier', 'amount', 'date', 'payment_method', 'reference', 'concept', 'petty_cash_impact'],
-      financial: ['total_spent', 'supplier_totals', 'payment_trends'],
-      edit: ['all'],
-    },
-    almacenista: {
-      view: ['supplier', 'amount', 'date', 'payment_method', 'concept'],
-      financial: [],
-      edit: ['amount', 'date', 'payment_method'],
-    },
-    vendedor: {
-      view: [],
-      financial: [],
-      edit: [],
-    },
-  },
-
   // PaymentMethods
   "Tipo de Pago": {
     admin: {

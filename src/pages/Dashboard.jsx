@@ -472,7 +472,7 @@ export default function Dashboard() {
             unpaidDirectMovements={unpaidDirectMovements}
           />
           {unpaidCount > 0 && (
-            <button
+            <button type="button"
               onClick={() => setUnpaidModalOpen(true)}
               className="w-full text-left"
             >
@@ -629,21 +629,21 @@ export default function Dashboard() {
             <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">Últimos 30 días</span>
           </div>
           <div className="space-y-2.5">
-            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=converted`)} className="w-full text-left flex justify-between items-center bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-4 py-3 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-colors cursor-pointer">
+            <button type="button" onClick={() => navigate(`${createPageUrl("Quotations")}?status=converted`)} className="w-full text-left flex justify-between items-center bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-4 py-3 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" />
                 <span className="text-sm text-slate-600 dark:text-slate-400">Concretadas en venta</span>
               </div>
               <span className="font-bold text-emerald-700 dark:text-emerald-300 text-xl">{quotGreen}</span>
             </button>
-            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=active`)} className="w-full text-left flex justify-between items-center bg-amber-50 dark:bg-amber-950/40 rounded-lg px-4 py-3 hover:bg-amber-100 dark:hover:bg-amber-950/60 transition-colors cursor-pointer">
+            <button type="button" onClick={() => navigate(`${createPageUrl("Quotations")}?status=active`)} className="w-full text-left flex justify-between items-center bg-amber-50 dark:bg-amber-950/40 rounded-lg px-4 py-3 hover:bg-amber-100 dark:hover:bg-amber-950/60 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-amber-400 inline-block" />
                 <span className="text-sm text-slate-600 dark:text-slate-400">Sin concretar (activas)</span>
               </div>
               <span className="font-bold text-amber-400 dark:text-amber-300 text-xl">{quotYellow}</span>
             </button>
-            <button onClick={() => navigate(`${createPageUrl("Quotations")}?status=cancelled`)} className="w-full text-left flex justify-between items-center bg-red-50 dark:bg-red-950/40 rounded-lg px-4 py-3 hover:bg-red-100 dark:hover:bg-red-950/60 transition-colors cursor-pointer">
+            <button type="button" onClick={() => navigate(`${createPageUrl("Quotations")}?status=cancelled`)} className="w-full text-left flex justify-between items-center bg-red-50 dark:bg-red-950/40 rounded-lg px-4 py-3 hover:bg-red-100 dark:hover:bg-red-950/60 transition-colors cursor-pointer">
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-red-500 inline-block" />
                 <span className="text-sm text-slate-600 dark:text-slate-400">Canceladas</span>

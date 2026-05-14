@@ -61,7 +61,7 @@ export default function UnifiedPermissionMatrix({ perms, onPermChange, onSave, s
   };
 
   const resetToDefaults = () => {
-    if (!window.confirm(`¿Restaurar permisos por defecto para ${activeRole}?`)) return;
+    if (!globalThis.confirm(`¿Restaurar permisos por defecto para ${activeRole}?`)) return;
     const defaults = getDefaultsForRole(activeRole);
     Object.keys(defaults).forEach(key => {
       onPermChange(activeRole, key, defaults[key]);

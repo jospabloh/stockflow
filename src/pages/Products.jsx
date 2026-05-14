@@ -36,7 +36,7 @@ export default function Products() {
   const [businessId, setBusinessId] = useState(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(globalThis.location.search);
     if (params.get("filter") === "low_stock") {
       setStockFilter("low");
     }
@@ -137,7 +137,7 @@ export default function Products() {
 
      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
      const url = URL.createObjectURL(blob);
-     window.open(url, "_blank");
+     globalThis.open?.(url, "_blank");
    };
 
   if (loading) {

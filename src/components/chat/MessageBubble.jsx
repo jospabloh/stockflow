@@ -39,7 +39,7 @@ const FunctionDisplay = ({ toolCall }) => {
 
     return (
         <div className="mt-1 text-xs">
-            <button
+            <button type="button"
                 onClick={() => setExpanded(!expanded)}
                 className={cn(
                     "flex items-center gap-2 px-2.5 py-1 rounded-lg border transition-all",

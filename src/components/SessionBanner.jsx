@@ -29,7 +29,7 @@ export default function SessionBanner({ onReactivate }) {
         >
           {loading ? 'Activando...' : 'Retomar'}
         </Button>
-        <button
+        <button type="button"
           onClick={() => setDismissed(true)}
           className="text-amber-400 hover:text-amber-600 flex-shrink-0"
         >
