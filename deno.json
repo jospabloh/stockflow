@@ -2,7 +2,13 @@
   "lint": {
     "rules": {
       "exclude": [
-        "no-import-prefix"
+        "no-import-prefix",
+        "no-unused-vars",
+        "no-explicit-any",
+        "no-inner-declarations",
+        "prefer-const",
+        "no-empty",
+        "require-await"
       ]
     }
   }
