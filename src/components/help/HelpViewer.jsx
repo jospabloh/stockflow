@@ -29,7 +29,7 @@ export default function HelpViewer({ article, allArticles, onNavigate }) {
             <p className="text-xs font-bold text-slate-400 uppercase mb-3">Temas Relacionados</p>
             <div className="grid gap-2">
               {relatedArticles.map(rel => (
-                <button
+                <button type="button"
                   key={rel.id}
                   onClick={() => onNavigate(rel.id)}
                   className="w-full flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors group text-left"
