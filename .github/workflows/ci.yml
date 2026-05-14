@@ -9,4 +9,4 @@ jobs:
         with:
           deno-version: v2.x
       - run: deno lint
-      - run: deno test --allow-none
+      - run: deno test
