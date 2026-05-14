@@ -115,6 +115,8 @@ export default function Quotations() {
     
     return matchSearch && matchStatus;
   });
+  const activePaymentMethodNames = paymentMethodsCatalog.map((pm) => pm.name);
+  const hasActivePaymentCatalog = activePaymentMethodNames.length > 0;
 
   const handleConvertToSale = async () => {
     if (!convertQuotation) return;
@@ -125,6 +127,10 @@ export default function Quotations() {
     // Validar que la cotización no esté ya convertida
     if (convertQuotation.status === "converted") {
       setConvertError("Esta cotización ya fue convertida en venta.");
+      return;
+    }
+    if (hasActivePaymentCatalog && !activePaymentMethodNames.includes(convertPaymentMethod.trim())) {
+      setConvertError("Debes seleccionar una forma de pago activa del catálogo.");
       return;
     }
 
@@ -189,6 +195,10 @@ export default function Quotations() {
 
   const handleConfirmPayment = async () => {
    if (!payQuotation) return;
+   if (hasActivePaymentCatalog && !activePaymentMethodNames.includes(paymentMethod.trim())) {
+     toast.error("Debes seleccionar una forma de pago activa del catálogo.");
+     return;
+   }
    // CRITICAL FIX: Validate ownership before payment
    if (payQuotation.business_id !== businessId) {
      toast.error("No tienes permiso para confirmar el pago de esta cotización");
@@ -491,7 +501,7 @@ export default function Quotations() {
             </button>
             <AlertDialogAction
               onClick={handleConfirmPayment}
-              disabled={!paymentMethod.trim()}
+              disabled={!paymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(paymentMethod.trim()))}
               className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
             >
               Confirmar Pago Total
@@ -539,7 +549,7 @@ export default function Quotations() {
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConvertToSale} disabled={!convertPaymentMethod.trim()} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50">
+            <AlertDialogAction onClick={handleConvertToSale} disabled={!convertPaymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(convertPaymentMethod.trim()))} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50">
               Confirmar Venta
             </AlertDialogAction>
           </AlertDialogFooter>
