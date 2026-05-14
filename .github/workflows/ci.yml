@@ -9,4 +9,9 @@ jobs:
         with:
           deno-version: v2.x
       - run: deno lint
-      - run: deno test
+      - run: |
+          if rg -l --glob '*_test.ts' --glob '*_test.js' --glob '*.test.ts' --glob '*.test.js' . > /dev/null; then
+            deno test
+          else
+            echo "No Deno test modules found; skipping deno test."
+          fi
