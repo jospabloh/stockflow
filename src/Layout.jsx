@@ -8,9 +8,9 @@ import TrialBanner from "@/components/license/TrialBanner";
 import FloatingHelpChat from "@/components/chat/FloatingHelpChat";
 
 // Detect if running as installed PWA / native app (not regular browser tab)
-const IS_NATIVE_APP = typeof window !== "undefined" && (
-  window.matchMedia("(display-mode: standalone)").matches ||
-  window.navigator.standalone === true
+const IS_NATIVE_APP = typeof globalThis !== "undefined" && (
+  globalThis.matchMedia("(display-mode: standalone)").matches ||
+  globalThis.navigator.standalone === true
 );
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
@@ -176,7 +176,7 @@ export default function Layout({ children, currentPageName }) {
     if (!IS_NATIVE_APP) return;
     if (pullY > 70) {
       setRefreshing(true);
-      window.location.reload();
+      globalThis.location.reload();
     }
     setPullY(0);
     touchStartY.current = 0;
@@ -253,7 +253,7 @@ export default function Layout({ children, currentPageName }) {
             if (hasSubmenu) {
               return (
                 <div key={item.name}>
-                  <button
+                  <button type="button"
                     onClick={() => setExpandedSubmenu(isSubmenuOpen ? null : item.name)}
                     aria-expanded={isSubmenuOpen}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
@@ -468,7 +468,7 @@ export default function Layout({ children, currentPageName }) {
           const isActive = currentPageName === item.page;
           const targetUrl = createPageUrl(item.page);
           return (
-            <button
+            <button type="button"
               key={item.page}
               role="tab"
               aria-selected={isActive}

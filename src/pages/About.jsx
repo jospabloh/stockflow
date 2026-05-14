@@ -120,7 +120,7 @@ export default function About() {
       {/* Historial de versiones — colapsable al final */}
       {CHANGELOG.length > 1 && (
         <Card className="border-0 shadow-sm overflow-hidden">
-          <button
+          <button type="button"
             onClick={() => setHistorialOpen(!historialOpen)}
             className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-muted/50 transition-colors"
           >

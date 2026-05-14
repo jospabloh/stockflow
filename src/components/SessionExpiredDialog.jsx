@@ -12,7 +12,7 @@ export default function SessionExpiredDialog({ open }) {
     setLoading(true);
     try {
       // Intentar re-autenticar redirigiendo al login y volviendo a la misma página
-      base44.auth.redirectToLogin(window.location.pathname + window.location.search);
+      base44.auth.redirectToLogin(globalThis.location.pathname + globalThis.location.search);
     } catch {
       setLoading(false);
     }
