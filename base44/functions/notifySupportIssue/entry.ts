@@ -6,6 +6,8 @@ Deno.serve(async (req) => {
         const user = await base44.auth.me();
 
         const { issue_type, description, user_name, user_email } = await req.json();
+        const reporter_name = user_name || user?.full_name || 'Desconocido';
+        const reporter_email = user_email || user?.email || 'No disponible';
 
         const subjectMap = {
             bug: '🐛 Bug reportado por usuario',
@@ -24,11 +26,11 @@ Deno.serve(async (req) => {
   <table style="width:100%; border-collapse:collapse; margin-top:16px;">
     <tr>
       <td style="padding:8px; font-weight:bold; color:#64748b;">Usuario:</td>
-      <td style="padding:8px;">${user_name || 'Desconocido'}</td>
+      <td style="padding:8px;">${reporter_name}</td>
     </tr>
     <tr style="background:#f8fafc;">
       <td style="padding:8px; font-weight:bold; color:#64748b;">Email:</td>
-      <td style="padding:8px;">${user_email || 'No disponible'}</td>
+      <td style="padding:8px;">${reporter_email}</td>
     </tr>
     <tr>
       <td style="padding:8px; font-weight:bold; color:#64748b;">Tipo:</td>
@@ -48,7 +50,8 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.integrations.Core.SendEmail({ to, subject, body, from_name });
 
         return Response.json({ success: true });
-    } catch (error) {
-        return Response.json({ error: error.message }, { status: 500 });
+    } catch (error: Error | unknown) {
+        const err = error instanceof Error ? error.message : String(error);
+        return Response.json({ error: err }, { status: 500 });
     }
 });
