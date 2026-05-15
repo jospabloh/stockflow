@@ -1,15 +1,15 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-05-15T22:42:22.835Z
+// Generado: 2026-05-15T22:43:40.217Z
 
-export const SNAPSHOT_VERSION = "2.13.5";
+export const SNAPSHOT_VERSION = "2.13.6";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-05-15";
 
-export const SNAPSHOT_GIT_LOG = "72380b8 Merge pull request #63 from jospabloh/automated/release-pr\n97ea8d9 chore: release and update documentation\nc2f3bdf Merge pull request #62 from jospabloh/automated/release-pr\n43127cf chore: release and update documentation\n91c755b Merge pull request #61 from jospabloh/automated/release-pr\nf66af74 chore: release and update documentation\n6ba7178 Merge pull request #60 from jospabloh/automated/release-pr\nfeab8a2 chore: release and update documentation\naeac27e feat: setup superadmin observability and auto-release github action\n61fb7c3 Merge pull request #59 from jospabloh/codex/verify-last-failed-deployments\n761c4af Fix duplicate unit-price declarations breaking Vite build\n9abfc46 Merge pull request #58 from jospabloh/codex/fix-display-unit-price-for-absent-vat-rate\n894d3b7 Merge branch 'main' into codex/fix-display-unit-price-for-absent-vat-rate\nf4264d5 Resolve PDF unit-price conflict with shared helper\nacc2248 Merge pull request #57 from jospabloh/codex/update-ui-to-display-prices-without-tax\n2ae1ddd Merge branch 'main' into codex/update-ui-to-display-prices-without-tax\nccd257a Merge pull request #56 from jospabloh/codex/add-utility-function-for-display-unit-price\n725fd33 Merge branch 'main' into codex/add-utility-function-for-display-unit-price\nefbcca6 Merge pull request #55 from jospabloh/codex/update-display-unit-price-calculation\n0e2eed6 Merge pull request #54 from jospabloh/codex/calculate-display-unit-price-in-quotationpreviewdialog\nc266118 Generalize net unit price display for any non-zero tax rate\n5e3be3b Unify display unit price VAT rule for quotation UI and PDF\nd1604e9 Adjust PDF unit price display for taxable items\nc7c374e Adjust quotation preview unit price display to net value\na2fdcca Merge pull request #53 from jospabloh/codex/refactorizar-metodos-de-pago-en-quotations";
+export const SNAPSHOT_GIT_LOG = "31ada9e fix: prevent PR loop by checking git diff and bot author\nb9c85dd Merge pull request #64 from jospabloh/automated/release-pr\n9a7c752 chore: release and update documentation\n72380b8 Merge pull request #63 from jospabloh/automated/release-pr\n97ea8d9 chore: release and update documentation\nc2f3bdf Merge pull request #62 from jospabloh/automated/release-pr\n43127cf chore: release and update documentation\n91c755b Merge pull request #61 from jospabloh/automated/release-pr\nf66af74 chore: release and update documentation\n6ba7178 Merge pull request #60 from jospabloh/automated/release-pr\nfeab8a2 chore: release and update documentation\naeac27e feat: setup superadmin observability and auto-release github action\n61fb7c3 Merge pull request #59 from jospabloh/codex/verify-last-failed-deployments\n761c4af Fix duplicate unit-price declarations breaking Vite build\n9abfc46 Merge pull request #58 from jospabloh/codex/fix-display-unit-price-for-absent-vat-rate\n894d3b7 Merge branch 'main' into codex/fix-display-unit-price-for-absent-vat-rate\nf4264d5 Resolve PDF unit-price conflict with shared helper\nacc2248 Merge pull request #57 from jospabloh/codex/update-ui-to-display-prices-without-tax\n2ae1ddd Merge branch 'main' into codex/update-ui-to-display-prices-without-tax\nccd257a Merge pull request #56 from jospabloh/codex/add-utility-function-for-display-unit-price\n725fd33 Merge branch 'main' into codex/add-utility-function-for-display-unit-price\nefbcca6 Merge pull request #55 from jospabloh/codex/update-display-unit-price-calculation\n0e2eed6 Merge pull request #54 from jospabloh/codex/calculate-display-unit-price-in-quotationpreviewdialog\nc266118 Generalize net unit price display for any non-zero tax rate\n5e3be3b Unify display unit price VAT rule for quotation UI and PDF";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.13.5",
+  "Actualización a la versión 2.13.6",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -17,6 +17,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.13.6",
+    date: "2026-05-15",
+    changes: [
+    "Actualización a la versión 2.13.6"
+    ]
+  },
   {
     version: "2.13.5",
     date: "2026-05-15",
