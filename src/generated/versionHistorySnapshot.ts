@@ -1,15 +1,15 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-05-15T22:43:40.217Z
+// Generado: 2026-05-15T23:34:12.946Z
 
-export const SNAPSHOT_VERSION = "2.13.6";
+export const SNAPSHOT_VERSION = "2.13.7";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-05-15";
 
-export const SNAPSHOT_GIT_LOG = "31ada9e fix: prevent PR loop by checking git diff and bot author\nb9c85dd Merge pull request #64 from jospabloh/automated/release-pr\n9a7c752 chore: release and update documentation\n72380b8 Merge pull request #63 from jospabloh/automated/release-pr\n97ea8d9 chore: release and update documentation\nc2f3bdf Merge pull request #62 from jospabloh/automated/release-pr\n43127cf chore: release and update documentation\n91c755b Merge pull request #61 from jospabloh/automated/release-pr\nf66af74 chore: release and update documentation\n6ba7178 Merge pull request #60 from jospabloh/automated/release-pr\nfeab8a2 chore: release and update documentation\naeac27e feat: setup superadmin observability and auto-release github action\n61fb7c3 Merge pull request #59 from jospabloh/codex/verify-last-failed-deployments\n761c4af Fix duplicate unit-price declarations breaking Vite build\n9abfc46 Merge pull request #58 from jospabloh/codex/fix-display-unit-price-for-absent-vat-rate\n894d3b7 Merge branch 'main' into codex/fix-display-unit-price-for-absent-vat-rate\nf4264d5 Resolve PDF unit-price conflict with shared helper\nacc2248 Merge pull request #57 from jospabloh/codex/update-ui-to-display-prices-without-tax\n2ae1ddd Merge branch 'main' into codex/update-ui-to-display-prices-without-tax\nccd257a Merge pull request #56 from jospabloh/codex/add-utility-function-for-display-unit-price\n725fd33 Merge branch 'main' into codex/add-utility-function-for-display-unit-price\nefbcca6 Merge pull request #55 from jospabloh/codex/update-display-unit-price-calculation\n0e2eed6 Merge pull request #54 from jospabloh/codex/calculate-display-unit-price-in-quotationpreviewdialog\nc266118 Generalize net unit price display for any non-zero tax rate\n5e3be3b Unify display unit price VAT rule for quotation UI and PDF";
+export const SNAPSHOT_GIT_LOG = "c10b055 fix: SuperAdminLogs - wrong base44 import path + add to sidebar navigation\n39ae8d7 Merge pull request #75 from jospabloh/codex/fix-email-logs-display-issue-8qc5n3\n104b9f5 Merge branch 'main' into codex/fix-email-logs-display-issue-8qc5n3\n58bd9f2 Harden admin route bypass for BusinessSetup redirect\n8cbd85b Merge pull request #74 from jospabloh/codex/verifica-errores-resueltos-hoy\nc460709 fix: resolve active lint errors and align permission keys\nc0dd86e Merge pull request #73 from jospabloh/codex/fix-email-logs-display-issue\n6ce540e Fix super admin logs redirect without business context\n1a08512 Merge pull request #72 from jospabloh/codex/fix-disappearing-admin-logs-page\n1ef6755 fix: support lowercase superadmin logs route\n2882120 Merge pull request #71 from jospabloh/codex/fix-changelog-version-population-issue\n9a5e0d4 fix: support both Anthropic changelog env var names\nbcb9590 Merge pull request #70 from jospabloh/codex/fix-build-error-for-base44-import-r8fmhq\n71c68df Add legacy base44 import shim for build compatibility\ndc47dcc Merge pull request #69 from jospabloh/codex/locate-email-sending-section\n143d002 feat(menu): add owner-only System link to SuperAdmin logs\n82cc8a8 Merge pull request #68 from jospabloh/codex/fix-build-error-for-missing-base44-file\nb7ef533 Merge branch 'main' into codex/fix-build-error-for-missing-base44-file\n8081a90 Add explicit button type in SuperAdminLogs refresh action\n7192d43 Fix SuperAdminLogs base44 client import path\n50ff0f0 Merge pull request #66 from jospabloh/codex/fix-build-error-for-base44-import\n3d4eff6 Add explicit button type in SuperAdminLogs\nd8e4d1a Fix SuperAdminLogs base44 client import path\n7d4822d Merge pull request #65 from jospabloh/automated/release-pr\n028b398 chore: release and update documentation";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.13.6",
+  "Actualización a la versión 2.13.7",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -17,6 +17,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.13.7",
+    date: "2026-05-15",
+    changes: [
+    "Actualización a la versión 2.13.7"
+    ]
+  },
   {
     version: "2.13.6",
     date: "2026-05-15",
