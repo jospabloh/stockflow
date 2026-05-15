@@ -128,7 +128,7 @@ export default function PettyCash() {
           <Button onClick={() => openForm("expense")} className="bg-rose-600 hover:bg-rose-700" {...createButtonProps('add')}>
             <Minus className="h-4 w-4 mr-1" /> Egreso
           </Button>
-          {isAdmin && can('PettyCash', 'modificar') && (
+          {isAdmin && can('Caja Chica', 'edit_amount') && (
             <Button onClick={() => openForm("adjustment")} variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50" {...createButtonProps('add')}>
               <SlidersHorizontal className="h-4 w-4 mr-1" /> Ajuste
             </Button>

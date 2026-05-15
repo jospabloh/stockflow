@@ -52,7 +52,7 @@ export const PERMISSION_REGISTRY = {
       { id: "cost_price", label: "Ver costo", category: "report", icon: "💲", sensitive: true, description: "Ver precio de costo en listados (confidencial)" },
     ]
   },
-  Categorías: {
+  Categorias: {
     label: "Categorías",
     actions: [
       { id: "view", label: "Ver lista", category: "visual", icon: "👁️", description: "Acceso a la lista de categorías de productos" },
@@ -187,7 +187,7 @@ export const PERMISSION_REGISTRY = {
       { id: "export", label: "Exportar datos", category: "report", icon: "📥", description: "Exportar reportes y datos en Excel/CSV" },
     ]
   },
-  Configuración: {
+  Configuracion: {
     label: "Configuración",
     actions: [
       { id: "view", label: "Ver configuración", category: "visual", icon: "⚙️", description: "Acceso a configuración general del sistema" },
@@ -252,18 +252,18 @@ export function getDefaultsForRole(role) {
             'Pagos a Proveedores:edit_notes',
             'Pagos a Proveedores:affect_petty_cash',
             'Pagos a Proveedores:delete',
-            'Configuración:view',
-            'Configuración:edit_company_name',
-            'Configuración:edit_company_rfc',
-            'Configuración:edit_company_contact',
-            'Configuración:edit_logo',
-            'Configuración:edit_colors',
-            'Configuración:edit_tax_rate',
-            'Configuración:edit_currency',
-            'Configuración:edit_quotation_footer',
-            'Configuración:import_products',
-            'Configuración:manage_team',
-            'Configuración:delete_account',
+            'Configuracion:view',
+            'Configuracion:edit_company_name',
+            'Configuracion:edit_company_rfc',
+            'Configuracion:edit_company_contact',
+            'Configuracion:edit_logo',
+            'Configuracion:edit_colors',
+            'Configuracion:edit_tax_rate',
+            'Configuracion:edit_currency',
+            'Configuracion:edit_quotation_footer',
+            'Configuracion:import_products',
+            'Configuracion:manage_team',
+            'Configuracion:delete_account',
             'Clientes:edit_force_wholesale',
             'Clientes:edit_force_purchase',
           ];
