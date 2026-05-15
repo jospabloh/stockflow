@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { FileDown, Truck, CheckCircle2, DollarSign, ShoppingCart, Package } from "lucide-react";
 import { generateQuotationPDF } from "./QuotationPDF";
-import { calculateLineVAT } from "@/lib/vatCalculator";
+import { calculateLineVAT, getDisplayUnitPrice } from "@/lib/vatCalculator";
 import CreateFromOnDemandModal from "./CreateFromOnDemandModal";
 import QuotationPaymentsSection from "./QuotationPaymentsSection";
 
