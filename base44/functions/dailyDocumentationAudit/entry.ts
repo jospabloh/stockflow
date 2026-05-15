@@ -6,41 +6,37 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_DOCS_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const SNAPSHOT_VERSION = "2.13.0";
-const SNAPSHOT_RELEASE_DATE = "2026-05-14";
+const SNAPSHOT_VERSION = "2.13.1";
+const SNAPSHOT_RELEASE_DATE = "2026-05-15";
 const SNAPSHOT_GIT_LOG = `
-4b94c9e Update base44 packages
-a8b8493 Update base44 packages
-76f17f8 File changes
-79308ce chore: add base44 CLI config files
-49bf5c7 Update base44 packages
-3080ae0 Merge pull request #51 from jospabloh/claude/add-family-id-creator-email-W5D90
-9abb358 Mostrar ID del negocio y correo del creador en panel de Licencias
-8e1483b File changes
-93071a9 File changes
-5ccf920 File changes
-2e23157 File changes
-14c4f54 File changes
-bbf2f64 File changes
-b447ef0 File changes
-3c108ef File changes
-6baa123 File changes
-aeed444 Gestión de pagos implementada
-1114423 File changes
-086cfef File changes
-d5cef20 File changes
-262c4db File changes
-68aa765 File changes
-451be9d File changes
-4e7bfd4 File changes
-3356a4d File changes
+aeac27e feat: setup superadmin observability and auto-release github action
+61fb7c3 Merge pull request #59 from jospabloh/codex/verify-last-failed-deployments
+761c4af Fix duplicate unit-price declarations breaking Vite build
+9abfc46 Merge pull request #58 from jospabloh/codex/fix-display-unit-price-for-absent-vat-rate
+894d3b7 Merge branch 'main' into codex/fix-display-unit-price-for-absent-vat-rate
+f4264d5 Resolve PDF unit-price conflict with shared helper
+acc2248 Merge pull request #57 from jospabloh/codex/update-ui-to-display-prices-without-tax
+2ae1ddd Merge branch 'main' into codex/update-ui-to-display-prices-without-tax
+ccd257a Merge pull request #56 from jospabloh/codex/add-utility-function-for-display-unit-price
+725fd33 Merge branch 'main' into codex/add-utility-function-for-display-unit-price
+efbcca6 Merge pull request #55 from jospabloh/codex/update-display-unit-price-calculation
+0e2eed6 Merge pull request #54 from jospabloh/codex/calculate-display-unit-price-in-quotationpreviewdialog
+c266118 Generalize net unit price display for any non-zero tax rate
+5e3be3b Unify display unit price VAT rule for quotation UI and PDF
+d1604e9 Adjust PDF unit price display for taxable items
+c7c374e Adjust quotation preview unit price display to net value
+a2fdcca Merge pull request #53 from jospabloh/codex/refactorizar-metodos-de-pago-en-quotations
+7f05edf Skip Deno test step when no test modules exist
+e066b00 Remove unsupported --allow-none from Deno test workflows
+c4e4695 Fix remaining Deno lint blockers (window/process/button type)
+a735ba0 Fix recurring Deno lint failures in app/navigation/help configs
+ab0e7b1 Fix additional Deno lint findings for buttons and window usage
+9046fc1 Replace remaining window.innerHeight references in chat component
+a78104d Validate quotation payment methods against active catalog
+53b65e5 Temporarily relax Deno lint rules to unblock CI
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "🔐 Permisos granulares: política oficial de defaults — Admin inicia con acceso total (true) en todos los módulos, visuales y acciones",
-  "👥 Member/Almacenista mantiene acceso operativo; permisos sensibles o nuevos no se elevan automáticamente",
-  "🆕 Nuevo módulo, visual o acción: default para member en false hasta otorgamiento explícito por admin",
-  "🧩 Matriz de permisos alineada a acciones estándar: view, add, modify, delete",
-  "📚 Manual de permisos actualizado con cobertura completa de módulos activos y reglas de gobernanza",
+  "Actualización a la versión 2.13.1",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
