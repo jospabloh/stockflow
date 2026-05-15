@@ -209,6 +209,9 @@ export const PERMISSION_REGISTRY = {
 export const ALL_PERMISSION_KEYS = Object.entries(PERMISSION_REGISTRY)
   .flatMap(([module, def]) => def.actions.map(a => `${module}:${a.id}`));
 
+// Compatibilidad con revisiones previas sin acento en el nombre del módulo.
+PERMISSION_REGISTRY.Categorias = PERMISSION_REGISTRY["Categorías"];
+
 export function getDefaultsForRole(role) {
   if (role === 'admin') {
     return ALL_PERMISSION_KEYS.reduce((acc, key) => {
