@@ -117,9 +117,9 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
             </div>
           </div>
 
-          {/* Info note: Precios incluyen IVA */}
+          {/* Info note: Unitario neto + IVA desglosado */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-[11px] text-blue-700"><strong>ℹ️ Nota:</strong> Los precios mostrados para productos con IVA ya incluyen el impuesto. Ver desglose en la columna de totales.</p>
+            <p className="text-[11px] text-blue-700"><strong>ℹ️ Nota:</strong> El precio unitario se muestra neto y el IVA se desglosa en su columna.</p>
           </div>
 
           {/* Items table with IVA breakdown */}
@@ -140,6 +140,7 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                 {(q.items || []).map((item, i) => {
                   const { vat: ivaAmount } = calculateLineVAT(item.total || 0, item.tax_rate);
                   const hasIVA = (item.tax_rate ?? 16) === 16;
+                  const displayUnitPrice = hasIVA ? (item.unit_price || 0) / 1.16 : item.unit_price || 0;
                   const totalPrice = item.total || 0;
                   const displayUnitPrice = getDisplayUnitPrice(item.unit_price, item.tax_rate);
                   const isPendingOnDemand = item.is_on_demand && item.on_demand_status === "pending";
