@@ -77,7 +77,7 @@ const navItems = [
     submenu: [
       { name: "Licencias", icon: Shield, page: "LicenseAdmin" },
       { name: "Reglas por Tenant", icon: Shield, page: "TenantRulesAdmin" },
-      { name: "Logs de Correos", icon: Shield, page: "SuperAdminLogs", ownerEmailOnly: "h.josepablo@gmail.com" },
+      { name: "Logs de Correos", icon: Shield, page: "SuperAdminLogs" },
     ]
   },
   { name: "Centro de Ayuda", icon: HelpCircle, page: "HelpCenter" },
