@@ -6,9 +6,11 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_DOCS_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const SNAPSHOT_VERSION = "2.13.1";
+const SNAPSHOT_VERSION = "2.13.2";
 const SNAPSHOT_RELEASE_DATE = "2026-05-15";
 const SNAPSHOT_GIT_LOG = `
+6ba7178 Merge pull request #60 from jospabloh/automated/release-pr
+feab8a2 chore: release and update documentation
 aeac27e feat: setup superadmin observability and auto-release github action
 61fb7c3 Merge pull request #59 from jospabloh/codex/verify-last-failed-deployments
 761c4af Fix duplicate unit-price declarations breaking Vite build
@@ -32,11 +34,9 @@ c4e4695 Fix remaining Deno lint blockers (window/process/button type)
 a735ba0 Fix recurring Deno lint failures in app/navigation/help configs
 ab0e7b1 Fix additional Deno lint findings for buttons and window usage
 9046fc1 Replace remaining window.innerHeight references in chat component
-a78104d Validate quotation payment methods against active catalog
-53b65e5 Temporarily relax Deno lint rules to unblock CI
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.13.1",
+  "Actualización a la versión 2.13.2",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

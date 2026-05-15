@@ -1,15 +1,15 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-05-15T22:35:02.206Z
+// Generado: 2026-05-15T22:36:15.377Z
 
-export const SNAPSHOT_VERSION = "2.13.1";
+export const SNAPSHOT_VERSION = "2.13.2";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-05-15";
 
-export const SNAPSHOT_GIT_LOG = "aeac27e feat: setup superadmin observability and auto-release github action\n61fb7c3 Merge pull request #59 from jospabloh/codex/verify-last-failed-deployments\n761c4af Fix duplicate unit-price declarations breaking Vite build\n9abfc46 Merge pull request #58 from jospabloh/codex/fix-display-unit-price-for-absent-vat-rate\n894d3b7 Merge branch 'main' into codex/fix-display-unit-price-for-absent-vat-rate\nf4264d5 Resolve PDF unit-price conflict with shared helper\nacc2248 Merge pull request #57 from jospabloh/codex/update-ui-to-display-prices-without-tax\n2ae1ddd Merge branch 'main' into codex/update-ui-to-display-prices-without-tax\nccd257a Merge pull request #56 from jospabloh/codex/add-utility-function-for-display-unit-price\n725fd33 Merge branch 'main' into codex/add-utility-function-for-display-unit-price\nefbcca6 Merge pull request #55 from jospabloh/codex/update-display-unit-price-calculation\n0e2eed6 Merge pull request #54 from jospabloh/codex/calculate-display-unit-price-in-quotationpreviewdialog\nc266118 Generalize net unit price display for any non-zero tax rate\n5e3be3b Unify display unit price VAT rule for quotation UI and PDF\nd1604e9 Adjust PDF unit price display for taxable items\nc7c374e Adjust quotation preview unit price display to net value\na2fdcca Merge pull request #53 from jospabloh/codex/refactorizar-metodos-de-pago-en-quotations\n7f05edf Skip Deno test step when no test modules exist\ne066b00 Remove unsupported --allow-none from Deno test workflows\nc4e4695 Fix remaining Deno lint blockers (window/process/button type)\na735ba0 Fix recurring Deno lint failures in app/navigation/help configs\nab0e7b1 Fix additional Deno lint findings for buttons and window usage\n9046fc1 Replace remaining window.innerHeight references in chat component\na78104d Validate quotation payment methods against active catalog\n53b65e5 Temporarily relax Deno lint rules to unblock CI";
+export const SNAPSHOT_GIT_LOG = "6ba7178 Merge pull request #60 from jospabloh/automated/release-pr\nfeab8a2 chore: release and update documentation\naeac27e feat: setup superadmin observability and auto-release github action\n61fb7c3 Merge pull request #59 from jospabloh/codex/verify-last-failed-deployments\n761c4af Fix duplicate unit-price declarations breaking Vite build\n9abfc46 Merge pull request #58 from jospabloh/codex/fix-display-unit-price-for-absent-vat-rate\n894d3b7 Merge branch 'main' into codex/fix-display-unit-price-for-absent-vat-rate\nf4264d5 Resolve PDF unit-price conflict with shared helper\nacc2248 Merge pull request #57 from jospabloh/codex/update-ui-to-display-prices-without-tax\n2ae1ddd Merge branch 'main' into codex/update-ui-to-display-prices-without-tax\nccd257a Merge pull request #56 from jospabloh/codex/add-utility-function-for-display-unit-price\n725fd33 Merge branch 'main' into codex/add-utility-function-for-display-unit-price\nefbcca6 Merge pull request #55 from jospabloh/codex/update-display-unit-price-calculation\n0e2eed6 Merge pull request #54 from jospabloh/codex/calculate-display-unit-price-in-quotationpreviewdialog\nc266118 Generalize net unit price display for any non-zero tax rate\n5e3be3b Unify display unit price VAT rule for quotation UI and PDF\nd1604e9 Adjust PDF unit price display for taxable items\nc7c374e Adjust quotation preview unit price display to net value\na2fdcca Merge pull request #53 from jospabloh/codex/refactorizar-metodos-de-pago-en-quotations\n7f05edf Skip Deno test step when no test modules exist\ne066b00 Remove unsupported --allow-none from Deno test workflows\nc4e4695 Fix remaining Deno lint blockers (window/process/button type)\na735ba0 Fix recurring Deno lint failures in app/navigation/help configs\nab0e7b1 Fix additional Deno lint findings for buttons and window usage\n9046fc1 Replace remaining window.innerHeight references in chat component";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.13.1",
+  "Actualización a la versión 2.13.2",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -17,6 +17,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.13.2",
+    date: "2026-05-15",
+    changes: [
+    "Actualización a la versión 2.13.2"
+    ]
+  },
   {
     version: "2.13.1",
     date: "2026-05-15",
