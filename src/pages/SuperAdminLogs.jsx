@@ -58,7 +58,7 @@ export default function SuperAdminLogs() {
           </h1>
           <p className="text-slate-500 mt-1">Logs de automatizaciones, correos y tareas en segundo plano.</p>
         </div>
-        <button 
+        <button type="button"
           onClick={fetchLogs} 
           disabled={loading}
           className="flex items-center px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-indigo-600 transition-colors disabled:opacity-50"
