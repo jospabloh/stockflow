@@ -14,7 +14,8 @@
     "permissions:audit": "node scripts/audit-permissions.mjs",
     "generate:permission-manifests": "node scripts/generatePermissionManifests.mjs",
     "generate:version-snapshot": "node scripts/generateVersionHistorySnapshot.mjs",
-    "generate:all": "npm run generate:permission-manifests && npm run generate:version-snapshot"
+    "generate:all": "npm run generate:permission-manifests && npm run generate:version-snapshot",
+    "release": "node scripts/publish-release.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.28",

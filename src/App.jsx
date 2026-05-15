@@ -18,6 +18,8 @@ import { PermissionProvider } from '@/lib/PermissionContext';
 
 import BusinessSetup from './pages/BusinessSetup';
 
+const SuperAdminLogs = lazy(() => import('./pages/SuperAdminLogs'));
+
 const HelpCenter = lazy(() => import('./pages/HelpCenter'));
 const About = lazy(() => import('./pages/About'));
 const ProductNew = lazy(() => import('./pages/Products/ProductNew'));
@@ -109,6 +111,7 @@ const AuthenticatedApp = () => {
       <Route path="/LicenseAdmin" element={<LayoutWrapper currentPageName="LicenseAdmin"><Suspense fallback={<PageLoader />}><LicenseAdmin /></Suspense></LayoutWrapper>} />
       <Route path="/TenantRulesAdmin" element={<LayoutWrapper currentPageName="TenantRulesAdmin"><Suspense fallback={<PageLoader />}><TenantRulesAdmin /></Suspense></LayoutWrapper>} />
       <Route path="/PermissionAdmin" element={<LayoutWrapper currentPageName="PermissionAdmin"><Suspense fallback={<PageLoader />}><PermissionAdmin /></Suspense></LayoutWrapper>} />
+      <Route path="/SuperAdminLogs" element={<LayoutWrapper currentPageName="SuperAdminLogs"><Suspense fallback={<PageLoader />}><SuperAdminLogs /></Suspense></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </PermissionProvider>
