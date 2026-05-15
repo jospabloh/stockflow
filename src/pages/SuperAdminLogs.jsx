@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/AuthContext';
+import { useLicense } from '@/lib/LicenseContext';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,23 +9,18 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export default function SuperAdminLogs() {
-  const { user } = useAuth();
+  const { isPlatformAdmin } = useLicense();
   const [emails, setEmails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const isSuperAdmin = user?.email === 'h.josepablo@gmail.com';
-
   const fetchLogs = async () => {
-    if (!isSuperAdmin) return;
+    if (!isPlatformAdmin) return;
     setLoading(true);
     setError(null);
     try {
-      // Fetch recent emails
-      const emailsRes = await base44.entities.EmailNotification.list();
-      // Sort by descending date
-      const sortedEmails = emailsRes.sort((a, b) => new Date(b._created_at) - new Date(a._created_at));
-      setEmails(sortedEmails.slice(0, 100)); // Last 100
+      const emailsRes = await base44.entities.EmailNotification.list("-created_date", 100);
+      setEmails(emailsRes);
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -36,9 +31,9 @@ export default function SuperAdminLogs() {
 
   useEffect(() => {
     fetchLogs();
-  }, [isSuperAdmin]);
+  }, [isPlatformAdmin]);
 
-  if (!isSuperAdmin) {
+  if (!isPlatformAdmin) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh]">
         <ShieldAlert className="w-16 h-16 text-red-500 mb-4" />
@@ -106,7 +101,10 @@ export default function SuperAdminLogs() {
                   emails.map(email => (
                     <TableRow key={email.id} className="group">
                       <TableCell className="text-slate-600 whitespace-nowrap">
-                        {format(new Date(email._created_at), "dd MMM yyyy, HH:mm", { locale: es })}
+                        {(() => {
+                          const d = email.created_date ? new Date(email.created_date) : null;
+                          return d && !isNaN(d) ? format(d, "dd MMM yyyy, HH:mm", { locale: es }) : "—";
+                        })()}
                       </TableCell>
                       <TableCell className="font-medium text-slate-800">{email.recipient_email}</TableCell>
                       <TableCell>
