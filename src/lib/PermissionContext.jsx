@@ -7,12 +7,23 @@ const PermissionContext = createContext(null);
 
 const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
 
+function getModuleAliases(moduleName) {
+  if (moduleName === 'Categorías') return ['Categorías', 'Categorias'];
+  if (moduleName === 'Categorias') return ['Categorias', 'Categorías'];
+  return [moduleName];
+}
+
 function legacyCheck(artifact, action, role) {
   const roleDefaults = LEGACY_DEFAULTS[role];
   if (!roleDefaults) return false;
-  const artifactDefaults = roleDefaults[artifact];
-  if (!artifactDefaults) return false;
-  return artifactDefaults[action] === true;
+
+  const aliases = getModuleAliases(artifact);
+  for (const alias of aliases) {
+    const artifactDefaults = roleDefaults[alias];
+    if (artifactDefaults && artifactDefaults[action] === true) return true;
+  }
+
+  return false;
 }
 
 export function PermissionProvider({ children }) {
@@ -61,14 +72,20 @@ export function PermissionProvider({ children }) {
     if (!roleProfile) return legacyCheck(moduleName, action, userRole);
 
     // Nuevo formato: claves como "Productos:view" o "Productos:create"
-    const newFormatKey = `${moduleName}:${action}`;
-    const newFormatPerm = roleProfile[newFormatKey];
-    if (newFormatPerm === true) return true;
-    if (newFormatPerm === false) return false;
+    const moduleAliases = getModuleAliases(moduleName);
+    for (const moduleAlias of moduleAliases) {
+      const newFormatKey = `${moduleAlias}:${action}`;
+      const newFormatPerm = roleProfile[newFormatKey];
+      if (newFormatPerm === true) return true;
+      if (newFormatPerm === false) return false;
+    }
 
     // Formato legacy: el perfil guardado en BD usa nombre de página en inglés
     // y acciones en español (ver, escribir, modificar, eliminar)
-    const legacyRoleObj = roleProfile[pageName] || roleProfile[moduleName] || {};
+    const legacyRoleObj = moduleAliases.reduce((acc, moduleAlias) => {
+      if (Object.keys(acc).length > 0) return acc;
+      return roleProfile[moduleAlias] || {};
+    }, roleProfile[pageName] || {});
 
     // Mapa de acciones nuevas -> acciones legacy
     const ACTION_MAP = {
