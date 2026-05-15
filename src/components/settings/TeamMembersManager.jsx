@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ShieldCheck, User, RefreshCw, ChevronDown } from "lucide-react";
+import { ShieldCheck, RefreshCw, ChevronDown } from "lucide-react";
 
 const ROLE_LABELS = {
   admin: { label: "Admin", color: "bg-indigo-100 text-indigo-700 border-indigo-200" },
