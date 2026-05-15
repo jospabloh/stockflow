@@ -112,6 +112,7 @@ const AuthenticatedApp = () => {
       <Route path="/TenantRulesAdmin" element={<LayoutWrapper currentPageName="TenantRulesAdmin"><Suspense fallback={<PageLoader />}><TenantRulesAdmin /></Suspense></LayoutWrapper>} />
       <Route path="/PermissionAdmin" element={<LayoutWrapper currentPageName="PermissionAdmin"><Suspense fallback={<PageLoader />}><PermissionAdmin /></Suspense></LayoutWrapper>} />
       <Route path="/SuperAdminLogs" element={<LayoutWrapper currentPageName="SuperAdminLogs"><Suspense fallback={<PageLoader />}><SuperAdminLogs /></Suspense></LayoutWrapper>} />
+      <Route path="/superadminlogs" element={<LayoutWrapper currentPageName="SuperAdminLogs"><Suspense fallback={<PageLoader />}><SuperAdminLogs /></Suspense></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </PermissionProvider>
