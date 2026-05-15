@@ -1,3 +1,4 @@
+import { getDisplayUnitPrice } from "@/lib/vatCalculator";
 import { jsPDF } from "jspdf";
 
 function fmt(n) {
@@ -205,6 +206,9 @@ export async function generateQuotationPDF(quotation, settings, client) {
     doc.setTextColor(...((effectiveTaxRate > 0) ? [180, 120, 0] : mutedText));
     doc.text(ivaLabel, cols.iva, y + 5.5);
     doc.setTextColor(...darkText);
+    const unitPriceRaw = item.unit_price || 0;
+    const hasTax = taxRate > 0;
+    const displayUnitPrice = hasTax ? (unitPriceRaw / (1 + taxRate / 100)) : unitPriceRaw;
     doc.text(`$${fmt(displayUnitPrice)}`, cols.price, y + 5.5);
     doc.text(`$${fmt(item.total)}`, cols.total, y + 5.5, { align: "right" });
     y += rowH;

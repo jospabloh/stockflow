@@ -29,6 +29,15 @@ export function calculateLineVAT(lineTotal, taxRate) {
   return { netBase, vat };
 }
 
+
+export function getDisplayUnitPrice(unitPrice, taxRate) {
+  if (taxRate === 16) {
+    return (unitPrice || 0) / 1.16;
+  }
+
+  return unitPrice || 0;
+}
+
 /**
  * Calculate totals with reconciliation
  * Adjusts the last taxable line VAT if needed to ensure:
