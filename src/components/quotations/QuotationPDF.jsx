@@ -1,3 +1,4 @@
+import { getDisplayUnitPrice } from "@/lib/vatCalculator";
 import { jsPDF } from "jspdf";
 
 function fmt(n) {
@@ -201,6 +202,7 @@ export async function generateQuotationPDF(quotation, settings, client) {
     doc.setTextColor(...((item.tax_rate > 0) ? [180, 120, 0] : mutedText));
     doc.text(ivaLabel, cols.iva, y + 5.5);
     doc.setTextColor(...darkText);
+    const displayUnitPrice = getDisplayUnitPrice(item.unit_price, item.tax_rate);
     doc.text(`$${fmt(displayUnitPrice)}`, cols.price, y + 5.5);
     doc.text(`$${fmt(item.total)}`, cols.total, y + 5.5, { align: "right" });
     y += rowH;

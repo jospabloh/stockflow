@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FileDown, Truck, CheckCircle2, DollarSign, ShoppingCart, Package } from "lucide-react";
 import { generateQuotationPDF } from "./QuotationPDF";
-import { calculateLineVAT } from "@/lib/vatCalculator";
+import { calculateLineVAT, getDisplayUnitPrice } from "@/lib/vatCalculator";
 import CreateFromOnDemandModal from "./CreateFromOnDemandModal";
 import QuotationPaymentsSection from "./QuotationPaymentsSection";
 
@@ -142,6 +142,7 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                   const hasIVA = (item.tax_rate ?? 16) === 16;
                   const displayUnitPrice = hasIVA ? (item.unit_price || 0) / 1.16 : item.unit_price || 0;
                   const totalPrice = item.total || 0;
+                  const displayUnitPrice = getDisplayUnitPrice(item.unit_price, item.tax_rate);
                   const isPendingOnDemand = item.is_on_demand && item.on_demand_status === "pending";
                   const isCreatedOnDemand = item.is_on_demand && item.on_demand_status === "product_created";
 
