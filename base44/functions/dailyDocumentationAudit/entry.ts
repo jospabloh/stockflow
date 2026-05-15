@@ -6,9 +6,18 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_DOCS_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const SNAPSHOT_VERSION = "2.13.2";
+const SNAPSHOT_VERSION = "2.13.6";
 const SNAPSHOT_RELEASE_DATE = "2026-05-15";
 const SNAPSHOT_GIT_LOG = `
+31ada9e fix: prevent PR loop by checking git diff and bot author
+b9c85dd Merge pull request #64 from jospabloh/automated/release-pr
+9a7c752 chore: release and update documentation
+72380b8 Merge pull request #63 from jospabloh/automated/release-pr
+97ea8d9 chore: release and update documentation
+c2f3bdf Merge pull request #62 from jospabloh/automated/release-pr
+43127cf chore: release and update documentation
+91c755b Merge pull request #61 from jospabloh/automated/release-pr
+f66af74 chore: release and update documentation
 6ba7178 Merge pull request #60 from jospabloh/automated/release-pr
 feab8a2 chore: release and update documentation
 aeac27e feat: setup superadmin observability and auto-release github action
@@ -25,18 +34,9 @@ efbcca6 Merge pull request #55 from jospabloh/codex/update-display-unit-price-ca
 0e2eed6 Merge pull request #54 from jospabloh/codex/calculate-display-unit-price-in-quotationpreviewdialog
 c266118 Generalize net unit price display for any non-zero tax rate
 5e3be3b Unify display unit price VAT rule for quotation UI and PDF
-d1604e9 Adjust PDF unit price display for taxable items
-c7c374e Adjust quotation preview unit price display to net value
-a2fdcca Merge pull request #53 from jospabloh/codex/refactorizar-metodos-de-pago-en-quotations
-7f05edf Skip Deno test step when no test modules exist
-e066b00 Remove unsupported --allow-none from Deno test workflows
-c4e4695 Fix remaining Deno lint blockers (window/process/button type)
-a735ba0 Fix recurring Deno lint failures in app/navigation/help configs
-ab0e7b1 Fix additional Deno lint findings for buttons and window usage
-9046fc1 Replace remaining window.innerHeight references in chat component
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.13.2",
+  "Actualización a la versión 2.13.6",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

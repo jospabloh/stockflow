@@ -66,14 +66,26 @@ Responde ÚNICAMENTE con un array JSON de strings, por ejemplo:
 async function main() {
   console.log('== 🚀 StockFlow Release Publisher ==\n');
 
-  // 1. Obtener commits recientes
+  // 1. Obtener commits recientes desde la última actualización de appConfig.js
   console.log('📦 Obteniendo commits recientes...');
   let gitLog = '';
   try {
-    gitLog = execSync('git log --oneline -10').toString().trim();
+    // Busca el último commit que modificó appConfig.js (el último release)
+    const lastReleaseCommit = execSync('git log -1 --format="%H" -- src/lib/appConfig.js').toString().trim();
+    if (lastReleaseCommit) {
+      gitLog = execSync(`git log ${lastReleaseCommit}..HEAD --oneline`).toString().trim();
+    } else {
+      gitLog = execSync('git log --oneline -10').toString().trim();
+    }
+    
+    if (!gitLog) {
+      console.log('✅ No hay commits nuevos desde el último release. Cancelando silenciosamente.');
+      process.exit(0);
+    }
     console.log(gitLog);
-  } catch {
-    gitLog = 'Sin commits recientes';
+  } catch (e) {
+    console.log('⚠️ Error obteniendo el historial de git, usando últimos 10 commits.');
+    gitLog = execSync('git log --oneline -10').toString().trim();
   }
 
   // 2. Leer versión actual
