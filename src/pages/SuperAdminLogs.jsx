@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import { base44 } from '@/lib/base44';
+import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -58,7 +58,7 @@ export default function SuperAdminLogs() {
           </h1>
           <p className="text-slate-500 mt-1">Logs de automatizaciones, correos y tareas en segundo plano.</p>
         </div>
-        <button 
+        <button type="button"
           onClick={fetchLogs} 
           disabled={loading}
           className="flex items-center px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-indigo-600 transition-colors disabled:opacity-50"
