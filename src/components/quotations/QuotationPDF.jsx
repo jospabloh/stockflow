@@ -15,6 +15,11 @@ function hexToRgb(hex) {
   ];
 }
 
+function getDisplayUnitPrice(unitPrice, taxRate) {
+  const effectiveTaxRate = taxRate ?? 16;
+  return effectiveTaxRate === 16 ? (unitPrice || 0) / 1.16 : (unitPrice || 0);
+}
+
 // Determina si el color es oscuro para saber si usar texto blanco o negro
 function isDark(rgb) {
   const [r, g, b] = rgb;
@@ -195,9 +200,10 @@ export async function generateQuotationPDF(quotation, settings, client) {
     doc.text(nameClipped, cols.name, y + 5.5);
     doc.text(String(item.quantity || 0), cols.qty, y + 5.5);
     // IVA label
-    const taxRate = Number(item.tax_rate ?? 0);
-    const ivaLabel = taxRate > 0 ? `${taxRate}%` : "Exento";
-    doc.setTextColor(...(taxRate > 0 ? [180, 120, 0] : mutedText));
+    const effectiveTaxRate = item.tax_rate ?? 16;
+    const ivaLabel = (effectiveTaxRate > 0) ? "16%" : "Exento";
+    const displayUnitPrice = getDisplayUnitPrice(item.unit_price, item.tax_rate);
+    doc.setTextColor(...((effectiveTaxRate > 0) ? [180, 120, 0] : mutedText));
     doc.text(ivaLabel, cols.iva, y + 5.5);
     doc.setTextColor(...darkText);
     const unitPriceRaw = item.unit_price || 0;
