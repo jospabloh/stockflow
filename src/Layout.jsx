@@ -150,10 +150,10 @@ export default function Layout({ children, currentPageName }) {
   }, [businessId, location.pathname]);
 
   useEffect(() => {
-    if (!bizLoading && !businessId) {
+    if (!bizLoading && !businessId && currentPageName !== "SuperAdminLogs") {
       navigate("/BusinessSetup");
     }
-  }, [businessId, bizLoading, navigate]);
+  }, [businessId, bizLoading, currentPageName, navigate]);
 
   const handleLogout = () => {
     base44.auth.logout();
