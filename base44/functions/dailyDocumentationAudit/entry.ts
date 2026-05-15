@@ -6,9 +6,11 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_DOCS_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const SNAPSHOT_VERSION = "2.13.2";
+const SNAPSHOT_VERSION = "2.13.3";
 const SNAPSHOT_RELEASE_DATE = "2026-05-15";
 const SNAPSHOT_GIT_LOG = `
+91c755b Merge pull request #61 from jospabloh/automated/release-pr
+f66af74 chore: release and update documentation
 6ba7178 Merge pull request #60 from jospabloh/automated/release-pr
 feab8a2 chore: release and update documentation
 aeac27e feat: setup superadmin observability and auto-release github action
@@ -32,11 +34,9 @@ a2fdcca Merge pull request #53 from jospabloh/codex/refactorizar-metodos-de-pago
 e066b00 Remove unsupported --allow-none from Deno test workflows
 c4e4695 Fix remaining Deno lint blockers (window/process/button type)
 a735ba0 Fix recurring Deno lint failures in app/navigation/help configs
-ab0e7b1 Fix additional Deno lint findings for buttons and window usage
-9046fc1 Replace remaining window.innerHeight references in chat component
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.13.2",
+  "Actualización a la versión 2.13.3",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
