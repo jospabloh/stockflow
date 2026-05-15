@@ -77,6 +77,7 @@ const navItems = [
     submenu: [
       { name: "Licencias", icon: Shield, page: "LicenseAdmin" },
       { name: "Reglas por Tenant", icon: Shield, page: "TenantRulesAdmin" },
+      { name: "Logs de Correos", icon: Shield, page: "SuperAdminLogs", ownerEmailOnly: "h.josepablo@gmail.com" },
     ]
   },
   { name: "Centro de Ayuda", icon: HelpCircle, page: "HelpCenter" },
@@ -248,7 +249,7 @@ export default function Layout({ children, currentPageName }) {
             const hasSubmenu = item.submenu && item.submenu.length > 0;
             const isSubmenuOpen = expandedSubmenu === item.name;
             const currentInSubmenu = item.submenu?.some(s => s.page === currentPageName);
-            const visibleSubitems = item.submenu?.filter(s => canSee(s.page)) || [];
+            const visibleSubitems = item.submenu?.filter(s => canSee(s.page) && (!s.ownerEmailOnly || user?.email === s.ownerEmailOnly)) || [];
 
             if (hasSubmenu) {
               return (
