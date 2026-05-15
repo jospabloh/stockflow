@@ -15,10 +15,6 @@ function hexToRgb(hex) {
   ];
 }
 
-function getDisplayUnitPrice(unitPrice, taxRate) {
-  const effectiveTaxRate = taxRate ?? 16;
-  return effectiveTaxRate === 16 ? (unitPrice || 0) / 1.16 : (unitPrice || 0);
-}
 
 // Determina si el color es oscuro para saber si usar texto blanco o negro
 function isDark(rgb) {
@@ -206,9 +202,6 @@ export async function generateQuotationPDF(quotation, settings, client) {
     doc.setTextColor(...((effectiveTaxRate > 0) ? [180, 120, 0] : mutedText));
     doc.text(ivaLabel, cols.iva, y + 5.5);
     doc.setTextColor(...darkText);
-    const unitPriceRaw = item.unit_price || 0;
-    const hasTax = taxRate > 0;
-    const displayUnitPrice = hasTax ? (unitPriceRaw / (1 + taxRate / 100)) : unitPriceRaw;
     doc.text(`$${fmt(displayUnitPrice)}`, cols.price, y + 5.5);
     doc.text(`$${fmt(item.total)}`, cols.total, y + 5.5, { align: "right" });
     y += rowH;
