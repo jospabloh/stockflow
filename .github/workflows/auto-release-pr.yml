@@ -12,8 +12,8 @@ permissions:
 
 jobs:
   auto-release:
-    # Skip if the commit message indicates it's already a release or if it's a merge commit from a release PR
-    if: "!startsWith(github.event.head_commit.message, 'chore: release') && !contains(github.event.head_commit.message, 'Release PR')"
+    # Skip if the commit message indicates it's already a release, or if it's authored by the bot
+    if: "!startsWith(github.event.head_commit.message, 'chore: release') && !contains(github.event.head_commit.message, 'Automated Release') && github.actor != 'github-actions[bot]'"
     runs-on: ubuntu-latest
     
     steps:
