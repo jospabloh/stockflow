@@ -142,8 +142,7 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                   const taxRate = Number(item.tax_rate ?? 0);
                   const hasTax = taxRate > 0;
                   const totalPrice = item.total || 0;
-                  const unitPriceRaw = item.unit_price || 0;
-                  const displayUnitPrice = hasTax ? (unitPriceRaw / (1 + taxRate / 100)) : unitPriceRaw;
+                  const displayUnitPrice = getDisplayUnitPrice(item.unit_price, item.tax_rate);
                   const isPendingOnDemand = item.is_on_demand && item.on_demand_status === "pending";
                   const isCreatedOnDemand = item.is_on_demand && item.on_demand_status === "product_created";
 
