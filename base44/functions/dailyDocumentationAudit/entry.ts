@@ -6,9 +6,11 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_DOCS_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const SNAPSHOT_VERSION = "2.13.3";
+const SNAPSHOT_VERSION = "2.13.4";
 const SNAPSHOT_RELEASE_DATE = "2026-05-15";
 const SNAPSHOT_GIT_LOG = `
+c2f3bdf Merge pull request #62 from jospabloh/automated/release-pr
+43127cf chore: release and update documentation
 91c755b Merge pull request #61 from jospabloh/automated/release-pr
 f66af74 chore: release and update documentation
 6ba7178 Merge pull request #60 from jospabloh/automated/release-pr
@@ -32,11 +34,9 @@ c7c374e Adjust quotation preview unit price display to net value
 a2fdcca Merge pull request #53 from jospabloh/codex/refactorizar-metodos-de-pago-en-quotations
 7f05edf Skip Deno test step when no test modules exist
 e066b00 Remove unsupported --allow-none from Deno test workflows
-c4e4695 Fix remaining Deno lint blockers (window/process/button type)
-a735ba0 Fix recurring Deno lint failures in app/navigation/help configs
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.13.3",
+  "Actualización a la versión 2.13.4",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
