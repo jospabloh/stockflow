@@ -161,7 +161,7 @@ export default function Categories() {
                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCat(cat); setCatForm({ name: cat.name, description: cat.description || "", color: cat.color || "#6366f1", wholesale_min_qty: cat.wholesale_min_qty ?? "" }); setCatFormOpen(true); }} {...createButtonProps('edit')}>
                      <Pencil className="h-4 w-4 text-slate-400" />
                    </Button>
-                   {can('Categorias', 'delete') && (
+                   {can('Categorías', 'delete') && (
                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteCatId(cat.id)} {...createButtonProps('delete')}>
                      <Trash2 className="h-4 w-4 text-slate-400" />
                    </Button>
