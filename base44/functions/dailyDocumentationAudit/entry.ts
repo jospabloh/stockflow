@@ -49,8 +49,8 @@ function daysBetween(a, b) {
 }
 
 async function callAnthropic(gitLog, version, existingChanges) {
-  const apiKey = Deno.env.get('ANTHROPIC_API_KEY_SF');
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY_SF no configurada');
+  const apiKey = Deno.env.get('ANTHROPIC_API_KEY_SF') || Deno.env.get('ANTHROPIC_API_KEY_SF_SF');
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY_SF/ANTHROPIC_API_KEY_SF_SF no configurada');
 
   const systemPrompt = `Eres un redactor técnico que genera changelogs de software en español (es-MX) para StockFlow, un sistema de inventario SaaS multi-tenant.
 Escribe cambios concisos, orientados al usuario final, usando emojis al inicio de cada línea como en este ejemplo:
