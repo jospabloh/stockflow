@@ -133,7 +133,7 @@ export default function ClientsManager() {
     <Card className="border-0 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-slate-700 text-lg">Clientes</h3>
-        {can('Clients', 'escribir') && (
+        {can('Clientes', 'create') && (
         <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={openNew}>
           <Plus className="h-4 w-4 mr-1" /> Nuevo cliente
         </Button>
@@ -180,12 +180,12 @@ export default function ClientsManager() {
                 </div>
               </TableCell>
               <TableCell className="text-center">
-                {can('Clients', 'modificar') && (
+                {can('Clientes', 'edit_name') && (
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(c)}>
                   <Pencil className="h-4 w-4 text-slate-400" />
                 </Button>
                 )}
-                {can('Clients', 'eliminar') && (
+                {can('Clientes', 'delete') && (
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(c)}>
                   <Trash2 className="h-4 w-4 text-slate-400" />
                 </Button>

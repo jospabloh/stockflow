@@ -7,8 +7,6 @@ import { useBusinessContext } from "@/components/BusinessContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Shield, RefreshCw, Download } from "lucide-react";
 import { toast } from "sonner";

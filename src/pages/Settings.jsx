@@ -200,11 +200,11 @@ export default function Settings() {
           {/* Admin: todas las pestañas */}
           {isAdmin && (
             <>
-              {can('Configuración', 'edit_company_name') && <TabsTrigger value="business"><Building2 className="h-4 w-4 mr-1" /> Negocio</TabsTrigger>}
+              {can('Configuracion', 'edit_company_name') && <TabsTrigger value="business"><Building2 className="h-4 w-4 mr-1" /> Negocio</TabsTrigger>}
               <TabsTrigger value="sat"><FileText className="h-4 w-4 mr-1" /> Facturación</TabsTrigger>
-              {can('Configuración', 'manage_team') && <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>}
-              {can('Configuración', 'import_products') && <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>}
-              {can('Configuración', 'delete_account') && <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>}
+              {can('Configuracion', 'manage_team') && <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>}
+              {can('Configuracion', 'import_products') && <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>}
+              {can('Configuracion', 'delete_account') && <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>}
               <TabsTrigger value="inventario"><PackageSearch className="h-4 w-4 mr-1" /> Audit Inventario</TabsTrigger>
             </>
           )}
