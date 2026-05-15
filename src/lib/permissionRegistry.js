@@ -52,7 +52,7 @@ export const PERMISSION_REGISTRY = {
       { id: "cost_price", label: "Ver costo", category: "report", icon: "💲", sensitive: true, description: "Ver precio de costo en listados (confidencial)" },
     ]
   },
-  Categorias: {
+  Categorías: {
     label: "Categorías",
     actions: [
       { id: "view", label: "Ver lista", category: "visual", icon: "👁️", description: "Acceso a la lista de categorías de productos" },
