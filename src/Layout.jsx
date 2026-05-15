@@ -113,6 +113,14 @@ export default function Layout({ children, currentPageName }) {
   const { goBack, direction, navigationStack } = useNavigation();
   const navigate = useNavigate();
   const location = useLocation();
+  const isGlobalAdminRoute =
+    currentPageName === "SuperAdminLogs" ||
+    currentPageName === "LicenseAdmin" ||
+    currentPageName === "TenantRulesAdmin" ||
+    location.pathname === "/SuperAdminLogs" ||
+    location.pathname === "/superadminlogs" ||
+    location.pathname === "/LicenseAdmin" ||
+    location.pathname === "/TenantRulesAdmin";
   const isRoot = location.pathname === "/" || location.pathname === "/Dashboard";
   const isChildRoute = /\/(Products|Movements|Quotations)\/(new|edit)/.test(location.pathname);
   const { theme, setTheme } = useTheme();
@@ -150,10 +158,10 @@ export default function Layout({ children, currentPageName }) {
   }, [businessId, location.pathname]);
 
   useEffect(() => {
-    if (!bizLoading && !businessId) {
+    if (!bizLoading && !businessId && !isGlobalAdminRoute) {
       navigate("/BusinessSetup");
     }
-  }, [businessId, bizLoading, navigate]);
+  }, [businessId, bizLoading, isGlobalAdminRoute, navigate]);
 
   const handleLogout = () => {
     base44.auth.logout();
