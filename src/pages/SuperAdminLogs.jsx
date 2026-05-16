@@ -4,13 +4,15 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Mail, Activity, ShieldAlert } from 'lucide-react';
+import { RefreshCw, Mail, Activity, ShieldAlert, FileClock } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export default function SuperAdminLogs() {
   const { isPlatformAdmin } = useLicense();
   const [emails, setEmails] = useState([]);
+  const [versions, setVersions] = useState([]);
+  const [changelogEntries, setChangelogEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -19,8 +21,14 @@ export default function SuperAdminLogs() {
     setLoading(true);
     setError(null);
     try {
-      const emailsRes = await base44.entities.EmailNotification.list("-created_date", 100);
+      const [emailsRes, versionsRes, changelogRes] = await Promise.all([
+        base44.entities.EmailNotification.list("-created_date", 200),
+        base44.entities.AppVersion?.list?.("-created_date", 20) ?? Promise.resolve([]),
+        base44.entities.AppChangelog?.list?.("-released_at", 20) ?? Promise.resolve([]),
+      ]);
       setEmails(emailsRes);
+      setVersions(versionsRes || []);
+      setChangelogEntries(changelogRes || []);
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -133,6 +141,64 @@ export default function SuperAdminLogs() {
                       </TableCell>
                     </TableRow>
                   ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
+          <CardTitle className="text-lg flex items-center text-slate-800">
+            <FileClock className="w-5 h-5 mr-2 text-slate-500" />
+            Auditoría nocturna (versión + changelog)
+          </CardTitle>
+          <CardDescription>
+            Aquí se reflejan los resultados diarios de documentación/auditoría (versión en BD y changelog generado).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-slate-50">
+                <TableRow>
+                  <TableHead className="w-[180px]">Fecha release</TableHead>
+                  <TableHead>Versión</TableHead>
+                  <TableHead>Origen</TableHead>
+                  <TableHead>Notas</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {changelogEntries.length === 0 && versions.length === 0 && !loading ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8 text-slate-500">
+                      No hay registros de AppVersion/AppChangelog todavía.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  <>
+                    {changelogEntries.map(entry => (
+                      <TableRow key={`changelog-${entry.id}`}>
+                        <TableCell className="text-slate-600 whitespace-nowrap">
+                          {entry.released_at ? format(new Date(entry.released_at), "dd MMM yyyy, HH:mm", { locale: es }) : '—'}
+                        </TableCell>
+                        <TableCell className="font-medium text-slate-800">{entry.version || '—'}</TableCell>
+                        <TableCell><Badge className="bg-indigo-50 text-indigo-700 border-indigo-200" variant="outline">AppChangelog</Badge></TableCell>
+                        <TableCell className="max-w-[460px] truncate text-xs text-slate-500" title={entry.summary || ''}>{entry.summary || '—'}</TableCell>
+                      </TableRow>
+                    ))}
+                    {versions.map(version => (
+                      <TableRow key={`version-${version.id}`}>
+                        <TableCell className="text-slate-600 whitespace-nowrap">
+                          {version.created_date ? format(new Date(version.created_date), "dd MMM yyyy, HH:mm", { locale: es }) : '—'}
+                        </TableCell>
+                        <TableCell className="font-medium text-slate-800">{version.version || '—'}</TableCell>
+                        <TableCell><Badge className="bg-emerald-50 text-emerald-700 border-emerald-200" variant="outline">AppVersion</Badge></TableCell>
+                        <TableCell className="max-w-[460px] truncate text-xs text-slate-500" title={version.notes || ''}>{version.notes || '—'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </>
                 )}
               </TableBody>
             </Table>
