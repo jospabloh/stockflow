@@ -13,7 +13,8 @@ export default function About() {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
-  const latestRelease = CHANGELOG[0];
+  const latestReleases = CHANGELOG.slice(0, 3);
+  const previousReleases = CHANGELOG.slice(3);
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto py-6">
@@ -45,12 +46,17 @@ export default function About() {
         <div>
           <p className="text-sm font-semibold text-foreground mb-3">Últimos cambios</p>
           <ul className="space-y-2">
-            {latestRelease.changes.map((change, i) => (
-              <li key={i} className="flex items-start gap-2">
+            {latestReleases.flatMap((release) =>
+              release.changes.map((change, i) => (
+              <li key={`${release.version}-${i}`} className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-muted-foreground">{change}</span>
+                <div>
+                  <p className="text-xs font-semibold text-foreground">v{release.version} · {release.date}</p>
+                  <span className="text-sm text-muted-foreground">{change}</span>
+                </div>
               </li>
-            ))}
+            ))
+          )}
           </ul>
         </div>
       </Card>
@@ -118,7 +124,7 @@ export default function About() {
       </Card>
 
       {/* Historial de versiones — colapsable al final */}
-      {CHANGELOG.length > 1 && (
+      {previousReleases.length > 0 && (
         <Card className="border-0 shadow-sm overflow-hidden">
           <button type="button"
             onClick={() => setHistorialOpen(!historialOpen)}
@@ -129,7 +135,7 @@ export default function About() {
           </button>
           {historialOpen && (
             <div className="px-6 pb-5 space-y-4 border-t border-border pt-4">
-              {CHANGELOG.slice(1).map((release) => (
+              {previousReleases.map((release) => (
                 <div key={release.version} className="border-l-2 border-border pl-4 space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-foreground">v{release.version}</span>
