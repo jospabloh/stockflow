@@ -217,6 +217,13 @@ function fmtDate(d: Date): string {
   return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+type CheckStatus = 'ok' | 'auto' | 'human';
+interface CheckResult {
+  name: string;
+  status: CheckStatus;
+  detail: string;
+}
+
 interface AuditStats {
   runAt: string;
   businessesScanned: number;
@@ -224,17 +231,41 @@ interface AuditStats {
   profilesUpdated: number;
   keysAdded: number;
   totalCanonicalKeys: number;
+  checks: CheckResult[];
   errors: string[];
 }
 
+function statusBadge(status: CheckStatus): string {
+  if (status === 'ok') {
+    return '<span style="background:#dcfce7;color:#166534;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">✅ OK</span>';
+  }
+  if (status === 'auto') {
+    return '<span style="background:#dbeafe;color:#1d4ed8;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">🔧 Auto-corregido</span>';
+  }
+  return '<span style="background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">⚠️ Acción humana</span>';
+}
+
 function buildEmail(s: AuditStats): string {
-  const statusColor = s.errors.length === 0 ? '#16a34a' : '#dc2626';
-  const statusLabel = s.errors.length === 0 ? '✅ Sin errores' : `⚠️ ${s.errors.length} error(es)`;
-  const errorsSection = s.errors.length > 0
-    ? `<div style="margin-top:16px;padding:12px;background:#fef2f2;border-left:3px solid #dc2626;border-radius:4px">
-        <p style="margin:0 0 8px;font-weight:600;color:#dc2626">Errores:</p>
-        <ul style="margin:0;padding-left:20px;color:#374151">
-          ${s.errors.map(e => `<li style="margin-bottom:4px">${e}</li>`).join('')}
+  const humanItems = s.checks.filter(c => c.status === 'human');
+  const headerColor = humanItems.length > 0 ? '#dc2626' : '#16a34a';
+  const headerLabel = humanItems.length > 0
+    ? `⚠️ ${humanItems.length} acción(es) humana(s)`
+    : '✅ Todo en orden';
+
+  const rows = s.checks.map(c => `
+    <tr>
+      <td style="padding:10px 12px;color:#374151;font-size:13px;border-bottom:1px solid #f1f5f9">${c.name}</td>
+      <td style="padding:10px 12px;text-align:right;border-bottom:1px solid #f1f5f9">${statusBadge(c.status)}</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="padding:0 12px 10px;color:#6b7280;font-size:12px;border-bottom:1px solid #e5e7eb">${c.detail}</td>
+    </tr>`).join('');
+
+  const manualSection = humanItems.length > 0
+    ? `<div style="margin-top:16px;padding:12px;background:#fefce8;border-left:3px solid #ca8a04;border-radius:4px">
+        <p style="margin:0 0 8px;color:#92400e;font-weight:600">Requiere acción humana:</p>
+        <ul style="margin:0;padding-left:20px;color:#78350f;font-size:13px">
+          ${humanItems.map(c => `<li style="margin-bottom:4px"><strong>${c.name}:</strong> ${c.detail}</li>`).join('')}
         </ul>
       </div>`
     : '';
@@ -242,40 +273,23 @@ function buildEmail(s: AuditStats): string {
   return `<!DOCTYPE html><html lang="es">
 <head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:20px;background:#f4f4f5;font-family:Arial,sans-serif">
-<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)">
+<div style="max-width:640px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)">
   <div style="background:${BRAND_COLOR};padding:20px 24px">
     <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">${APP_NAME}</h1>
     <p style="margin:4px 0 0;color:#c7d2fe;font-size:13px">Auditoría Nocturna de Permisos</p>
   </div>
   <div style="padding:28px 24px">
     <h2 style="margin-top:0;color:#111827">Reporte — ${fmtDate(new Date(s.runAt))}</h2>
-    <p style="color:#374151">Estado: <strong style="color:${statusColor}">${statusLabel}</strong></p>
-    <table style="width:100%;border-collapse:collapse;margin-top:16px">
-      <tr style="background:#f9fafb">
-        <td style="padding:10px 12px;color:#6b7280;font-size:13px">Negocios escaneados</td>
-        <td style="padding:10px 12px;font-weight:600;text-align:right">${s.businessesScanned}</td>
-      </tr>
-      <tr>
-        <td style="padding:10px 12px;color:#6b7280;font-size:13px">Perfiles creados</td>
-        <td style="padding:10px 12px;font-weight:600;color:#16a34a;text-align:right">${s.profilesCreated}</td>
-      </tr>
-      <tr style="background:#f9fafb">
-        <td style="padding:10px 12px;color:#6b7280;font-size:13px">Perfiles actualizados</td>
-        <td style="padding:10px 12px;font-weight:600;color:#2563eb;text-align:right">${s.profilesUpdated}</td>
-      </tr>
-      <tr>
-        <td style="padding:10px 12px;color:#6b7280;font-size:13px">Claves añadidas en total</td>
-        <td style="padding:10px 12px;font-weight:600;text-align:right">${s.keysAdded}</td>
-      </tr>
-      <tr style="background:#f9fafb">
-        <td style="padding:10px 12px;color:#6b7280;font-size:13px">Claves canónicas vigentes</td>
-        <td style="padding:10px 12px;font-weight:600;text-align:right">${s.totalCanonicalKeys}</td>
-      </tr>
+    <p style="color:#374151;margin:0 0 4px">Estado: <strong style="color:${headerColor}">${headerLabel}</strong></p>
+    <p style="color:#6b7280;margin:0 0 16px;font-size:13px">
+      ${s.businessesScanned} negocio(s) escaneado(s) · ${s.totalCanonicalKeys} claves canónicas ·
+      ${s.profilesCreated} perfil(es) creado(s) · ${s.profilesUpdated} actualizado(s) ·
+      ${s.keysAdded} clave(s) añadida(s)
+    </p>
+    <table style="width:100%;border-collapse:collapse;margin-top:8px">
+      ${rows}
     </table>
-    ${errorsSection}
-    ${s.profilesCreated === 0 && s.profilesUpdated === 0
-      ? '<p style="margin-top:16px;color:#6b7280;font-size:13px">Todos los perfiles ya estaban sincronizados — no se realizaron cambios.</p>'
-      : ''}
+    ${manualSection}
   </div>
   <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 24px;text-align:center">
     <p style="margin:0;font-size:11px;color:#9ca3af">Cron: 0 9 * * * — ${APP_NAME} Platform</p>
@@ -312,8 +326,16 @@ Deno.serve(async (req) => {
     profilesUpdated: 0,
     keysAdded: 0,
     totalCanonicalKeys: CANONICAL_KEYS.length,
+    checks: [],
     errors: [],
   };
+
+  // Per-business diagnostics so the email can show what was auto-corrected
+  // vs what still needs a human.
+  let totalRequiredProfiles = 0;
+  const missingProfileLabels: string[] = [];
+  const incompleteProfileLabels: string[] = [];
+  const failedOps: string[] = [];
 
   try {
     const businesses = await base44.asServiceRole.entities.Business.list();
@@ -321,7 +343,9 @@ Deno.serve(async (req) => {
 
     for (const biz of businesses) {
       stats.businessesScanned++;
+      const bizLabel = (biz as Record<string, unknown>).name ?? biz.id;
       for (const role of ROLES) {
+        totalRequiredProfiles++;
         let profiles: Record<string, unknown>[];
         try {
           profiles = await base44.asServiceRole.entities.PermissionProfile.filter({
@@ -336,11 +360,13 @@ Deno.serve(async (req) => {
         const defaults = getDefaults(role);
 
         if (profiles.length === 0) {
+          missingProfileLabels.push(`${bizLabel} / ${role}`);
           ops.push({ type: 'create', business_id: biz.id, role_key: role, permissions: defaults });
         } else {
           const existing = (profiles[0].permissions as Record<string, boolean>) ?? {};
           const missingKeys = CANONICAL_KEYS.filter(k => !(k in existing));
           if (missingKeys.length > 0) {
+            incompleteProfileLabels.push(`${bizLabel} / ${role} (+${missingKeys.length})`);
             // Existing values win; only inject truly missing keys with their defaults
             const merged: Record<string, boolean> = {};
             for (const k of CANONICAL_KEYS) {
@@ -377,6 +403,7 @@ Deno.serve(async (req) => {
             ? `create ${op.business_id}/${op.role_key}`
             : `update ${op.id}`;
           stats.errors.push(`${label}: ${(e as Error).message}`);
+          failedOps.push(label);
         }
       }
     }
@@ -384,11 +411,71 @@ Deno.serve(async (req) => {
     stats.errors.push(`fatal: ${(e as Error).message}`);
   }
 
+  // ─── Build per-check report ─────────────────────────────────────────────
+  const sample = (arr: string[], n = 5) =>
+    arr.length <= n ? arr.join(', ') : `${arr.slice(0, n).join(', ')} (+${arr.length - n} más)`;
+
+  // Check 1: every business × role has a PermissionProfile
+  if (missingProfileLabels.length === 0) {
+    stats.checks.push({
+      name: 'Perfiles por negocio × rol',
+      status: 'ok',
+      detail: `${totalRequiredProfiles} perfil(es) requerido(s); todos existen en BD.`,
+    });
+  } else {
+    stats.checks.push({
+      name: 'Perfiles por negocio × rol',
+      status: 'auto',
+      detail: `${missingProfileLabels.length} perfil(es) faltante(s) creado(s) con los defaults del rol: ${sample(missingProfileLabels)}.`,
+    });
+  }
+
+  // Check 2: every PermissionProfile contains the full canonical key set
+  if (incompleteProfileLabels.length === 0) {
+    stats.checks.push({
+      name: 'Cobertura de claves canónicas',
+      status: 'ok',
+      detail: `${CANONICAL_KEYS.length} clave(s) canónica(s) presentes en todos los perfiles.`,
+    });
+  } else {
+    stats.checks.push({
+      name: 'Cobertura de claves canónicas',
+      status: 'auto',
+      detail: `${incompleteProfileLabels.length} perfil(es) con claves faltantes inyectadas (valores existentes preservados): ${sample(incompleteProfileLabels)}.`,
+    });
+  }
+
+  // Check 3: write failures need human attention
+  if (failedOps.length === 0 && stats.errors.length === 0) {
+    stats.checks.push({
+      name: 'Operaciones de escritura',
+      status: 'ok',
+      detail: `${stats.profilesCreated + stats.profilesUpdated} operación(es) ejecutada(s) sin errores.`,
+    });
+  } else if (failedOps.length > 0) {
+    stats.checks.push({
+      name: 'Operaciones de escritura',
+      status: 'human',
+      detail: `${failedOps.length} operación(es) fallaron — revisa permisos/RLS: ${sample(failedOps)}.`,
+    });
+  } else {
+    stats.checks.push({
+      name: 'Operaciones de escritura',
+      status: 'human',
+      detail: `Errores no-fatales durante el escaneo: ${stats.errors.slice(0, 3).join('; ')}`,
+    });
+  }
+
   // Send email report
   try {
+    const humanCount = stats.checks.filter(c => c.status === 'human').length;
+    const subject = humanCount > 0
+      ? `[${APP_NAME}] ⚠️ Permisos: ${humanCount} acción(es) humana(s) — ${fmtDate(new Date())}`
+      : `[${APP_NAME}] Auditoría de Permisos — ${fmtDate(new Date())}`;
+
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: PLATFORM_OWNER_EMAIL,
-      subject: `[${APP_NAME}] Auditoría de Permisos — ${fmtDate(new Date())}`,
+      subject,
       body: buildEmail(stats),
       from_name: APP_NAME,
     });

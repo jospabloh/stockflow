@@ -3,12 +3,22 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
 const APP_NAME = 'StockFlow';
 const BRAND_COLOR = '#4F46E5';
-const STALE_DOCS_DAYS = 60;
+const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const SNAPSHOT_VERSION = "2.13.7";
+const CURRENT_VERSION_IN_CODE = "2.13.7";
 const SNAPSHOT_RELEASE_DATE = "2026-05-15";
-const SNAPSHOT_GIT_LOG = `
+const USER_MANUAL_LAST_REVIEWED = "2026-05-15";
+const GIT_LOG_SNAPSHOT = `
+30db8d1 Update base44 packages
+44fa079 Merge pull request #81 from jospabloh/codex/add-nighttime-audit-with-changelog
+9f9b0fc Refina changelog visible y colapsa historial antiguo
+d1393f4 Merge pull request #80 from jospabloh/codex/add-missing-email-log-details
+636a6b1 fix: expand super admin logs with audit/version visibility
+13e2cef Merge pull request #77 from jospabloh/claude/fix-email-logs-section-ekM4l
+c109641 fix(logs-correos): usar created_date y alinear acceso con isPlatformAdmin
+bfadd66 Merge pull request #67 from jospabloh/automated/release-pr
+66672b9 chore: release and update documentation
 c10b055 fix: SuperAdminLogs - wrong base44 import path + add to sidebar navigation
 39ae8d7 Merge pull request #75 from jospabloh/codex/fix-email-logs-display-issue-8qc5n3
 104b9f5 Merge branch 'main' into codex/fix-email-logs-display-issue-8qc5n3
@@ -25,106 +35,87 @@ bcb9590 Merge pull request #70 from jospabloh/codex/fix-build-error-for-base44-i
 71c68df Add legacy base44 import shim for build compatibility
 dc47dcc Merge pull request #69 from jospabloh/codex/locate-email-sending-section
 143d002 feat(menu): add owner-only System link to SuperAdmin logs
-82cc8a8 Merge pull request #68 from jospabloh/codex/fix-build-error-for-missing-base44-file
-b7ef533 Merge branch 'main' into codex/fix-build-error-for-missing-base44-file
-8081a90 Add explicit button type in SuperAdminLogs refresh action
-7192d43 Fix SuperAdminLogs base44 client import path
-50ff0f0 Merge pull request #66 from jospabloh/codex/fix-build-error-for-base44-import
-3d4eff6 Add explicit button type in SuperAdminLogs
-d8e4d1a Fix SuperAdminLogs base44 client import path
-7d4822d Merge pull request #65 from jospabloh/automated/release-pr
-028b398 chore: release and update documentation
 `;
 const SNAPSHOT_LATEST_CHANGES = [
   "Actualización a la versión 2.13.7",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
-function fmtDate(d) {
+type CheckStatus = 'ok' | 'auto' | 'human';
+interface CheckResult {
+  name: string;
+  status: CheckStatus;
+  detail: string;
+}
+
+function fmtDate(d: Date): string {
   return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function daysBetween(a, b) {
+function daysBetween(a: Date, b: Date): number {
   return Math.floor((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-async function callAnthropic(gitLog, version, existingChanges) {
-  const apiKey = Deno.env.get('ANTHROPIC_API_KEY_SF') || Deno.env.get('ANTHROPIC_API_KEY_SF_SF');
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY_SF/ANTHROPIC_API_KEY_SF_SF no configurada');
-
-  const systemPrompt = `Eres un redactor técnico que genera changelogs de software en español (es-MX) para StockFlow, un sistema de inventario SaaS multi-tenant.
-Escribe cambios concisos, orientados al usuario final, usando emojis al inicio de cada línea como en este ejemplo:
-- 📦 Nuevo módulo de gestión de productos con importación masiva desde CSV
-- 🐛 Fix: cálculo de IVA en cotizaciones corregido para evitar doble conteo
-- ✨ Dashboard: nueva tarjeta de análisis de ventas por período
-Devuelve SOLO un array JSON de strings, sin explicaciones adicionales.`;
-
-  const userPrompt = `Genera el changelog para la versión ${version} de StockFlow basándote en estos commits de git:
-
-${gitLog}
-
-${existingChanges.length > 0
-    ? `El equipo ya identificó estos cambios principales (inclúyelos si son relevantes, puedes mejorar su redacción):
-${existingChanges.map(c => `- ${c}`).join('\n')}`
-    : ''}
-
-Responde ÚNICAMENTE con un array JSON de strings, por ejemplo:
-["✨ Cambio 1", "🐛 Fix: Cambio 2"]`;
-
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
-    }),
-  });
-
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Anthropic API ${res.status}: ${body}`);
-  }
-
-  const data = await res.json();
-  const text = data.content?.[0]?.text ?? '[]';
-
-  const match = text.match(/\[[\s\S]*\]/);
-  if (!match) throw new Error(`Respuesta inesperada de Anthropic: ${text.slice(0, 200)}`);
-  return JSON.parse(match[0]);
+function notesFromGitLog(gitLog: string, fallback: string[]): string {
+  const lines = gitLog
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 0 && !/^[0-9a-f]+\s+Merge (pull request|branch)/i.test(l))
+    .map(l => l.replace(/^[0-9a-f]+\s+/, ''))
+    .slice(0, 15);
+  if (lines.length === 0) return fallback.join('\n');
+  return lines.map(l => `- ${l}`).join('\n');
 }
 
-// Badge states: "synced" | "created" | "error"
-function buildEmail(s) {
-  const hasErrors = s.errors.length > 0;
-  const statusColor = hasErrors ? '#dc2626' : '#16a34a';
-  const statusLabel = hasErrors ? `⚠️ ${s.errors.length} error(es)` : '✅ Sin errores';
-
-  let syncBadge;
-  if (s.changelogBadge === 'synced') {
-    syncBadge = '<span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:12px;font-size:12px">✅ Al día</span>';
-  } else if (s.changelogBadge === 'created') {
-    syncBadge = '<span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:12px;font-size:12px">🆕 Se creó</span>';
-  } else {
-    syncBadge = '<span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:12px;font-size:12px">❌ Error</span>';
+function statusBadge(status: CheckStatus): string {
+  if (status === 'ok') {
+    return '<span style="background:#dcfce7;color:#166534;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">✅ OK</span>';
   }
+  if (status === 'auto') {
+    return '<span style="background:#dbeafe;color:#1d4ed8;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">🔧 Auto-corregido</span>';
+  }
+  return '<span style="background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">⚠️ Acción humana</span>';
+}
 
-  const staleSection = s.staleDocsWarning
+interface AuditStats {
+  runAt: string;
+  versionInCode: string;
+  dbVersion: string | null;
+  checks: CheckResult[];
+  errors: string[];
+}
+
+function buildEmail(s: AuditStats): string {
+  const humanItems = s.checks.filter(c => c.status === 'human');
+  const headerColor = humanItems.length > 0 || s.errors.length > 0 ? '#dc2626' : '#16a34a';
+  const headerLabel = humanItems.length > 0
+    ? `⚠️ ${humanItems.length} acción(es) humana(s)`
+    : s.errors.length > 0
+      ? `⚠️ ${s.errors.length} error(es)`
+      : '✅ Todo en orden';
+
+  const rows = s.checks.map(c => `
+    <tr>
+      <td style="padding:10px 12px;color:#374151;font-size:13px;border-bottom:1px solid #f1f5f9">${c.name}</td>
+      <td style="padding:10px 12px;text-align:right;border-bottom:1px solid #f1f5f9">${statusBadge(c.status)}</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="padding:0 12px 10px;color:#6b7280;font-size:12px;border-bottom:1px solid #e5e7eb">${c.detail}</td>
+    </tr>`).join('');
+
+  const manualSection = humanItems.length > 0
     ? `<div style="margin-top:16px;padding:12px;background:#fefce8;border-left:3px solid #ca8a04;border-radius:4px">
-        <p style="margin:0;color:#92400e;font-weight:600">📋 Aviso: documentación sin actualizar</p>
-        <p style="margin:6px 0 0;color:#78350f;font-size:13px">Han pasado ${s.daysSinceLastRelease} días desde la última release registrada (límite: ${STALE_DOCS_DAYS} días). Considera actualizar el manual o publicar una nueva versión.</p>
+        <p style="margin:0 0 8px;color:#92400e;font-weight:600">Requiere acción humana:</p>
+        <ul style="margin:0;padding-left:20px;color:#78350f;font-size:13px">
+          ${humanItems.map(c => `<li style="margin-bottom:4px"><strong>${c.name}:</strong> ${c.detail}</li>`).join('')}
+        </ul>
       </div>`
     : '';
 
-  const errorsSection = hasErrors
+  const errorsSection = s.errors.length > 0
     ? `<div style="margin-top:16px;padding:12px;background:#fef2f2;border-left:3px solid #dc2626;border-radius:4px">
-        <p style="margin:0 0 8px;font-weight:600;color:#dc2626">Errores:</p>
-        <ul style="margin:0;padding-left:20px;color:#374151">
+        <p style="margin:0 0 8px;font-weight:600;color:#dc2626">Errores internos:</p>
+        <ul style="margin:0;padding-left:20px;color:#374151;font-size:13px">
           ${s.errors.map(e => `<li style="margin-bottom:4px">${e}</li>`).join('')}
         </ul>
       </div>`
@@ -133,33 +124,19 @@ function buildEmail(s) {
   return `<!DOCTYPE html><html lang="es">
 <head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:20px;background:#f4f4f5;font-family:Arial,sans-serif">
-<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)">
+<div style="max-width:640px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)">
   <div style="background:${BRAND_COLOR};padding:20px 24px">
     <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">${APP_NAME}</h1>
     <p style="margin:4px 0 0;color:#c7d2fe;font-size:13px">Auditoría Nocturna de Documentación</p>
   </div>
   <div style="padding:28px 24px">
     <h2 style="margin-top:0;color:#111827">Reporte — ${fmtDate(new Date(s.runAt))}</h2>
-    <p style="color:#374151">Estado: <strong style="color:${statusColor}">${statusLabel}</strong></p>
-    <table style="width:100%;border-collapse:collapse;margin-top:16px">
-      <tr style="background:#f9fafb">
-        <td style="padding:10px 12px;color:#6b7280;font-size:13px">Versión en código (snapshot)</td>
-        <td style="padding:10px 12px;font-weight:600;text-align:right">${s.snapshotVersion}</td>
-      </tr>
-      <tr>
-        <td style="padding:10px 12px;color:#6b7280;font-size:13px">Versión en BD</td>
-        <td style="padding:10px 12px;font-weight:600;text-align:right">${s.dbVersion ?? '— (ninguna)'}</td>
-      </tr>
-      <tr style="background:#f9fafb">
-        <td style="padding:10px 12px;color:#6b7280;font-size:13px">Changelog sincronizado</td>
-        <td style="padding:10px 12px;text-align:right">${syncBadge}</td>
-      </tr>
-      <tr>
-        <td style="padding:10px 12px;color:#6b7280;font-size:13px">Días desde última release</td>
-        <td style="padding:10px 12px;font-weight:600;text-align:right">${s.daysSinceLastRelease ?? '—'}</td>
-      </tr>
+    <p style="color:#374151;margin:0 0 4px">Estado: <strong style="color:${headerColor}">${headerLabel}</strong></p>
+    <p style="color:#6b7280;margin:0 0 16px;font-size:13px">Versión en código: <strong>${s.versionInCode}</strong> · Versión en BD: <strong>${s.dbVersion ?? '— (ninguna)'}</strong></p>
+    <table style="width:100%;border-collapse:collapse;margin-top:8px">
+      ${rows}
     </table>
-    ${staleSection}
+    ${manualSection}
     ${errorsSection}
   </div>
   <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 24px;text-align:center">
@@ -187,123 +164,194 @@ Deno.serve(async (req) => {
   }
 
   const runAt = new Date().toISOString();
-  const stats = {
+  const stats: AuditStats = {
     runAt,
-    snapshotVersion: SNAPSHOT_VERSION,
+    versionInCode: CURRENT_VERSION_IN_CODE,
     dbVersion: null,
-    // "synced" | "created" | "error"
-    changelogBadge: 'error',
-    appVersionUpdated: false,
-    daysSinceLastRelease: null,
-    staleDocsWarning: false,
+    checks: [],
     errors: [],
   };
 
+  // ─── CHECK 1 ── DB version record matches CURRENT_VERSION_IN_CODE ────────
+  // Source of truth is the code; the DB mirrors it.
+  let appVersionRecord: Record<string, unknown> | null = null;
   try {
-    // ── FIX 2: Check AppChangelog by version (filter, not list-all) ──────────
-    let existingChangelogs = [];
+    const versions = await base44.asServiceRole.entities.AppVersion.list();
+    if (versions.length > 0) appVersionRecord = versions[0];
+  } catch (e) {
+    stats.errors.push(`list AppVersion: ${(e as Error).message}`);
+  }
+
+  stats.dbVersion = (appVersionRecord?.version as string) ?? null;
+
+  if (!appVersionRecord) {
     try {
-      existingChangelogs = await base44.asServiceRole.entities.AppChangelog.filter({
-        version: SNAPSHOT_VERSION,
+      await base44.asServiceRole.entities.AppVersion.create({
+        version: CURRENT_VERSION_IN_CODE,
+        release_notes: SNAPSHOT_LATEST_CHANGES.join('\n'),
+        released_at: new Date(SNAPSHOT_RELEASE_DATE).toISOString(),
+      });
+      stats.dbVersion = CURRENT_VERSION_IN_CODE;
+      stats.checks.push({
+        name: 'Versión en BD',
+        status: 'auto',
+        detail: `No existía registro AppVersion — creado con versión ${CURRENT_VERSION_IN_CODE}.`,
       });
     } catch (e) {
-      stats.errors.push(`filter AppChangelog: ${e.message}`);
+      stats.checks.push({
+        name: 'Versión en BD',
+        status: 'human',
+        detail: `No se pudo crear AppVersion: ${(e as Error).message}`,
+      });
     }
-
-    const existingEntry = existingChangelogs.length > 0 ? existingChangelogs[0] : null;
-
-    if (existingEntry) {
-      // ── FIX 3: Badge "Al día" → ya existía antes de esta ejecución ──────
-      stats.changelogBadge = 'synced';
-    } else {
-      // Need to create — first get AppVersion for released_at and notes
-      let appVersionRecord = null;
-      try {
-        const versions = await base44.asServiceRole.entities.AppVersion.list();
-        if (versions.length > 0) appVersionRecord = versions[0];
-      } catch (e) {
-        stats.errors.push(`list AppVersion: ${e.message}`);
-      }
-
-      // Generate changelog text via Anthropic (fallback to snapshot)
-      let generatedChanges = SNAPSHOT_LATEST_CHANGES;
-      try {
-        generatedChanges = await callAnthropic(SNAPSHOT_GIT_LOG, SNAPSHOT_VERSION, SNAPSHOT_LATEST_CHANGES);
-      } catch (e) {
-        stats.errors.push(`Anthropic API: ${e.message} — usando cambios del snapshot`);
-      }
-
-      // ── FIX 1: Only update AppVersion if version actually changed ────────
-      const releasedAt = appVersionRecord?.released_at
-        ?? new Date(SNAPSHOT_RELEASE_DATE).toISOString();
-      const releaseNotes = generatedChanges.slice(0, 5).join('\n');
-
-      if (appVersionRecord) {
-        if (appVersionRecord.version !== SNAPSHOT_VERSION) {
-          try {
-            await base44.asServiceRole.entities.AppVersion.update(appVersionRecord.id, {
-              version: SNAPSHOT_VERSION,
-              release_notes: releaseNotes,
-              released_at: new Date(SNAPSHOT_RELEASE_DATE).toISOString(),
-            });
-            stats.appVersionUpdated = true;
-          } catch (e) {
-            stats.errors.push(`update AppVersion: ${e.message}`);
-          }
-        }
-        // If version matches, skip update entirely (Fix 1)
-      } else {
-        // No AppVersion record at all — create it
-        try {
-          await base44.asServiceRole.entities.AppVersion.create({
-            version: SNAPSHOT_VERSION,
-            release_notes: releaseNotes,
-            released_at: new Date(SNAPSHOT_RELEASE_DATE).toISOString(),
-          });
-          stats.appVersionUpdated = true;
-        } catch (e) {
-          stats.errors.push(`create AppVersion: ${e.message}`);
-        }
-      }
-
-      // ── FIX 2: Write AppChangelog with correct schema fields ─────────────
-      try {
-        await base44.asServiceRole.entities.AppChangelog.create({
-          version: SNAPSHOT_VERSION,
-          released_at: new Date(SNAPSHOT_RELEASE_DATE).toISOString(),
-          notes: generatedChanges.join('\n'),
-          synced_at: runAt,
-          source: 'cron',
-        });
-        // ── FIX 3: Badge "Se creó" → se escribió un registro nuevo ahora ──
-        stats.changelogBadge = 'created';
-      } catch (e) {
-        stats.errors.push(`create AppChangelog: ${e.message}`);
-        // Badge remains "error"
-        stats.changelogBadge = 'error';
-      }
+  } else if (appVersionRecord.version !== CURRENT_VERSION_IN_CODE) {
+    try {
+      await base44.asServiceRole.entities.AppVersion.update(appVersionRecord.id as string, {
+        version: CURRENT_VERSION_IN_CODE,
+        released_at: new Date(SNAPSHOT_RELEASE_DATE).toISOString(),
+      });
+      stats.dbVersion = CURRENT_VERSION_IN_CODE;
+      stats.checks.push({
+        name: 'Versión en BD',
+        status: 'auto',
+        detail: `BD tenía ${appVersionRecord.version} — actualizada a ${CURRENT_VERSION_IN_CODE} (versión del código).`,
+      });
+    } catch (e) {
+      stats.checks.push({
+        name: 'Versión en BD',
+        status: 'human',
+        detail: `No se pudo actualizar AppVersion a ${CURRENT_VERSION_IN_CODE}: ${(e as Error).message}`,
+      });
     }
+  } else {
+    stats.checks.push({
+      name: 'Versión en BD',
+      status: 'ok',
+      detail: `BD y código coinciden en ${CURRENT_VERSION_IN_CODE}.`,
+    });
+  }
 
-    // ── Compute staleness using released_at from AppChangelog ────────────────
-    const releaseDate = existingEntry
-      ? new Date(existingEntry.released_at ?? SNAPSHOT_RELEASE_DATE)
-      : new Date(SNAPSHOT_RELEASE_DATE);
-
-    stats.dbVersion = SNAPSHOT_VERSION;
-    if (!isNaN(releaseDate.getTime())) {
-      stats.daysSinceLastRelease = daysBetween(releaseDate, new Date());
-      stats.staleDocsWarning = stats.daysSinceLastRelease > STALE_DOCS_DAYS;
-    }
-
+  // ─── CHECK 2 ── AppChangelog has entries for the current version ─────────
+  let currentVersionEntries: Record<string, unknown>[] = [];
+  try {
+    currentVersionEntries = await base44.asServiceRole.entities.AppChangelog.filter({
+      version: CURRENT_VERSION_IN_CODE,
+    });
   } catch (e) {
-    stats.errors.push(`fatal: ${e.message}`);
-    stats.changelogBadge = 'error';
+    stats.errors.push(`filter AppChangelog by version: ${(e as Error).message}`);
+  }
+
+  const hasPublishedForCurrent = currentVersionEntries.some(
+    (e) => (e.published as boolean | undefined) !== false,
+  );
+
+  if (hasPublishedForCurrent) {
+    stats.checks.push({
+      name: 'Changelog en BD',
+      status: 'ok',
+      detail: `Existe entrada publicada para ${CURRENT_VERSION_IN_CODE}.`,
+    });
+  } else {
+    const notes = notesFromGitLog(GIT_LOG_SNAPSHOT, SNAPSHOT_LATEST_CHANGES);
+    try {
+      await base44.asServiceRole.entities.AppChangelog.create({
+        version: CURRENT_VERSION_IN_CODE,
+        released_at: new Date(SNAPSHOT_RELEASE_DATE).toISOString(),
+        notes,
+        published: true,
+        synced_at: runAt,
+        source: 'cron',
+      });
+      stats.checks.push({
+        name: 'Changelog en BD',
+        status: 'auto',
+        detail: `No había changelog para ${CURRENT_VERSION_IN_CODE} — creado desde GIT_LOG_SNAPSHOT.`,
+      });
+    } catch (e) {
+      stats.checks.push({
+        name: 'Changelog en BD',
+        status: 'human',
+        detail: `No se pudo crear AppChangelog ${CURRENT_VERSION_IN_CODE}: ${(e as Error).message}`,
+      });
+    }
+  }
+
+  // ─── CHECK 3 ── Unpublished AppChangelog drafts → publish into current ───
+  let drafts: Record<string, unknown>[] = [];
+  try {
+    drafts = await base44.asServiceRole.entities.AppChangelog.filter({ published: false });
+  } catch (e) {
+    stats.errors.push(`filter AppChangelog drafts: ${(e as Error).message}`);
+  }
+
+  if (drafts.length === 0) {
+    stats.checks.push({
+      name: 'Drafts pendientes',
+      status: 'ok',
+      detail: 'No hay registros AppChangelog sin publicar.',
+    });
+  } else {
+    let publishedCount = 0;
+    const failures: string[] = [];
+    for (const d of drafts) {
+      try {
+        await base44.asServiceRole.entities.AppChangelog.update(d.id as string, {
+          version: (d.version as string) || CURRENT_VERSION_IN_CODE,
+          published: true,
+          synced_at: runAt,
+        });
+        publishedCount++;
+      } catch (e) {
+        failures.push(`${d.id}: ${(e as Error).message}`);
+      }
+    }
+    if (failures.length === 0) {
+      stats.checks.push({
+        name: 'Drafts pendientes',
+        status: 'auto',
+        detail: `${publishedCount} draft(s) publicado(s) en versión ${CURRENT_VERSION_IN_CODE}.`,
+      });
+    } else {
+      stats.checks.push({
+        name: 'Drafts pendientes',
+        status: 'human',
+        detail: `${publishedCount} publicado(s), ${failures.length} fallido(s): ${failures.join('; ')}`,
+      });
+    }
+  }
+
+  // ─── CHECK 4 ── User manual reviewed within STALE_MANUAL_DAYS days ───────
+  // Manual action only — no automated remediation: a human must read and validate
+  // the manual.
+  const manualDate = new Date(USER_MANUAL_LAST_REVIEWED);
+  if (isNaN(manualDate.getTime())) {
+    stats.checks.push({
+      name: 'Manual de usuario',
+      status: 'human',
+      detail: `USER_MANUAL_LAST_REVIEWED no es una fecha válida: "${USER_MANUAL_LAST_REVIEWED}".`,
+    });
+  } else {
+    const ageDays = daysBetween(manualDate, new Date());
+    if (ageDays <= STALE_MANUAL_DAYS) {
+      stats.checks.push({
+        name: 'Manual de usuario',
+        status: 'ok',
+        detail: `Revisado hace ${ageDays} día(s) (límite ${STALE_MANUAL_DAYS}). Última revisión: ${USER_MANUAL_LAST_REVIEWED}.`,
+      });
+    } else {
+      stats.checks.push({
+        name: 'Manual de usuario',
+        status: 'human',
+        detail: `Han pasado ${ageDays} días desde la última revisión humana del manual (límite ${STALE_MANUAL_DAYS}). Actualiza USER_MANUAL_LAST_REVIEWED en src/lib/appConfig.js tras releer el manual.`,
+      });
+    }
   }
 
   // Send email report
   try {
-    const subject = stats.staleDocsWarning
-      ? `[${APP_NAME}] ⚠️ Documentación desactualizada — Auditoría ${fmtDate(new Date())}`
+    const humanCount = stats.checks.filter(c => c.status === 'human').length;
+    const subject = humanCount > 0
+      ? `[${APP_NAME}] ⚠️ Documentación: ${humanCount} acción(es) humana(s) — ${fmtDate(new Date())}`
       : `[${APP_NAME}] Auditoría de Documentación — ${fmtDate(new Date())}`;
 
     await base44.asServiceRole.integrations.Core.SendEmail({
@@ -313,7 +361,7 @@ Deno.serve(async (req) => {
       from_name: APP_NAME,
     });
   } catch (e) {
-    stats.errors.push(`email: ${e.message}`);
+    stats.errors.push(`email: ${(e as Error).message}`);
   }
 
   return Response.json({ success: true, ...stats });
