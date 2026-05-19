@@ -13,8 +13,12 @@ import { execSync } from 'node:child_process';
 const ROOT = new URL('..', import.meta.url).pathname;
 
 // --- 1. Importar appConfig ---
-const { APP_VERSION, RELEASE_DATE, CHANGELOG } =
+const { APP_VERSION, RELEASE_DATE, CHANGELOG, USER_MANUAL_LAST_REVIEWED } =
   await import('../src/lib/appConfig.js');
+
+if (!USER_MANUAL_LAST_REVIEWED) {
+  console.warn('⚠️  USER_MANUAL_LAST_REVIEWED no está definido en appConfig.js');
+}
 
 // --- 2. Capturar git log (últimos 25 commits) ---
 let gitLog = '';
@@ -45,6 +49,8 @@ export const SNAPSHOT_VERSION = ${JSON.stringify(APP_VERSION)};
 
 export const SNAPSHOT_RELEASE_DATE = ${JSON.stringify(RELEASE_DATE)};
 
+export const USER_MANUAL_LAST_REVIEWED = ${JSON.stringify(USER_MANUAL_LAST_REVIEWED ?? RELEASE_DATE)};
+
 export const SNAPSHOT_GIT_LOG = ${JSON.stringify(gitLog)};
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
@@ -72,9 +78,10 @@ const escapedGitLog = gitLog.replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
 const changesTs = latestEntry.changes.map(c => `  ${JSON.stringify(c)}`).join(',\n');
 
 const newBlock = `// AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const SNAPSHOT_VERSION = ${JSON.stringify(APP_VERSION)};
+const CURRENT_VERSION_IN_CODE = ${JSON.stringify(APP_VERSION)};
 const SNAPSHOT_RELEASE_DATE = ${JSON.stringify(RELEASE_DATE)};
-const SNAPSHOT_GIT_LOG = \`
+const USER_MANUAL_LAST_REVIEWED = ${JSON.stringify(USER_MANUAL_LAST_REVIEWED ?? RELEASE_DATE)};
+const GIT_LOG_SNAPSHOT = \`
 ${escapedGitLog}
 \`;
 const SNAPSHOT_LATEST_CHANGES = [

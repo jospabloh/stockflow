@@ -1,0 +1,56 @@
+{
+  "name": "AppChangelog",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Versión de la aplicación a la que pertenece este changelog (ej: 2.13.7)"
+    },
+    "released_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha de liberación de la versión"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas del changelog (texto plano, una entrada por línea)"
+    },
+    "published": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si es false, el registro es un draft pendiente de publicación. La auditoría nocturna publica los drafts dentro de la versión actual."
+    },
+    "synced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Última vez que la auditoría nocturna sincronizó este registro"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["cron", "manual", "draft"],
+      "default": "cron",
+      "description": "Origen del registro: generado por cron, capturado manualmente, o creado como draft"
+    }
+  },
+  "required": [
+    "version"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

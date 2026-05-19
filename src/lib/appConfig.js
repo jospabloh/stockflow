@@ -6,6 +6,11 @@ export const APP_VERSION = "2.13.7";
 
 export const RELEASE_DATE = "2026-05-15";
 
+// Fecha (ISO) de la última revisión manual del Manual de Usuario por un humano.
+// Actualizar al volver a leer y validar el manual end-to-end. La auditoría
+// nocturna alerta si pasan más de 60 días desde esta fecha.
+export const USER_MANUAL_LAST_REVIEWED = "2026-05-15";
+
 export const CHANGELOG = [
   {
     version: "2.13.7",
