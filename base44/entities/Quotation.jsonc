@@ -186,6 +186,14 @@
       "type": "number",
       "description": "Saldo pendiente: total - amount_paid (campo cacheado)",
       "default": 0
+    },
+    "public_token": {
+      "type": "string",
+      "description": "Token único para enlace público"
+    },
+    "public_link_enabled": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [
