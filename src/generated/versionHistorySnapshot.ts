@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-05-19T05:03:11.733Z
+// Generado: 2026-05-20T23:13:01.846Z
 
-export const SNAPSHOT_VERSION = "2.13.7";
+export const SNAPSHOT_VERSION = "2.13.8";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-05-15";
+export const SNAPSHOT_RELEASE_DATE = "2026-05-20";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-05-15";
 
-export const SNAPSHOT_GIT_LOG = "30db8d1 Update base44 packages\n44fa079 Merge pull request #81 from jospabloh/codex/add-nighttime-audit-with-changelog\n9f9b0fc Refina changelog visible y colapsa historial antiguo\nd1393f4 Merge pull request #80 from jospabloh/codex/add-missing-email-log-details\n636a6b1 fix: expand super admin logs with audit/version visibility\n13e2cef Merge pull request #77 from jospabloh/claude/fix-email-logs-section-ekM4l\nc109641 fix(logs-correos): usar created_date y alinear acceso con isPlatformAdmin\nbfadd66 Merge pull request #67 from jospabloh/automated/release-pr\n66672b9 chore: release and update documentation\nc10b055 fix: SuperAdminLogs - wrong base44 import path + add to sidebar navigation\n39ae8d7 Merge pull request #75 from jospabloh/codex/fix-email-logs-display-issue-8qc5n3\n104b9f5 Merge branch 'main' into codex/fix-email-logs-display-issue-8qc5n3\n58bd9f2 Harden admin route bypass for BusinessSetup redirect\n8cbd85b Merge pull request #74 from jospabloh/codex/verifica-errores-resueltos-hoy\nc460709 fix: resolve active lint errors and align permission keys\nc0dd86e Merge pull request #73 from jospabloh/codex/fix-email-logs-display-issue\n6ce540e Fix super admin logs redirect without business context\n1a08512 Merge pull request #72 from jospabloh/codex/fix-disappearing-admin-logs-page\n1ef6755 fix: support lowercase superadmin logs route\n2882120 Merge pull request #71 from jospabloh/codex/fix-changelog-version-population-issue\n9a5e0d4 fix: support both Anthropic changelog env var names\nbcb9590 Merge pull request #70 from jospabloh/codex/fix-build-error-for-base44-import-r8fmhq\n71c68df Add legacy base44 import shim for build compatibility\ndc47dcc Merge pull request #69 from jospabloh/codex/locate-email-sending-section\n143d002 feat(menu): add owner-only System link to SuperAdmin logs";
+export const SNAPSHOT_GIT_LOG = "2380cb9 fix(ci): restrict deno lint to functions/ and cast catch errors safely\n94eddf1 fix(ci): exclude camelcase rule to unblock deno lint\n44febbc feat: referral program & onboarding wizard (Steps 6-7)\na9e7884 feat: public quotation sharing & entity schema extensions (Steps 1-5)\nc917a7a Update base44 packages\nb168aac Update base44 packages\n0523538 Merge pull request #82 from jospabloh/claude/fix-audit-functions-tQhHy\n4cf4c27 fix(audits): align nightly audits with their directives\n30db8d1 Update base44 packages\n44fa079 Merge pull request #81 from jospabloh/codex/add-nighttime-audit-with-changelog\n9f9b0fc Refina changelog visible y colapsa historial antiguo\nd1393f4 Merge pull request #80 from jospabloh/codex/add-missing-email-log-details\n636a6b1 fix: expand super admin logs with audit/version visibility\n13e2cef Merge pull request #77 from jospabloh/claude/fix-email-logs-section-ekM4l\nc109641 fix(logs-correos): usar created_date y alinear acceso con isPlatformAdmin\nbfadd66 Merge pull request #67 from jospabloh/automated/release-pr\n66672b9 chore: release and update documentation\nc10b055 fix: SuperAdminLogs - wrong base44 import path + add to sidebar navigation\n39ae8d7 Merge pull request #75 from jospabloh/codex/fix-email-logs-display-issue-8qc5n3\n104b9f5 Merge branch 'main' into codex/fix-email-logs-display-issue-8qc5n3\n58bd9f2 Harden admin route bypass for BusinessSetup redirect\n8cbd85b Merge pull request #74 from jospabloh/codex/verifica-errores-resueltos-hoy\nc460709 fix: resolve active lint errors and align permission keys\nc0dd86e Merge pull request #73 from jospabloh/codex/fix-email-logs-display-issue\n6ce540e Fix super admin logs redirect without business context";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.13.7",
+  "Actualización a la versión 2.13.8",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.13.8",
+    date: "2026-05-20",
+    changes: [
+    "Actualización a la versión 2.13.8"
+    ]
+  },
   {
     version: "2.13.7",
     date: "2026-05-15",

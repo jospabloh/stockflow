@@ -6,10 +6,18 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.13.7";
-const SNAPSHOT_RELEASE_DATE = "2026-05-15";
+const CURRENT_VERSION_IN_CODE = "2.13.8";
+const SNAPSHOT_RELEASE_DATE = "2026-05-20";
 const USER_MANUAL_LAST_REVIEWED = "2026-05-15";
 const GIT_LOG_SNAPSHOT = `
+2380cb9 fix(ci): restrict deno lint to functions/ and cast catch errors safely
+94eddf1 fix(ci): exclude camelcase rule to unblock deno lint
+44febbc feat: referral program & onboarding wizard (Steps 6-7)
+a9e7884 feat: public quotation sharing & entity schema extensions (Steps 1-5)
+c917a7a Update base44 packages
+b168aac Update base44 packages
+0523538 Merge pull request #82 from jospabloh/claude/fix-audit-functions-tQhHy
+4cf4c27 fix(audits): align nightly audits with their directives
 30db8d1 Update base44 packages
 44fa079 Merge pull request #81 from jospabloh/codex/add-nighttime-audit-with-changelog
 9f9b0fc Refina changelog visible y colapsa historial antiguo
@@ -27,17 +35,9 @@ c10b055 fix: SuperAdminLogs - wrong base44 import path + add to sidebar navigati
 c460709 fix: resolve active lint errors and align permission keys
 c0dd86e Merge pull request #73 from jospabloh/codex/fix-email-logs-display-issue
 6ce540e Fix super admin logs redirect without business context
-1a08512 Merge pull request #72 from jospabloh/codex/fix-disappearing-admin-logs-page
-1ef6755 fix: support lowercase superadmin logs route
-2882120 Merge pull request #71 from jospabloh/codex/fix-changelog-version-population-issue
-9a5e0d4 fix: support both Anthropic changelog env var names
-bcb9590 Merge pull request #70 from jospabloh/codex/fix-build-error-for-base44-import-r8fmhq
-71c68df Add legacy base44 import shim for build compatibility
-dc47dcc Merge pull request #69 from jospabloh/codex/locate-email-sending-section
-143d002 feat(menu): add owner-only System link to SuperAdmin logs
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.13.7",
+  "Actualización a la versión 2.13.8",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

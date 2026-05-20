@@ -2,9 +2,9 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.13.7";
+export const APP_VERSION = "2.13.8";
 
-export const RELEASE_DATE = "2026-05-15";
+export const RELEASE_DATE = "2026-05-20";
 
 // Fecha (ISO) de la última revisión manual del Manual de Usuario por un humano.
 // Actualizar al volver a leer y validar el manual end-to-end. La auditoría
@@ -12,6 +12,13 @@ export const RELEASE_DATE = "2026-05-15";
 export const USER_MANUAL_LAST_REVIEWED = "2026-05-15";
 
 export const CHANGELOG = [
+  {
+    version: "2.13.8",
+    date: "2026-05-20",
+    changes: [
+      "Actualización a la versión 2.13.8",
+    ],
+  },
   {
     version: "2.13.7",
     date: "2026-05-15",
