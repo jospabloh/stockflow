@@ -87,6 +87,6 @@ Deno.serve(async (req) => {
       congruent: Math.abs(total - dayMovements.reduce((sum, m) => sum + (m.total || 0), 0)) < 0.01
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

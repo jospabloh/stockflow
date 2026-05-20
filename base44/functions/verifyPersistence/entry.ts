@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
         const fetched = await base44.entities.Product.get(p.id);
         console.log(`[VERIFY] ✅ Product.get(${p.id}) SUCCESS`);
       } catch (e) {
-        console.log(`[VERIFY] ❌ Product.get(${p.id}) FAILED: ${e.message}`);
+        console.log(`[VERIFY] ❌ Product.get(${p.id}) FAILED: ${(e as Error).message}`);
       }
     }
 
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.log(`[VERIFY] ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[VERIFY] ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

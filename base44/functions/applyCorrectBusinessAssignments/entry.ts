@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
 
         console.log(`✓ ${mapping.email} → ${mapping.business_name} (${targetBusiness.id})`);
       } catch (e) {
-        result.errors.push(`Error processing ${mapping.email}: ${e.message}`);
+        result.errors.push(`Error processing ${mapping.email}: ${(e as Error).message}`);
       }
     }
 
@@ -69,6 +69,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

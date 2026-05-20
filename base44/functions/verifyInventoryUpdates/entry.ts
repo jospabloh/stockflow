@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
         initial_stock: 100
       };
     } catch (e) {
-      return Response.json({ error: `Product creation failed: ${e.message}` }, { status: 500 });
+      return Response.json({ error: `Product creation failed: ${(e as Error).message}` }, { status: 500 });
     }
 
     // Step 2: Get current stock before entry
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
       productBeforeEntry = prods[0];
       if (!productBeforeEntry) throw new Error('Product not found');
     } catch (e) {
-      return Response.json({ error: `Failed to fetch product before entry: ${e.message}` }, { status: 500 });
+      return Response.json({ error: `Failed to fetch product before entry: ${(e as Error).message}` }, { status: 500 });
     }
 
     // Step 3: Create ENTRY movement (+50 units) — this should trigger stock update to 150
@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
         expected_stock: 150
       };
     } catch (e) {
-      result.inventory_test.movement_entry = { success: false, error: e.message };
+      result.inventory_test.movement_entry = { success: false, error: (e as Error).message };
       return Response.json(result);
     }
 
@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
       productAfterEntry = prods[0];
       if (!productAfterEntry) throw new Error('Product not found');
     } catch (e) {
-      return Response.json({ error: `Failed to fetch product after entry: ${e.message}` }, { status: 500 });
+      return Response.json({ error: `Failed to fetch product after entry: ${(e as Error).message}` }, { status: 500 });
     }
 
     // Verify entry movement updated stock
@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
         expected_stock: 120
       };
     } catch (e) {
-      result.inventory_test.movement_exit = { success: false, error: e.message };
+      result.inventory_test.movement_exit = { success: false, error: (e as Error).message };
       return Response.json(result);
     }
 
@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
         matches: stockMatchesExpected
       };
     } catch (e) {
-      result.inventory_test.final_stock_verification = { success: false, error: e.message };
+      result.inventory_test.final_stock_verification = { success: false, error: (e as Error).message };
     }
 
     // Overall status
@@ -167,6 +167,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

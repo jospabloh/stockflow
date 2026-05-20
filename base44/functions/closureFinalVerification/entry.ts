@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
       results.tests.step_1_isolation = otherBizCats.length === 0;
       console.log(`[FINAL-CLOSURE] Step 1 - Isolation: ${otherBizCats.length === 0 ? 'PASS' : 'FAIL'} (other biz cats: ${otherBizCats.length})`);
     } catch (e) {
-      results.errors.push(`Step 1 isolation error: ${e.message}`);
+      results.errors.push(`Step 1 isolation error: ${(e as Error).message}`);
       results.tests.step_1_isolation = false;
     }
 
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
       console.log(`[FINAL-CLOSURE] Step 2 - Product created: ${prod.id}, stock: ${prod.stock}`);
       results._product_id = prod.id;
     } catch (e) {
-      results.errors.push(`Step 2 product create error: ${e.message}`);
+      results.errors.push(`Step 2 product create error: ${(e as Error).message}`);
       results.tests.step_2_product_create = false;
       return Response.json(results);
     }
@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
       results.tests.step_3_entry_create = !!entry.id;
       console.log(`[FINAL-CLOSURE] Step 3 - Entry movement created: ${entry.id}`);
     } catch (e) {
-      results.errors.push(`Step 3 entry error: ${e.message}`);
+      results.errors.push(`Step 3 entry error: ${(e as Error).message}`);
       results.tests.step_3_entry_create = false;
     }
 
@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
       product = await base44.entities.Product.get(results._product_id);
       console.log(`[FINAL-CLOSURE] After ENTRY: stock = ${product.stock}`);
     } catch (e) {
-      console.log(`[FINAL-CLOSURE] Error fetching product after entry: ${e.message}`);
+      console.log(`[FINAL-CLOSURE] Error fetching product after entry: ${(e as Error).message}`);
       // Try to fetch via list as fallback
       const prods = await base44.entities.Product.filter({ id: results._product_id });
       if (prods.length > 0) {
@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
       results.tests.step_4_exit_create = !!exit.id;
       console.log(`[FINAL-CLOSURE] Step 4 - Exit movement created: ${exit.id}`);
     } catch (e) {
-      results.errors.push(`Step 4 exit error: ${e.message}`);
+      results.errors.push(`Step 4 exit error: ${(e as Error).message}`);
       results.tests.step_4_exit_create = false;
     }
 
@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
       results._quote_id = quote.id;
       console.log(`[FINAL-CLOSURE] Step 6 - Quotation created: ${quote.id}`);
     } catch (e) {
-      results.errors.push(`Step 6 quotation error: ${e.message}`);
+      results.errors.push(`Step 6 quotation error: ${(e as Error).message}`);
       results.tests.step_6_quotation_create = false;
     }
 
@@ -179,7 +179,7 @@ Deno.serve(async (req) => {
       });
       console.log(`[FINAL-CLOSURE] Step 7 - Conversion exit created: ${conversionExit.id}`);
     } catch (e) {
-      results.errors.push(`Step 7 conversion error: ${e.message}`);
+      results.errors.push(`Step 7 conversion error: ${(e as Error).message}`);
       results.tests.step_7_conversion = false;
     }
 
@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
     return Response.json(results);
 
   } catch (error) {
-    console.log(`[FINAL-CLOSURE] FATAL: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[FINAL-CLOSURE] FATAL: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

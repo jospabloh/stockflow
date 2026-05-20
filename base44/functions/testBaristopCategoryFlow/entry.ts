@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
         result.context_check.mismatches.push(`Context mismatch: auth=${user.business_id}, visible=${visibleId}, settings=${settingsId}`);
       }
     } catch (e) {
-      result.context_check.mismatches.push(`Context check error: ${e.message}`);
+      result.context_check.mismatches.push(`Context check error: ${(e as Error).message}`);
     }
 
     if (!result.context_check.all_match) {
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
         name: created.name
       };
     } catch (e) {
-      result.category_flow.create = { success: false, error: e.message };
+      result.category_flow.create = { success: false, error: (e as Error).message };
       result.status = 'failed';
       return Response.json(result);
     }
@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      result.category_flow.read_after_create = { success: false, error: e.message };
+      result.category_flow.read_after_create = { success: false, error: (e as Error).message };
     }
 
     // 4. Update
@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
       });
       result.category_flow.update = { success: true };
     } catch (e) {
-      result.category_flow.update = { success: false, error: e.message };
+      result.category_flow.update = { success: false, error: (e as Error).message };
     }
 
     // 5. Read after update
@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      result.category_flow.read_after_update = { success: false, error: e.message };
+      result.category_flow.read_after_update = { success: false, error: (e as Error).message };
     }
 
     // 6. Delete
@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
       await base44.entities.Category.delete(catId);
       result.category_flow.delete = { success: true };
     } catch (e) {
-      result.category_flow.delete = { success: false, error: e.message };
+      result.category_flow.delete = { success: false, error: (e as Error).message };
     }
 
     // 7. Final check (should be gone)
@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
         deleted: cats.length === 0
       };
     } catch (e) {
-      result.category_flow.final_check = { success: false, error: e.message };
+      result.category_flow.final_check = { success: false, error: (e as Error).message };
     }
 
     // Determine overall status
@@ -150,6 +150,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
           result.business_name_from_lookup = businesses[0].name;
         }
       } catch (e) {
-        result.error = `Could not lookup business: ${e.message}`;
+        result.error = `Could not lookup business: ${(e as Error).message}`;
       }
     }
 
@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
       const categories = await base44.entities.Category.list();
       result.categories_count = categories.length;
     } catch (e) {
-      console.log(`[VERIFY-TENANT] Could not list categories: ${e.message}`);
+      console.log(`[VERIFY-TENANT] Could not list categories: ${(e as Error).message}`);
     }
 
     // Get all products visible to this user
@@ -57,13 +57,13 @@ Deno.serve(async (req) => {
         result.warning = `Products from ${uniqueBusinessIds.length} different business(es) found! Should only be 1.`;
       }
     } catch (e) {
-      console.log(`[VERIFY-TENANT] Could not list products: ${e.message}`);
+      console.log(`[VERIFY-TENANT] Could not list products: ${(e as Error).message}`);
     }
 
     return Response.json(result);
 
   } catch (error) {
-    console.log(`[VERIFY-TENANT] ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[VERIFY-TENANT] ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

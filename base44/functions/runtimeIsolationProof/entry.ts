@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
         ].every(r => r.business_id === userBizId)
       };
     } catch (err) {
-      results['TEST_1_SEE_OWN_DATA'] = { status: 'ERROR', error: err.message };
+      results['TEST_1_SEE_OWN_DATA'] = { status: 'ERROR', error: (err as Error).message };
     }
 
     // TEST 2: Verify user CANNOT see other business records (using RLS)
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (err) {
-      results['TEST_2_CANNOT_SEE_OTHER_PRODUCTS'] = { status: 'ERROR', error: err.message };
+      results['TEST_2_CANNOT_SEE_OTHER_PRODUCTS'] = { status: 'ERROR', error: (err as Error).message };
     }
 
     // TEST 3: Verify reference validation (create product with category from other business)
@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (err) {
-      results['TEST_3_CROSS_REFERENCE_BLOCK'] = { status: 'ERROR', error: err.message };
+      results['TEST_3_CROSS_REFERENCE_BLOCK'] = { status: 'ERROR', error: (err as Error).message };
     }
 
     // TEST 4: Verify mutation isolation (cannot update other business's product)
@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (err) {
-      results['TEST_4_CANNOT_UPDATE_OTHER'] = { status: 'ERROR', error: err.message };
+      results['TEST_4_CANNOT_UPDATE_OTHER'] = { status: 'ERROR', error: (err as Error).message };
     }
 
     // TEST 5: Verify deletion isolation
@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (err) {
-      results['TEST_5_CANNOT_DELETE_OTHER'] = { status: 'ERROR', error: err.message };
+      results['TEST_5_CANNOT_DELETE_OTHER'] = { status: 'ERROR', error: (err as Error).message };
     }
 
     // Summary
@@ -209,6 +209,6 @@ Deno.serve(async (req) => {
     
   } catch (error) {
     console.error('[runtimeIsolationProof]', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

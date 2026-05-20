@@ -43,20 +43,20 @@ Deno.serve(async (req) => {
               userRecord.business_name = businesses[0].name;
             }
           } catch (e) {
-            userRecord.business_name = `[Error: ${e.message}]`;
+            userRecord.business_name = `[Error: ${(e as Error).message}]`;
           }
         }
 
         result.all_users.push(userRecord);
       }
     } catch (e) {
-      result.error = e.message;
+      result.error = (e as Error).message;
     }
 
     return Response.json(result);
 
   } catch (error) {
-    console.log(`[AUDIT-THREE] ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[AUDIT-THREE] ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

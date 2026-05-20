@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
           sendData = await sendResp.json();
           console.log('[expireTrials] sendLifecycleEmails:', JSON.stringify(sendData));
         } catch (sendErr: Error | unknown) {
-          const sendError = sendErr instanceof Error ? sendErr.message : String(sendErr);
+          const sendError = sendErr instanceof Error ? (sendErr as Error).message : String(sendErr);
           console.error('[expireTrials] sendLifecycleEmails failed:', sendError);
           sendData = { error: sendError };
         }
@@ -92,6 +92,6 @@ Deno.serve(async (req) => {
   } catch (error: Error | unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
     console.error('[expireTrials] Error:', err);
-    return Response.json({ error: err.message }, { status: 500 });
+    return Response.json({ error: (err as Error).message }, { status: 500 });
   }
 });

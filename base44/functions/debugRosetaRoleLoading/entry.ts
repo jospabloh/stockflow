@@ -30,6 +30,6 @@ Deno.serve(async (req) => {
       match: userEntity.length > 0 && userEntity[0].role === user.role,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

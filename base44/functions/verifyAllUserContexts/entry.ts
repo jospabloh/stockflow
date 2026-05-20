@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
         }
       }
     } catch (e) {
-      result.context_verification.visible_business = { error: e.message };
+      result.context_verification.visible_business = { error: (e as Error).message };
     }
 
     try {
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
         }
       }
     } catch (e) {
-      result.context_verification.settings_business = { error: e.message };
+      result.context_verification.settings_business = { error: (e as Error).message };
     }
 
     // Verify all match
@@ -90,6 +90,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

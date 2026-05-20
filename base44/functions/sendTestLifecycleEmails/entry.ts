@@ -331,7 +331,7 @@ Deno.serve(async (req: Request) => {
         sent++;
         console.log(`[sendTestLifecycleEmails] Sent ${emailType}`);
       } catch (err: Error | unknown) {
-        const error = err instanceof Error ? err.message : String(err);
+        const error = err instanceof Error ? (err as Error).message : String(err);
         results.push({ type: emailType, subject, status: 'failed', error });
         failed++;
         console.error(`[sendTestLifecycleEmails] Failed ${emailType}: ${error}`);
@@ -350,6 +350,6 @@ Deno.serve(async (req: Request) => {
   } catch (error: Error | unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
     console.error('[sendTestLifecycleEmails] Error:', err);
-    return Response.json({ error: err.message }, { status: 500 });
+    return Response.json({ error: (err as Error).message }, { status: 500 });
   }
 });

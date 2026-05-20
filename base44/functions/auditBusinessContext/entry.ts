@@ -44,8 +44,8 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      console.log(`[AUDIT-BIZ-CONTEXT] ❌ Error fetching business: ${e.message}`);
-      results.error = e.message;
+      console.log(`[AUDIT-BIZ-CONTEXT] ❌ Error fetching business: ${(e as Error).message}`);
+      results.error = (e as Error).message;
     }
 
     // Also check all businesses for this user to see if there are multiple
@@ -60,13 +60,13 @@ Deno.serve(async (req) => {
         rfc: b.rfc
       }));
     } catch (e) {
-      console.log(`[AUDIT-BIZ-CONTEXT] ❌ Error listing all businesses: ${e.message}`);
+      console.log(`[AUDIT-BIZ-CONTEXT] ❌ Error listing all businesses: ${(e as Error).message}`);
     }
 
     return Response.json(results);
 
   } catch (error) {
-    console.log(`[AUDIT-BIZ-CONTEXT] ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[AUDIT-BIZ-CONTEXT] ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

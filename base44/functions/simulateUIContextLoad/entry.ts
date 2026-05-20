@@ -52,8 +52,8 @@ Deno.serve(async (req) => {
           result.business_rfc = biz.rfc;
         }
       } catch (e) {
-        console.log(`[SIM-UI] ✗ Error loading business: ${e.message}`);
-        result.error = e.message;
+        console.log(`[SIM-UI] ✗ Error loading business: ${(e as Error).message}`);
+        result.error = (e as Error).message;
       }
     } else {
       console.log(`[SIM-UI] ✗ User has NO business_id`);
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    console.log(`[SIM-UI] FATAL ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[SIM-UI] FATAL ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

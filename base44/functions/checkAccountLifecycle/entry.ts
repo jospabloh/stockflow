@@ -246,7 +246,7 @@ Deno.serve(async (req) => {
         emailResult = sendResp || emailResult;
         console.log(`[checkAccountLifecycle] sendLifecycleEmails result:`, JSON.stringify(emailResult));
       } catch (sendErr) {
-        console.error(`[checkAccountLifecycle] Failed to invoke sendLifecycleEmails:`, sendErr?.message);
+        console.error(`[checkAccountLifecycle] Failed to invoke sendLifecycleEmails:`, (sendErr as Error).message);
       }
 
       // ── Persist audit log in EmailNotification entity ────────────────────
@@ -271,6 +271,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[checkAccountLifecycle] Error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

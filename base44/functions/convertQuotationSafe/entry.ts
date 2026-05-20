@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       try {
         prods = await base44.asServiceRole.entities.Product.filter({ id: item.product_id, business_id: user.business_id });
       } catch (err) {
-        return Response.json({ error: `Error fetching product: ${err.message}` }, { status: 500 });
+        return Response.json({ error: `Error fetching product: ${(err as Error).message}` }, { status: 500 });
       }
       if (prods.length === 0) {
         return Response.json({ error: `Product ${item.product_id} not found` }, { status: 404 });
@@ -112,9 +112,9 @@ Deno.serve(async (req) => {
 
       return Response.json({ success: true, quotation_id });
     } catch (error) {
-      return Response.json({ error: error.message || 'Conversion failed' }, { status: 500 });
+      return Response.json({ error: (error as Error).message || 'Conversion failed' }, { status: 500 });
     }
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

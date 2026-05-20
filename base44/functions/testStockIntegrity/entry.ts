@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
     return Response.json(results);
 
   } catch (error) {
-    console.log(`[STOCK-TEST] ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[STOCK-TEST] ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

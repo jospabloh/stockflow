@@ -34,6 +34,6 @@ Deno.serve(async (req) => {
       user_role: updated[0]?.role,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

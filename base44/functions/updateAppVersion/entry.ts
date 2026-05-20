@@ -36,6 +36,6 @@ Deno.serve(async (req) => {
       new_version: result.version
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

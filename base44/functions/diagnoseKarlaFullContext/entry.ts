@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
           diagnosis.sidebar_business.business_name_from_db = businesses[0].name;
         }
       } catch (e) {
-        diagnosis.sidebar_business.error = e.message;
+        diagnosis.sidebar_business.error = (e as Error).message;
       }
     }
 
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      diagnosis.settings_load.error = e.message;
+      diagnosis.settings_load.error = (e as Error).message;
     }
 
     // 3. Get Categories
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
         isolation_ok: isolated
       };
     } catch (e) {
-      diagnosis.categories_load.error = e.message;
+      diagnosis.categories_load.error = (e as Error).message;
     }
 
     // 4. Get Products
@@ -108,12 +108,12 @@ Deno.serve(async (req) => {
         isolation_ok: isolated
       };
     } catch (e) {
-      diagnosis.products_load.error = e.message;
+      diagnosis.products_load.error = (e as Error).message;
     }
 
     return Response.json(diagnosis);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

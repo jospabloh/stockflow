@@ -204,7 +204,7 @@ Deno.serve(async (req) => {
           console.log('[adminUpdateTenantLicense] license_activated emails dispatched:', JSON.stringify(emailDispatch));
         }
       } catch (emailErr) {
-        console.error('[adminUpdateTenantLicense] email dispatch failed (non-fatal):', emailErr.message);
+        console.error('[adminUpdateTenantLicense] email dispatch failed (non-fatal):', (emailErr as Error).message);
         emailDispatch = { sent: 0, failed: -1 };
       }
     }
@@ -227,6 +227,6 @@ Deno.serve(async (req) => {
       },
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
       });
       results.test_1_no_business_id = { success: true, id: result?.id, error: 'RLS FAILED TO REJECT' };
     } catch (err) {
-      results.test_1_no_business_id = { success: false, error: err.message };
+      results.test_1_no_business_id = { success: false, error: (err as Error).message };
     }
 
     // Test 2: Create Product WITH MISMATCHED business_id
@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
       });
       results.test_2_mismatched_business_id = { success: true, id: result?.id, error: 'RLS FAILED TO REJECT' };
     } catch (err) {
-      results.test_2_mismatched_business_id = { success: false, error: err.message };
+      results.test_2_mismatched_business_id = { success: false, error: (err as Error).message };
     }
 
     // Test 3: Create Client WITHOUT business_id
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
       });
       results.test_3_client_no_business_id = { success: true, id: result?.id, error: 'RLS FAILED TO REJECT' };
     } catch (err) {
-      results.test_3_client_no_business_id = { success: false, error: err.message };
+      results.test_3_client_no_business_id = { success: false, error: (err as Error).message };
     }
 
     // Test 4: Create Client WITH MISMATCHED business_id
@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       });
       results.test_4_client_mismatched_business_id = { success: true, id: result?.id, error: 'RLS FAILED TO REJECT' };
     } catch (err) {
-      results.test_4_client_mismatched_business_id = { success: false, error: err.message };
+      results.test_4_client_mismatched_business_id = { success: false, error: (err as Error).message };
     }
 
     // Test 5: Create Product CORRECT (with user's business_id) — should succeed
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
         await base44.entities.Product.delete(result.id);
       }
     } catch (err) {
-      results.test_5_product_correct = { success: false, error: err.message };
+      results.test_5_product_correct = { success: false, error: (err as Error).message };
     }
 
     return Response.json({
@@ -87,6 +87,6 @@ Deno.serve(async (req) => {
       }
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

@@ -36,8 +36,8 @@ Deno.serve(async (req) => {
       console.log(`[TEST-CAT-RLS] ✓ Created category: ${newCat.id}`);
     } catch (e) {
       result.test_create.status = 'FAILED';
-      result.test_create.error = e.message;
-      console.log(`[TEST-CAT-RLS] ✗ CREATE failed: ${e.message}`);
+      result.test_create.error = (e as Error).message;
+      console.log(`[TEST-CAT-RLS] ✗ CREATE failed: ${(e as Error).message}`);
     }
 
     // TEST 2: READ the created category by id
@@ -60,8 +60,8 @@ Deno.serve(async (req) => {
         }
       } catch (e) {
         result.test_read.status = 'FAILED';
-        result.test_read.error = e.message;
-        console.log(`[TEST-CAT-RLS] ✗ READ failed: ${e.message}`);
+        result.test_read.error = (e as Error).message;
+        console.log(`[TEST-CAT-RLS] ✗ READ failed: ${(e as Error).message}`);
       }
     }
 
@@ -86,13 +86,13 @@ Deno.serve(async (req) => {
         console.log(`[TEST-CAT-RLS] ✓ ISOLATION OK: Only categories from user's business are visible`);
       }
     } catch (e) {
-      result.test_isolation = { error: e.message };
+      result.test_isolation = { error: (e as Error).message };
     }
 
     return Response.json(result);
 
   } catch (error) {
-    console.log(`[TEST-CAT-RLS] ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[TEST-CAT-RLS] ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

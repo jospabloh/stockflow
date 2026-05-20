@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
           }
         }
       } catch (error) {
-        return Response.json({ error: 'Stock reversion failed: ' + error.message }, { status: 500 });
+        return Response.json({ error: 'Stock reversion failed: ' + (error as Error).message }, { status: 500 });
       }
     }
 
@@ -175,9 +175,9 @@ Deno.serve(async (req) => {
         quotation_id
       });
     } catch (error) {
-      return Response.json({ error: error.message || 'Cancellation failed' }, { status: 500 });
+      return Response.json({ error: (error as Error).message || 'Cancellation failed' }, { status: 500 });
     }
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

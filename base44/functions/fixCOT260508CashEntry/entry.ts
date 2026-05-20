@@ -75,6 +75,6 @@ Deno.serve(async (req) => {
       message: `Cleaned up ${deleted} orphaned petty cash movement(s) for ${folio}`,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

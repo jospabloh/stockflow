@@ -58,6 +58,6 @@ Deno.serve(async (req) => {
       created_today: true
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

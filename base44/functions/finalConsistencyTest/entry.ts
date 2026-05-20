@@ -50,8 +50,8 @@ Deno.serve(async (req) => {
         result.issues.push('SIDEBAR: Cannot find exact business match');
       }
     } catch (e) {
-      result.test_results.sidebar_load = { success: false, error: e.message };
-      result.issues.push(`SIDEBAR: ${e.message}`);
+      result.test_results.sidebar_load = { success: false, error: (e as Error).message };
+      result.issues.push(`SIDEBAR: ${(e as Error).message}`);
     }
 
     // Test 2: Settings load
@@ -63,8 +63,8 @@ Deno.serve(async (req) => {
         business_id: user.business_id
       };
     } catch (e) {
-      result.test_results.settings_load = { success: false, error: e.message };
-      result.issues.push(`SETTINGS: ${e.message}`);
+      result.test_results.settings_load = { success: false, error: (e as Error).message };
+      result.issues.push(`SETTINGS: ${(e as Error).message}`);
     }
 
     // Test 3: Create category
@@ -89,8 +89,8 @@ Deno.serve(async (req) => {
         result.issues.push(`CATEGORY CREATE: Saved to wrong business! Expected ${user.business_id}, got ${category.business_id}`);
       }
     } catch (e) {
-      result.test_results.category_create = { success: false, error: e.message };
-      result.issues.push(`CATEGORY CREATE: ${e.message}`);
+      result.test_results.category_create = { success: false, error: (e as Error).message };
+      result.issues.push(`CATEGORY CREATE: ${(e as Error).message}`);
     }
 
     // Test 4: Verify category isolation
@@ -113,8 +113,8 @@ Deno.serve(async (req) => {
           result.issues.push(`CATEGORY ISOLATION: Created category shows different business_id!`);
         }
       } catch (e) {
-        result.test_results.category_isolation = { success: false, error: e.message };
-        result.issues.push(`CATEGORY ISOLATION: ${e.message}`);
+        result.test_results.category_isolation = { success: false, error: (e as Error).message };
+        result.issues.push(`CATEGORY ISOLATION: ${(e as Error).message}`);
       }
     }
 
@@ -132,6 +132,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

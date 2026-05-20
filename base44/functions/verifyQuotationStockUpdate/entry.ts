@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
         initial_stock: 100
       };
     } catch (e) {
-      return Response.json({ error: `Product creation failed: ${e.message}` }, { status: 500 });
+      return Response.json({ error: `Product creation failed: ${(e as Error).message}` }, { status: 500 });
     }
 
     // Step 2: Create client
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       clientId = client.id;
       result.quotation_conversion_test.client_create = { success: true, client_id: clientId };
     } catch (e) {
-      return Response.json({ error: `Client creation failed: ${e.message}` }, { status: 500 });
+      return Response.json({ error: `Client creation failed: ${(e as Error).message}` }, { status: 500 });
     }
 
     // Step 3: Create quotation with 25 units
@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
         quantity: 25
       };
     } catch (e) {
-      return Response.json({ error: `Quotation creation failed: ${e.message}` }, { status: 500 });
+      return Response.json({ error: `Quotation creation failed: ${(e as Error).message}` }, { status: 500 });
     }
 
     // Step 4: Convert quotation (as per pages/Quotations.js handleConvertToSale)
@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
         expected_stock: 75
       };
     } catch (e) {
-      result.quotation_conversion_test.conversion = { success: false, error: e.message };
+      result.quotation_conversion_test.conversion = { success: false, error: (e as Error).message };
       return Response.json(result);
     }
 
@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
       const exitMovement = movements.find(m => m.type === 'exit');
       result.quotation_conversion_test.exit_movement_created = !!exitMovement;
     } catch (e) {
-      result.quotation_conversion_test.final_verification = { success: false, error: e.message };
+      result.quotation_conversion_test.final_verification = { success: false, error: (e as Error).message };
     }
 
     // Overall status
@@ -183,6 +183,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

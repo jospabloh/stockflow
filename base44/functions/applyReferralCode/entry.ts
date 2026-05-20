@@ -58,6 +58,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ success: true, bonus_days: BONUS_DAYS, referrer_name: referrer.name });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

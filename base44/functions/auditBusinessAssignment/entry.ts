@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
           currentBusiness = businesses[0];
         }
       } catch (e) {
-        console.log('Could not fetch current business:', e.message);
+        console.log('Could not fetch current business:', (e as Error).message);
       }
     }
 
@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
     try {
       allSettings = await base44.asServiceRole.entities.AppSettings.list();
     } catch (e) {
-      console.log('Could not list all settings:', e.message);
+      console.log('Could not list all settings:', (e as Error).message);
     }
 
     // List all users to understand structure
@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
     try {
       allUsers = await base44.asServiceRole.entities.User.list();
     } catch (e) {
-      console.log('Could not list users:', e.message);
+      console.log('Could not list users:', (e as Error).message);
     }
 
     return Response.json({
@@ -68,6 +68,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('Audit error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

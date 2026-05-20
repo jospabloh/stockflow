@@ -105,6 +105,6 @@ Deno.serve(async (req) => {
         : 'Migration complete. Review and remove wholesale_min_qty from Product records if desired.',
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
         result.ui_context.would_load_business_id = exactMatch.id;
       }
     } catch (e) {
-      result.ui_context.business_filter_error = e.message;
+      result.ui_context.business_filter_error = (e as Error).message;
     }
 
     // Step 2: Check consistency
@@ -83,6 +83,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

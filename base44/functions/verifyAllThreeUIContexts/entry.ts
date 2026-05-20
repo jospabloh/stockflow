@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
       const response = await base44.functions.invoke('getCorrectBusiness', {});
       result.context_verification.sidebar_business = response.data?.business?.name;
     } catch (e) {
-      result.context_verification.sidebar_business = `ERROR: ${e.message}`;
+      result.context_verification.sidebar_business = `ERROR: ${(e as Error).message}`;
     }
 
     // Test 2: Get AppSettings (Settings form context)
@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
         result.context_verification.settings_business = `No AppSettings for business_id ${user.business_id}`;
       }
     } catch (e) {
-      result.context_verification.settings_business = `ERROR: ${e.message}`;
+      result.context_verification.settings_business = `ERROR: ${(e as Error).message}`;
     }
 
     // Test 3: Create category (verify save target)
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
 
       result.context_verification.category_save_target = category.business_id;
     } catch (e) {
-      result.tests.create_category = { success: false, error: e.message };
+      result.tests.create_category = { success: false, error: (e as Error).message };
     }
 
     // Test 4: Create product (verify save target)
@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
 
       result.context_verification.product_save_target = product.business_id;
     } catch (e) {
-      result.tests.create_product = { success: false, error: e.message };
+      result.tests.create_product = { success: false, error: (e as Error).message };
     }
 
     // Test 5: Verify data isolation (confirm category only visible to correct user)
@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
         all_filtered_match_user_business: userCategories.every(c => c.business_id === user.business_id)
       };
     } catch (e) {
-      result.tests.verify_isolation = { success: false, error: e.message };
+      result.tests.verify_isolation = { success: false, error: (e as Error).message };
     }
 
     // Overall consistency check
@@ -131,6 +131,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

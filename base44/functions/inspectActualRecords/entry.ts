@@ -34,8 +34,8 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      console.log(`[INSPECT] Product list error:`, e.message);
-      results.Product = { error: e.message };
+      console.log(`[INSPECT] Product list error:`, (e as Error).message);
+      results.Product = { error: (e as Error).message };
     }
 
     // Inspect existing Category
@@ -58,8 +58,8 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      console.log(`[INSPECT] Category list error:`, e.message);
-      results.Category = { error: e.message };
+      console.log(`[INSPECT] Category list error:`, (e as Error).message);
+      results.Category = { error: (e as Error).message };
     }
 
     // Inspect existing Client
@@ -82,14 +82,14 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      console.log(`[INSPECT] Client list error:`, e.message);
-      results.Client = { error: e.message };
+      console.log(`[INSPECT] Client list error:`, (e as Error).message);
+      results.Client = { error: (e as Error).message };
     }
 
     return Response.json(results, { status: 200 });
 
   } catch (error) {
-    console.log(`[INSPECT] FATAL: ${error.message}`);
-    return Response.json({ fatal_error: error.message }, { status: 500 });
+    console.log(`[INSPECT] FATAL: ${(error as Error).message}`);
+    return Response.json({ fatal_error: (error as Error).message }, { status: 500 });
   }
 });

@@ -39,9 +39,9 @@ Deno.serve(async (req) => {
         results.user_updated = updatedUser.business_id === newBiz.id;
 
       } catch (e) {
-        console.log(`[KARLA-TEST] ❌ Business CREATE FAILED: ${e.message}`);
+        console.log(`[KARLA-TEST] ❌ Business CREATE FAILED: ${(e as Error).message}`);
         results.can_create_business = 'NO';
-        results.error = e.message;
+        results.error = (e as Error).message;
       }
     } else {
       console.log(`[KARLA-TEST] User already has business_id: ${user.business_id}`);
@@ -54,16 +54,16 @@ Deno.serve(async (req) => {
         results.business_name = biz.name;
         results.business_exists = true;
       } catch (e) {
-        console.log(`[KARLA-TEST] ❌ Could not fetch business: ${e.message}`);
+        console.log(`[KARLA-TEST] ❌ Could not fetch business: ${(e as Error).message}`);
         results.business_exists = false;
-        results.error = e.message;
+        results.error = (e as Error).message;
       }
     }
 
     return Response.json(results);
 
   } catch (error) {
-    console.log(`[KARLA-TEST] ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[KARLA-TEST] ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

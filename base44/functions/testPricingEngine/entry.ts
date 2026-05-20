@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       if (ok) pass(3, 'Product save persists new price fields', `retail=${testProduct.retail_sale_price} wholesale=${testProduct.wholesale_sale_price} min_qty=${testProduct.wholesale_min_qty}`, 'All three fields saved correctly');
       else fail(3, 'Product save persists new price fields', JSON.stringify(testProduct), 'Fields did not match expected values');
     } catch (e) {
-      fail(3, 'Product save persists new price fields', e.message, 'Exception creating product');
+      fail(3, 'Product save persists new price fields', (e as Error).message, 'Exception creating product');
     }
 
     // TEST 4: Client can enable wholesale-for-all
@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
       });
       if (testClientWholesale.force_wholesale_all_products === true) pass(4, 'Client can enable wholesale-for-all', 'force_wholesale_all_products=true', 'Created successfully');
       else fail(4, 'Client can enable wholesale-for-all', JSON.stringify(testClientWholesale), 'Flag not set');
-    } catch (e) { fail(4, 'Client can enable wholesale-for-all', e.message, 'Exception'); }
+    } catch (e) { fail(4, 'Client can enable wholesale-for-all', (e as Error).message, 'Exception'); }
 
     // TEST 5: Client can enable purchase-for-all
     try {
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
       });
       if (testClientPurchase.force_purchase_all_products === true) pass(5, 'Client can enable purchase-for-all', 'force_purchase_all_products=true', 'Created successfully');
       else fail(5, 'Client can enable purchase-for-all', JSON.stringify(testClientPurchase), 'Flag not set');
-    } catch (e) { fail(5, 'Client can enable purchase-for-all', e.message, 'Exception'); }
+    } catch (e) { fail(5, 'Client can enable purchase-for-all', (e as Error).message, 'Exception'); }
 
     // TEST 6: Backend rejects both flags via updateClientSafe whitelist + validation
     // We simulate by checking the validation logic directly
@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
         const products = await base44.asServiceRole.entities.Product.filter({ id: fakeId });
         if (products.length === 0) pass(16, 'Cross-tenant update rejected', 'Product not found for cross-tenant ID', 'updateProductSafe checks ownership before updating — nonexistent ID returns 404');
         else fail(16, 'Cross-tenant update rejected', 'Product was found unexpectedly', 'Unexpected');
-      } catch (e) { pass(16, 'Cross-tenant update rejected', e.message, 'Exception on cross-tenant access'); }
+      } catch (e) { pass(16, 'Cross-tenant update rejected', (e as Error).message, 'Exception on cross-tenant access'); }
 
       // TEST 17: Mass assignment rejected — verify business_id not in ALLOWED_UPDATE_FIELDS
       // Direct entity update with a spoofed business_id, then verify it stayed
@@ -183,7 +183,7 @@ Deno.serve(async (req) => {
         else fail(17, 'Mass assignment rejected', 'business_id in whitelist', 'Security gap');
         // Restore
         await base44.asServiceRole.entities.Product.update(testProduct.id, { business_id: bizId, retail_sale_price: 100 });
-      } catch (e) { fail(17, 'Mass assignment rejected', e.message, 'Exception'); }
+      } catch (e) { fail(17, 'Mass assignment rejected', (e as Error).message, 'Exception'); }
     } else {
       [7,8,9,10,11,12,13,14,15,16,17].forEach(id => fail(id, `Test ${id}`, 'Test product not available', 'Skipped'));
     }
@@ -213,7 +213,7 @@ Deno.serve(async (req) => {
       cleanup: { status: 'COMPLETE', log: cleanupLog, non_acacia_data: 'None created' }
     });
   } catch (error: Error | unknown) {
-    const err = error instanceof Error ? error.message : String(error);
+    const err = error instanceof Error ? (error as Error).message : String(error);
     return Response.json({ error: err }, { status: 500 });
   }
 });

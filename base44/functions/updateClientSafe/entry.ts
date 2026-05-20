@@ -88,6 +88,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ success: true, client_id, client: updated });
   } catch (error) {
-    return Response.json({ success: false, error: error.message }, { status: 500 });
+    return Response.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 });

@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
             audit.context.visible_business_id = exactBusiness.id;
           }
         } catch (e) {
-          audit.context.visible_business_error = e.message;
+          audit.context.visible_business_error = (e as Error).message;
         }
 
         // Get settings business
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
             audit.context.settings_business_name = settings[0].business_name;
           }
         } catch (e) {
-          audit.context.settings_business_error = e.message;
+          audit.context.settings_business_error = (e as Error).message;
         }
 
         // Check consistency
@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
         result.audit_results.push(audit);
 
       } catch (e) {
-        audit.error = e.message;
+        audit.error = (e as Error).message;
         result.audit_results.push(audit);
       }
     }
@@ -100,6 +100,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

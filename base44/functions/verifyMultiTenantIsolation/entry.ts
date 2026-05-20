@@ -58,8 +58,8 @@ Deno.serve(async (req) => {
         result.issues.push("CLIENT FILTER ISOLATION: Found clients with mismatched business_id");
       }
     } catch (e) {
-      result.tests.client_filter_isolation = { success: false, error: e.message };
-      result.issues.push(`CLIENT FILTER: ${e.message}`);
+      result.tests.client_filter_isolation = { success: false, error: (e as Error).message };
+      result.issues.push(`CLIENT FILTER: ${(e as Error).message}`);
     }
 
     // TEST 2: Product filtering isolation
@@ -78,8 +78,8 @@ Deno.serve(async (req) => {
         result.issues.push("PRODUCT FILTER ISOLATION: Found products with mismatched business_id");
       }
     } catch (e) {
-      result.tests.product_filter_isolation = { success: false, error: e.message };
-      result.issues.push(`PRODUCT FILTER: ${e.message}`);
+      result.tests.product_filter_isolation = { success: false, error: (e as Error).message };
+      result.issues.push(`PRODUCT FILTER: ${(e as Error).message}`);
     }
 
     // TEST 3: Quotation filtering isolation
@@ -98,8 +98,8 @@ Deno.serve(async (req) => {
         result.issues.push("QUOTATION FILTER ISOLATION: Found quotations with mismatched business_id");
       }
     } catch (e) {
-      result.tests.quotation_filter_isolation = { success: false, error: e.message };
-      result.issues.push(`QUOTATION FILTER: ${e.message}`);
+      result.tests.quotation_filter_isolation = { success: false, error: (e as Error).message };
+      result.issues.push(`QUOTATION FILTER: ${(e as Error).message}`);
     }
 
     // TEST 4: Movement filtering isolation (related queries must include business_id)
@@ -118,8 +118,8 @@ Deno.serve(async (req) => {
         result.issues.push("MOVEMENT FILTER ISOLATION: Found movements with mismatched business_id");
       }
     } catch (e) {
-      result.tests.movement_filter_isolation = { success: false, error: e.message };
-      result.issues.push(`MOVEMENT FILTER: ${e.message}`);
+      result.tests.movement_filter_isolation = { success: false, error: (e as Error).message };
+      result.issues.push(`MOVEMENT FILTER: ${(e as Error).message}`);
     }
 
     // TEST 5: Client delete safety (RLS should reject delete of other business's client)
@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
           result.tests.client_delete_safety = { 
             success: true, 
             blocked_cross_business_delete: true,
-            error_received: e.message.substring(0, 50)
+            error_received: (e as Error).message.substring(0, 50)
           };
         }
       } else {
@@ -151,8 +151,8 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      result.tests.client_delete_safety = { success: false, error: e.message };
-      result.issues.push(`CLIENT DELETE SAFETY: ${e.message}`);
+      result.tests.client_delete_safety = { success: false, error: (e as Error).message };
+      result.issues.push(`CLIENT DELETE SAFETY: ${(e as Error).message}`);
     }
 
     // TEST 6: Product delete safety
@@ -181,8 +181,8 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      result.tests.product_delete_safety = { success: false, error: e.message };
-      result.issues.push(`PRODUCT DELETE SAFETY: ${e.message}`);
+      result.tests.product_delete_safety = { success: false, error: (e as Error).message };
+      result.issues.push(`PRODUCT DELETE SAFETY: ${(e as Error).message}`);
     }
 
     // Overall status
@@ -192,6 +192,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

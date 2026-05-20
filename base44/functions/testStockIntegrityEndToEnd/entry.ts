@@ -167,8 +167,8 @@ Deno.serve(async (req) => {
       }
 
     } catch (e) {
-      result.error = e.message;
-      result.issues.push(`ERROR: ${e.message}`);
+      result.error = (e as Error).message;
+      result.issues.push(`ERROR: ${(e as Error).message}`);
     }
 
     const allPassed = Object.values(result.steps).every(s => s?.success !== false);
@@ -177,6 +177,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message, status: 'OPEN' }, { status: 500 });
+    return Response.json({ error: (error as Error).message, status: 'OPEN' }, { status: 500 });
   }
 });

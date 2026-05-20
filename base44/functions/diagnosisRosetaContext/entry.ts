@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
         business_id: u.business_id
       }));
     } catch (e) {
-      return Response.json({ error: `Failed to list users: ${e.message}` }, { status: 500 });
+      return Response.json({ error: `Failed to list users: ${(e as Error).message}` }, { status: 500 });
     }
 
     // Step 2: Get all businesses
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
         name: b.name
       }));
     } catch (e) {
-      return Response.json({ error: `Failed to list businesses: ${e.message}` }, { status: 500 });
+      return Response.json({ error: `Failed to list businesses: ${(e as Error).message}` }, { status: 500 });
     }
 
     // Step 3: Identify the issue
@@ -63,6 +63,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

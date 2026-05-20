@@ -62,6 +62,6 @@ Deno.serve(async (req) => {
       date_range: `${new Date(new Date().setDate(new Date().getDate() - 29)).toISOString().split('T')[0]} to ${new Date().toISOString().split('T')[0]}`
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });
