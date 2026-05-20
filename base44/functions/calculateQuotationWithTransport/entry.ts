@@ -53,6 +53,6 @@ Deno.serve(async (req) => {
       hasTransport: client?.force_purchase_all_products === true
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

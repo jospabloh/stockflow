@@ -125,6 +125,6 @@ Deno.serve(async (req) => {
 
     return Response.json(testData, { status: 200 });
   } catch (error) {
-    return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
+    return Response.json({ error: (error as Error).message, stack: error.stack }, { status: 500 });
   }
 });

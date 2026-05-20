@@ -42,13 +42,13 @@ Deno.serve(async (req) => {
       }
 
     } catch (e) {
-      result.error = e.message;
+      result.error = (e as Error).message;
     }
 
     return Response.json(result);
 
   } catch (error) {
-    console.log(`[AUDIT-CATS] ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[AUDIT-CATS] ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

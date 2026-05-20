@@ -169,6 +169,6 @@ Deno.serve(async (req) => {
       message: 'Quotation regenerated successfully'
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

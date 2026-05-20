@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
       } catch (error) {
         return Response.json({
           success: false,
-          error: `Rollback fallido: ${error.message}`,
+          error: `Rollback fallido: ${(error as Error).message}`,
           status: 'converted'
         }, { status: 500 });
       }
@@ -138,6 +138,6 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

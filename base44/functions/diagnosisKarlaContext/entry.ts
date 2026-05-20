@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
           };
         }
       } catch (e) {
-        diagnosis.sidebar_would_show = { error: e.message };
+        diagnosis.sidebar_would_show = { error: (e as Error).message };
       }
     }
 
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
         diagnosis.settings_would_load = { error: 'No AppSettings record found' };
       }
     } catch (e) {
-      diagnosis.settings_would_load = { error: e.message };
+      diagnosis.settings_would_load = { error: (e as Error).message };
     }
 
     // Where would saves target?
@@ -59,6 +59,6 @@ Deno.serve(async (req) => {
     return Response.json(diagnosis);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

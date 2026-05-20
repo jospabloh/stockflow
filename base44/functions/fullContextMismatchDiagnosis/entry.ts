@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
         }
       }
     } catch (e) {
-      result.consistency_check.sidebar_visible_business = { error: e.message };
+      result.consistency_check.sidebar_visible_business = { error: (e as Error).message };
     }
 
     try {
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
         }
       }
     } catch (e) {
-      result.consistency_check.settings_loaded_business = { error: e.message };
+      result.consistency_check.settings_loaded_business = { error: (e as Error).message };
     }
 
     // 3 & 4. Categories and Products save targets
@@ -103,6 +103,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

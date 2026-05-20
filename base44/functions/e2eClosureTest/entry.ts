@@ -69,8 +69,8 @@ Deno.serve(async (req) => {
           await base44.entities.Category.delete(created.id);
         }
       } catch (e) {
-        console.error(`[E2E-CLOSURE] Owner categories error:`, e.message);
-        results.tests.owner_categories.error = e.message;
+        console.error(`[E2E-CLOSURE] Owner categories error:`, (e as Error).message);
+        results.tests.owner_categories.error = (e as Error).message;
       }
     }
 
@@ -123,8 +123,8 @@ Deno.serve(async (req) => {
           await base44.entities.Category.delete(created.id);
         }
       } catch (e) {
-        console.error(`[E2E-CLOSURE] Baristop categories error:`, e.message);
-        results.tests.baristop_categories.error = e.message;
+        console.error(`[E2E-CLOSURE] Baristop categories error:`, (e as Error).message);
+        results.tests.baristop_categories.error = (e as Error).message;
       }
     }
 
@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
         }
         console.log(`[E2E-CLOSURE] Isolation check - only own: ${onlyOwn}`);
       } catch (e) {
-        console.error(`[E2E-CLOSURE] Cross-isolation error:`, e.message);
+        console.error(`[E2E-CLOSURE] Cross-isolation error:`, (e as Error).message);
       }
     }
 
@@ -213,8 +213,8 @@ Deno.serve(async (req) => {
         // Cleanup
         await base44.entities.Product.delete(prod.id);
       } catch (e) {
-        console.error(`[E2E-CLOSURE] Core inventory error:`, e.message);
-        results.tests.core_inventory_flow.error = e.message;
+        console.error(`[E2E-CLOSURE] Core inventory error:`, (e as Error).message);
+        results.tests.core_inventory_flow.error = (e as Error).message;
       }
     }
 
@@ -226,6 +226,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[E2E-CLOSURE ERROR]', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

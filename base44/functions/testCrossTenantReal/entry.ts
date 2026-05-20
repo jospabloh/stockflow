@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
       });
       updateResult = await resp.json();
     } catch (e) {
-      updateResult = { fetch_error: e.message };
+      updateResult = { fetch_error: (e as Error).message };
     }
 
     const wasRejected = updateResult?.success === false || !!updateResult?.error || !!updateResult?.fetch_error;
@@ -82,6 +82,6 @@ Deno.serve(async (req) => {
       results
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

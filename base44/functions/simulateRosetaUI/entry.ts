@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      result.ui_simulation.sidebar_check.error = e.message;
+      result.ui_simulation.sidebar_check.error = (e as Error).message;
     }
 
     // Step 2: Check Settings business name
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      result.ui_simulation.settings_check.error = e.message;
+      result.ui_simulation.settings_check.error = (e as Error).message;
     }
 
     // Step 3: Create a category
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
         name: catName
       };
     } catch (e) {
-      result.ui_simulation.category_create = { success: false, error: e.message };
+      result.ui_simulation.category_create = { success: false, error: (e as Error).message };
       return Response.json(result);
     }
 
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      result.ui_simulation.category_read = { success: false, error: e.message };
+      result.ui_simulation.category_read = { success: false, error: (e as Error).message };
     }
 
     // Step 5: Update category
@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
       await base44.entities.Category.update(categoryId, { color: '#00AA66' });
       result.ui_simulation.category_update = { success: true };
     } catch (e) {
-      result.ui_simulation.category_update = { success: false, error: e.message };
+      result.ui_simulation.category_update = { success: false, error: (e as Error).message };
     }
 
     // Step 6: Verify update persisted
@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      result.ui_simulation.category_verify = { success: false, error: e.message };
+      result.ui_simulation.category_verify = { success: false, error: (e as Error).message };
     }
 
     // Step 7: Final pass/fail
@@ -131,6 +131,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

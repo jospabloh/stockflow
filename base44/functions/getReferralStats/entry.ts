@@ -31,6 +31,6 @@ Deno.serve(async (req) => {
       bonus_days_earned: business.referral_bonus_days || 0,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

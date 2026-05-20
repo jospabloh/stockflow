@@ -46,6 +46,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ success: true, category_id: category.id, category });
   } catch (error) {
-    return Response.json({ success: false, error: error.message }, { status: 500 });
+    return Response.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 });

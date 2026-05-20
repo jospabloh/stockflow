@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ success: true, new_stock: newStock });
   } catch (error) {
-    console.log(`[SYNC-STOCK] ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[SYNC-STOCK] ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

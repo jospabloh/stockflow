@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       } catch (e) {
         result.tests.business_record_accessible = {
           pass: false,
-          error: e.message,
+          error: (e as Error).message,
           issue: 'RLS query failed'
         };
       }
@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
       } catch (e) {
         result.tests.app_settings_accessible = {
           pass: false,
-          error: e.message,
+          error: (e as Error).message,
           issue: 'Failed to load AppSettings'
         };
       }
@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
     } catch (e) {
       result.tests.business_record_exists = {
         pass: false,
-        error: e.message,
+        error: (e as Error).message,
         issue: 'Service role query failed'
       };
     }
@@ -128,6 +128,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message, status: 'OPEN' }, { status: 500 });
+    return Response.json({ error: (error as Error).message, status: 'OPEN' }, { status: 500 });
   }
 });

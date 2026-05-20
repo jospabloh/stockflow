@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
         results.errors.push(`CRITICAL: Owner sees ${otherBusinessCategories.length} categories from other businesses!`);
       }
     } catch (e) {
-      results.errors.push(`Isolation test 1 error: ${e.message}`);
+      results.errors.push(`Isolation test 1 error: ${(e as Error).message}`);
     }
 
     // TEST 2: Try to read a Baristop category directly by ID (should fail or return empty)
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
           results.tests.isolation_owner_cannot_see_baristop = false;
           results.errors.push(`CRITICAL: Owner was able to .get() Baristop category ${categoryId}`);
         } catch (getError) {
-          console.log('[CLOSURE-2] Correct: get() denied with:', getError.message);
+          console.log('[CLOSURE-2] Correct: get() denied with:', (getError as Error).message);
           results.tests.isolation_owner_cannot_see_baristop = getError.status === 403;
         }
       } else {
@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
         results.tests.isolation_owner_cannot_see_baristop = true;
       }
     } catch (e) {
-      results.errors.push(`Isolation test 2 error: ${e.message}`);
+      results.errors.push(`Isolation test 2 error: ${(e as Error).message}`);
     }
 
     // TEST 3: Full stock integrity E2E
@@ -203,15 +203,15 @@ Deno.serve(async (req) => {
       }
 
     } catch (e) {
-      console.log(`[CLOSURE-2] Stock integrity error: ${e.message}`);
+      console.log(`[CLOSURE-2] Stock integrity error: ${(e as Error).message}`);
       results.tests.stock_integrity_e2e = false;
-      results.errors.push(`Stock E2E error: ${e.message}`);
+      results.errors.push(`Stock E2E error: ${(e as Error).message}`);
     }
 
     console.log('[CLOSURE-2] Test complete');
     return Response.json(results);
   } catch (error) {
-    console.log(`[CLOSURE-2] Fatal error: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[CLOSURE-2] Fatal error: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

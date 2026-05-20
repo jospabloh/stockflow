@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
         }
       }
     } catch (e) {
-      result.business_context_trace.filter_error = e.message;
+      result.business_context_trace.filter_error = (e as Error).message;
     }
 
     // Step 2: Try exact match (as per the workaround in BusinessContext)
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
         result.business_context_trace.exact_match_found = true;
       }
     } catch (e) {
-      result.business_context_trace.exact_match_error = e.message;
+      result.business_context_trace.exact_match_error = (e as Error).message;
     }
 
     // Step 3: Get ALL businesses to see if RLS is filtering
@@ -86,12 +86,12 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      result.business_context_trace.list_error = e.message;
+      result.business_context_trace.list_error = (e as Error).message;
     }
 
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

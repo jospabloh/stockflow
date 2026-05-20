@@ -1,5 +1,6 @@
 {
   "lint": {
+    "include": ["base44/functions/"],
     "rules": {
       "exclude": [
         "no-import-prefix",

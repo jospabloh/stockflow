@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.log(`[DEBUG] ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[DEBUG] ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

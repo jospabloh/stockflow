@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
       await base44.auth.updateMe({ role: "admin" });
       console.log(`[UPGRADE] Attempted upgrade via auth.updateMe`);
     } catch (e) {
-      console.log(`[UPGRADE] auth.updateMe failed: ${e.message}`);
+      console.log(`[UPGRADE] auth.updateMe failed: ${(e as Error).message}`);
     }
 
     // Verify current state
@@ -32,6 +32,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[ERROR]', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

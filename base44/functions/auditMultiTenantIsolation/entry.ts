@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
         }
 
       } catch (err) {
-        audit[entityName].details.error = err.message;
+        audit[entityName].details.error = (err as Error).message;
         audit[entityName].risk_level = 'CRITICAL';
       }
     }
@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
           }
         }
       } catch (err) {
-        contamination[entityName] = { error: err.message };
+        contamination[entityName] = { error: (err as Error).message };
       }
     }
 
@@ -127,6 +127,6 @@ Deno.serve(async (req) => {
     
   } catch (error) {
     console.error('[auditMultiTenantIsolation]', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

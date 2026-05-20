@@ -35,6 +35,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ message: `Limpieza completada`, revoked });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

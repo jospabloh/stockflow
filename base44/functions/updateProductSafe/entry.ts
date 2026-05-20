@@ -117,6 +117,6 @@ Deno.serve(async (req) => {
     return Response.json({ success: true, product_id, product: updated });
   } catch (error) {
     console.error('[updateProductSafe]', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

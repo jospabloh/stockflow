@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     return Response.json({ 
       valid: false,
-      reason: error.message
+      reason: (error as Error).message
     }, { status: 500 });
   }
 });

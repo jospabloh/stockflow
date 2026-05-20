@@ -30,6 +30,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ valid: true });
   } catch (error) {
-    return Response.json({ valid: false, error: error.message }, { status: 400 });
+    return Response.json({ valid: false, error: (error as Error).message }, { status: 400 });
   }
 });

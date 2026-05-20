@@ -90,8 +90,8 @@ Deno.serve(async (req) => {
         result.issues.push(`CLIENT CREATE: Saved to wrong business! Expected ${businessId}, got ${client.business_id}`);
       }
     } catch (e) {
-      result.tests.client_create = { success: false, error: e.message };
-      result.issues.push(`CLIENT CREATE: ${e.message}`);
+      result.tests.client_create = { success: false, error: (e as Error).message };
+      result.issues.push(`CLIENT CREATE: ${(e as Error).message}`);
     }
 
     // TEST 4: Create Product with valid data
@@ -116,8 +116,8 @@ Deno.serve(async (req) => {
         result.issues.push(`PRODUCT CREATE: Saved to wrong business! Expected ${businessId}, got ${product.business_id}`);
       }
     } catch (e) {
-      result.tests.product_create = { success: false, error: e.message };
-      result.issues.push(`PRODUCT CREATE: ${e.message}`);
+      result.tests.product_create = { success: false, error: (e as Error).message };
+      result.issues.push(`PRODUCT CREATE: ${(e as Error).message}`);
     }
 
     // TEST 5: Create Supplier with valid data
@@ -139,8 +139,8 @@ Deno.serve(async (req) => {
         result.issues.push(`SUPPLIER CREATE: Saved to wrong business! Expected ${businessId}, got ${supplier.business_id}`);
       }
     } catch (e) {
-      result.tests.supplier_create = { success: false, error: e.message };
-      result.issues.push(`SUPPLIER CREATE: ${e.message}`);
+      result.tests.supplier_create = { success: false, error: (e as Error).message };
+      result.issues.push(`SUPPLIER CREATE: ${(e as Error).message}`);
     }
 
     // TEST 6: Verify data persistence
@@ -164,8 +164,8 @@ Deno.serve(async (req) => {
       if (!productFound) result.issues.push("DATA PERSISTENCE: Product not found after creation");
       if (!supplierFound) result.issues.push("DATA PERSISTENCE: Supplier not found after creation");
     } catch (e) {
-      result.tests.data_persistence = { success: false, error: e.message };
-      result.issues.push(`DATA PERSISTENCE: ${e.message}`);
+      result.tests.data_persistence = { success: false, error: (e as Error).message };
+      result.issues.push(`DATA PERSISTENCE: ${(e as Error).message}`);
     }
 
     // Overall status
@@ -175,6 +175,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

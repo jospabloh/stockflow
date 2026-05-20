@@ -63,8 +63,8 @@ Deno.serve(async (req) => {
           } catch (_) {}
         }
       } catch (sendErr) {
-        console.error('[confirmRenewalPayment] sendLifecycleEmails error:', sendErr?.message);
-        dispatchResult = { error: sendErr?.message };
+        console.error('[confirmRenewalPayment] sendLifecycleEmails error:', (sendErr as Error).message);
+        dispatchResult = { error: (sendErr as Error).message };
       }
     }
 
@@ -77,6 +77,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[confirmRenewalPayment] Error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

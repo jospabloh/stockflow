@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
       result.inventory_flow.product_create = { success: true, id: product.id, name: product.name };
       result.stock_numbers.initial = product.stock;
     } catch (e) {
-      result.inventory_flow.product_create = { success: false, error: e.message };
+      result.inventory_flow.product_create = { success: false, error: (e as Error).message };
       result.status = 'failed';
       return Response.json(result);
     }
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       result.inventory_flow.entry_movement = { success: true, id: entry.id };
       result.stock_numbers.after_entry = result.stock_numbers.initial + 5;
     } catch (e) {
-      result.inventory_flow.entry_movement = { success: false, error: e.message };
+      result.inventory_flow.entry_movement = { success: false, error: (e as Error).message };
     }
 
     try {
@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
       result.inventory_flow.exit_movement = { success: true, id: exit.id };
       result.stock_numbers.after_exit = result.stock_numbers.after_entry - 3;
     } catch (e) {
-      result.inventory_flow.exit_movement = { success: false, error: e.message };
+      result.inventory_flow.exit_movement = { success: false, error: (e as Error).message };
     }
 
     try {
@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
       });
       result.inventory_flow.quotation_create = { success: true, id: quotation.id, folio: quotation.folio };
     } catch (e) {
-      result.inventory_flow.quotation_create = { success: false, error: e.message };
+      result.inventory_flow.quotation_create = { success: false, error: (e as Error).message };
     }
 
     try {
@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
       result.inventory_flow.quotation_conversion = { success: true };
       result.stock_numbers.after_quotation_conversion = result.stock_numbers.after_exit - 2; // -2 from quotation
     } catch (e) {
-      result.inventory_flow.quotation_conversion = { success: false, error: e.message };
+      result.inventory_flow.quotation_conversion = { success: false, error: (e as Error).message };
     }
 
     // 7. Final stock check
@@ -160,13 +160,13 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      result.inventory_flow.final_stock_check = { success: false, error: e.message };
+      result.inventory_flow.final_stock_check = { success: false, error: (e as Error).message };
     }
 
     result.status = 'passed';
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

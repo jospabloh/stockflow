@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
         result.acacia_record = { id: acacia.id, name: acacia.name };
       }
     } catch (e) {
-      result.error = e.message;
+      result.error = (e as Error).message;
     }
 
     // Now test: can Karla read her own business via filter?
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      testResults.karla_read_baristop = { error: e.message };
+      testResults.karla_read_baristop = { error: (e as Error).message };
     }
 
     try {
@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
         };
       }
     } catch (e) {
-      testResults.karla_read_acacia = { error: e.message };
+      testResults.karla_read_acacia = { error: (e as Error).message };
     }
 
     result.test_results = testResults;
@@ -84,6 +84,6 @@ Deno.serve(async (req) => {
     return Response.json(result);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

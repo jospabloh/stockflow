@@ -85,13 +85,13 @@ Deno.serve(async (req) => {
       return Response.json(result);
 
     } catch (e) {
-      result.error = e.message;
-      console.log(`[FIX-KARLA] ✗ ERROR: ${e.message}`);
+      result.error = (e as Error).message;
+      console.log(`[FIX-KARLA] ✗ ERROR: ${(e as Error).message}`);
       return Response.json(result, { status: 500 });
     }
 
   } catch (error) {
-    console.log(`[FIX-KARLA] FATAL ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[FIX-KARLA] FATAL ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

@@ -121,6 +121,6 @@ Deno.serve(async (req) => {
       message: 'Weekly test data generated with correct timestamps'
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

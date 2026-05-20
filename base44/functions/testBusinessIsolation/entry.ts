@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
           console.log(`[ISO TEST] ✓ RLS working: Cannot access ${otherBusiness.name} settings`);
         }
       } catch (e) {
-        console.log(`[ISO TEST] ✓ RLS working: Error accessing ${otherBusiness.name}: ${e.message}`);
+        console.log(`[ISO TEST] ✓ RLS working: Error accessing ${otherBusiness.name}: ${(e as Error).message}`);
       }
     }
 
@@ -61,6 +61,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[ISO ERROR]', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

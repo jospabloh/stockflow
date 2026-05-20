@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
           id: movement.id,
           product: movement.data?.product_name,
           updated: false,
-          error: err.message
+          error: (err as Error).message
         });
       }
     }
@@ -67,6 +67,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('Error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

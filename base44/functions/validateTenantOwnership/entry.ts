@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     return Response.json({ 
-      error: error.message, 
+      error: (error as Error).message, 
       owner: false 
     }, { status: 500 });
   }

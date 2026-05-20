@@ -35,8 +35,8 @@ Deno.serve(async (req) => {
         role: u.role
       }));
     } catch (e) {
-      console.log(`[AUDIT-ALL-USERS] Could not list all users: ${e.message}`);
-      results.error_users = e.message;
+      console.log(`[AUDIT-ALL-USERS] Could not list all users: ${(e as Error).message}`);
+      results.error_users = (e as Error).message;
     }
 
     // Get all businesses (service role)
@@ -50,8 +50,8 @@ Deno.serve(async (req) => {
         rfc: b.rfc
       }));
     } catch (e) {
-      console.log(`[AUDIT-ALL-USERS] Could not list all businesses: ${e.message}`);
-      results.error_businesses = e.message;
+      console.log(`[AUDIT-ALL-USERS] Could not list all businesses: ${(e as Error).message}`);
+      results.error_businesses = (e as Error).message;
     }
 
     // Get all products (service role) 
@@ -66,13 +66,13 @@ Deno.serve(async (req) => {
       });
       results.products_by_business = productsByBusiness;
     } catch (e) {
-      console.log(`[AUDIT-ALL-USERS] Could not list all products: ${e.message}`);
+      console.log(`[AUDIT-ALL-USERS] Could not list all products: ${(e as Error).message}`);
     }
 
     return Response.json(results);
 
   } catch (error) {
-    console.log(`[AUDIT-ALL-USERS] ERROR: ${error.message}`);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.log(`[AUDIT-ALL-USERS] ERROR: ${(error as Error).message}`);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

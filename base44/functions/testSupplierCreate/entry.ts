@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     return Response.json({ success: true, supplier_id: sup.id });
 
   } catch (error) {
-    console.error('[TEST-SUP ERROR]', error.message);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('[TEST-SUP ERROR]', (error as Error).message);
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

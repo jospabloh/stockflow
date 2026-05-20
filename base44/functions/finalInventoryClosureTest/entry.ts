@@ -141,13 +141,13 @@ Deno.serve(async (req) => {
       ) ? 'passed' : 'failed';
 
     } catch (e) {
-      testResults.error = e.message;
+      testResults.error = (e as Error).message;
       testResults.status = 'failed';
     }
 
     return Response.json(testResults);
 
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });
