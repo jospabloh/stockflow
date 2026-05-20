@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FileDown, Truck, CheckCircle2, DollarSign, ShoppingCart, Package } from "lucide-react";
+import { FileDown, Truck, CheckCircle2, DollarSign, ShoppingCart, Package, Link, Copy, Check, EyeOff } from "lucide-react";
 import { generateQuotationPDF } from "./QuotationPDF";
 import { calculateLineVAT, getDisplayUnitPrice } from "@/lib/vatCalculator";
 import CreateFromOnDemandModal from "./CreateFromOnDemandModal";
@@ -16,6 +16,8 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
   const [downloading, setDownloading] = useState(false);
   const [createOnDemand, setCreateOnDemand] = useState(null); // { item, itemIndex }
   const [localQuotation, setLocalQuotation] = useState(null);
+  const [sharingLoading, setSharingLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Only sync from parent when the dialog opens or when the folio changes (new quotation)
   React.useEffect(() => {
@@ -37,6 +39,40 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
       await generateQuotationPDF(q, settings, client);
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (q.public_link_enabled && q.public_token) {
+      const link = `${window.location.origin}/q/${q.public_token}`;
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      return;
+    }
+    setSharingLoading(true);
+    try {
+      const token = crypto.randomUUID();
+      await base44.entities.Quotation.update(q.id, { public_token: token, public_link_enabled: true });
+      setLocalQuotation(prev => ({ ...(prev || q), public_token: token, public_link_enabled: true }));
+      onQuotationUpdated?.({ ...q, public_token: token, public_link_enabled: true });
+      const link = `${window.location.origin}/q/${token}`;
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } finally {
+      setSharingLoading(false);
+    }
+  };
+
+  const handleDisableShare = async () => {
+    setSharingLoading(true);
+    try {
+      await base44.entities.Quotation.update(q.id, { public_link_enabled: false });
+      setLocalQuotation(prev => ({ ...(prev || q), public_link_enabled: false }));
+      onQuotationUpdated?.({ ...q, public_link_enabled: false });
+    } finally {
+      setSharingLoading(false);
     }
   };
 
@@ -62,6 +98,15 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
         <DialogHeader className="px-6 pt-5 pb-3 border-b flex flex-row items-center justify-between">
           <DialogTitle className="text-lg font-semibold">Vista previa — {q.folio}</DialogTitle>
           <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={handleShare} disabled={sharingLoading}>
+              {copied ? <Check className="h-4 w-4 mr-1 text-green-600" /> : <Link className="h-4 w-4 mr-1" />}
+              {copied ? "¡Copiado!" : q.public_link_enabled ? "Copiar enlace" : "Compartir enlace"}
+            </Button>
+            {q.public_link_enabled && (
+              <Button size="sm" variant="ghost" title="Desactivar enlace público" onClick={handleDisableShare} disabled={sharingLoading}>
+                <EyeOff className="h-4 w-4" />
+              </Button>
+            )}
             <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={handleDownload} disabled={downloading}>
               <FileDown className="h-4 w-4 mr-1" /> {downloading ? "Generando..." : "Descargar PDF"}
             </Button>

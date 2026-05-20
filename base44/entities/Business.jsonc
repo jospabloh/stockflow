@@ -133,6 +133,18 @@
       "type": "string",
       "format": "date-time",
       "description": "Fecha programada de eliminaci\u00f3n permanente del negocio"
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "C\u00f3digo de referido \u00fanico (REF-XXXXXX)"
+    },
+    "referred_by": {
+      "type": "string",
+      "description": "ID del negocio que refiri\u00f3"
+    },
+    "referral_bonus_days": {
+      "type": "number",
+      "default": 0
     }
   },
   "required": [
