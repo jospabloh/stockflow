@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, CheckCircle2, Minus, ShieldCheck, History } from "lucide-react";
+import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, CheckCircle2, Minus, ShieldCheck, History, Gift } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
 import TeamMembersManager from "@/components/settings/TeamMembersManager";
+import ReferralPanel from "@/components/settings/ReferralPanel";
 import { useBusinessContext } from "@/components/BusinessContext";
 import LicenseInfoCard from "@/components/license/LicenseInfoCard";
 import { toast } from "sonner";
@@ -206,6 +207,7 @@ export default function Settings() {
               {can('Configuracion', 'import_products') && <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>}
               {can('Configuracion', 'delete_account') && <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>}
               <TabsTrigger value="inventario"><PackageSearch className="h-4 w-4 mr-1" /> Audit Inventario</TabsTrigger>
+              <TabsTrigger value="referidos"><Gift className="h-4 w-4 mr-1" /> Referidos</TabsTrigger>
             </>
           )}
           
@@ -785,6 +787,13 @@ export default function Settings() {
                   );
                 })()}
               </Card>
+            </TabsContent>
+          )}
+
+          {/* Referidos — Admin only */}
+          {isAdmin && (
+            <TabsContent value="referidos">
+              <ReferralPanel />
             </TabsContent>
           )}
 

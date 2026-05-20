@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import UnpaidDetailModal from "@/components/dashboard/UnpaidDetailModal";
+import OnboardingWizard from "@/components/OnboardingWizard";
 
 // Función para obtener rango de fechas según período (México City timezone, respeta DST)
 function getDateRange(period) {
@@ -90,6 +91,8 @@ export default function Dashboard() {
   const [_isAdmin, setIsAdmin] = useState(false);
   const [dashboardBusinessId, setDashboardBusinessId] = useState(null);
   const [unpaidModalOpen, setUnpaidModalOpen] = useState(false);
+  const [business, setBusiness] = useState(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [salesPeriod, setSalesPeriod] = useState("day");
   const [customDateRange, setCustomDateRange] = useState({ start: null, end: null });
   const [isDark, setIsDark] = useState(() => typeof document !== "undefined" && document.documentElement.classList.contains("dark"));
@@ -119,6 +122,14 @@ export default function Dashboard() {
       // Cargar cotizaciones para todos (para ventas del día)
       const quots = await base44.entities.Quotation.filter({ business_id: bId }, "-created_date", 1000).catch(() => []);
       setQuotations(quots);
+      // Load business for onboarding wizard check
+      const bizList = await base44.entities.Business.filter({ id: bId }).catch(() => []);
+      const biz = bizList.find((b) => b.id === bId) || null;
+      setBusiness(biz);
+      if (biz?.trial_end_at && !localStorage.getItem("onboarding_v1_done")) {
+        const daysLeft = Math.ceil((new Date(biz.trial_end_at) - new Date()) / (1000 * 60 * 60 * 24));
+        if (daysLeft >= 29) setShowOnboarding(true);
+      }
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -398,6 +409,12 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5 max-w-7xl mx-auto">
+      {showOnboarding && (
+        <OnboardingWizard
+          inviteCode={business?.invite_code}
+          onClose={() => setShowOnboarding(false)}
+        />
+      )}
       {/* FILTRO GLOBAL EN TOP */}
       {can('Dashboard', 'period_filter') && (
       <div className="sticky top-0 z-10 bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-indigo-950/30 dark:to-cyan-950/30 backdrop-blur-sm border-b border-indigo-200 dark:border-indigo-900 rounded-lg p-3 md:p-4 mb-2">

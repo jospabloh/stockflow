@@ -22,6 +22,7 @@ export default function BusinessSetup() {
   const [mode, setMode] = useState(null);
   const [loading, setLoading] = useState(false);
   const [createForm, setCreateForm] = useState({ name: "", phone: "", address: "" });
+  const [referralCode, setReferralCode] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [joinAttempts, setJoinAttempts] = useState(0);
   const [joinCooldown, setJoinCooldown] = useState(0);
@@ -52,6 +53,16 @@ export default function BusinessSetup() {
     await base44.functions.invoke("initTenantTrial", { business_id: business.id }).catch(() => {});
     // Seed default permission profiles (admin + almacenista) for the new business
     await base44.functions.invoke("seedDefaultPermissionProfiles", {}).catch(() => {});
+    // Apply referral code if provided (non-fatal)
+    if (referralCode.trim()) {
+      const refResult = await base44.functions.invoke("applyReferralCode", {
+        business_id: business.id,
+        referral_code: referralCode.trim(),
+      }).catch(() => null);
+      if (refResult?.data?.success) {
+        toast.success(`¡Código aplicado! +15 días de prueba extra de parte de ${refResult.data.referrer_name}.`);
+      }
+    }
     await refreshBusiness();
     toast.success("¡Negocio creado! Bienvenido a StockFlow. Tienes 30 días de prueba.");
     navigate("/Dashboard");
@@ -196,6 +207,16 @@ export default function BusinessSetup() {
                   value={createForm.address}
                   onChange={(e) => setCreateForm({ ...createForm, address: e.target.value })}
                   placeholder="Calle, colonia, ciudad"
+                />
+              </div>
+              <div>
+                <Label>Código de referido <span className="text-slate-400 text-xs font-normal">(opcional)</span></Label>
+                <Input
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  placeholder="REF-XXXXXX"
+                  className="font-mono tracking-widest"
+                  maxLength={10}
                 />
               </div>
             </div>
