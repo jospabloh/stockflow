@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
 
     // Find h.josepablo by email
     const users = await base44.asServiceRole.entities.User.list();
-    const owner = users.find(u => u.email === "h.josepablo@gmail.com");
+    const owner = users.find(u => u.email === PLATFORM_OWNER_EMAIL);
 
     if (!owner) {
       return Response.json({ error: 'Owner not found' }, { status: 404 });

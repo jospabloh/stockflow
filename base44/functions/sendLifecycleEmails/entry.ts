@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
 const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
-const SUPPORT_EMAIL = 'soporte@acaciaco.com.mx';
+const SUPPORT_EMAIL = Deno.env.get('SUPPORT_EMAIL') || 'soporte@acaciaco.com.mx';
 const APP_NAME = 'StockFlow';
 const BRAND_COLOR = '#4F46E5';
 const UPGRADE_URL = 'https://www.acaciaco.com.mx/stockflow';
