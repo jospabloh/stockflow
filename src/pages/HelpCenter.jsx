@@ -119,13 +119,11 @@ const MarkdownContent = ({ content }) => {
   return <>{elements}</>;
 };
 
-const PLATFORM_ADMIN_EMAIL = "h.josepablo@gmail.com";
-
-function filterArticlesByTenantRules(articles, tenantRuleMap, isPlatformAdmin, userEmail) {
+function filterArticlesByTenantRules(articles, tenantRuleMap, isPlatformAdmin) {
   return articles.filter(article => {
     // Platform-admin-only articles: only shown to platform admin
     if (article.category === "Administración Plataforma") {
-      return isPlatformAdmin || userEmail === PLATFORM_ADMIN_EMAIL;
+      return isPlatformAdmin;
     }
 
     // Tenant-rule-scoped articles: only shown when the rule is enabled for this tenant
@@ -150,17 +148,15 @@ export default function HelpCenter() {
   useEffect(() => {
     const loadHelp = async () => {
       try {
-        const [{ localHelpData }, userResult, ruleMapResult] = await Promise.all([
+        const [{ localHelpData }, ruleMapResult] = await Promise.all([
           import("@/lib/helpData"),
-          base44.auth.me().catch(() => null),
           base44.functions.invoke("getCurrentTenantRuleMap", {}).catch(() => ({ data: { rules: {} } })),
         ]);
 
         const allArticles = (localHelpData && localHelpData.articles) || [];
         const tenantRuleMap = ruleMapResult?.data?.rules || {};
-        const userEmail = userResult?.email || "";
 
-        const visible = filterArticlesByTenantRules(allArticles, tenantRuleMap, isPlatformAdmin, userEmail);
+        const visible = filterArticlesByTenantRules(allArticles, tenantRuleMap, isPlatformAdmin);
         setArticles(visible);
         if (visible.length > 0) {
           setActiveId(visible[0].id);
