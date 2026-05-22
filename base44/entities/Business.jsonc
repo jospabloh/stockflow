@@ -139,9 +139,7 @@
     "name"
   ],
   "rls": {
-    "create": {
-      "business_id": "{{user.business_id}}"
-    },
+    "create": {},
     "read": {
       "id": "{{user.business_id}}"
     },
