@@ -5,8 +5,6 @@ import { getPermissionModule } from "./permissionModuleMap";
 
 const PermissionContext = createContext(null);
 
-const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
-
 function legacyCheck(artifact, action, role) {
   const roleDefaults = LEGACY_DEFAULTS[role];
   if (!roleDefaults) return false;
@@ -21,6 +19,7 @@ export function PermissionProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -34,6 +33,7 @@ export function PermissionProvider({ children }) {
       const data = response.data;
       setProfiles(data?.profiles || {});
       setFeatureEnabled(data?.featureEnabled === true);
+      setIsPlatformAdmin(data?.is_platform_admin === true);
     } catch (_) {
       setProfiles({});
       setFeatureEnabled(false);
@@ -47,7 +47,7 @@ export function PermissionProvider({ children }) {
   }, [load]);
 
   const can = useCallback((pageName, action = 'ver') => {
-    if (userEmail === PLATFORM_OWNER_EMAIL) return true;
+    if (isPlatformAdmin) return true;
 
     // Admin siempre tiene acceso completo
     if (userRole === 'admin') return true;
@@ -109,7 +109,7 @@ export function PermissionProvider({ children }) {
 
     // Fallback final
     return legacyCheck(moduleName, action, userRole);
-  }, [userEmail, featureEnabled, profiles, userRole]);
+  }, [isPlatformAdmin, featureEnabled, profiles, userRole]);
 
   const canSee = useCallback((pageName) => can(pageName, 'view'), [can]);
 

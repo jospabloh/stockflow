@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
+
 // Generar defaults completos para admin (acceso total)
 function getAdminDefaults() {
   const REGISTRY_MODULES = [
@@ -67,10 +69,11 @@ Deno.serve(async (req) => {
       profiles['admin'] = getAdminDefaults();
     }
 
-    return Response.json({ 
+    return Response.json({
       success: true,
       profiles,
       featureEnabled,
+      is_platform_admin: Boolean(PLATFORM_OWNER_EMAIL) && user.email === PLATFORM_OWNER_EMAIL,
     });
   } catch (error) {
     return Response.json({ error: (error as Error).message }, { status: 500 });

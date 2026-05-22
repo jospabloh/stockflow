@@ -16,26 +16,26 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const user = users[0];
-    
+    const rosetaUser = users[0];
+
     // Create clean data object without _app_role
     const cleanData = {
       role: 'admin',
-      business_id: '69c575fa1beaf2c90214d3ee',
+      business_id: Deno.env.get('ROSETA_BUSINESS_ID') || '69c575fa1beaf2c90214d3ee',
       is_service: false,
-      app_id: '69af971d0fdb362c9ae52ed3',
+      app_id: Deno.env.get('BASE44_APP_ID') || '69af971d0fdb362c9ae52ed3',
       is_verified: true
     };
 
     // Update with clean data
-    await base44.asServiceRole.entities.User.update(user.id, { data: cleanData });
+    await base44.asServiceRole.entities.User.update(rosetaUser.id, { data: cleanData });
 
     // Verify
     const updated = await base44.asServiceRole.entities.User.filter({ email: 'roseta.cafeteria@gmail.com' });
-    
+
     return Response.json({
       success: true,
-      before_app_role: user.data?._app_role,
+      before_app_role: rosetaUser.data?._app_role,
       after_app_role: updated[0]?.data?._app_role,
       user_role: updated[0]?.role,
     });

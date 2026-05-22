@@ -3,8 +3,6 @@ import { base44 } from "@/api/base44Client";
 
 const LicenseContext = createContext(null);
 
-const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
-
 export function LicenseProvider({ children }) {
   const [license, setLicense] = useState(null);
   const [loading, setLoading] = useState(true);
