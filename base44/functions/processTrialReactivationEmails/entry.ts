@@ -13,7 +13,7 @@
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
+const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
 const APP_NAME = 'StockFlow';
 const BRAND_COLOR = '#4F46E5';
 const SUPPORT_EMAIL = 'soporte@acaciaco.com.mx';
@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
     );
     if (!validCron) {
       const user = await base44.auth.me().catch(() => null);
-      if (!user || user.email !== PLATFORM_OWNER_EMAIL) {
+      if (!user || !PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }

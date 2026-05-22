@@ -3,10 +3,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
     const user = await base44.auth.me();
 
     if (!user) {
       return Response.json({ error: 'User not authenticated' }, { status: 401 });
+    }
+    if (!PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) {
+      return Response.json({ error: 'Forbidden: platform owner only' }, { status: 403 });
     }
 
     console.log(`[E2E-CLOSURE] Starting test for ${user.email}`);
@@ -21,7 +25,7 @@ Deno.serve(async (req) => {
     };
 
     // TEST 1: Owner Categories (h.josepablo@gmail.com)
-    if (user.email === "h.josepablo@gmail.com") {
+    if (user.email === PLATFORM_OWNER_EMAIL) {
       results.tests.owner_categories = {
         step_1_create: false,
         step_2_verify_success_toast: 'UI manual verification required',
@@ -129,7 +133,7 @@ Deno.serve(async (req) => {
     }
 
     // TEST 3: Cross-business isolation in backend
-    if (user.email === "h.josepablo@gmail.com" || user.email === "karla.baristop@gmail.com") {
+    if (user.email === PLATFORM_OWNER_EMAIL || user.email === "karla.baristop@gmail.com") {
       results.tests.cross_business_isolation = {
         owner_cannot_see_baristop: false,
         baristop_cannot_see_owner: false,
@@ -145,7 +149,7 @@ Deno.serve(async (req) => {
         const allCats = await base44.entities.Category.list();
         const onlyOwn = allCats.every(c => c.business_id === user.business_id);
         
-        if (user.email === "h.josepablo@gmail.com") {
+        if (user.email === PLATFORM_OWNER_EMAIL) {
           results.tests.cross_business_isolation.owner_cannot_see_baristop = onlyOwn;
         } else if (user.email === "karla.baristop@gmail.com") {
           results.tests.cross_business_isolation.baristop_cannot_see_owner = onlyOwn;
@@ -157,7 +161,7 @@ Deno.serve(async (req) => {
     }
 
     // TEST 4: Core inventory flow
-    if (user.email === "h.josepablo@gmail.com") {
+    if (user.email === PLATFORM_OWNER_EMAIL) {
       results.tests.core_inventory_flow = {
         product_created: false,
         entry_created: false,

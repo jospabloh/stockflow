@@ -4,6 +4,7 @@ Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
         const user = await base44.auth.me();
+        if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
         const { issue_type, description, user_name, user_email } = await req.json();
         const reporter_name = user_name || user?.full_name || 'Desconocido';
@@ -16,7 +17,7 @@ Deno.serve(async (req) => {
 
         const subject = subjectMap[issue_type] || '📩 Reporte de usuario en StockFlow';
         const from_name = 'StockFlow Asistente';
-        const to = 'h.josepablo@gmail.com';
+        const to = Deno.env.get('SUPPORT_EMAIL') || Deno.env.get('PLATFORM_OWNER_EMAIL');
 
         const body = `
 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">

@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
+const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
 
 /**
  * Scheduled daily job that queues and sends all lifecycle billing emails:
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
     );
     if (!validCron) {
       const user = await base44.auth.me().catch(() => null);
-      if (!user || (user.email !== PLATFORM_OWNER_EMAIL && user.role !== 'admin')) {
+      if (!user || (!PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) && user.role !== 'admin') {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }

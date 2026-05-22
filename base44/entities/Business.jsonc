@@ -151,12 +151,9 @@
     "name"
   ],
   "rls": {
-    "read": {
-      "id": "{{user.business_id}}"
-    },
-    "update": {},
-    "delete": {
-      "id": "{{user.business_id}}"
-    }
+    "read":   { "id": "{{user.business_id}}" },
+    "create": { "id": "{{user.business_id}}" },
+    "update": { "id": "{{user.business_id}}" },
+    "delete": { "id": "{{user.business_id}}" }
   }
 }

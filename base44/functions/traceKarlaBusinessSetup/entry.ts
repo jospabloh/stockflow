@@ -3,11 +3,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
+    const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
+
     console.log("[TRACE] Starting Karla BusinessSetup trace...");
-    
+
     // Get Karla's user record
     const karla = await base44.auth.me();
+    if (!karla) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!PLATFORM_OWNER_EMAIL || karla.email !== PLATFORM_OWNER_EMAIL) {
+      return Response.json({ error: 'Forbidden: platform owner only' }, { status: 403 });
+    }
     console.log(`[TRACE] Karla user: email=${karla.email}, business_id=${karla.business_id}, role=${karla.role}`);
     
     if (!karla.business_id) {

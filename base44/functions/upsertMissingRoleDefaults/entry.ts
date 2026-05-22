@@ -6,7 +6,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * Any admin of the tenant can call this (or platform admin).
  */
 
-const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
+const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
 
 const ROLE_DEFAULTS = {
   admin: {
@@ -83,13 +83,13 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Allow tenant admin or platform owner
-    if (user.role !== 'admin' && user.email !== PLATFORM_OWNER_EMAIL) {
+    if (user.role !== 'admin' && (!PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL)) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const body = await req.json().catch(() => ({}));
     // Allow platform admin to specify a target business_id
-    const business_id = (user.email === PLATFORM_OWNER_EMAIL && body.business_id)
+    const business_id = (PLATFORM_OWNER_EMAIL && user.email === PLATFORM_OWNER_EMAIL && body.business_id)
       ? body.business_id
       : user.business_id;
 

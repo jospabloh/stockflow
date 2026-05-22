@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
+const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
 const APP_NAME = 'StockFlow';
 const BRAND_COLOR = '#4F46E5';
 const ROLES = ['admin', 'almacenista'] as const;
@@ -312,7 +312,7 @@ Deno.serve(async (req) => {
   if (!authorized) {
     try {
       const user = await base44.auth.me();
-      authorized = user?.email === PLATFORM_OWNER_EMAIL;
+      authorized = Boolean(PLATFORM_OWNER_EMAIL) && user?.email === PLATFORM_OWNER_EMAIL;
     } catch { /* no valid session */ }
   }
   if (!authorized) {

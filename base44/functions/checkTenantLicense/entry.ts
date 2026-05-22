@@ -26,8 +26,8 @@ Deno.serve(async (req) => {
 
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
-  const isPlatformAdmin = user.email === PLATFORM_OWNER_EMAIL;
+  const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
+  const isPlatformAdmin = Boolean(PLATFORM_OWNER_EMAIL) && user.email === PLATFORM_OWNER_EMAIL;
 
   if (isPlatformAdmin) {
     return Response.json({

@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
+const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
 
 // Canonical keys (duplicated from seed; Deno cannot import from src/)
 const CANONICAL_KEYS: string[] = [
@@ -91,12 +91,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (user.email !== PLATFORM_OWNER_EMAIL && user.role !== 'admin') {
+    if ((!PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) && user.role !== 'admin') {
       return Response.json({ error: 'Forbidden — solo admin o platform-owner' }, { status: 403 });
     }
 
     const business_id = user.business_id;
-    if (!business_id && user.email !== PLATFORM_OWNER_EMAIL) {
+    if (!business_id && (!PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL)) {
       return Response.json({ error: 'User has no business_id' }, { status: 400 });
     }
 

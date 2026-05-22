@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-const PLATFORM_OWNER_EMAIL = 'h.josepablo@gmail.com';
+const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
 
 Deno.serve(async (req) => {
   try {
@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const requestedBusinessId = body?.business_id;
-    const isPlatformAdmin = user.email === PLATFORM_OWNER_EMAIL;
+    const isPlatformAdmin = Boolean(PLATFORM_OWNER_EMAIL) && user.email === PLATFORM_OWNER_EMAIL;
 
     const businessId = requestedBusinessId
       ? (isPlatformAdmin ? requestedBusinessId : user.business_id)
