@@ -434,14 +434,24 @@ export default function VirtualizedQuotationTable({
         {/* Header con filtros por columna */}
         <div className="flex items-center px-4 py-2.5 bg-muted/40 border-b border-border sticky top-0 z-10">
           <div className="w-24">
-            <span className="text-[11px] font-semibold text-muted-foreground">Folio</span>
+            <ColumnFilterPopover
+              label="Folio"
+              type="search"
+              selected={filters?.folioSearch || ""}
+              onChange={(val) => onFiltersChange({ ...filters, folioSearch: val })}
+            />
           </div>
 
           <div className="flex-1">
-            <span className="text-[11px] font-semibold text-muted-foreground">Cliente</span>
+            <ColumnFilterPopover
+              label="Cliente"
+              type="search"
+              selected={filters?.clientSearch || ""}
+              onChange={(val) => onFiltersChange({ ...filters, clientSearch: val })}
+            />
           </div>
 
-          <div className="w-20 text-center">
+          <div className="w-20">
             <ColumnFilterPopover
               label="Fecha"
               type="daterange"
@@ -450,7 +460,7 @@ export default function VirtualizedQuotationTable({
             />
           </div>
 
-          <div className="w-28 text-right">
+          <div className="w-28 text-right pr-2">
             <span className="text-[11px] font-semibold text-muted-foreground">Total</span>
           </div>
 
@@ -472,7 +482,7 @@ export default function VirtualizedQuotationTable({
             <span className="text-[11px] font-semibold text-muted-foreground">Seguimiento</span>
           </div>
 
-          <div className="w-24 text-center">
+          <div className="w-24">
             <ColumnFilterPopover
               label="Pago"
               type="multiselect"

@@ -4,13 +4,13 @@ import { cn } from "@/lib/utils";
 
 /**
  * ColumnFilterPopover — filtro tipo Excel por columna.
- * Soporta: multi-selección, búsqueda interna y rango de fechas.
+ * Soporta: multi-selección, búsqueda interna, rango de fechas y búsqueda de texto.
  *
  * Props:
  *  label         — texto del encabezado de columna
- *  type          — "multiselect" | "daterange"
+ *  type          — "multiselect" | "daterange" | "search"
  *  options       — array de { value, label } (solo multiselect)
- *  selected      — Set de valores activos (multiselect) o { from, to } (daterange)
+ *  selected      — Set (multiselect) | { from, to } (daterange) | string (search)
  *  onChange      — fn(newSelected) → callback al padre
  *  className     — clases adicionales al trigger
  */
@@ -21,6 +21,7 @@ export default function ColumnFilterPopover({ label, type = "multiselect", optio
 
   const isMulti = type === "multiselect";
   const isDate = type === "daterange";
+  const isSearch = type === "search";
 
   // Cierra al hacer click fuera
   useEffect(() => {
@@ -35,7 +36,11 @@ export default function ColumnFilterPopover({ label, type = "multiselect", optio
   // ¿Hay filtros activos?
   const hasActive = isMulti
     ? selected instanceof Set && selected.size > 0
-    : isDate && (selected?.from || selected?.to);
+    : isDate
+      ? !!(selected?.from || selected?.to)
+      : isSearch
+        ? !!(selected && selected.trim())
+        : false;
 
   const filtered = isMulti
     ? options.filter(o => o.label.toLowerCase().includes(search.toLowerCase()))
@@ -50,7 +55,8 @@ export default function ColumnFilterPopover({ label, type = "multiselect", optio
   const clearAll = (e) => {
     e.stopPropagation();
     if (isMulti) onChange(new Set());
-    else onChange({ from: "", to: "" });
+    else if (isDate) onChange({ from: "", to: "" });
+    else onChange("");
   };
 
   return (
@@ -183,6 +189,23 @@ export default function ColumnFilterPopover({ label, type = "multiselect", optio
                   value={selected?.to || ""}
                   onChange={e => onChange({ ...selected, to: e.target.value })}
                   className="w-full text-xs border border-border rounded-md px-2 py-1.5 bg-background outline-none focus:ring-1 focus:ring-indigo-400"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Search text */}
+          {isSearch && (
+            <div className="px-3 py-3">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder={`Buscar ${label.toLowerCase()}...`}
+                  value={selected || ""}
+                  onChange={e => onChange(e.target.value)}
+                  className="w-full pl-6 pr-2 py-1.5 text-xs border border-border rounded-md bg-background outline-none focus:ring-1 focus:ring-indigo-400"
+                  autoFocus
                 />
               </div>
             </div>

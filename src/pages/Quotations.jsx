@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
 import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"; // usado en dialogs de pago/conversión
 
 
 import {
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 
-import { Plus, Search, Banknote, Coins, X } from "lucide-react";
+import { Plus, Banknote, Coins, X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -52,8 +52,6 @@ export default function Quotations() {
   const { canSee } = useFieldVisibility("Cotizaciones");
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [convertQuotation, setConvertQuotation] = useState(null);
   const [convertPaymentMethod, setConvertPaymentMethod] = useState("");
   const [convertError, setConvertError] = useState("");
@@ -71,6 +69,8 @@ export default function Quotations() {
   const [paymentMethodsCatalog, setPaymentMethodsCatalog] = useState([]);
   // Filtros tipo Excel — estado centralizado
   const [tableFilters, setTableFilters] = useState({
+    folioSearch: "",
+    clientSearch: "",
     statuses: new Set(),
     paymentMethods: new Set(),
     dateRange: { from: "", to: "" },
@@ -88,7 +88,7 @@ export default function Quotations() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const status = params.get("status");
-    if (status) setStatusFilter(status);
+    if (status) setTableFilters(f => ({ ...f, statuses: new Set([status]) }));
   }, [location.search]);
 
   const loadData = async (bId) => {
@@ -103,13 +103,13 @@ export default function Quotations() {
   useEffect(() => { if (businessId) loadData(businessId); }, [businessId]);
 
   const filtered = quotations.filter((q) => {
-    const s = search.toLowerCase();
-    const matchSearch = !s ||
-      q.client_name?.toLowerCase().includes(s) ||
-      q.folio?.toLowerCase().includes(s) ||
-      q.client_email?.toLowerCase().includes(s) ||
-      q.client_phone?.toLowerCase().includes(s) ||
-      statusConfig[q.status]?.label?.toLowerCase().includes(s);
+    // Filtro folio por columna
+    const folioQ = tableFilters.folioSearch?.trim().toLowerCase();
+    const matchFolio = !folioQ || q.folio?.toLowerCase().includes(folioQ);
+
+    // Filtro cliente por columna
+    const clientQ = tableFilters.clientSearch?.trim().toLowerCase();
+    const matchClient = !clientQ || q.client_name?.toLowerCase().includes(clientQ);
 
     // Filtro multi-estado
     const matchStatus = tableFilters.statuses.size === 0 || tableFilters.statuses.has(q.status);
@@ -131,19 +131,19 @@ export default function Quotations() {
       if (to && dateStr > to) matchDate = false;
     }
 
-    return matchSearch && matchStatus && matchPaymentMethod && matchDate;
+    return matchFolio && matchClient && matchStatus && matchPaymentMethod && matchDate;
   });
 
   const activeFiltersCount = [
+    tableFilters.folioSearch?.trim(),
+    tableFilters.clientSearch?.trim(),
     tableFilters.statuses.size > 0,
     tableFilters.paymentMethods.size > 0,
     tableFilters.dateRange.from || tableFilters.dateRange.to,
-    search.trim() !== ""
   ].filter(Boolean).length;
 
   const clearAllFilters = () => {
-    setSearch("");
-    setTableFilters({ statuses: new Set(), paymentMethods: new Set(), dateRange: { from: "", to: "" } });
+    setTableFilters({ folioSearch: "", clientSearch: "", statuses: new Set(), paymentMethods: new Set(), dateRange: { from: "", to: "" } });
   };
 
   const activePaymentMethodNames = paymentMethodsCatalog.map((pm) => pm.name);
@@ -298,18 +298,8 @@ export default function Quotations() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <OnDemandPendingPanel />
-      {/* Barra de acciones: buscador + nueva cotización */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        <div className="relative flex-1 max-w-md w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Buscar por cliente, folio..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-            aria-label="Buscar cotizaciones"
-          />
-        </div>
+      {/* Barra de acciones */}
+      <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           {activeFiltersCount > 0 && (
             <button
@@ -321,15 +311,15 @@ export default function Quotations() {
               <span className="bg-red-100 text-red-600 rounded-full px-1.5 text-[10px] font-bold">{activeFiltersCount}</span>
             </button>
           )}
-          <span className="text-xs text-muted-foreground hidden sm:inline">
+          <span className="text-xs text-muted-foreground">
             {filtered.length} resultado{filtered.length !== 1 ? "s" : ""}
           </span>
-          {can('Cotizaciones', 'create') && (
-            <Button className="bg-indigo-600 hover:bg-indigo-700 shrink-0" onClick={() => navigate("/Quotations/new")}>
-              <Plus className="h-4 w-4 mr-1" /> Nueva Cotización
-            </Button>
-          )}
         </div>
+        {can('Cotizaciones', 'create') && (
+          <Button className="bg-indigo-600 hover:bg-indigo-700 shrink-0" onClick={() => navigate("/Quotations/new")}>
+            <Plus className="h-4 w-4 mr-1" /> Nueva Cotización
+          </Button>
+        )}
       </div>
 
       {can('Cotizaciones', 'view') && (
