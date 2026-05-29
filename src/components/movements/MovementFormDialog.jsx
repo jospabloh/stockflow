@@ -165,7 +165,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
   const canSave =
     items.some(i => i.product) &&
-    (!needsParty || ((!paymentRequired || paymentMethodId) && clientId)) &&
+    (!needsParty || ((!paymentRequired || !!paymentMethodId) && !!clientId)) &&
     !(isReturnWithCash && pettyCashDeduct === null) &&
     !saving;
 
@@ -174,7 +174,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       toast.error("Selecciona al menos un producto");
       return;
     }
-    if (needsParty && !paymentMethodId) {
+    if (paymentRequired && !paymentMethodId) {
       toast.error("⚠️ Selecciona la forma de pago");
       return;
     }
