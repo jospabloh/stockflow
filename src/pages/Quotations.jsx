@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/alert-dialog";
 
 
-import { Plus, Search, Banknote, Coins } from "lucide-react";
+import { Plus, Search, Banknote, Coins, Filter, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -69,6 +70,8 @@ export default function Quotations() {
   const [businessId, setBusinessId] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [paymentMethodsCatalog, setPaymentMethodsCatalog] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("all");
 
   useEffect(() => {
     base44.auth.me().then(u => {
@@ -98,23 +101,32 @@ export default function Quotations() {
 
   const filtered = quotations.filter((q) => {
     const s = search.toLowerCase();
-    const matchSearch = q.client_name?.toLowerCase().includes(s) ||
+    const matchSearch = !s ||
+      q.client_name?.toLowerCase().includes(s) ||
       q.folio?.toLowerCase().includes(s) ||
       q.client_email?.toLowerCase().includes(s) ||
       q.client_phone?.toLowerCase().includes(s) ||
       statusConfig[q.status]?.label?.toLowerCase().includes(s);
-    
-    let matchStatus = statusFilter === "all";
-    if (statusFilter === "converted") {
-      matchStatus = q.status === "converted";
-    } else if (statusFilter === "active") {
-      matchStatus = ["draft", "sent", "accepted"].includes(q.status);
-    } else if (statusFilter === "cancelled") {
-      matchStatus = q.status === "cancelled";
+
+    let matchStatus = selectedStatus === "all" || q.status === selectedStatus;
+
+    let matchPaymentMethod = true;
+    if (selectedPaymentMethod !== "all") {
+      const hasPmInPayments = q.payments?.some(p =>
+        p.payment_method === selectedPaymentMethod
+      );
+      const hasPmDirect = q.payment_method === selectedPaymentMethod;
+      matchPaymentMethod = hasPmInPayments || hasPmDirect;
     }
-    
-    return matchSearch && matchStatus;
+
+    return matchSearch && matchStatus && matchPaymentMethod;
   });
+
+  const activeFiltersCount = [
+    selectedStatus !== "all",
+    selectedPaymentMethod !== "all",
+    search.trim() !== ""
+  ].filter(Boolean).length;
   const activePaymentMethodNames = paymentMethodsCatalog.map((pm) => pm.name);
   const hasActivePaymentCatalog = activePaymentMethodNames.length > 0;
 
@@ -267,22 +279,70 @@ export default function Quotations() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <OnDemandPendingPanel />
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="relative flex-1 max-w-md w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Buscar por cliente o folio..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-            aria-label="Buscar cotizaciones por cliente o folio"
-          />
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+          <div className="relative flex-1 max-w-md w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Buscar por cliente o folio..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+              aria-label="Buscar cotizaciones por cliente o folio"
+            />
+          </div>
+          {can('Cotizaciones', 'create') && (
+            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Quotations/new")}>
+              <Plus className="h-4 w-4 mr-1" /> Nueva Cotización
+            </Button>
+          )}
         </div>
-        {can('Cotizaciones', 'create') && (
-          <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Quotations/new")}>
-            <Plus className="h-4 w-4 mr-1" /> Nueva Cotización
-          </Button>
-        )}
+
+        {/* Filtros por encabezado */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Filter className="h-4 w-4" />
+            <span>Filtros:</span>
+          </div>
+
+          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <SelectTrigger className="w-44 h-8 text-sm">
+              <SelectValue placeholder="Estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los estados</SelectItem>
+              {Object.entries(statusConfig).map(([key, cfg]) => (
+                <SelectItem key={key} value={key}>{cfg.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
+            <SelectTrigger className="w-48 h-8 text-sm">
+              <SelectValue placeholder="Método de pago" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los métodos</SelectItem>
+              {paymentMethodsCatalog.map((pm) => (
+                <SelectItem key={pm.id} value={pm.name}>{pm.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {activeFiltersCount > 0 && (
+            <button
+              type="button"
+              onClick={() => { setSelectedStatus("all"); setSelectedPaymentMethod("all"); setSearch(""); }}
+              className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+            >
+              <X className="h-3 w-3" /> Limpiar filtros ({activeFiltersCount})
+            </button>
+          )}
+
+          <span className="text-xs text-muted-foreground ml-auto">
+            {filtered.length} resultado{filtered.length !== 1 ? "s" : ""}
+          </span>
+        </div>
       </div>
 
       {can('Cotizaciones', 'view') && (
