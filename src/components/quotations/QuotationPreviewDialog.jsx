@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { FileDown, Truck, CheckCircle2, DollarSign, ShoppingCart, Package, Link, Copy, Check, EyeOff } from "lucide-react";
 import { generateQuotationPDF } from "./QuotationPDF";
-import { calculateLineVAT, getDisplayUnitPrice } from "@/lib/vatCalculator";
+import { getDisplayUnitPrice } from "@/lib/vatCalculator";
 import CreateFromOnDemandModal from "./CreateFromOnDemandModal";
 import QuotationPaymentsSection from "./QuotationPaymentsSection";
 
@@ -176,18 +176,19 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                   <th className="px-3 py-2 text-left">Descripción</th>
                   <th className="px-3 py-2 text-center w-12">Cant.</th>
                   <th className="px-3 py-2 text-right w-20">Precio unit.</th>
-                  <th className="px-3 py-2 text-center w-16">IVA</th>
+                  <th className="px-3 py-2 text-center w-16">IVA/u.</th>
                   <th className="px-3 py-2 text-right w-20">Total</th>
                   {canCreateFromOnDemand && <th className="px-3 py-2 w-28"></th>}
                 </tr>
               </thead>
               <tbody>
                 {(q.items || []).map((item, i) => {
-                  const { vat: ivaAmount } = calculateLineVAT(item.total || 0, item.tax_rate);
                   const taxRate = Number(item.tax_rate ?? 0);
                   const hasTax = taxRate > 0;
                   const totalPrice = item.total || 0;
                   const displayUnitPrice = getDisplayUnitPrice(item.unit_price, item.tax_rate);
+                  // IVA por unidad (igual que precio unit. se muestra por unidad)
+                  const ivaPerUnit = hasTax ? displayUnitPrice * 0.16 : 0;
                   const isPendingOnDemand = item.is_on_demand && item.on_demand_status === "pending";
                   const isCreatedOnDemand = item.is_on_demand && item.on_demand_status === "product_created";
 
@@ -213,7 +214,7 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                       <td className="px-3 py-2 text-center">
                         {hasTax ? (
                           <span className="bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded text-[10px]">
-                            ${fmt(ivaAmount)}
+                            ${fmt(ivaPerUnit)}
                           </span>
                         ) : (
                           <span className="bg-slate-100 text-slate-400 font-bold px-1.5 py-0.5 rounded text-[10px]">Exento</span>
