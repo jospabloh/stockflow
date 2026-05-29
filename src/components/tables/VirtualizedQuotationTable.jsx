@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2, ChevronDown, RotateCcw } from "lucide-react";
 import moment from "moment";
+import ColumnFilterPopover from "@/components/tables/ColumnFilterPopover";
 
 function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInRouteChange, isExpired, onRegenerate }) {
   const status = statusConfig[q.status] || statusConfig.draft;
@@ -398,13 +399,23 @@ export default function VirtualizedQuotationTable({
   onInRouteChange,
   isExpired,
   onRegenerate,
+  // Filtros tipo Excel
+  filters,
+  onFiltersChange,
+  paymentMethodOptions,
 }) {
   const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInRouteChange, isExpired, onRegenerate };
+
+  const statusOptions = Object.entries(statusConfig).map(([value, cfg]) => ({
+    value,
+    label: cfg.label,
+    color: cfg.dot,
+  }));
 
   if (quotations.length === 0) {
     return (
       <div className="bg-card rounded-2xl shadow-sm border border-border p-12 text-center text-muted-foreground">
-        Sin cotizaciones
+        Sin cotizaciones para los filtros seleccionados
       </div>
     );
   }
@@ -420,17 +431,60 @@ export default function VirtualizedQuotationTable({
 
       {/* Desktop: table */}
       <div className="hidden lg:block bg-card rounded-2xl shadow-sm border border-border">
-        {/* Header */}
-        <div className="flex items-center px-4 py-3 bg-muted/40 border-b border-border text-[11px] font-semibold text-muted-foreground sticky top-0 z-10">
-          <div className="w-24">Folio</div>
-          <div className="flex-1">Cliente</div>
-          <div className="w-20 text-center">Fecha</div>
-          <div className="w-28 text-right">Total</div>
-          <div className="w-28">Estado</div>
-          <div className="w-24 text-center">Factura</div>
-          <div className="w-32 text-center">Seguimiento</div>
-          <div className="w-24 text-center">Pago</div>
-          <div className="w-12 text-center">Acciones</div>
+        {/* Header con filtros por columna */}
+        <div className="flex items-center px-4 py-2.5 bg-muted/40 border-b border-border sticky top-0 z-10">
+          <div className="w-24">
+            <span className="text-[11px] font-semibold text-muted-foreground">Folio</span>
+          </div>
+
+          <div className="flex-1">
+            <span className="text-[11px] font-semibold text-muted-foreground">Cliente</span>
+          </div>
+
+          <div className="w-20 text-center">
+            <ColumnFilterPopover
+              label="Fecha"
+              type="daterange"
+              selected={filters?.dateRange || { from: "", to: "" }}
+              onChange={(val) => onFiltersChange({ ...filters, dateRange: val })}
+            />
+          </div>
+
+          <div className="w-28 text-right">
+            <span className="text-[11px] font-semibold text-muted-foreground">Total</span>
+          </div>
+
+          <div className="w-28">
+            <ColumnFilterPopover
+              label="Estado"
+              type="multiselect"
+              options={statusOptions}
+              selected={filters?.statuses || new Set()}
+              onChange={(val) => onFiltersChange({ ...filters, statuses: val })}
+            />
+          </div>
+
+          <div className="w-24 text-center">
+            <span className="text-[11px] font-semibold text-muted-foreground">Factura</span>
+          </div>
+
+          <div className="w-32 text-center">
+            <span className="text-[11px] font-semibold text-muted-foreground">Seguimiento</span>
+          </div>
+
+          <div className="w-24 text-center">
+            <ColumnFilterPopover
+              label="Pago"
+              type="multiselect"
+              options={paymentMethodOptions || []}
+              selected={filters?.paymentMethods || new Set()}
+              onChange={(val) => onFiltersChange({ ...filters, paymentMethods: val })}
+            />
+          </div>
+
+          <div className="w-12 text-center">
+            <span className="text-[11px] font-semibold text-muted-foreground">···</span>
+          </div>
         </div>
 
         {/* Rows */}
