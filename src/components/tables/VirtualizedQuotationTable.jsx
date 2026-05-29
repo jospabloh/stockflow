@@ -391,12 +391,28 @@ const INVOICE_STATUS_OPTIONS = [
   { value: "no_requerida", label: "No Requerida", color: "bg-slate-400" },
 ];
 
+// Deriva el estado de pago de una cotización — debe ser idéntico a la lógica de QuotationRow
+export function derivePaymentState(q) {
+  if (q.status !== "converted") return null; // solo aplica a convertidas
+  if (q.total === 0) return "sin_cargo";
+  const isPaid = q.paid && q.payment_method && !["Por definir", "Pendiente de confirmar", ""].includes(q.payment_method);
+  const payments = Array.isArray(q.payments) && q.payments.length > 0 ? q.payments : null;
+  const uniqueMethods = payments ? [...new Set(payments.map(p => p.payment_method).filter(Boolean))] : null;
+  const hasPartial = payments && !q.paid;
+  if (isPaid && uniqueMethods && uniqueMethods.length > 1) return "varios";
+  if (isPaid) return "pagado";
+  if (q.delivered && !q.paid) return "cobrar";
+  if (hasPartial) return "parcial";
+  return "pendiente_pago";
+}
+
 const PAYMENT_STATE_OPTIONS = [
   { value: "pagado", label: "Pagado", color: "bg-green-500" },
-  { value: "varios", label: "Varios", color: "bg-indigo-400" },
+  { value: "varios", label: "Varios métodos", color: "bg-indigo-400" },
   { value: "parcial", label: "Parcial", color: "bg-amber-400" },
   { value: "cobrar", label: "¡Cobrar!", color: "bg-red-500" },
-  { value: "pendiente_pago", label: "Pendiente", color: "bg-slate-400" },
+  { value: "pendiente_pago", label: "Pendiente de pago", color: "bg-slate-400" },
+  { value: "sin_cargo", label: "Sin cargo", color: "bg-orange-400" },
 ];
 
 export default function VirtualizedQuotationTable({

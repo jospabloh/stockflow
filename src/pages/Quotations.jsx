@@ -27,7 +27,7 @@ import { generateQuotationPDF } from "@/components/quotations/QuotationPDF";
 import QuotationPreviewDialog from "@/components/quotations/QuotationPreviewDialog";
 import PartialReturnDialog from "@/components/quotations/PartialReturnDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
-import VirtualizedQuotationTable from "@/components/tables/VirtualizedQuotationTable";
+import VirtualizedQuotationTable, { derivePaymentState } from "@/components/tables/VirtualizedQuotationTable";
 import OnDemandPendingPanel from "@/components/quotations/OnDemandPendingPanel";
 
 const statusConfig = {
@@ -72,6 +72,8 @@ export default function Quotations() {
     folioSearch: "",
     clientSearch: "",
     statuses: new Set(),
+    invoiceStatuses: new Set(),
+    paymentStates: new Set(),
     paymentMethods: new Set(),
     dateRange: { from: "", to: "" },
   });
@@ -114,13 +116,11 @@ export default function Quotations() {
     // Filtro multi-estado
     const matchStatus = tableFilters.statuses.size === 0 || tableFilters.statuses.has(q.status);
 
-    // Filtro multi-método de pago
-    let matchPaymentMethod = true;
-    if (tableFilters.paymentMethods.size > 0) {
-      const hasPmInPayments = q.payments?.some(p => tableFilters.paymentMethods.has(p.payment_method));
-      const hasPmDirect = tableFilters.paymentMethods.has(q.payment_method);
-      matchPaymentMethod = hasPmInPayments || hasPmDirect;
-    }
+    // Filtro estado de factura
+    const matchInvoiceStatus = tableFilters.invoiceStatuses.size === 0 || tableFilters.invoiceStatuses.has(q.invoice_status || "");
+
+    // Filtro estado de pago (derivado igual que en la columna visual)
+    const matchPaymentState = tableFilters.paymentStates.size === 0 || tableFilters.paymentStates.has(derivePaymentState(q));
 
     // Filtro rango de fechas (sobre created_date)
     let matchDate = true;
@@ -131,19 +131,20 @@ export default function Quotations() {
       if (to && dateStr > to) matchDate = false;
     }
 
-    return matchFolio && matchClient && matchStatus && matchPaymentMethod && matchDate;
+    return matchFolio && matchClient && matchStatus && matchInvoiceStatus && matchPaymentState && matchDate;
   });
 
   const activeFiltersCount = [
     tableFilters.folioSearch?.trim(),
     tableFilters.clientSearch?.trim(),
     tableFilters.statuses.size > 0,
-    tableFilters.paymentMethods.size > 0,
+    tableFilters.invoiceStatuses.size > 0,
+    tableFilters.paymentStates.size > 0,
     tableFilters.dateRange.from || tableFilters.dateRange.to,
   ].filter(Boolean).length;
 
   const clearAllFilters = () => {
-    setTableFilters({ folioSearch: "", clientSearch: "", statuses: new Set(), paymentMethods: new Set(), dateRange: { from: "", to: "" } });
+    setTableFilters({ folioSearch: "", clientSearch: "", statuses: new Set(), invoiceStatuses: new Set(), paymentStates: new Set(), paymentMethods: new Set(), dateRange: { from: "", to: "" } });
   };
 
   const activePaymentMethodNames = paymentMethodsCatalog.map((pm) => pm.name);
