@@ -385,6 +385,20 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
   );
 }
 
+const INVOICE_STATUS_OPTIONS = [
+  { value: "pendiente", label: "Pendiente", color: "bg-amber-400" },
+  { value: "emitida", label: "Emitida", color: "bg-emerald-400" },
+  { value: "no_requerida", label: "No Requerida", color: "bg-slate-400" },
+];
+
+const PAYMENT_STATE_OPTIONS = [
+  { value: "pagado", label: "Pagado", color: "bg-green-500" },
+  { value: "varios", label: "Varios", color: "bg-indigo-400" },
+  { value: "parcial", label: "Parcial", color: "bg-amber-400" },
+  { value: "cobrar", label: "¡Cobrar!", color: "bg-red-500" },
+  { value: "pendiente_pago", label: "Pendiente", color: "bg-slate-400" },
+];
+
 export default function VirtualizedQuotationTable({
   quotations,
   statusConfig,
@@ -434,12 +448,7 @@ export default function VirtualizedQuotationTable({
         {/* Header con filtros por columna */}
         <div className="flex items-center px-4 py-2.5 bg-muted/40 border-b border-border sticky top-0 z-10">
           <div className="w-24">
-            <ColumnFilterPopover
-              label="Folio"
-              type="search"
-              selected={filters?.folioSearch || ""}
-              onChange={(val) => onFiltersChange({ ...filters, folioSearch: val })}
-            />
+            <span className="text-[11px] font-semibold text-muted-foreground">Folio</span>
           </div>
 
           <div className="flex-1">
@@ -475,7 +484,13 @@ export default function VirtualizedQuotationTable({
           </div>
 
           <div className="w-24 text-center">
-            <span className="text-[11px] font-semibold text-muted-foreground">Factura</span>
+            <ColumnFilterPopover
+              label="Factura"
+              type="multiselect"
+              options={INVOICE_STATUS_OPTIONS}
+              selected={filters?.invoiceStatuses || new Set()}
+              onChange={(val) => onFiltersChange({ ...filters, invoiceStatuses: val })}
+            />
           </div>
 
           <div className="w-32 text-center">
@@ -486,9 +501,9 @@ export default function VirtualizedQuotationTable({
             <ColumnFilterPopover
               label="Pago"
               type="multiselect"
-              options={paymentMethodOptions || []}
-              selected={filters?.paymentMethods || new Set()}
-              onChange={(val) => onFiltersChange({ ...filters, paymentMethods: val })}
+              options={PAYMENT_STATE_OPTIONS}
+              selected={filters?.paymentStates || new Set()}
+              onChange={(val) => onFiltersChange({ ...filters, paymentStates: val })}
             />
           </div>
 
