@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Filter, Search, X, Check, ChevronDown, Calendar } from "lucide-react";
+import { Filter, Search, X, Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**

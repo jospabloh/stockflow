@@ -2,7 +2,7 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.14.0";
+export const APP_VERSION = "2.15.0";
 
 export const RELEASE_DATE = "2026-06-01";
 
@@ -12,6 +12,18 @@ export const RELEASE_DATE = "2026-06-01";
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-01";
 
 export const CHANGELOG = [
+  {
+    version: "2.15.0",
+    date: "2026-06-01",
+    changes: [
+      "🔒 Auditoría de calidad y seguridad completa del codebase (deps, CI/CD, permisos, arquitectura)",
+      "📦 Actualización de dependencias vulnerables: jspdf, axios, lodash, dompurify, vite, ws, flatted (19 CVEs resueltos: 1 crítico, 8 altos, 10 moderados)",
+      "🔑 Permisos nuevos: Cotizaciones:share (compartir enlace público) y Configuracion:manage_referral (programa de referidos) — admin=true, almacenista=false por defecto",
+      "📋 Manifiestos de permisos regenerados con las nuevas claves v2.14.0",
+      "📚 Manual de usuario actualizado: artículos de Compartir Cotización, Programa de Referidos y Onboarding Wizard",
+      "📝 Changelog y versión actualizados a v2.15.0",
+    ],
+  },
   {
     version: "2.14.0",
     date: "2026-06-01",
