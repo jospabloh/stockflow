@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-05-20T23:13:01.846Z
+// Generado: 2026-06-01T21:33:24.709Z
 
-export const SNAPSHOT_VERSION = "2.13.8";
+export const SNAPSHOT_VERSION = "2.14.1";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-05-20";
+export const SNAPSHOT_RELEASE_DATE = "2026-06-01";
 
-export const USER_MANUAL_LAST_REVIEWED = "2026-05-15";
+export const USER_MANUAL_LAST_REVIEWED = "2026-06-01";
 
-export const SNAPSHOT_GIT_LOG = "2380cb9 fix(ci): restrict deno lint to functions/ and cast catch errors safely\n94eddf1 fix(ci): exclude camelcase rule to unblock deno lint\n44febbc feat: referral program & onboarding wizard (Steps 6-7)\na9e7884 feat: public quotation sharing & entity schema extensions (Steps 1-5)\nc917a7a Update base44 packages\nb168aac Update base44 packages\n0523538 Merge pull request #82 from jospabloh/claude/fix-audit-functions-tQhHy\n4cf4c27 fix(audits): align nightly audits with their directives\n30db8d1 Update base44 packages\n44fa079 Merge pull request #81 from jospabloh/codex/add-nighttime-audit-with-changelog\n9f9b0fc Refina changelog visible y colapsa historial antiguo\nd1393f4 Merge pull request #80 from jospabloh/codex/add-missing-email-log-details\n636a6b1 fix: expand super admin logs with audit/version visibility\n13e2cef Merge pull request #77 from jospabloh/claude/fix-email-logs-section-ekM4l\nc109641 fix(logs-correos): usar created_date y alinear acceso con isPlatformAdmin\nbfadd66 Merge pull request #67 from jospabloh/automated/release-pr\n66672b9 chore: release and update documentation\nc10b055 fix: SuperAdminLogs - wrong base44 import path + add to sidebar navigation\n39ae8d7 Merge pull request #75 from jospabloh/codex/fix-email-logs-display-issue-8qc5n3\n104b9f5 Merge branch 'main' into codex/fix-email-logs-display-issue-8qc5n3\n58bd9f2 Harden admin route bypass for BusinessSetup redirect\n8cbd85b Merge pull request #74 from jospabloh/codex/verifica-errores-resueltos-hoy\nc460709 fix: resolve active lint errors and align permission keys\nc0dd86e Merge pull request #73 from jospabloh/codex/fix-email-logs-display-issue\n6ce540e Fix super admin logs redirect without business context";
+export const SNAPSHOT_GIT_LOG = "efbda82 Merge pull request #88 from jospabloh/claude/dazzling-davinci-bbWUG\n35f8ad2 chore(release): bump to v2.14.0 — security hardening, public quotation & referral program\n2c01499 File changes\n927880c File changes\n1592dd8 File changes\n60bf0d8 File changes\n1082516 File changes\n6822bc5 File changes\na144e45 File changes\na1d2a6e Update base44 packages\nf73ad40 fix(rls): Business create open for any authenticated user — first-time tenant creation\n532a126 security(round4): remove hardcoded admin email from HelpCenter, use isPlatformAdmin from backend\n1a24653 merge: incorporate base44-bot Business.jsonc change\nec0139e security(round3): delete 102 scaffold/debug functions, fix SUPPORT_EMAIL in 3 funcs, fix hardcoded owner email in restoreOwnerAdmin\n983195c Manual code change\naec6dc9 security(round2): remove hardcoded emails from frontend, expose is_platform_admin from backend, fix variable shadow in fixRosetaLegacyRole\n39732d4 security: fix RLS, auth guards, and remove hardcoded email from 36 files\n324bce0 Merge pull request #78 from jospabloh/automated/release-pr\n384a4c1 chore: release and update documentation\n2380cb9 fix(ci): restrict deno lint to functions/ and cast catch errors safely\n94eddf1 fix(ci): exclude camelcase rule to unblock deno lint\n44febbc feat: referral program & onboarding wizard (Steps 6-7)\na9e7884 feat: public quotation sharing & entity schema extensions (Steps 1-5)\nc917a7a Update base44 packages\nb168aac Update base44 packages";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.13.8",
+  "Actualización a la versión 2.14.1",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,29 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.14.1",
+    date: "2026-06-01",
+    changes: [
+    "Actualización a la versión 2.14.1"
+    ]
+  },
+  {
+    version: "2.14.0",
+    date: "2026-06-01",
+    changes: [
+    "🔐 Auditoría de seguridad completa: eliminación de emails hardcodeados en 36+ archivos del frontend y 25 funciones backend",
+    "🔐 Guards de autenticación añadidos a 11 funciones sin auth (platform-owner-only y user-only)",
+    "🔐 RLS fix: regla de creación de Business ahora abierta para cualquier usuario autenticado (primer tenant)",
+    "🔐 PLATFORM_OWNER_EMAIL ahora se lee exclusivamente de variable de entorno — nunca del código fuente",
+    "🔐 Eliminadas 102 funciones scaffold/debug del codebase de producción",
+    "🛡️ HelpCenter: admin de plataforma resuelto por isPlatformAdmin del backend, no por email hardcodeado",
+    "🔗 Compartir Cotización (Public Link): enlace seguro por token UUID para que clientes acepten/rechacen sin login",
+    "💌 Wizard de Onboarding: guía paso a paso para nuevos negocios (Bienvenida → Primer producto → Invitar equipo)",
+    "🎁 Programa de Referidos: código único por negocio, +15 días de trial para referente y referido al activar",
+    "📊 Panel de Referidos en Configuración: código con botones de copiar y WhatsApp, estadísticas y progreso"
+    ]
+  },
   {
     version: "2.13.8",
     date: "2026-05-20",
