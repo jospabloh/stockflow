@@ -10,7 +10,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: platform owner only' }, { status: 403 });
     }
 
-    // Find h.josepablo by email
     const users = await base44.asServiceRole.entities.User.list();
     const owner = users.find(u => u.email === PLATFORM_OWNER_EMAIL);
 

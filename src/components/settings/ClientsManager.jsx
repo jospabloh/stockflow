@@ -102,21 +102,11 @@ export default function ClientsManager() {
   };
 
   const handleDelete = async (client) => {
-    // CRITICAL FIX: Validate ownership before delete
-    if (client.business_id !== businessId) {
-      toast.error("No tienes permiso para eliminar este cliente");
+    const result = await base44.functions.invoke('deleteClientSafe', { client_id: client.id });
+    if (!result.success) {
+      toast.error(result.error || "No se pudo eliminar el cliente");
       return;
     }
-    // Filter quotations by both client_name AND business_id for safety
-    const quots = await base44.entities.Quotation.filter({ 
-      client_name: client.name,
-      business_id: businessId 
-    });
-    if (quots.length > 0) {
-      toast.error(`No se puede eliminar: ${quots.length} cotización(es) están registradas para este cliente.`);
-      return;
-    }
-    await base44.entities.Client.delete(client.id);
     setClients(clients.filter(c => c.id !== client.id));
     toast.success("Cliente eliminado");
   };
