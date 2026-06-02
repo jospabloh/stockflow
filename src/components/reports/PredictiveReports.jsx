@@ -18,6 +18,7 @@ import DepletionRiskReport from "@/components/reports/DepletionRiskReport";
 import ReorderSuggestionReport from "@/components/reports/ReorderSuggestionReport";
 import CollectionsRiskReport from "@/components/reports/CollectionsRiskReport";
 import AnomaliesReport from "@/components/reports/AnomaliesReport";
+import TopSalesByClientReport from "@/components/reports/TopSalesByClientReport";
 
 export default function PredictiveReports({
   products,
@@ -114,6 +115,7 @@ export default function PredictiveReports({
       <Tabs defaultValue="pivot" className="space-y-6">
         <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="pivot">Análisis Dinámico</TabsTrigger>
+          <TabsTrigger value="topClients">Top Clientes</TabsTrigger>
           <TabsTrigger value="sales">Más Vendidos</TabsTrigger>
           <TabsTrigger value="low">Baja Rotación</TabsTrigger>
           <TabsTrigger value="trend">Tendencia</TabsTrigger>
@@ -133,6 +135,16 @@ export default function PredictiveReports({
             dateFrom={dateFrom}
             dateTo={dateTo}
             onExport={handleExportCSV}
+          />
+        </TabsContent>
+
+        {/* Top de Ventas por Cliente */}
+        <TabsContent value="topClients">
+          <TopSalesByClientReport
+            quotations={quotations}
+            movements={movements}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
           />
         </TabsContent>
 
