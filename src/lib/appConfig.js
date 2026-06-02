@@ -2,16 +2,57 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.13.8";
+export const APP_VERSION = "2.16.0";
 
-export const RELEASE_DATE = "2026-05-20";
+export const RELEASE_DATE = "2026-06-02";
 
 // Fecha (ISO) de la última revisión manual del Manual de Usuario por un humano.
 // Actualizar al volver a leer y validar el manual end-to-end. La auditoría
 // nocturna alerta si pasan más de 60 días desde esta fecha.
-export const USER_MANUAL_LAST_REVIEWED = "2026-05-15";
+export const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 
 export const CHANGELOG = [
+  {
+    version: "2.16.0",
+    date: "2026-06-02",
+    changes: [
+      "🔒 Auditoría de seguridad completa: 17 CVEs adicionales resueltos en dependencias npm (package-lock.json actualizado)",
+      "🧹 Eliminado workflow CI redundante deno.yml — un solo pipeline Deno CI en ci.yml",
+      "🗑️ Eliminado componente muerto ProtectedRoute.jsx: referenciaba authChecked y checkUserAuth inexistentes en AuthContext",
+      "📋 Matriz de permisos revisada y confirmada: 13 módulos, 144 claves, admin=true y almacenista=false por defecto",
+      "🛡️ Aislamiento de tenant validado: RLS + funciones backend con ownership check activos",
+      "📚 Manual de usuario revisado y actualizado al 2 de junio de 2026",
+      "📝 Changelog y versión actualizados a v2.16.0",
+    ],
+  },
+  {
+    version: "2.15.0",
+    date: "2026-06-01",
+    changes: [
+      "🔒 Auditoría de calidad y seguridad completa del codebase (deps, CI/CD, permisos, arquitectura)",
+      "📦 Actualización de dependencias vulnerables: jspdf, axios, lodash, dompurify, vite, ws, flatted (19 CVEs resueltos: 1 crítico, 8 altos, 10 moderados)",
+      "🔑 Permisos nuevos: Cotizaciones:share (compartir enlace público) y Configuracion:manage_referral (programa de referidos) — admin=true, almacenista=false por defecto",
+      "📋 Manifiestos de permisos regenerados con las nuevas claves v2.14.0",
+      "📚 Manual de usuario actualizado: artículos de Compartir Cotización, Programa de Referidos y Onboarding Wizard",
+      "📝 Changelog y versión actualizados a v2.15.0",
+    ],
+  },
+  {
+    version: "2.14.0",
+    date: "2026-06-01",
+    changes: [
+      "🔐 Auditoría de seguridad completa: eliminación de emails hardcodeados en 36+ archivos del frontend y 25 funciones backend",
+      "🔐 Guards de autenticación añadidos a 11 funciones sin auth (platform-owner-only y user-only)",
+      "🔐 RLS fix: regla de creación de Business ahora abierta para cualquier usuario autenticado (primer tenant)",
+      "🔐 PLATFORM_OWNER_EMAIL ahora se lee exclusivamente de variable de entorno — nunca del código fuente",
+      "🔐 Eliminadas 102 funciones scaffold/debug del codebase de producción",
+      "🛡️ HelpCenter: admin de plataforma resuelto por isPlatformAdmin del backend, no por email hardcodeado",
+      "🔗 Compartir Cotización (Public Link): enlace seguro por token UUID para que clientes acepten/rechacen sin login",
+      "💌 Wizard de Onboarding: guía paso a paso para nuevos negocios (Bienvenida → Primer producto → Invitar equipo)",
+      "🎁 Programa de Referidos: código único por negocio, +15 días de trial para referente y referido al activar",
+      "📊 Panel de Referidos en Configuración: código con botones de copiar y WhatsApp, estadísticas y progreso",
+    ],
+  },
   {
     version: "2.13.8",
     date: "2026-05-20",

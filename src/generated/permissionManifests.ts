@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-05-20T23:13:01.671Z
+// Generado: 2026-06-02T02:04:02.041Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -103,6 +103,7 @@ export const ALL_PERMISSION_KEYS = [
   "Cotizaciones:send",
   "Cotizaciones:export",
   "Cotizaciones:delete",
+  "Cotizaciones:share",
   "Cotizaciones:pricing",
   "Caja Chica:view",
   "Caja Chica:view_history",
@@ -144,6 +145,7 @@ export const ALL_PERMISSION_KEYS = [
   "Configuracion:edit_quotation_footer",
   "Configuracion:import_products",
   "Configuracion:manage_team",
+  "Configuracion:manage_referral",
   "Configuracion:delete_account",
 ] as const;
 
@@ -291,6 +293,7 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "send", label: "Enviar cotización", category: "actionable" },
     { id: "export", label: "Exportar PDF", category: "actionable" },
     { id: "delete", label: "Eliminar", category: "actionable" },
+    { id: "share", label: "Compartir enlace público", category: "actionable" },
     { id: "pricing", label: "Ver detalles precio", category: "report", sensitive: true }
     ]
   },
@@ -352,6 +355,7 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "edit_quotation_footer", label: "Editar pie cotizaciones", category: "actionable" },
     { id: "import_products", label: "Importar productos", category: "actionable" },
     { id: "manage_team", label: "Gestionar equipo", category: "actionable" },
+    { id: "manage_referral", label: "Gestionar referidos", category: "actionable" },
     { id: "delete_account", label: "Eliminar cuenta", category: "actionable" }
     ]
   },
@@ -459,6 +463,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Cotizaciones:send": true,
   "Cotizaciones:export": true,
   "Cotizaciones:delete": true,
+  "Cotizaciones:share": true,
   "Cotizaciones:pricing": true,
   "Caja Chica:view": true,
   "Caja Chica:view_history": true,
@@ -500,6 +505,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Configuracion:edit_quotation_footer": true,
   "Configuracion:import_products": true,
   "Configuracion:manage_team": true,
+  "Configuracion:manage_referral": true,
   "Configuracion:delete_account": true,
   } as Record<PermissionKey, boolean>,
   almacenista: {
@@ -603,6 +609,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Cotizaciones:send": true,
   "Cotizaciones:export": true,
   "Cotizaciones:delete": true,
+  "Cotizaciones:share": true,
   "Cotizaciones:pricing": false,
   "Caja Chica:view": true,
   "Caja Chica:view_history": true,
@@ -644,6 +651,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Configuracion:edit_quotation_footer": false,
   "Configuracion:import_products": false,
   "Configuracion:manage_team": false,
+  "Configuracion:manage_referral": true,
   "Configuracion:delete_account": false,
   } as Record<PermissionKey, boolean>,
 };

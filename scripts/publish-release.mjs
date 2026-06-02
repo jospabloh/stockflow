@@ -18,9 +18,9 @@ async function ask(question) {
 }
 
 async function callAnthropic(gitLog, version) {
-  const apiKey = process.env.ANTHROPIC_API_KEY_SF || process.env.ANTHROPIC_API_KEY_SF_SF;
+  const apiKey = process.env.ANTHROPIC_API_KEY_SF;
   if (!apiKey) {
-    console.warn("⚠️ ANTHROPIC_API_KEY_SF/ANTHROPIC_API_KEY_SF_SF no configurada. Generando changelog genérico.");
+    console.warn("⚠️ ANTHROPIC_API_KEY_SF no configurada. Generando changelog genérico.");
     return [`Actualización a la versión ${version}`];
   }
 

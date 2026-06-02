@@ -1,5 +1,10 @@
-// Artículos de ayuda — última versión: v2.11.0
+// Artículos de ayuda — última versión: v2.16.0
 // Solo contiene notas de versión (release notes). Los artículos de manual permanente están en helpDataExtension.js
+// v2.16.0: Auditoría de mantenimiento — CVEs adicionales, CI unificado, código muerto eliminado
+// v2.15.0: Auditoría de seguridad y calidad, corrección de CVEs, nuevos permisos (share, manage_referral)
+// v2.14.0: Auditoría de seguridad, Compartir Cotización, Programa de Referidos, Onboarding Wizard
+// v2.13.0: Permisos Granulares — política de defaults, matriz completa
+// v2.12.0: Reactivación automática de trial, emails de ciclo de vida con MercadoPago
 // v2.11.0: Pagos Parciales en Cotizaciones, Alerta Saldo Pendiente, On-Demand mejorado
 // v2.10.0: Permisos Granulares, Cotizaciones On-Demand, fixes cotizaciones
 // v2.9.2: Fixes panel licencias (auto_renewal, dropdown dark mode, boolean partition) + fixes catálogos Pagos a Proveedores
@@ -7,6 +12,322 @@
 // v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor
 
 export const newHelpArticles = [
+    {
+      id: "release-2-16-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.16.0 — Mantenimiento de Seguridad, CI Unificado y Limpieza de Código",
+      keywords: ["versión", "2.16.0", "seguridad", "CVE", "mantenimiento", "CI", "auditoría"],
+      related_ids: ["release-2-15-0", "granular-permissions"],
+      content: `## 🆕 Versión 2.16.0 — 2 de junio de 2026
+
+### ✅ Novedades de esta versión
+
+---
+
+### 🔒 Seguridad — 17 CVEs Adicionales Resueltos
+
+Tras la auditoría v2.15.0, se identificaron 17 vulnerabilidades adicionales en dependencias transitivas. Esta versión actualiza el lock de dependencias para resolverlas. No se requiere ninguna acción por parte del usuario.
+
+---
+
+### 🧹 Mantenimiento de CI/CD
+
+- El workflow redundante **deno.yml** fue eliminado. Ahora solo existe un pipeline de integración continua (**ci.yml**) que ejecuta lint y pruebas en todos los cambios.
+- Sin impacto en el comportamiento de la aplicación.
+
+---
+
+### 🗑️ Limpieza de Código
+
+- Se eliminó el componente **ProtectedRoute** que estaba sin uso (código muerto). Este componente no afectaba ninguna funcionalidad y su eliminación no cambia ningún comportamiento del sistema.
+
+---
+
+### 📋 Matriz de Permisos
+
+La matriz de permisos fue revisada y está actualizada:
+- **13 módulos** cubiertos (Dashboard, Productos, Categorías, Proveedores, Clientes, Tipo de Pago, Movimientos, Cotizaciones, Caja Chica, Pagos a Proveedores, Reportes, Configuración, y utilidades)
+- **Admin**: acceso completo a todos los permisos por defecto
+- **Almacenista**: permisos operativos sin acceso a datos confidenciales por defecto
+
+> Para ajustar permisos, ve a **Configuración → Permisos** (solo admins).
+`,
+    },
+    {
+      id: "release-2-15-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.15.0 — Auditoría de Seguridad, CVEs Resueltos y Nuevos Permisos",
+      keywords: ["versión", "2.15.0", "seguridad", "vulnerabilidades", "CVE", "permisos", "share", "referidos", "auditoría"],
+      related_ids: ["release-2-14-0", "granular-permissions", "public-quotation-sharing", "referral-program"],
+      content: `## 🆕 Versión 2.15.0 — 1 de junio de 2026
+
+### ✅ Novedades de esta versión
+
+---
+
+### 🔒 Auditoría de Seguridad y Calidad de Código
+
+Esta versión resuelve **19 vulnerabilidades de dependencias** identificadas en la auditoría de seguridad:
+
+| Severidad | Paquete | Vulnerabilidad principal |
+|---|---|---|
+| **Crítica** | jspdf | PDF Object Injection + HTML Injection en rutas |
+| **Alta** | axios | SSRF, Prototype Pollution, Header Injection, CRLF Injection |
+| **Alta** | lodash | Code Injection via \`_.template\`, Prototype Pollution |
+| **Alta** | flatted | DoS por recursión no acotada, Prototype Pollution |
+| **Alta** | minimatch | ReDoS (denegación de servicio por expresión regular) |
+| **Alta** | vite | Path Traversal en deps optimizadas, lectura arbitraria via WebSocket |
+| **Moderada** | dompurify | Múltiples bypass de XSS (mutation-XSS, prototype pollution) |
+| **Moderada** | ajv | ReDoS via opción \`$data\` |
+| **Moderada** | ws | Divulgación de memoria no inicializada |
+
+---
+
+### 🔑 Nuevos Permisos Granulares
+
+Se agregaron dos permisos para controlar las features de v2.14.0:
+
+#### Cotizaciones: Compartir Enlace Público (\`Cotizaciones:share\`)
+- **Admin**: ✅ habilitado por defecto
+- **Almacenista**: ❌ deshabilitado por defecto
+- Permite al usuario generar y gestionar el enlace público de una cotización para que el cliente la vea y responda sin necesidad de cuenta
+
+#### Configuración: Gestionar Referidos (\`Configuracion:manage_referral\`)
+- **Admin**: ✅ habilitado por defecto
+- **Almacenista**: ❌ deshabilitado por defecto
+- Permite ver el código de referido del negocio, estadísticas del programa y compartirlo
+
+> Para habilitar estos permisos para un almacenista específico, ve a **Configuración → Permisos** y activa las acciones correspondientes en la fila de ese rol.
+
+---
+
+### 📚 Manual Actualizado
+
+- Artículos de **Compartir Cotización**, **Programa de Referidos** y **Wizard de Onboarding** (introducidos en v2.14.0) ahora documentados en la versión correcta
+- Versión del manual de ayuda sincronizada con la versión de la app
+`,
+    },
+    {
+      id: "release-2-14-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.14.0 — Seguridad Reforzada, Compartir Cotización y Programa de Referidos",
+      keywords: ["versión", "2.14.0", "seguridad", "referidos", "onboarding", "cotización pública", "compartir enlace", "wizard"],
+      related_ids: ["release-2-13-0", "public-quotation-sharing", "referral-program"],
+      content: `## 🆕 Versión 2.14.0 — 1 de junio de 2026
+
+### ✅ Novedades de esta versión
+
+---
+
+### 🔐 Endurecimiento de Seguridad (Auditoría Completa)
+
+Esta versión culmina **cuatro rondas de correcciones de seguridad** sobre el codebase:
+
+- **Eliminación de credenciales hardcodeadas**: se removió el email del propietario de plataforma de 36+ archivos del frontend y 25 funciones backend — ahora se lee exclusivamente de la variable de entorno \`PLATFORM_OWNER_EMAIL\`.
+- **Guards de autenticación**: 11 funciones que estaban sin protección ahora requieren autenticación y verificación de rol (platform-owner o usuario autenticado).
+- **RLS corregido**: la regla de creación de \`Business\` ahora permite a cualquier usuario autenticado crear su primer negocio (tenant onboarding).
+- **Limpieza de producción**: 102 funciones de scaffold y debug eliminadas del entorno productivo.
+- **HelpCenter protegido**: la visibilidad de artículos de administración de plataforma ahora se valida en backend (\`isPlatformAdmin\`), no por email hardcodeado en el frontend.
+
+---
+
+### 🔗 Compartir Cotización (Enlace Público)
+
+Ahora puedes compartir una cotización con tu cliente sin que necesite cuenta en StockFlow.
+
+**Cómo funciona:**
+1. Abre cualquier cotización y haz clic en el botón **"Compartir enlace"** (ícono de compartir)
+2. El sistema genera un token UUID único y activa el enlace público
+3. Copia la URL y envíasela al cliente por WhatsApp, email o cualquier canal
+4. El cliente puede **ver la cotización** y **aceptarla o rechazarla** desde su navegador — sin login
+5. Para revocar el acceso, haz clic en el botón **"Desactivar enlace"** (ícono de ojo tachado)
+
+**Seguridad:** cada enlace usa un token aleatorio de 36 caracteres. Solo se exponen campos comerciales seguros (productos, precios, totales). Los precios de compra, márgenes internos e IDs nunca se exponen.
+
+---
+
+### 🎁 Programa de Referidos
+
+Comparte tu código de referido y **ambas partes ganan 15 días adicionales de trial**.
+
+**Cómo encontrar tu código:**
+1. Ve a **Configuración → Referidos** (solo administradores)
+2. Copia tu código con el botón 📋 o compártelo directamente por WhatsApp
+
+**Al usar un código de referido:**
+- Ingresa el código durante el registro de un nuevo negocio en el campo "¿Tienes un código de referido?"
+- El negocio referente y el nuevo negocio reciben +15 días de prueba
+- El sistema valida automáticamente: no acepta auto-referidos ni códigos duplicados
+
+**Hito de 3 referidos**: al acumular 3 referidos convertidos, ganas **1 mes gratis** adicional.
+
+---
+
+### 💌 Wizard de Onboarding (Nuevos Negocios)
+
+Los negocios nuevos ven automáticamente un wizard de 3 pasos al entrar al Dashboard:
+
+1. **Bienvenida** — explicación rápida de StockFlow
+2. **Primer producto** — formulario simplificado para agregar tu primer producto al catálogo
+3. **Invitar equipo** — muestra tu código de invitación con botones de copiar y WhatsApp
+
+El wizard solo aparece en los primeros 2 días desde el inicio del trial y desaparece una vez completado.
+
+---
+      `,
+    },
+    {
+      id: "public-quotation-sharing",
+      category: "Cotizaciones",
+      role: "admin",
+      title: "🔗 Compartir Cotización por Enlace Público",
+      keywords: ["compartir", "enlace público", "cotización", "token", "cliente", "aceptar", "rechazar", "sin login", "link"],
+      related_ids: ["release-2-14-0", "quotations-overview"],
+      content: `## 🔗 Compartir Cotización por Enlace Público
+
+Envía un enlace a tu cliente para que vea y responda la cotización **sin necesidad de cuenta en StockFlow**.
+
+---
+
+### ¿Cómo activar el enlace?
+
+1. Abre la cotización en el panel de **Cotizaciones**
+2. Haz clic en el botón **"Compartir enlace"** en la barra de acciones
+3. El sistema genera un token seguro y copia la URL al portapapeles automáticamente
+4. Pega la URL en WhatsApp, email o cualquier canal de comunicación con tu cliente
+
+---
+
+### ¿Qué ve el cliente?
+
+El cliente accede a una página con:
+- Nombre de tu negocio y logotipo (si lo tienes configurado)
+- Lista de productos, cantidades, precios y totales
+- Fecha de vigencia y notas de la cotización
+- Botones **Aceptar** y **Rechazar** (si la cotización está en estado "Enviada")
+
+---
+
+### ¿Qué información NO se expone?
+
+Los siguientes datos nunca aparecen en el enlace público:
+- Precios de compra o costo
+- Márgenes de ganancia
+- Historial de pagos o abonos
+- IDs internos del sistema
+
+---
+
+### ¿Cómo revocar el acceso?
+
+Haz clic en el botón **"Desactivar enlace"** (ícono de ojo tachado) para invalidar el token. El enlace anterior dejará de funcionar de inmediato.
+
+---
+
+### Seguridad del enlace
+
+Cada token es un UUID aleatorio de 36 caracteres. No es posible adivinar o predecir tokens de otras cotizaciones. El token solo funciona si el enlace público está activo (\`public_link_enabled = true\`).
+
+---
+      `,
+    },
+    {
+      id: "referral-program",
+      category: "Configuración",
+      role: "admin",
+      title: "🎁 Programa de Referidos — Gana días extra de trial",
+      keywords: ["referidos", "código", "referral", "trial", "días gratis", "compartir", "whatsapp", "invitar"],
+      related_ids: ["release-2-14-0", "onboarding-wizard"],
+      content: `## 🎁 Programa de Referidos
+
+Invita a otros negocios a usar StockFlow y **ambas partes ganan 15 días adicionales de prueba**.
+
+---
+
+### ¿Dónde está mi código de referido?
+
+Ve a **Configuración → Referidos** (visible solo para administradores). Ahí encontrarás:
+- Tu código único de referido
+- Botón para copiar el código al portapapeles
+- Botón de WhatsApp para compartirlo directamente
+- Estadísticas: referidos enviados, convertidos y días bonus ganados
+- Barra de progreso hacia el hito de 3 referidos
+
+---
+
+### ¿Cómo funciona?
+
+1. Comparte tu código con otro negocio
+2. Cuando ese negocio se registre en StockFlow, ingresa tu código en el campo **"¿Tienes un código de referido?"** durante el setup inicial
+3. Automáticamente:
+   - El nuevo negocio recibe **+15 días** de trial
+   - Tu negocio recibe **+15 días** de trial
+
+---
+
+### Hito de 3 referidos
+
+Cuando acumules **3 referidos convertidos** (negocios que completaron su registro usando tu código), tu negocio gana **1 mes gratis** adicional.
+
+---
+
+### Reglas del programa
+
+- No puedes usar tu propio código (auto-referido bloqueado)
+- Cada negocio solo puede aplicar un código una vez
+- El código solo es válido para negocios nuevos durante su setup inicial
+- Si el código es inválido, el setup continúa sin problema (no bloquea el registro)
+
+---
+      `,
+    },
+    {
+      id: "release-2-13-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.13.0 — Permisos Granulares: Política de Defaults y Matriz Completa",
+      keywords: ["versión", "2.13.0", "permisos", "granulares", "defaults", "admin", "member", "almacenista", "módulos"],
+      related_ids: ["release-2-12-0", "release-2-11-0"],
+      content: `## 🆕 Versión 2.13.0 — 14 de mayo de 2026
+
+### 🔐 Permisos Granulares — Política Oficial de Defaults
+
+Esta versión documenta y formaliza la **política de permisos por defecto** para todos los roles:
+
+---
+
+### Reglas de default por rol
+
+| Rol | Default al crear |
+|---|---|
+| **Admin** | Acceso total (\`true\`) en todos los módulos, visuales y acciones |
+| **Member/Almacenista** | Acceso operativo estándar; permisos sensibles en \`false\` por defecto |
+
+**Regla de oro para Member**: cuando se agrega un módulo, visual o acción nuevos, el default para Member es \`false\` hasta que el administrador lo otorgue explícitamente.
+
+---
+
+### Acciones estándar por módulo
+
+Todos los módulos usan 4 acciones base:
+- \`view\` — ver la página/sección
+- \`add\` — crear nuevos registros
+- \`modify\` — editar registros existentes
+- \`delete\` — eliminar registros
+
+---
+
+### Módulos activos cubiertos
+
+Dashboard · Productos · Categorías · Proveedores · Clientes · Tipo de Pago · Movimientos · Cotizaciones · Caja Chica · Pagos a Proveedores · Reportes · Configuración
+
+---
+      `,
+    },
+
     {
       id: "release-2-11-0",
       category: "Novedades",
