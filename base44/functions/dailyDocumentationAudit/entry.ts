@@ -6,38 +6,44 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.13.8";
-const SNAPSHOT_RELEASE_DATE = "2026-05-20";
-const USER_MANUAL_LAST_REVIEWED = "2026-05-15";
+const CURRENT_VERSION_IN_CODE = "2.16.0";
+const SNAPSHOT_RELEASE_DATE = "2026-06-02";
+const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+3962d7d chore: fix 17 CVEs, remove dead code and redundant CI workflow
+9b0dcba Merge pull request #89 from jospabloh/claude/affectionate-faraday-CDzaR
+9a03a7b Merge pull request #90 from jospabloh/claude/focused-gauss-IcvAJ
+dc2f6e7 security: backend tenant ownership + dependabot + integration tests
+0e02258 chore(release): bump to v2.15.0 — security audit, CVE fixes, new permissions
+efbda82 Merge pull request #88 from jospabloh/claude/dazzling-davinci-bbWUG
+35f8ad2 chore(release): bump to v2.14.0 — security hardening, public quotation & referral program
+2c01499 File changes
+927880c File changes
+1592dd8 File changes
+60bf0d8 File changes
+1082516 File changes
+6822bc5 File changes
+a144e45 File changes
+a1d2a6e Update base44 packages
+f73ad40 fix(rls): Business create open for any authenticated user — first-time tenant creation
+532a126 security(round4): remove hardcoded admin email from HelpCenter, use isPlatformAdmin from backend
+1a24653 merge: incorporate base44-bot Business.jsonc change
+ec0139e security(round3): delete 102 scaffold/debug functions, fix SUPPORT_EMAIL in 3 funcs, fix hardcoded owner email in restoreOwnerAdmin
+983195c Manual code change
+aec6dc9 security(round2): remove hardcoded emails from frontend, expose is_platform_admin from backend, fix variable shadow in fixRosetaLegacyRole
+39732d4 security: fix RLS, auth guards, and remove hardcoded email from 36 files
+324bce0 Merge pull request #78 from jospabloh/automated/release-pr
+384a4c1 chore: release and update documentation
 2380cb9 fix(ci): restrict deno lint to functions/ and cast catch errors safely
-94eddf1 fix(ci): exclude camelcase rule to unblock deno lint
-44febbc feat: referral program & onboarding wizard (Steps 6-7)
-a9e7884 feat: public quotation sharing & entity schema extensions (Steps 1-5)
-c917a7a Update base44 packages
-b168aac Update base44 packages
-0523538 Merge pull request #82 from jospabloh/claude/fix-audit-functions-tQhHy
-4cf4c27 fix(audits): align nightly audits with their directives
-30db8d1 Update base44 packages
-44fa079 Merge pull request #81 from jospabloh/codex/add-nighttime-audit-with-changelog
-9f9b0fc Refina changelog visible y colapsa historial antiguo
-d1393f4 Merge pull request #80 from jospabloh/codex/add-missing-email-log-details
-636a6b1 fix: expand super admin logs with audit/version visibility
-13e2cef Merge pull request #77 from jospabloh/claude/fix-email-logs-section-ekM4l
-c109641 fix(logs-correos): usar created_date y alinear acceso con isPlatformAdmin
-bfadd66 Merge pull request #67 from jospabloh/automated/release-pr
-66672b9 chore: release and update documentation
-c10b055 fix: SuperAdminLogs - wrong base44 import path + add to sidebar navigation
-39ae8d7 Merge pull request #75 from jospabloh/codex/fix-email-logs-display-issue-8qc5n3
-104b9f5 Merge branch 'main' into codex/fix-email-logs-display-issue-8qc5n3
-58bd9f2 Harden admin route bypass for BusinessSetup redirect
-8cbd85b Merge pull request #74 from jospabloh/codex/verifica-errores-resueltos-hoy
-c460709 fix: resolve active lint errors and align permission keys
-c0dd86e Merge pull request #73 from jospabloh/codex/fix-email-logs-display-issue
-6ce540e Fix super admin logs redirect without business context
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.13.8",
+  "🔒 Auditoría de seguridad completa: 17 CVEs adicionales resueltos en dependencias npm (package-lock.json actualizado)",
+  "🧹 Eliminado workflow CI redundante deno.yml — un solo pipeline Deno CI en ci.yml",
+  "🗑️ Eliminado componente muerto ProtectedRoute.jsx: referenciaba authChecked y checkUserAuth inexistentes en AuthContext",
+  "📋 Matriz de permisos revisada y confirmada: 13 módulos, 144 claves, admin=true y almacenista=false por defecto",
+  "🛡️ Aislamiento de tenant validado: RLS + funciones backend con ownership check activos",
+  "📚 Manual de usuario revisado y actualizado al 2 de junio de 2026",
+  "📝 Changelog y versión actualizados a v2.16.0",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

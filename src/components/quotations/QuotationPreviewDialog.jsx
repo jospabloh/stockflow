@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FileDown, Truck, CheckCircle2, DollarSign, ShoppingCart, Package, Link, Copy, Check, EyeOff } from "lucide-react";
+import { FileDown, Truck, CheckCircle2, DollarSign, ShoppingCart, Package, Link, Check, EyeOff } from "lucide-react";
 import { generateQuotationPDF } from "./QuotationPDF";
 import { getDisplayUnitPrice } from "@/lib/vatCalculator";
 import CreateFromOnDemandModal from "./CreateFromOnDemandModal";

@@ -1,5 +1,7 @@
-// Artículos de ayuda — última versión: v2.14.0
+// Artículos de ayuda — última versión: v2.16.0
 // Solo contiene notas de versión (release notes). Los artículos de manual permanente están en helpDataExtension.js
+// v2.16.0: Auditoría de mantenimiento — CVEs adicionales, CI unificado, código muerto eliminado
+// v2.15.0: Auditoría de seguridad y calidad, corrección de CVEs, nuevos permisos (share, manage_referral)
 // v2.14.0: Auditoría de seguridad, Compartir Cotización, Programa de Referidos, Onboarding Wizard
 // v2.13.0: Permisos Granulares — política de defaults, matriz completa
 // v2.12.0: Reactivación automática de trial, emails de ciclo de vida con MercadoPago
@@ -10,6 +12,103 @@
 // v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor
 
 export const newHelpArticles = [
+    {
+      id: "release-2-16-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.16.0 — Mantenimiento de Seguridad, CI Unificado y Limpieza de Código",
+      keywords: ["versión", "2.16.0", "seguridad", "CVE", "mantenimiento", "CI", "auditoría"],
+      related_ids: ["release-2-15-0", "granular-permissions"],
+      content: `## 🆕 Versión 2.16.0 — 2 de junio de 2026
+
+### ✅ Novedades de esta versión
+
+---
+
+### 🔒 Seguridad — 17 CVEs Adicionales Resueltos
+
+Tras la auditoría v2.15.0, se identificaron 17 vulnerabilidades adicionales en dependencias transitivas. Esta versión actualiza el lock de dependencias para resolverlas. No se requiere ninguna acción por parte del usuario.
+
+---
+
+### 🧹 Mantenimiento de CI/CD
+
+- El workflow redundante **deno.yml** fue eliminado. Ahora solo existe un pipeline de integración continua (**ci.yml**) que ejecuta lint y pruebas en todos los cambios.
+- Sin impacto en el comportamiento de la aplicación.
+
+---
+
+### 🗑️ Limpieza de Código
+
+- Se eliminó el componente **ProtectedRoute** que estaba sin uso (código muerto). Este componente no afectaba ninguna funcionalidad y su eliminación no cambia ningún comportamiento del sistema.
+
+---
+
+### 📋 Matriz de Permisos
+
+La matriz de permisos fue revisada y está actualizada:
+- **13 módulos** cubiertos (Dashboard, Productos, Categorías, Proveedores, Clientes, Tipo de Pago, Movimientos, Cotizaciones, Caja Chica, Pagos a Proveedores, Reportes, Configuración, y utilidades)
+- **Admin**: acceso completo a todos los permisos por defecto
+- **Almacenista**: permisos operativos sin acceso a datos confidenciales por defecto
+
+> Para ajustar permisos, ve a **Configuración → Permisos** (solo admins).
+`,
+    },
+    {
+      id: "release-2-15-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.15.0 — Auditoría de Seguridad, CVEs Resueltos y Nuevos Permisos",
+      keywords: ["versión", "2.15.0", "seguridad", "vulnerabilidades", "CVE", "permisos", "share", "referidos", "auditoría"],
+      related_ids: ["release-2-14-0", "granular-permissions", "public-quotation-sharing", "referral-program"],
+      content: `## 🆕 Versión 2.15.0 — 1 de junio de 2026
+
+### ✅ Novedades de esta versión
+
+---
+
+### 🔒 Auditoría de Seguridad y Calidad de Código
+
+Esta versión resuelve **19 vulnerabilidades de dependencias** identificadas en la auditoría de seguridad:
+
+| Severidad | Paquete | Vulnerabilidad principal |
+|---|---|---|
+| **Crítica** | jspdf | PDF Object Injection + HTML Injection en rutas |
+| **Alta** | axios | SSRF, Prototype Pollution, Header Injection, CRLF Injection |
+| **Alta** | lodash | Code Injection via \`_.template\`, Prototype Pollution |
+| **Alta** | flatted | DoS por recursión no acotada, Prototype Pollution |
+| **Alta** | minimatch | ReDoS (denegación de servicio por expresión regular) |
+| **Alta** | vite | Path Traversal en deps optimizadas, lectura arbitraria via WebSocket |
+| **Moderada** | dompurify | Múltiples bypass de XSS (mutation-XSS, prototype pollution) |
+| **Moderada** | ajv | ReDoS via opción \`$data\` |
+| **Moderada** | ws | Divulgación de memoria no inicializada |
+
+---
+
+### 🔑 Nuevos Permisos Granulares
+
+Se agregaron dos permisos para controlar las features de v2.14.0:
+
+#### Cotizaciones: Compartir Enlace Público (\`Cotizaciones:share\`)
+- **Admin**: ✅ habilitado por defecto
+- **Almacenista**: ❌ deshabilitado por defecto
+- Permite al usuario generar y gestionar el enlace público de una cotización para que el cliente la vea y responda sin necesidad de cuenta
+
+#### Configuración: Gestionar Referidos (\`Configuracion:manage_referral\`)
+- **Admin**: ✅ habilitado por defecto
+- **Almacenista**: ❌ deshabilitado por defecto
+- Permite ver el código de referido del negocio, estadísticas del programa y compartirlo
+
+> Para habilitar estos permisos para un almacenista específico, ve a **Configuración → Permisos** y activa las acciones correspondientes en la fila de ese rol.
+
+---
+
+### 📚 Manual Actualizado
+
+- Artículos de **Compartir Cotización**, **Programa de Referidos** y **Wizard de Onboarding** (introducidos en v2.14.0) ahora documentados en la versión correcta
+- Versión del manual de ayuda sincronizada con la versión de la app
+`,
+    },
     {
       id: "release-2-14-0",
       category: "Novedades",

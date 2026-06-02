@@ -140,6 +140,7 @@ export const PERMISSION_REGISTRY = {
       { id: "send", label: "Enviar cotización", category: "actionable", icon: "📧", description: "Enviar cotizaciones por correo a clientes" },
       { id: "export", label: "Exportar PDF", category: "actionable", icon: "📄", description: "Exportar cotizaciones en formato PDF" },
       { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar cotizaciones" },
+      { id: "share", label: "Compartir enlace público", category: "actionable", icon: "🔗", description: "Generar y gestionar enlace público de cotizaciones para clientes" },
       { id: "pricing", label: "Ver detalles precio", category: "report", icon: "💲", sensitive: true, description: "Ver cálculo detallado de precios (confidencial)" },
     ]
   },
@@ -201,6 +202,7 @@ export const PERMISSION_REGISTRY = {
       { id: "edit_quotation_footer", label: "Editar pie cotizaciones", category: "actionable", icon: "📄", description: "Personalizar texto al pie de cotizaciones" },
       { id: "import_products", label: "Importar productos", category: "actionable", icon: "📥", description: "Importar catálogo de productos desde archivo" },
       { id: "manage_team", label: "Gestionar equipo", category: "actionable", icon: "👥", description: "Invitar y gestionar miembros del equipo" },
+      { id: "manage_referral", label: "Gestionar referidos", category: "actionable", icon: "🎁", description: "Ver código de referido, estadísticas y gestionar el programa de referidos" },
       { id: "delete_account", label: "Eliminar cuenta", category: "actionable", icon: "🗑️", description: "Eliminar cuenta del sistema (irreversible)" },
     ]
   },
