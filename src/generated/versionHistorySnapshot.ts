@@ -1,22 +1,23 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-01T22:10:59.568Z
+// Generado: 2026-06-02T02:04:02.565Z
 
-export const SNAPSHOT_VERSION = "2.15.0";
+export const SNAPSHOT_VERSION = "2.16.0";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-06-01";
+export const SNAPSHOT_RELEASE_DATE = "2026-06-02";
 
-export const USER_MANUAL_LAST_REVIEWED = "2026-06-01";
+export const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 
-export const SNAPSHOT_GIT_LOG = "efbda82 Merge pull request #88 from jospabloh/claude/dazzling-davinci-bbWUG\n35f8ad2 chore(release): bump to v2.14.0 — security hardening, public quotation & referral program\n2c01499 File changes\n927880c File changes\n1592dd8 File changes\n60bf0d8 File changes\n1082516 File changes\n6822bc5 File changes\na144e45 File changes\na1d2a6e Update base44 packages\nf73ad40 fix(rls): Business create open for any authenticated user — first-time tenant creation\n532a126 security(round4): remove hardcoded admin email from HelpCenter, use isPlatformAdmin from backend\n1a24653 merge: incorporate base44-bot Business.jsonc change\nec0139e security(round3): delete 102 scaffold/debug functions, fix SUPPORT_EMAIL in 3 funcs, fix hardcoded owner email in restoreOwnerAdmin\n983195c Manual code change\naec6dc9 security(round2): remove hardcoded emails from frontend, expose is_platform_admin from backend, fix variable shadow in fixRosetaLegacyRole\n39732d4 security: fix RLS, auth guards, and remove hardcoded email from 36 files\n324bce0 Merge pull request #78 from jospabloh/automated/release-pr\n384a4c1 chore: release and update documentation\n2380cb9 fix(ci): restrict deno lint to functions/ and cast catch errors safely\n94eddf1 fix(ci): exclude camelcase rule to unblock deno lint\n44febbc feat: referral program & onboarding wizard (Steps 6-7)\na9e7884 feat: public quotation sharing & entity schema extensions (Steps 1-5)\nc917a7a Update base44 packages\nb168aac Update base44 packages";
+export const SNAPSHOT_GIT_LOG = "3962d7d chore: fix 17 CVEs, remove dead code and redundant CI workflow\n9b0dcba Merge pull request #89 from jospabloh/claude/affectionate-faraday-CDzaR\n9a03a7b Merge pull request #90 from jospabloh/claude/focused-gauss-IcvAJ\ndc2f6e7 security: backend tenant ownership + dependabot + integration tests\n0e02258 chore(release): bump to v2.15.0 — security audit, CVE fixes, new permissions\nefbda82 Merge pull request #88 from jospabloh/claude/dazzling-davinci-bbWUG\n35f8ad2 chore(release): bump to v2.14.0 — security hardening, public quotation & referral program\n2c01499 File changes\n927880c File changes\n1592dd8 File changes\n60bf0d8 File changes\n1082516 File changes\n6822bc5 File changes\na144e45 File changes\na1d2a6e Update base44 packages\nf73ad40 fix(rls): Business create open for any authenticated user — first-time tenant creation\n532a126 security(round4): remove hardcoded admin email from HelpCenter, use isPlatformAdmin from backend\n1a24653 merge: incorporate base44-bot Business.jsonc change\nec0139e security(round3): delete 102 scaffold/debug functions, fix SUPPORT_EMAIL in 3 funcs, fix hardcoded owner email in restoreOwnerAdmin\n983195c Manual code change\naec6dc9 security(round2): remove hardcoded emails from frontend, expose is_platform_admin from backend, fix variable shadow in fixRosetaLegacyRole\n39732d4 security: fix RLS, auth guards, and remove hardcoded email from 36 files\n324bce0 Merge pull request #78 from jospabloh/automated/release-pr\n384a4c1 chore: release and update documentation\n2380cb9 fix(ci): restrict deno lint to functions/ and cast catch errors safely";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "🔒 Auditoría de calidad y seguridad completa del codebase (deps, CI/CD, permisos, arquitectura)",
-  "📦 Actualización de dependencias vulnerables: jspdf, axios, lodash, dompurify, vite, ws, flatted (19 CVEs resueltos: 1 crítico, 8 altos, 10 moderados)",
-  "🔑 Permisos nuevos: Cotizaciones:share (compartir enlace público) y Configuracion:manage_referral (programa de referidos) — admin=true, almacenista=false por defecto",
-  "📋 Manifiestos de permisos regenerados con las nuevas claves v2.14.0",
-  "📚 Manual de usuario actualizado: artículos de Compartir Cotización, Programa de Referidos y Onboarding Wizard",
-  "📝 Changelog y versión actualizados a v2.15.0",
+  "🔒 Auditoría de seguridad completa: 17 CVEs adicionales resueltos en dependencias npm (package-lock.json actualizado)",
+  "🧹 Eliminado workflow CI redundante deno.yml — un solo pipeline Deno CI en ci.yml",
+  "🗑️ Eliminado componente muerto ProtectedRoute.jsx: referenciaba authChecked y checkUserAuth inexistentes en AuthContext",
+  "📋 Matriz de permisos revisada y confirmada: 13 módulos, 144 claves, admin=true y almacenista=false por defecto",
+  "🛡️ Aislamiento de tenant validado: RLS + funciones backend con ownership check activos",
+  "📚 Manual de usuario revisado y actualizado al 2 de junio de 2026",
+  "📝 Changelog y versión actualizados a v2.16.0",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -24,6 +25,19 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.16.0",
+    date: "2026-06-02",
+    changes: [
+    "🔒 Auditoría de seguridad completa: 17 CVEs adicionales resueltos en dependencias npm (package-lock.json actualizado)",
+    "🧹 Eliminado workflow CI redundante deno.yml — un solo pipeline Deno CI en ci.yml",
+    "🗑️ Eliminado componente muerto ProtectedRoute.jsx: referenciaba authChecked y checkUserAuth inexistentes en AuthContext",
+    "📋 Matriz de permisos revisada y confirmada: 13 módulos, 144 claves, admin=true y almacenista=false por defecto",
+    "🛡️ Aislamiento de tenant validado: RLS + funciones backend con ownership check activos",
+    "📚 Manual de usuario revisado y actualizado al 2 de junio de 2026",
+    "📝 Changelog y versión actualizados a v2.16.0"
+    ]
+  },
   {
     version: "2.15.0",
     date: "2026-06-01",
