@@ -1,5 +1,6 @@
-// Artículos de ayuda — última versión: v2.15.0
+// Artículos de ayuda — última versión: v2.16.0
 // Solo contiene notas de versión (release notes). Los artículos de manual permanente están en helpDataExtension.js
+// v2.16.0: Auditoría de mantenimiento — CVEs adicionales, CI unificado, código muerto eliminado
 // v2.15.0: Auditoría de seguridad y calidad, corrección de CVEs, nuevos permisos (share, manage_referral)
 // v2.14.0: Auditoría de seguridad, Compartir Cotización, Programa de Referidos, Onboarding Wizard
 // v2.13.0: Permisos Granulares — política de defaults, matriz completa
@@ -11,6 +12,48 @@
 // v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor
 
 export const newHelpArticles = [
+    {
+      id: "release-2-16-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.16.0 — Mantenimiento de Seguridad, CI Unificado y Limpieza de Código",
+      keywords: ["versión", "2.16.0", "seguridad", "CVE", "mantenimiento", "CI", "auditoría"],
+      related_ids: ["release-2-15-0", "granular-permissions"],
+      content: `## 🆕 Versión 2.16.0 — 2 de junio de 2026
+
+### ✅ Novedades de esta versión
+
+---
+
+### 🔒 Seguridad — 17 CVEs Adicionales Resueltos
+
+Tras la auditoría v2.15.0, se identificaron 17 vulnerabilidades adicionales en dependencias transitivas. Esta versión actualiza el lock de dependencias para resolverlas. No se requiere ninguna acción por parte del usuario.
+
+---
+
+### 🧹 Mantenimiento de CI/CD
+
+- El workflow redundante **deno.yml** fue eliminado. Ahora solo existe un pipeline de integración continua (**ci.yml**) que ejecuta lint y pruebas en todos los cambios.
+- Sin impacto en el comportamiento de la aplicación.
+
+---
+
+### 🗑️ Limpieza de Código
+
+- Se eliminó el componente **ProtectedRoute** que estaba sin uso (código muerto). Este componente no afectaba ninguna funcionalidad y su eliminación no cambia ningún comportamiento del sistema.
+
+---
+
+### 📋 Matriz de Permisos
+
+La matriz de permisos fue revisada y está actualizada:
+- **13 módulos** cubiertos (Dashboard, Productos, Categorías, Proveedores, Clientes, Tipo de Pago, Movimientos, Cotizaciones, Caja Chica, Pagos a Proveedores, Reportes, Configuración, y utilidades)
+- **Admin**: acceso completo a todos los permisos por defecto
+- **Almacenista**: permisos operativos sin acceso a datos confidenciales por defecto
+
+> Para ajustar permisos, ve a **Configuración → Permisos** (solo admins).
+`,
+    },
     {
       id: "release-2-15-0",
       category: "Novedades",

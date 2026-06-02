@@ -6,10 +6,15 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.15.0";
-const SNAPSHOT_RELEASE_DATE = "2026-06-01";
-const USER_MANUAL_LAST_REVIEWED = "2026-06-01";
+const CURRENT_VERSION_IN_CODE = "2.16.0";
+const SNAPSHOT_RELEASE_DATE = "2026-06-02";
+const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+3962d7d chore: fix 17 CVEs, remove dead code and redundant CI workflow
+9b0dcba Merge pull request #89 from jospabloh/claude/affectionate-faraday-CDzaR
+9a03a7b Merge pull request #90 from jospabloh/claude/focused-gauss-IcvAJ
+dc2f6e7 security: backend tenant ownership + dependabot + integration tests
+0e02258 chore(release): bump to v2.15.0 — security audit, CVE fixes, new permissions
 efbda82 Merge pull request #88 from jospabloh/claude/dazzling-davinci-bbWUG
 35f8ad2 chore(release): bump to v2.14.0 — security hardening, public quotation & referral program
 2c01499 File changes
@@ -30,19 +35,15 @@ aec6dc9 security(round2): remove hardcoded emails from frontend, expose is_platf
 324bce0 Merge pull request #78 from jospabloh/automated/release-pr
 384a4c1 chore: release and update documentation
 2380cb9 fix(ci): restrict deno lint to functions/ and cast catch errors safely
-94eddf1 fix(ci): exclude camelcase rule to unblock deno lint
-44febbc feat: referral program & onboarding wizard (Steps 6-7)
-a9e7884 feat: public quotation sharing & entity schema extensions (Steps 1-5)
-c917a7a Update base44 packages
-b168aac Update base44 packages
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "🔒 Auditoría de calidad y seguridad completa del codebase (deps, CI/CD, permisos, arquitectura)",
-  "📦 Actualización de dependencias vulnerables: jspdf, axios, lodash, dompurify, vite, ws, flatted (19 CVEs resueltos: 1 crítico, 8 altos, 10 moderados)",
-  "🔑 Permisos nuevos: Cotizaciones:share (compartir enlace público) y Configuracion:manage_referral (programa de referidos) — admin=true, almacenista=false por defecto",
-  "📋 Manifiestos de permisos regenerados con las nuevas claves v2.14.0",
-  "📚 Manual de usuario actualizado: artículos de Compartir Cotización, Programa de Referidos y Onboarding Wizard",
-  "📝 Changelog y versión actualizados a v2.15.0",
+  "🔒 Auditoría de seguridad completa: 17 CVEs adicionales resueltos en dependencias npm (package-lock.json actualizado)",
+  "🧹 Eliminado workflow CI redundante deno.yml — un solo pipeline Deno CI en ci.yml",
+  "🗑️ Eliminado componente muerto ProtectedRoute.jsx: referenciaba authChecked y checkUserAuth inexistentes en AuthContext",
+  "📋 Matriz de permisos revisada y confirmada: 13 módulos, 144 claves, admin=true y almacenista=false por defecto",
+  "🛡️ Aislamiento de tenant validado: RLS + funciones backend con ownership check activos",
+  "📚 Manual de usuario revisado y actualizado al 2 de junio de 2026",
+  "📝 Changelog y versión actualizados a v2.16.0",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
