@@ -1,5 +1,33 @@
 # Changelog — StockFlow
 
+## v2.16.0 (2026-06-02)
+
+### 🔒 Auditoría de Seguridad, Calidad de Código y Mantenimiento
+
+#### Correcciones de Seguridad — Dependencias (17 CVEs adicionales)
+- `package-lock.json` actualizado resolviendo 17 CVEs adicionales en dependencias transitivas detectadas post-v2.15.0
+
+#### Limpieza de CI/CD
+- **`deno.yml` eliminado** — workflow Deno CI redundante. El pipeline `ci.yml` ya cubre deno lint + deno test en todos los pushes y pull requests. Unificado a un solo pipeline.
+
+#### Código Muerto Eliminado
+- **`ProtectedRoute.jsx` eliminado** — componente referenciaba `authChecked` y `checkUserAuth` que no son parte del contrato público de `AuthContext`. El componente no estaba importado en ninguna parte del árbol de rutas (`App.jsx` usa `AuthenticatedApp` directamente). Eliminación segura sin impacto funcional.
+
+#### Auditoría de Permisos
+- Matriz de permisos revisada: 13 módulos, 144 claves, Admin=true / Almacenista=false por defecto confirmados
+- Sin gaps de permisos nuevos identificados
+
+#### Aislamiento de Tenant
+- RLS activo en lectura confirmado
+- Funciones backend con ownership check (`deleteClientSafe`, `getCurrentTenantLicenseState`) activas
+- Sin exposición de datos entre tenants identificada en esta auditoría
+
+#### Documentación
+- Manual de usuario revisado al 2 de junio de 2026
+- Changelog y versión actualizados a v2.16.0
+
+---
+
 ## v2.15.0 (2026-06-01)
 
 ### 🔒 Auditoría de Seguridad y Calidad de Código
