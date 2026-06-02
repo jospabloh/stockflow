@@ -6,44 +6,38 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.0";
+const CURRENT_VERSION_IN_CODE = "2.16.1";
 const SNAPSHOT_RELEASE_DATE = "2026-06-02";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
-3962d7d chore: fix 17 CVEs, remove dead code and redundant CI workflow
+1a17cde Merge pull request #99 from jospabloh/dependabot/npm_and_yarn/typescript-6.0.3
+08f6df8 Merge pull request #98 from jospabloh/dependabot/npm_and_yarn/react-router-dom-7.16.0
+f086815 Merge branch 'main' into dependabot/npm_and_yarn/react-router-dom-7.16.0
+fdfca5d Merge pull request #96 from jospabloh/dependabot/npm_and_yarn/lucide-react-1.17.0
+00294c4 Merge branch 'main' into dependabot/npm_and_yarn/lucide-react-1.17.0
+32966ee Merge pull request #95 from jospabloh/dependabot/github_actions/actions/setup-node-6
+2c5f29f Merge branch 'main' into dependabot/github_actions/actions/setup-node-6
+7901f7a Merge pull request #94 from jospabloh/dependabot/github_actions/peter-evans/create-pull-request-8
+fe04ed7 Merge branch 'main' into dependabot/github_actions/peter-evans/create-pull-request-8
+b30c20a Merge pull request #92 from jospabloh/dependabot/github_actions/actions/checkout-6
+e9f4489 Merge branch 'main' into dependabot/github_actions/actions/checkout-6
+885ea84 Merge pull request #106 from jospabloh/claude/deps-cleanup-1780352850
+a43878b Merge branch 'main' into claude/deps-cleanup-1780352850
+d053afe chore(deps): bump actions/checkout from 4 to 6
+f8a8967 chore(release): v2.16.0 — Security Audit, CVE Fixes, CI Cleanup & Dead Code Removal (#107)
+49aba0a chore: fix 17 CVEs, remove dead code and redundant CI workflow
+7dbd0dd chore(deps-dev): bump typescript from 5.9.3 to 6.0.3
+b5f1fc4 chore(deps): bump react-router-dom from 6.30.3 to 7.16.0
+28a7c0f chore(deps): bump lucide-react from 0.475.0 to 1.17.0
+8ed1a9b chore(deps): bump actions/setup-node from 4 to 6
+76519e4 chore(deps): bump peter-evans/create-pull-request from 6 to 8
 9b0dcba Merge pull request #89 from jospabloh/claude/affectionate-faraday-CDzaR
 9a03a7b Merge pull request #90 from jospabloh/claude/focused-gauss-IcvAJ
 dc2f6e7 security: backend tenant ownership + dependabot + integration tests
 0e02258 chore(release): bump to v2.15.0 — security audit, CVE fixes, new permissions
-efbda82 Merge pull request #88 from jospabloh/claude/dazzling-davinci-bbWUG
-35f8ad2 chore(release): bump to v2.14.0 — security hardening, public quotation & referral program
-2c01499 File changes
-927880c File changes
-1592dd8 File changes
-60bf0d8 File changes
-1082516 File changes
-6822bc5 File changes
-a144e45 File changes
-a1d2a6e Update base44 packages
-f73ad40 fix(rls): Business create open for any authenticated user — first-time tenant creation
-532a126 security(round4): remove hardcoded admin email from HelpCenter, use isPlatformAdmin from backend
-1a24653 merge: incorporate base44-bot Business.jsonc change
-ec0139e security(round3): delete 102 scaffold/debug functions, fix SUPPORT_EMAIL in 3 funcs, fix hardcoded owner email in restoreOwnerAdmin
-983195c Manual code change
-aec6dc9 security(round2): remove hardcoded emails from frontend, expose is_platform_admin from backend, fix variable shadow in fixRosetaLegacyRole
-39732d4 security: fix RLS, auth guards, and remove hardcoded email from 36 files
-324bce0 Merge pull request #78 from jospabloh/automated/release-pr
-384a4c1 chore: release and update documentation
-2380cb9 fix(ci): restrict deno lint to functions/ and cast catch errors safely
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "🔒 Auditoría de seguridad completa: 17 CVEs adicionales resueltos en dependencias npm (package-lock.json actualizado)",
-  "🧹 Eliminado workflow CI redundante deno.yml — un solo pipeline Deno CI en ci.yml",
-  "🗑️ Eliminado componente muerto ProtectedRoute.jsx: referenciaba authChecked y checkUserAuth inexistentes en AuthContext",
-  "📋 Matriz de permisos revisada y confirmada: 13 módulos, 144 claves, admin=true y almacenista=false por defecto",
-  "🛡️ Aislamiento de tenant validado: RLS + funciones backend con ownership check activos",
-  "📚 Manual de usuario revisado y actualizado al 2 de junio de 2026",
-  "📝 Changelog y versión actualizados a v2.16.0",
+  "Actualización a la versión 2.16.1",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

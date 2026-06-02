@@ -1,23 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-02T02:04:02.565Z
+// Generado: 2026-06-02T04:22:20.139Z
 
-export const SNAPSHOT_VERSION = "2.16.0";
+export const SNAPSHOT_VERSION = "2.16.1";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-06-02";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 
-export const SNAPSHOT_GIT_LOG = "3962d7d chore: fix 17 CVEs, remove dead code and redundant CI workflow\n9b0dcba Merge pull request #89 from jospabloh/claude/affectionate-faraday-CDzaR\n9a03a7b Merge pull request #90 from jospabloh/claude/focused-gauss-IcvAJ\ndc2f6e7 security: backend tenant ownership + dependabot + integration tests\n0e02258 chore(release): bump to v2.15.0 — security audit, CVE fixes, new permissions\nefbda82 Merge pull request #88 from jospabloh/claude/dazzling-davinci-bbWUG\n35f8ad2 chore(release): bump to v2.14.0 — security hardening, public quotation & referral program\n2c01499 File changes\n927880c File changes\n1592dd8 File changes\n60bf0d8 File changes\n1082516 File changes\n6822bc5 File changes\na144e45 File changes\na1d2a6e Update base44 packages\nf73ad40 fix(rls): Business create open for any authenticated user — first-time tenant creation\n532a126 security(round4): remove hardcoded admin email from HelpCenter, use isPlatformAdmin from backend\n1a24653 merge: incorporate base44-bot Business.jsonc change\nec0139e security(round3): delete 102 scaffold/debug functions, fix SUPPORT_EMAIL in 3 funcs, fix hardcoded owner email in restoreOwnerAdmin\n983195c Manual code change\naec6dc9 security(round2): remove hardcoded emails from frontend, expose is_platform_admin from backend, fix variable shadow in fixRosetaLegacyRole\n39732d4 security: fix RLS, auth guards, and remove hardcoded email from 36 files\n324bce0 Merge pull request #78 from jospabloh/automated/release-pr\n384a4c1 chore: release and update documentation\n2380cb9 fix(ci): restrict deno lint to functions/ and cast catch errors safely";
+export const SNAPSHOT_GIT_LOG = "1a17cde Merge pull request #99 from jospabloh/dependabot/npm_and_yarn/typescript-6.0.3\n08f6df8 Merge pull request #98 from jospabloh/dependabot/npm_and_yarn/react-router-dom-7.16.0\nf086815 Merge branch 'main' into dependabot/npm_and_yarn/react-router-dom-7.16.0\nfdfca5d Merge pull request #96 from jospabloh/dependabot/npm_and_yarn/lucide-react-1.17.0\n00294c4 Merge branch 'main' into dependabot/npm_and_yarn/lucide-react-1.17.0\n32966ee Merge pull request #95 from jospabloh/dependabot/github_actions/actions/setup-node-6\n2c5f29f Merge branch 'main' into dependabot/github_actions/actions/setup-node-6\n7901f7a Merge pull request #94 from jospabloh/dependabot/github_actions/peter-evans/create-pull-request-8\nfe04ed7 Merge branch 'main' into dependabot/github_actions/peter-evans/create-pull-request-8\nb30c20a Merge pull request #92 from jospabloh/dependabot/github_actions/actions/checkout-6\ne9f4489 Merge branch 'main' into dependabot/github_actions/actions/checkout-6\n885ea84 Merge pull request #106 from jospabloh/claude/deps-cleanup-1780352850\na43878b Merge branch 'main' into claude/deps-cleanup-1780352850\nd053afe chore(deps): bump actions/checkout from 4 to 6\nf8a8967 chore(release): v2.16.0 — Security Audit, CVE Fixes, CI Cleanup & Dead Code Removal (#107)\n49aba0a chore: fix 17 CVEs, remove dead code and redundant CI workflow\n7dbd0dd chore(deps-dev): bump typescript from 5.9.3 to 6.0.3\nb5f1fc4 chore(deps): bump react-router-dom from 6.30.3 to 7.16.0\n28a7c0f chore(deps): bump lucide-react from 0.475.0 to 1.17.0\n8ed1a9b chore(deps): bump actions/setup-node from 4 to 6\n76519e4 chore(deps): bump peter-evans/create-pull-request from 6 to 8\n9b0dcba Merge pull request #89 from jospabloh/claude/affectionate-faraday-CDzaR\n9a03a7b Merge pull request #90 from jospabloh/claude/focused-gauss-IcvAJ\ndc2f6e7 security: backend tenant ownership + dependabot + integration tests\n0e02258 chore(release): bump to v2.15.0 — security audit, CVE fixes, new permissions";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "🔒 Auditoría de seguridad completa: 17 CVEs adicionales resueltos en dependencias npm (package-lock.json actualizado)",
-  "🧹 Eliminado workflow CI redundante deno.yml — un solo pipeline Deno CI en ci.yml",
-  "🗑️ Eliminado componente muerto ProtectedRoute.jsx: referenciaba authChecked y checkUserAuth inexistentes en AuthContext",
-  "📋 Matriz de permisos revisada y confirmada: 13 módulos, 144 claves, admin=true y almacenista=false por defecto",
-  "🛡️ Aislamiento de tenant validado: RLS + funciones backend con ownership check activos",
-  "📚 Manual de usuario revisado y actualizado al 2 de junio de 2026",
-  "📝 Changelog y versión actualizados a v2.16.0",
+  "Actualización a la versión 2.16.1",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -25,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.16.1",
+    date: "2026-06-02",
+    changes: [
+    "Actualización a la versión 2.16.1"
+    ]
+  },
   {
     version: "2.16.0",
     date: "2026-06-02",
