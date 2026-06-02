@@ -108,6 +108,7 @@ const CANONICAL_KEYS: string[] = [
   "Cotizaciones:send",
   "Cotizaciones:export",
   "Cotizaciones:delete",
+  "Cotizaciones:share",
   "Cotizaciones:pricing",
   "Caja Chica:view",
   "Caja Chica:view_history",
@@ -149,6 +150,7 @@ const CANONICAL_KEYS: string[] = [
   "Configuracion:edit_quotation_footer",
   "Configuracion:import_products",
   "Configuracion:manage_team",
+  "Configuracion:manage_referral",
   "Configuracion:delete_account",
 ];
 

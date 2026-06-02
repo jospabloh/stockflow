@@ -1,5 +1,79 @@
 # Changelog — StockFlow
 
+## v2.16.0 (2026-06-02)
+
+### 🔒 Auditoría de Seguridad, Calidad de Código y Mantenimiento
+
+#### Correcciones de Seguridad — Dependencias (17 CVEs adicionales)
+- `package-lock.json` actualizado resolviendo 17 CVEs adicionales en dependencias transitivas detectadas post-v2.15.0
+
+#### Limpieza de CI/CD
+- **`deno.yml` eliminado** — workflow Deno CI redundante. El pipeline `ci.yml` ya cubre deno lint + deno test en todos los pushes y pull requests. Unificado a un solo pipeline.
+
+#### Código Muerto Eliminado
+- **`ProtectedRoute.jsx` eliminado** — componente referenciaba `authChecked` y `checkUserAuth` que no son parte del contrato público de `AuthContext`. El componente no estaba importado en ninguna parte del árbol de rutas (`App.jsx` usa `AuthenticatedApp` directamente). Eliminación segura sin impacto funcional.
+
+#### Auditoría de Permisos
+- Matriz de permisos revisada: 13 módulos, 144 claves, Admin=true / Almacenista=false por defecto confirmados
+- Sin gaps de permisos nuevos identificados
+
+#### Aislamiento de Tenant
+- RLS activo en lectura confirmado
+- Funciones backend con ownership check (`deleteClientSafe`, `getCurrentTenantLicenseState`) activas
+- Sin exposición de datos entre tenants identificada en esta auditoría
+
+#### Documentación
+- Manual de usuario revisado al 2 de junio de 2026
+- Changelog y versión actualizados a v2.16.0
+
+---
+
+## v2.15.0 (2026-06-01)
+
+### 🔒 Auditoría de Seguridad y Calidad de Código
+
+#### Vulnerabilidades de Dependencias Resueltas (19 CVEs)
+- **Crítica**: `jspdf` — PDF Object Injection y HTML Injection corregidos
+- **Alta**: `axios` — SSRF, Prototype Pollution, Header Injection y CRLF Injection corregidos
+- **Alta**: `lodash` — Code Injection via `_.template` y Prototype Pollution corregidos
+- **Alta**: `flatted` — DoS por recursión no acotada y Prototype Pollution corregidos
+- **Alta**: `minimatch` — ReDoS (denegación de servicio) corregido
+- **Alta**: `vite` — Path Traversal en deps optimizadas y lectura arbitraria via WebSocket corregidos
+- **Moderada**: `ajv`, `brace-expansion`, `dompurify`, `follow-redirects`, `uuid`, `ws` — múltiples CVEs moderados corregidos
+
+#### Permisos — Cobertura para Features v2.14.0
+- **`Cotizaciones:share`** — permiso granular para Compartir Enlace Público: admin=`true`, almacenista=`false` por defecto
+- **`Configuracion:manage_referral`** — permiso para gestionar el Programa de Referidos: admin=`true`, almacenista=`false` por defecto
+- Manifiestos de permisos regenerados con claves nuevas
+
+#### Hallazgos Arquitectónicos
+- `ProtectedRoute.jsx` referenciaba `authChecked`/`checkUserAuth` inexistentes en `AuthContext` (rutas protegidas operan correctamente vía `AuthenticatedApp` — sin impacto funcional, stale code documentado)
+- Dos workflows de CI redundantes (`ci.yml` y `deno.yml`) unificados en `ci.yml`
+- deno.json excluye reglas de lint relevantes (`no-unused-vars`, `no-explicit-any`) — trade-off documentado
+- `SUPPORT_EMAIL` hardcodeado como fallback en 3 funciones backend — riesgo bajo, uso de env var recomendado
+
+#### Documentación
+- Manual de usuario actualizado con artículos de Compartir Cotización, Programa de Referidos y Onboarding Wizard
+- Versión de manual de ayuda corregida (2.12.0 → 2.14.0)
+
+---
+
+## v2.14.0 (2026-06-01)
+
+### 🔐 Seguridad Reforzada, Compartir Cotización y Programa de Referidos
+- Auditoría de seguridad completa: eliminación de emails hardcodeados en 36+ archivos del frontend y 25 funciones backend
+- Guards de autenticación añadidos a 11 funciones sin auth (platform-owner-only y user-only)
+- RLS fix: regla de creación de Business ahora abierta para cualquier usuario autenticado (primer tenant)
+- PLATFORM_OWNER_EMAIL ahora se lee exclusivamente de variable de entorno — nunca del código fuente
+- Eliminadas 102 funciones scaffold/debug del codebase de producción
+- HelpCenter: admin de plataforma resuelto por isPlatformAdmin del backend, no por email hardcodeado
+- Compartir Cotización (Public Link): enlace seguro por token UUID para que clientes acepten/rechacen sin login
+- Wizard de Onboarding: guía paso a paso para nuevos negocios (Bienvenida → Primer producto → Invitar equipo)
+- Programa de Referidos: código único por negocio, +15 días de trial para referente y referido al activar
+- Panel de Referidos en Configuración: código con botones de copiar y WhatsApp, estadísticas y progreso
+
+---
+
 ## v2.13.0 (2026-05-14)
 
 ### 🔐 Permisos Granulares — Política de Defaults y Matriz Completa
