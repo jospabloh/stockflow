@@ -44,7 +44,10 @@ import {
   Palette,
   Users,
   Shield,
-  HandCoins
+  HandCoins,
+  Wallet,
+  Tag,
+  CreditCard
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -61,11 +64,14 @@ const navItems = [
       { name: "Proveedores", icon: Users, page: "Suppliers" },
       { name: "Clientes", icon: Users, page: "Clients" },
       { name: "Tipo de pago", icon: DollarSign, page: "PaymentMethods" },
+      { name: "Rubros", icon: Tag, page: "Rubros" },
+      { name: "Cuentas", icon: CreditCard, page: "FundAccounts" },
     ]
   },
   { name: "Movimientos", icon: ArrowLeftRight, page: "Movements" },
   { name: "Cotizaciones", icon: FileText, page: "Quotations" },
   { name: "Caja Chica", icon: PiggyBank, page: "PettyCash" },
+  { name: "Utilidad", icon: Wallet, page: "Utility" },
   { name: "Pagos a Proveedores", icon: HandCoins, page: "SupplierPayments" },
   { name: "Reportes", icon: BarChart3, page: "Reports" },
   { name: "Configuración", icon: Settings, page: "Settings" },

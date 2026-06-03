@@ -35,6 +35,9 @@ const Suppliers = lazy(() => import('./pages/Suppliers'));
 const Clients = lazy(() => import('./pages/Clients'));
 const PaymentMethods = lazy(() => import('./pages/PaymentMethods'));
 const SupplierPayments = lazy(() => import('./pages/SupplierPayments'));
+const Utility = lazy(() => import('./pages/Utility'));
+const Rubros = lazy(() => import('./pages/Rubros'));
+const FundAccounts = lazy(() => import('./pages/FundAccounts'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center">
@@ -118,6 +121,9 @@ const AuthenticatedApp = () => {
       <Route path="/Clients" element={<LayoutWrapper currentPageName="Clients"><Suspense fallback={<PageLoader />}><Clients /></Suspense></LayoutWrapper>} />
       <Route path="/PaymentMethods" element={<LayoutWrapper currentPageName="PaymentMethods"><Suspense fallback={<PageLoader />}><PaymentMethods /></Suspense></LayoutWrapper>} />
       <Route path="/SupplierPayments" element={<LayoutWrapper currentPageName="SupplierPayments"><Suspense fallback={<PageLoader />}><SupplierPayments /></Suspense></LayoutWrapper>} />
+      <Route path="/Utility" element={<LayoutWrapper currentPageName="Utility"><Suspense fallback={<PageLoader />}><Utility /></Suspense></LayoutWrapper>} />
+      <Route path="/Rubros" element={<LayoutWrapper currentPageName="Rubros"><Suspense fallback={<PageLoader />}><Rubros /></Suspense></LayoutWrapper>} />
+      <Route path="/FundAccounts" element={<LayoutWrapper currentPageName="FundAccounts"><Suspense fallback={<PageLoader />}><FundAccounts /></Suspense></LayoutWrapper>} />
       <Route path="/LicenseAdmin" element={<LayoutWrapper currentPageName="LicenseAdmin"><Suspense fallback={<PageLoader />}><LicenseAdmin /></Suspense></LayoutWrapper>} />
       <Route path="/TenantRulesAdmin" element={<LayoutWrapper currentPageName="TenantRulesAdmin"><Suspense fallback={<PageLoader />}><TenantRulesAdmin /></Suspense></LayoutWrapper>} />
       <Route path="/PermissionAdmin" element={<LayoutWrapper currentPageName="PermissionAdmin"><Suspense fallback={<PageLoader />}><PermissionAdmin /></Suspense></LayoutWrapper>} />
