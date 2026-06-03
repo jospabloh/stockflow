@@ -15,11 +15,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Items array required' }, { status: 400 });
     }
 
-    // Get client to check force_purchase_all_products
+    // Get client to check force_purchase_all_products.
+    // Scope the lookup to the authenticated user's business_id to prevent
+    // cross-tenant data access (a malicious user could otherwise pass a
+    // client_id belonging to another business).
     let client = null;
     if (client_id) {
-      const clients = await base44.asServiceRole.entities.Client.list();
-      client = clients.find(c => c.id === client_id);
+      const clients = await base44.asServiceRole.entities.Client.filter({
+        id: client_id,
+        business_id: user.business_id
+      });
+      client = clients[0] || null;
     }
 
     // Calculate subtotal and tax
