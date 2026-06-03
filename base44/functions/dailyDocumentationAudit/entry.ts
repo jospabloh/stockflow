@@ -6,10 +6,14 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.6";
+const CURRENT_VERSION_IN_CODE = "2.16.7";
 const SNAPSHOT_RELEASE_DATE = "2026-06-03";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+cb57dd9 Merge pull request #123 from jospabloh/claude/lucid-euler-xrMBS
+f4b4d00 Fix cross-tenant IDOR in calculateQuotationWithTransport
+a87455d Merge pull request #122 from jospabloh/automated/release-pr
+c33d6af chore: release and update documentation
 874ae77 Merge pull request #121 from jospabloh/claude/sharp-fermi-XAzki
 4c8ef31 Merge branch 'main' into claude/sharp-fermi-XAzki
 2a948fd Merge pull request #120 from jospabloh/automated/release-pr
@@ -31,13 +35,9 @@ b48a776 Merge pull request #116 from jospabloh/claude/utility-confetti-feedback
 b8b246e Merge pull request #111 from jospabloh/automated/release-pr
 bbfe2ff Merge pull request #114 from jospabloh/claude/clever-clarke-FY64i
 ad365b5 Add Utility module with configurable rubros and accounts
-79eaef3 chore: release and update documentation
-4741728 Merge pull request #113 from jospabloh/claude/download-formats-csv-xlsx-pdf-2q5n3
-a3b982a Añadir exportación CSV/XLSX/PDF en todos los módulos con descarga
-c880046 Merge pull request #112 from jospabloh/claude/focused-tesla-PYuu6
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.6",
+  "Actualización a la versión 2.16.7",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
