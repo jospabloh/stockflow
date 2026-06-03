@@ -1,12 +1,24 @@
 import React, { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Users, TrendingUp, Receipt, Trophy } from "lucide-react";
+import { Users, TrendingUp, Receipt, Trophy } from "lucide-react";
 import { MobileSelect } from "@/components/ui/MobileSelect";
+import ExportMenu from "@/components/common/ExportMenu";
 import moment from "moment";
 
 // Métodos de pago placeholder que no representan una forma de pago confirmada
 const PLACEHOLDER_METHODS = ["Pendiente de confirmar", "Por definir", "Sin cargo", ""];
+
+const TOP_CLIENT_COLUMNS = [
+  { key: "posicion", label: "Posición", type: "number" },
+  { key: "cliente", label: "Cliente", type: "text" },
+  { key: "ventas", label: "Ventas", type: "number" },
+  { key: "total_vendido", label: "Total Vendido", type: "currency" },
+  { key: "ticket_promedio", label: "Ticket Promedio", type: "currency" },
+  { key: "cobrado", label: "Cobrado", type: "currency" },
+  { key: "pct_del_total", label: "% del Total", type: "text" },
+  { key: "ultima_compra", label: "Última Compra", type: "text" },
+];
 
 export default function TopSalesByClientReport({
   quotations = [],
@@ -123,16 +135,6 @@ export default function TopSalesByClientReport({
       },
     };
   }, [allSales, dateFrom, dateTo, paymentFilter, clientFilter, sourceFilter, paidFilter, topN]);
-
-  const handleExportCSV = (data, _filename) => {
-    if (!data.length) return;
-    const headers = Object.keys(data[0]).join(",");
-    const rows = data.map((r) => Object.values(r).join(",")).join("\n");
-    const csv = `${headers}\n${rows}`;
-    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    globalThis.open?.(url, "_blank");
-  };
 
   const fmt = (n) => `$${(n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
 
@@ -271,27 +273,21 @@ export default function TopSalesByClientReport({
             <h3 className="font-semibold text-slate-700">Top de Ventas por Cliente</h3>
             <p className="text-xs text-slate-400 mt-0.5">Ranking de clientes por monto total vendido en el período</p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              handleExportCSV(
-                ranking.map((r, idx) => ({
-                  posicion: idx + 1,
-                  cliente: r.client,
-                  ventas: r.count,
-                  total_vendido: r.total.toFixed(2),
-                  ticket_promedio: r.avgTicket.toFixed(2),
-                  cobrado: r.paidAmount.toFixed(2),
-                  pct_del_total: r.pctOfTotal.toFixed(1) + "%",
-                  ultima_compra: r.lastPurchase ? r.lastPurchase.format("DD/MM/YYYY") : "—",
-                })),
-                "top_ventas_cliente"
-              )
-            }
-          >
-            <Download className="h-4 w-4 mr-1" /> CSV
-          </Button>
+          <ExportMenu
+            columns={TOP_CLIENT_COLUMNS}
+            rows={ranking.map((r, idx) => ({
+              posicion: idx + 1,
+              cliente: r.client,
+              ventas: r.count,
+              total_vendido: r.total,
+              ticket_promedio: r.avgTicket,
+              cobrado: r.paidAmount,
+              pct_del_total: r.pctOfTotal.toFixed(1) + "%",
+              ultima_compra: r.lastPurchase ? r.lastPurchase.format("DD/MM/YYYY") : "—",
+            }))}
+            filename="top_ventas_cliente"
+            title="Top de Ventas por Cliente"
+          />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

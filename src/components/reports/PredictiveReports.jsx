@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Download } from "lucide-react";
 import { MobileSelect } from "@/components/ui/MobileSelect";
+import ExportMenu from "@/components/common/ExportMenu";
 import {
   XAxis,
   YAxis,
@@ -100,15 +99,39 @@ export default function PredictiveReports({
     }));
   });
 
-  const handleExportCSV = (data, _filename) => {
-    if (!data.length) return;
-    const headers = Object.keys(data[0]).join(",");
-    const rows = data.map((r) => Object.values(r).join(",")).join("\n");
-    const csv = `${headers}\n${rows}`;
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    globalThis.open?.(url, "_blank");
-  };
+  const topSellingColumns = [
+    { key: "name", label: "Producto", type: "text" },
+    { key: "cantidad", label: "Cantidad", type: "number" },
+    { key: "valor", label: "Valor", type: "currency" },
+  ];
+
+  const lowRotationColumns = [
+    { key: "name", label: "Producto", type: "text" },
+    { key: "salidas", label: "Salidas", type: "number" },
+    { key: "stock", label: "Stock Actual", type: "number" },
+    { key: "min", label: "M\u00EDnimo", type: "number" },
+    { key: "ultima_salida", label: "\u00DAltima Salida", type: "text" },
+  ];
+
+  const lowRotationRows = lowRotation.map((p) => ({
+    name: p.name,
+    salidas: p.salidas,
+    stock: p.stock,
+    min: products.find((pr) => pr.name === p.name)?.min_stock || 5,
+    ultima_salida: p.ultima_salida,
+  }));
+
+  const trendColumns = [
+    { key: "dia", label: "D\u00EDa", type: "text" },
+    { key: "entradas", label: "Entradas", type: "number" },
+    { key: "salidas", label: "Salidas", type: "number" },
+  ];
+
+  const trendRows = dailyTrend.map((d) => ({
+    dia: d.dia,
+    entradas: d.Entradas,
+    salidas: d.Salidas,
+  }));
 
   return (
     <div className="space-y-6">
@@ -134,7 +157,6 @@ export default function PredictiveReports({
             categories={categories}
             dateFrom={dateFrom}
             dateTo={dateTo}
-            onExport={handleExportCSV}
           />
         </TabsContent>
 
@@ -156,9 +178,12 @@ export default function PredictiveReports({
                 <h3 className="font-semibold text-slate-700">Productos Más Vendidos (por valor)</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Período seleccionado</p>
               </div>
-              <Button variant="outline" size="sm" onClick={() => handleExportCSV(topSelling, "productos_mas_vendidos")}>
-                <Download className="h-4 w-4 mr-1" /> CSV
-              </Button>
+              <ExportMenu
+                columns={topSellingColumns}
+                rows={topSelling}
+                filename="productos_mas_vendidos"
+                title="Productos Más Vendidos"
+              />
             </div>
             {topSelling.length === 0 ? (
               <div className="text-center py-12 text-slate-400">
@@ -188,9 +213,17 @@ export default function PredictiveReports({
         {/* Baja Rotación */}
         <TabsContent value="low">
           <Card className="border-0 shadow-sm overflow-hidden">
-            <div className="p-4 border-b bg-amber-50/50">
-              <h3 className="font-semibold text-slate-700">Productos de Baja Rotación</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Productos con menor movimiento en el período seleccionado</p>
+            <div className="flex items-center justify-between p-4 border-b bg-amber-50/50">
+              <div>
+                <h3 className="font-semibold text-slate-700">Productos de Baja Rotación</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Productos con menor movimiento en el período seleccionado</p>
+              </div>
+              <ExportMenu
+                columns={lowRotationColumns}
+                rows={lowRotationRows}
+                filename="baja_rotacion"
+                title="Productos de Baja Rotación"
+              />
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -232,7 +265,15 @@ export default function PredictiveReports({
         {/* Tendencia */}
         <TabsContent value="trend">
           <Card className="border-0 shadow-sm p-6">
-            <h3 className="font-semibold text-slate-700 mb-4">Tendencia de Movimientos</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-700">Tendencia de Movimientos</h3>
+              <ExportMenu
+                columns={trendColumns}
+                rows={trendRows}
+                filename="tendencia_movimientos"
+                title="Tendencia de Movimientos"
+              />
+            </div>
             <ResponsiveContainer width="100%" height={350}>
               <LineChart data={dailyTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -291,7 +332,7 @@ export default function PredictiveReports({
 }
 
 // Componente Pivot Dinámico
-function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo, onExport }) {
+function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo }) {
   const [rowGroupBy, setRowGroupBy] = useState("product");
   const [colGroupBy, setColGroupBy] = useState("month");
   const [metricType, setMetricType] = useState("sum");
@@ -485,22 +526,25 @@ function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo,
 
       <div className="p-4 border-t bg-slate-50 flex items-center gap-2">
         <p className="text-xs text-slate-600 flex-1">💡 Selecciona filas, columnas, métrica y agregación para análisis personalizados.</p>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => {
-            const exportData = rows.map(row => {
-              const obj = { [rowGroupBy === "product" ? "Producto" : rowGroupBy === "category" ? "Categoría" : "Cliente"]: row };
-              cols.forEach(col => {
+        <ExportMenu
+          filename="analisis_dinamico"
+          title="Análisis Dinámico"
+          getData={() => {
+            const rowLabel = rowGroupBy === "product" ? "Producto" : rowGroupBy === "category" ? "Categoría" : "Cliente";
+            const columns = [
+              { key: "__row", label: rowLabel, type: "text" },
+              ...cols.map((col) => ({ key: col, label: col, type: "number" })),
+            ];
+            const exportRows = rows.map((row) => {
+              const obj = { __row: row };
+              cols.forEach((col) => {
                 obj[col] = pivotData.data[row][col] ? getDisplayValue(pivotData.data[row][col]) : "—";
               });
               return obj;
             });
-            onExport(exportData, "analisis_dinamico");
+            return { columns, rows: exportRows };
           }}
-        >
-          <Download className="h-4 w-4 mr-1" /> CSV
-        </Button>
+        />
       </div>
     </Card>
   );

@@ -1,6 +1,17 @@
 import React, { useMemo } from "react";
 import { Card } from "@/components/ui/card";
+import ExportMenu from "@/components/common/ExportMenu";
 import moment from "moment";
+
+const REORDER_COLUMNS = [
+  { key: "producto", label: "Producto", type: "text" },
+  { key: "stock", label: "Stock Actual", type: "number" },
+  { key: "demanda_diaria", label: "Demanda Diaria", type: "number" },
+  { key: "cobertura_dias", label: "Cobertura (días)", type: "number" },
+  { key: "cant_sugerida", label: "Cant. Sugerida", type: "number" },
+  { key: "urgencia", label: "Urgencia", type: "text" },
+  { key: "motivo", label: "Motivo", type: "text" },
+];
 
 export default function ReorderSuggestionReport({ products, movements, dateFrom, dateTo }) {
   const reorderData = useMemo(() => {
@@ -61,11 +72,29 @@ export default function ReorderSuggestionReport({ products, movements, dateFrom,
       });
   }, [products, movements, dateFrom, dateTo]);
 
+  const exportRows = reorderData.map((p) => ({
+    producto: p.name,
+    stock: p.stock,
+    demanda_diaria: p.avgDemand,
+    cobertura_dias: p.coverageDays,
+    cant_sugerida: p.suggestedQty,
+    urgencia: p.urgency,
+    motivo: p.reason,
+  }));
+
   return (
     <Card className="border-0 shadow-sm overflow-hidden">
-      <div className="p-4 border-b bg-blue-50/50">
-        <h3 className="font-semibold text-slate-700">Sugerencia de Resurtido</h3>
-        <p className="text-xs text-slate-400 mt-0.5">Productos recomendados para resurtir con cantidades sugeridas (cobertura 30 días)</p>
+      <div className="flex items-center justify-between p-4 border-b bg-blue-50/50">
+        <div>
+          <h3 className="font-semibold text-slate-700">Sugerencia de Resurtido</h3>
+          <p className="text-xs text-slate-400 mt-0.5">Productos recomendados para resurtir con cantidades sugeridas (cobertura 30 días)</p>
+        </div>
+        <ExportMenu
+          columns={REORDER_COLUMNS}
+          rows={exportRows}
+          filename="sugerencia_resurtido"
+          title="Sugerencia de Resurtido"
+        />
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">

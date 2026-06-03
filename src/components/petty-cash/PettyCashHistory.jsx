@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MobileSelect } from "@/components/ui/MobileSelect";
-import { Search, Download, Pencil, Trash2, Lock } from "lucide-react";
+import { Search, Pencil, Trash2, Lock } from "lucide-react";
+import ExportMenu from "@/components/common/ExportMenu";
 import moment from "moment";
 
 const TYPE_LABELS = {
@@ -34,19 +35,25 @@ export default function PettyCashHistory({ movements, isAdmin, onEdit, onDelete 
     });
   }, [movements, search, typeFilter, dateFrom, dateTo]);
 
-  const handleExport = () => {
-    const headers = ["Fecha", "Tipo", "Descripción", "Categoría", "Monto", "Referencia", "Notas"];
-    const rows = filtered.map(m => [
-      m.movement_date || moment.utc(m.created_date).local().format("YYYY-MM-DD"),
-      TYPE_LABELS[m.movement_type]?.label || m.movement_type,
-      m.description, m.category || "", m.amount, m.reference || "", m.notes || "",
-    ]);
-    const csv = [headers.join(","), ...rows.map(r => r.map(v => `"${v}"`).join(","))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "caja_chica.csv"; a.click();
-  };
+  const exportColumns = [
+    { key: "fecha", label: "Fecha", type: "text" },
+    { key: "tipo", label: "Tipo", type: "text" },
+    { key: "descripcion", label: "Descripción", type: "text" },
+    { key: "categoria", label: "Categoría", type: "text" },
+    { key: "monto", label: "Monto", type: "currency" },
+    { key: "referencia", label: "Referencia", type: "text" },
+    { key: "notas", label: "Notas", type: "text" },
+  ];
+
+  const exportRows = filtered.map(m => ({
+    fecha: m.movement_date || moment.utc(m.created_date).local().format("YYYY-MM-DD"),
+    tipo: TYPE_LABELS[m.movement_type]?.label || m.movement_type,
+    descripcion: m.description,
+    categoria: m.category || "",
+    monto: m.amount,
+    referencia: m.reference || "",
+    notas: m.notes || "",
+  }));
 
   return (
     <div className="space-y-4">
@@ -71,9 +78,12 @@ export default function PettyCashHistory({ movements, isAdmin, onEdit, onDelete 
         />
         <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36" title="Desde" />
         <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36" title="Hasta" />
-        <Button variant="outline" size="sm" onClick={handleExport}>
-          <Download className="h-4 w-4 mr-1" /> CSV
-        </Button>
+        <ExportMenu
+          columns={exportColumns}
+          rows={exportRows}
+          filename="caja_chica"
+          title="Caja Chica"
+        />
       </div>
 
       {/* Table */}

@@ -4,7 +4,7 @@ import { usePermissions } from "@/lib/PermissionContext";
 import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Download } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import {
@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import ProductTable from "@/components/products/ProductTable";
+import ExportMenu from "@/components/common/ExportMenu";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -114,31 +115,25 @@ export default function Products() {
     }
   };
 
-  const handleExportCSV = () => {
-     const escapeCSV = (value) => {
-       const str = String(value || "");
-       if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-         return `"${str.replace(/"/g, '""')}"`;
-       }
-       return str;
-     };
+  const exportColumns = [
+    { key: "name", label: "Nombre", type: "text" },
+    { key: "sku", label: "SKU", type: "text" },
+    { key: "barcode", label: "Código de barras", type: "text" },
+    ...(isAdmin ? [{ key: "purchase_price", label: "Precio Compra", type: "currency" }] : []),
+    { key: "retail_sale_price", label: "Precio Venta", type: "currency" },
+    { key: "stock", label: "Stock", type: "number" },
+    { key: "unit", label: "Unidad", type: "text" },
+  ];
 
-     const headers = isAdmin
-       ? ["Nombre", "SKU", "Código de barras", "Precio Compra", "Precio Venta", "Stock", "Unidad"]
-       : ["Nombre", "SKU", "Código de barras", "Precio Venta", "Stock", "Unidad"];
-
-     const rows = filteredProducts.map((p) => isAdmin
-       ? [p.name, p.sku || "", p.barcode || "", p.purchase_price || 0, p.retail_sale_price, p.stock, p.unit || "pieza"]
-       : [p.name, p.sku || "", p.barcode || "", p.retail_sale_price, p.stock, p.unit || "pieza"]
-     );
-
-     const escapedRows = rows.map((r) => r.map(escapeCSV).join(","));
-     const csv = [headers.map(escapeCSV).join(","), ...escapedRows].join("\n");
-
-     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-     const url = URL.createObjectURL(blob);
-     globalThis.open?.(url, "_blank");
-   };
+  const exportRows = filteredProducts.map((p) => ({
+    name: p.name,
+    sku: p.sku || "",
+    barcode: p.barcode || "",
+    ...(isAdmin ? { purchase_price: p.purchase_price || 0 } : {}),
+    retail_sale_price: p.retail_sale_price,
+    stock: p.stock,
+    unit: p.unit || "pieza",
+  }));
 
   if (loading) {
     return <TableSkeleton rows={8} columns={6} />;
@@ -180,9 +175,14 @@ export default function Products() {
                { value: "out", label: "Agotado" },
              ]}
            />
-          <Button variant="outline" onClick={handleExportCSV}>
-            <Download className="h-4 w-4 mr-1" /> CSV
-          </Button>
+          <ExportMenu
+            columns={exportColumns}
+            rows={exportRows}
+            filename="productos"
+            title="Productos"
+            variant="outline"
+            size="default"
+          />
           {can('Productos', 'create') && (
             <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Products/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Producto

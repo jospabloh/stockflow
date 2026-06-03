@@ -1,9 +1,30 @@
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, CheckCircle2, AlertCircle } from "lucide-react";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 import { MobileSelect } from "@/components/ui/MobileSelect";
+import ExportMenu from "@/components/common/ExportMenu";
 import moment from "moment";
+
+const QUOTATION_SALES_COLUMNS = [
+  { key: "folio", label: "Folio", type: "text" },
+  { key: "cliente", label: "Cliente", type: "text" },
+  { key: "fecha", label: "Fecha", type: "text" },
+  { key: "total", label: "Total", type: "currency" },
+  { key: "pagado", label: "Pagado", type: "text" },
+  { key: "forma_pago", label: "Forma de Pago", type: "text" },
+  { key: "entregado", label: "Entregado", type: "text" },
+];
+
+const DIRECT_SALES_COLUMNS = [
+  { key: "producto", label: "Producto", type: "text" },
+  { key: "fecha", label: "Fecha", type: "text" },
+  { key: "cantidad", label: "Cantidad", type: "number" },
+  { key: "precio_unitario", label: "Precio Unitario", type: "currency" },
+  { key: "total", label: "Total", type: "currency" },
+  { key: "cliente", label: "Cliente", type: "text" },
+  { key: "forma_pago", label: "Forma de Pago", type: "text" },
+];
 
 export default function OperationalReports({
   quotations,
@@ -43,16 +64,6 @@ export default function OperationalReports({
 
   const uniqueClients = [...new Set(quotations.map((q) => q.client_name).filter(Boolean))].sort();
   const uniquePaymentMethods = [...new Set(quotations.map((q) => q.payment_method).filter(Boolean))].sort();
-
-  const handleExportCSV = (data, _filename) => {
-    if (!data.length) return;
-    const headers = Object.keys(data[0]).join(",");
-    const rows = data.map((r) => Object.values(r).join(",")).join("\n");
-    const csv = `${headers}\n${rows}`;
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    globalThis.open?.(url, "_blank");
-  };
 
   return (
     <div className="space-y-6">
@@ -136,13 +147,16 @@ export default function OperationalReports({
                 <h3 className="font-semibold text-slate-700">Ventas por Cotización</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Ventas concretadas a través del flujo de cotización</p>
               </div>
-              <Button variant="outline" size="sm" onClick={() => handleExportCSV(filteredQuotations.map(q => ({
-                folio: q.folio, cliente: q.client_name, fecha: moment(q.created_date).format("DD/MM/YYYY"),
-                total: q.total, pagado: q.paid ? "Sí" : "No", forma_pago: q.payment_method || "—",
-                entregado: q.delivered ? "Sí" : "No"
-              })), "ventas_cotizaciones")}>
-                <Download className="h-4 w-4 mr-1" /> CSV
-              </Button>
+              <ExportMenu
+                columns={QUOTATION_SALES_COLUMNS}
+                rows={filteredQuotations.map(q => ({
+                  folio: q.folio, cliente: q.client_name, fecha: moment(q.created_date).format("DD/MM/YYYY"),
+                  total: q.total, pagado: q.paid ? "Sí" : "No", forma_pago: q.payment_method || "—",
+                  entregado: q.delivered ? "Sí" : "No"
+                }))}
+                filename="ventas_cotizaciones"
+                title="Ventas por Cotización"
+              />
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -209,13 +223,16 @@ export default function OperationalReports({
                       Movimientos de salida registrados directamente — Total: <span className="font-semibold text-cyan-700">${totalDirect.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => handleExportCSV(directExits.map(m => ({
-                    producto: m.product_name, fecha: moment(m.created_date).format("DD/MM/YYYY"),
-                    cantidad: m.quantity, precio_unitario: m.unit_price, total: m.total,
-                    cliente: m.reason || "—", forma_pago: m.reference || "—"
-                  })), "ventas_directas")}>
-                    <Download className="h-4 w-4 mr-1" /> CSV
-                  </Button>
+                  <ExportMenu
+                    columns={DIRECT_SALES_COLUMNS}
+                    rows={directExits.map(m => ({
+                      producto: m.product_name, fecha: moment(m.created_date).format("DD/MM/YYYY"),
+                      cantidad: m.quantity, precio_unitario: m.unit_price, total: m.total,
+                      cliente: m.reason || "—", forma_pago: m.reference || "—"
+                    }))}
+                    filename="ventas_directas"
+                    title="Ventas Directas"
+                  />
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">

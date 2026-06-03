@@ -13,7 +13,14 @@ import {
   AreaChart,
 } from "recharts";
 import { HandCoins, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import ExportMenu from "@/components/common/ExportMenu";
 import moment from "moment";
+
+const SUPPLIER_PAYMENTS_COLUMNS = [
+  { key: "fecha", label: "Fecha", type: "text" },
+  { key: "diario", label: "Pago del Día", type: "currency" },
+  { key: "acumulado", label: "Acumulado", type: "currency" },
+];
 
 /**
  * Gráfica de reporte: línea acumulada de pagos a proveedores en el rango
@@ -166,16 +173,24 @@ export default function SupplierPaymentsReportChart({ dateFrom, dateTo }) {
               Del {moment(dateFrom).format("DD/MM/YYYY")} al {moment(dateTo).format("DD/MM/YYYY")}
             </p>
           </div>
-          {diffPositive && (
-            <Badge className="bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border-0">
-              ▲ Subida vs período anterior
-            </Badge>
-          )}
-          {diffNegative && (
-            <Badge className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-0">
-              ▼ Bajada vs período anterior
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {diffPositive && (
+              <Badge className="bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border-0">
+                ▲ Subida vs período anterior
+              </Badge>
+            )}
+            {diffNegative && (
+              <Badge className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-0">
+                ▼ Bajada vs período anterior
+              </Badge>
+            )}
+            <ExportMenu
+              columns={SUPPLIER_PAYMENTS_COLUMNS}
+              rows={chartData.map((d) => ({ fecha: d.date, diario: d.Diario, acumulado: d.Acumulado }))}
+              filename="pagos_proveedores"
+              title="Pagos a Proveedores"
+            />
+          </div>
         </div>
 
         {currentTotal === 0 ? (
