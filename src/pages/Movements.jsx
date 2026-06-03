@@ -21,7 +21,6 @@ import {
   ArrowUpRight,
   RotateCcw,
   SlidersHorizontal,
-  Download,
   Trash2,
   Pencil,
   CheckCircle2,
@@ -40,6 +39,7 @@ import {
 import moment from "moment";
 import MovementEditDialog from "@/components/movements/MovementEditDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
+import ExportMenu from "@/components/common/ExportMenu";
 import { toast } from "sonner";
 
 const typeConfig = {
@@ -161,35 +161,27 @@ export default function Movements() {
     }
   };
 
-  const handleExportCSV = () => {
-     // Helper para escapar valores CSV
-     const escapeCSV = (value) => {
-       const str = String(value || "");
-       if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-         return `"${str.replace(/"/g, '""')}"`;
-       }
-       return str;
-     };
+  const exportColumns = [
+    { key: "fecha", label: "Fecha", type: "text" },
+    { key: "producto", label: "Producto", type: "text" },
+    { key: "tipo", label: "Tipo", type: "text" },
+    { key: "cantidad", label: "Cantidad", type: "number" },
+    { key: "precio_unit", label: "Precio Unit.", type: "currency" },
+    { key: "total", label: "Total", type: "currency" },
+    { key: "forma_pago", label: "Forma de Pago", type: "text" },
+    { key: "cliente", label: "Cliente", type: "text" },
+  ];
 
-     const headers = ["Fecha", "Producto", "Tipo", "Cantidad", "Precio Unit.", "Total", "Forma de Pago", "Cliente"];
-     const rows = filtered.map((m) => [
-       moment.utc(m.data?.created_date || m.created_date).local().format("DD/MM/YYYY HH:mm"),
-       m.product_name, typeConfig[m.type]?.label || m.type,
-       m.quantity, m.unit_price || 0, getFinalTotal(m),
-       m.reference || "", m.reason || "",
-     ]);
-
-     // Escapar todos los valores
-     const escapedRows = rows.map((r) => r.map(escapeCSV).join(","));
-     const csv = [headers.map(escapeCSV).join(","), ...escapedRows].join("\n");
-
-     const blob = new Blob([csv], { type: "text/csv" });
-     const url = URL.createObjectURL(blob);
-     const a = document.createElement("a");
-     a.href = url;
-     a.download = "movimientos.csv";
-     a.click();
-   };
+  const exportRows = filtered.map((m) => ({
+    fecha: moment.utc(m.data?.created_date || m.created_date).local().format("DD/MM/YYYY HH:mm"),
+    producto: m.product_name,
+    tipo: typeConfig[m.type]?.label || m.type,
+    cantidad: m.quantity,
+    precio_unit: m.unit_price || 0,
+    total: getFinalTotal(m),
+    forma_pago: m.reference || "",
+    cliente: m.reason || "",
+  }));
 
   if (loading) {
     return <TableSkeleton rows={8} columns={7} />;
@@ -264,9 +256,14 @@ export default function Movements() {
               { value: "adjustment", label: "Ajustes" },
             ]}
           />
-          <Button variant="outline" onClick={handleExportCSV}>
-            <Download className="h-4 w-4 mr-1" /> CSV
-          </Button>
+          <ExportMenu
+            columns={exportColumns}
+            rows={exportRows}
+            filename="movimientos"
+            title="Movimientos"
+            variant="outline"
+            size="default"
+          />
           {can('Movimientos', 'create') && (
             <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Movements/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Movimiento

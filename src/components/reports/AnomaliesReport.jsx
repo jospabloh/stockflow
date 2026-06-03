@@ -1,6 +1,16 @@
 import React, { useMemo } from "react";
 import { Card } from "@/components/ui/card";
+import ExportMenu from "@/components/common/ExportMenu";
 import moment from "moment";
+
+const ANOMALIES_COLUMNS = [
+  { key: "tipo", label: "Tipo de Anomalía", type: "text" },
+  { key: "registro", label: "Registro", type: "text" },
+  { key: "entidad", label: "Entidad", type: "text" },
+  { key: "explicacion", label: "Explicación", type: "text" },
+  { key: "severidad", label: "Severidad", type: "text" },
+  { key: "accion_recomendada", label: "Acción Recomendada", type: "text" },
+];
 
 export default function AnomaliesReport({ products, movements, quotations, dateFrom, dateTo }) {
   const anomalies = useMemo(() => {
@@ -117,11 +127,28 @@ export default function AnomaliesReport({ products, movements, quotations, dateF
     });
   }, [products, movements, quotations, dateFrom, dateTo]);
 
+  const exportRows = anomalies.map((a) => ({
+    tipo: a.type.replace(/_/g, " "),
+    registro: a.record,
+    entidad: a.entity,
+    explicacion: a.explanation,
+    severidad: a.severity,
+    accion_recomendada: a.action,
+  }));
+
   return (
     <Card className="border-0 shadow-sm overflow-hidden">
-      <div className="p-4 border-b bg-purple-50/50">
-        <h3 className="font-semibold text-slate-700">Discrepancias / Anomalías</h3>
-        <p className="text-xs text-slate-400 mt-0.5">Registros inusuales o potencialmente problemáticos detectados por reglas internas determinísticas</p>
+      <div className="flex items-center justify-between p-4 border-b bg-purple-50/50">
+        <div>
+          <h3 className="font-semibold text-slate-700">Discrepancias / Anomalías</h3>
+          <p className="text-xs text-slate-400 mt-0.5">Registros inusuales o potencialmente problemáticos detectados por reglas internas determinísticas</p>
+        </div>
+        <ExportMenu
+          columns={ANOMALIES_COLUMNS}
+          rows={exportRows}
+          filename="anomalias"
+          title="Discrepancias / Anomalías"
+        />
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">

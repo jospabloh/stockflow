@@ -1,7 +1,17 @@
 import React, { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { CheckCircle, AlertCircle } from "lucide-react";
+import ExportMenu from "@/components/common/ExportMenu";
 import moment from "moment";
+
+const COLLECTIONS_COLUMNS = [
+  { key: "cliente", label: "Cliente", type: "text" },
+  { key: "monto_pendiente", label: "Monto Pendiente", type: "currency" },
+  { key: "edad_dias", label: "Edad (días)", type: "number" },
+  { key: "entregado", label: "Entregado", type: "text" },
+  { key: "riesgo", label: "Riesgo", type: "text" },
+  { key: "prioridad_seguimiento", label: "Prioridad Seguimiento", type: "text" },
+];
 
 export default function CollectionsRiskReport({ quotations }) {
   const collectionsData = useMemo(() => {
@@ -54,11 +64,28 @@ export default function CollectionsRiskReport({ quotations }) {
       .sort((a, b) => b.riskScore - a.riskScore);
   }, [quotations]);
 
+  const exportRows = collectionsData.map((q) => ({
+    cliente: q.client,
+    monto_pendiente: q.pendingAmount,
+    edad_dias: q.ageInDays,
+    entregado: q.delivered ? "Sí" : "No",
+    riesgo: q.riskLabel,
+    prioridad_seguimiento: q.followUpPriority,
+  }));
+
   return (
     <Card className="border-0 shadow-sm overflow-hidden">
-      <div className="p-4 border-b bg-orange-50/50">
-        <h3 className="font-semibold text-slate-700">Riesgo de Cobranza</h3>
-        <p className="text-xs text-slate-400 mt-0.5">Clientes y transacciones con riesgo de pago tardío o no pago</p>
+      <div className="flex items-center justify-between p-4 border-b bg-orange-50/50">
+        <div>
+          <h3 className="font-semibold text-slate-700">Riesgo de Cobranza</h3>
+          <p className="text-xs text-slate-400 mt-0.5">Clientes y transacciones con riesgo de pago tardío o no pago</p>
+        </div>
+        <ExportMenu
+          columns={COLLECTIONS_COLUMNS}
+          rows={exportRows}
+          filename="riesgo_cobranza"
+          title="Riesgo de Cobranza"
+        />
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">

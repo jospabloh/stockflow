@@ -1,6 +1,19 @@
 import React, { useMemo } from "react";
 import { Card } from "@/components/ui/card";
+import ExportMenu from "@/components/common/ExportMenu";
 import moment from "moment";
+
+const RISK_LABELS = { critical: "Crítico", high: "Alto", medium: "Medio", low: "Bajo" };
+
+const DEPLETION_COLUMNS = [
+  { key: "producto", label: "Producto", type: "text" },
+  { key: "stock", label: "Stock Actual", type: "number" },
+  { key: "min", label: "Mínimo", type: "number" },
+  { key: "promedio_diario", label: "Promedio Diario", type: "number" },
+  { key: "dias_restantes", label: "Días Restantes", type: "text" },
+  { key: "riesgo", label: "Riesgo", type: "text" },
+  { key: "accion", label: "Acción", type: "text" },
+];
 
 export default function DepletionRiskReport({ products, movements, dateFrom, dateTo }) {
   const depletionData = useMemo(() => {
@@ -58,11 +71,29 @@ export default function DepletionRiskReport({ products, movements, dateFrom, dat
       });
   }, [products, movements, dateFrom, dateTo]);
 
+  const exportRows = depletionData.map((p) => ({
+    producto: p.name,
+    stock: p.stock,
+    min: p.minStock,
+    promedio_diario: p.avgDailyOutflow,
+    dias_restantes: p.daysRemaining === "N/A" ? "N/A" : `${p.daysRemaining} d`,
+    riesgo: RISK_LABELS[p.riskLevel] || p.riskLevel,
+    accion: p.action,
+  }));
+
   return (
     <Card className="border-0 shadow-sm overflow-hidden">
-      <div className="p-4 border-b bg-red-50/50">
-        <h3 className="font-semibold text-slate-700">Riesgo de Agotamiento</h3>
-        <p className="text-xs text-slate-400 mt-0.5">Productos con riesgo de quedarse sin stock (análisis de últimos 30 días)</p>
+      <div className="flex items-center justify-between p-4 border-b bg-red-50/50">
+        <div>
+          <h3 className="font-semibold text-slate-700">Riesgo de Agotamiento</h3>
+          <p className="text-xs text-slate-400 mt-0.5">Productos con riesgo de quedarse sin stock (análisis de últimos 30 días)</p>
+        </div>
+        <ExportMenu
+          columns={DEPLETION_COLUMNS}
+          rows={exportRows}
+          filename="riesgo_agotamiento"
+          title="Riesgo de Agotamiento"
+        />
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
