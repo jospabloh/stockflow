@@ -25,6 +25,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { celebrate } from "@/lib/celebrate";
+import { seedAndDedupeCatalog } from "@/lib/seedCatalog";
 
 // Cuentas predeterminadas que se siembran la primera vez por negocio
 const DEFAULT_ACCOUNTS = [
@@ -45,21 +46,13 @@ export default function FundAccounts() {
   const load = async () => {
     if (!businessId) return;
     try {
-      let data = await base44.entities.FundAccount.filter({ business_id: businessId });
-      if (!data || data.length === 0) {
-        await Promise.all(
-          DEFAULT_ACCOUNTS.map((a) =>
-            base44.entities.FundAccount.create({
-              ...a,
-              active: true,
-              is_system: true,
-              business_id: businessId,
-            })
-          )
-        );
-        data = await base44.entities.FundAccount.filter({ business_id: businessId });
-      }
-      setAccounts(data || []);
+      const data = await seedAndDedupeCatalog({
+        entity: "FundAccount",
+        businessId,
+        defaults: DEFAULT_ACCOUNTS,
+        keyOf: (a) => a.name,
+      });
+      setAccounts(data);
     } catch (err) {
       console.error("Error loading fund accounts:", err);
       toast.error("No se pudieron cargar las cuentas");
