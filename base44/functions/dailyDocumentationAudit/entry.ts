@@ -6,38 +6,38 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.1";
-const SNAPSHOT_RELEASE_DATE = "2026-06-02";
+const CURRENT_VERSION_IN_CODE = "2.16.2";
+const SNAPSHOT_RELEASE_DATE = "2026-06-03";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+4741728 Merge pull request #113 from jospabloh/claude/download-formats-csv-xlsx-pdf-2q5n3
+a3b982a Añadir exportación CSV/XLSX/PDF en todos los módulos con descarga
+c880046 Merge pull request #112 from jospabloh/claude/focused-tesla-PYuu6
+8ee4c29 Agregar reporte Top de Ventas por Cliente en Analisis Inteligente
+e153b53 Update base44 packages
+74dfcec Merge pull request #110 from jospabloh/claude/serene-noether-l4BQC
+581ea48 fix(deps): realign peer dependencies to fix npm ci ERESOLVE
+246a348 Merge pull request #109 from jospabloh/fix/base44-install-command
+7905403 fix(ci): use npm ci instead of npm install in Base44 build config
+a92517b Merge pull request #108 from jospabloh/automated/release-pr
+6dcda79 Merge branch 'main' into automated/release-pr
+1d0ce18 Merge pull request #104 from jospabloh/dependabot/npm_and_yarn/stripe/stripe-js-9.7.0
+e4a6f2a Merge branch 'main' into dependabot/npm_and_yarn/stripe/stripe-js-9.7.0
+c037b2d Merge pull request #105 from jospabloh/dependabot/npm_and_yarn/multi-3d3f0671f1
+f1c94f1 Merge branch 'main' into dependabot/npm_and_yarn/multi-3d3f0671f1
+52608bf Merge pull request #102 from jospabloh/dependabot/npm_and_yarn/framer-motion-12.40.0
+49400ef chore(deps): bump react-dom and @types/react-dom
+6a0decb chore(deps): bump framer-motion from 11.18.2 to 12.40.0
+687bd7e Merge pull request #101 from jospabloh/dependabot/npm_and_yarn/baseline-browser-mapping-2.10.33
+596ea3a Merge branch 'main' into dependabot/npm_and_yarn/baseline-browser-mapping-2.10.33
+039b899 Merge pull request #100 from jospabloh/dependabot/npm_and_yarn/date-fns-4.4.0
+8da96ba chore: release and update documentation
+a697a2b Merge branch 'main' into dependabot/npm_and_yarn/date-fns-4.4.0
 1a17cde Merge pull request #99 from jospabloh/dependabot/npm_and_yarn/typescript-6.0.3
 08f6df8 Merge pull request #98 from jospabloh/dependabot/npm_and_yarn/react-router-dom-7.16.0
-f086815 Merge branch 'main' into dependabot/npm_and_yarn/react-router-dom-7.16.0
-fdfca5d Merge pull request #96 from jospabloh/dependabot/npm_and_yarn/lucide-react-1.17.0
-00294c4 Merge branch 'main' into dependabot/npm_and_yarn/lucide-react-1.17.0
-32966ee Merge pull request #95 from jospabloh/dependabot/github_actions/actions/setup-node-6
-2c5f29f Merge branch 'main' into dependabot/github_actions/actions/setup-node-6
-7901f7a Merge pull request #94 from jospabloh/dependabot/github_actions/peter-evans/create-pull-request-8
-fe04ed7 Merge branch 'main' into dependabot/github_actions/peter-evans/create-pull-request-8
-b30c20a Merge pull request #92 from jospabloh/dependabot/github_actions/actions/checkout-6
-e9f4489 Merge branch 'main' into dependabot/github_actions/actions/checkout-6
-885ea84 Merge pull request #106 from jospabloh/claude/deps-cleanup-1780352850
-a43878b Merge branch 'main' into claude/deps-cleanup-1780352850
-d053afe chore(deps): bump actions/checkout from 4 to 6
-f8a8967 chore(release): v2.16.0 — Security Audit, CVE Fixes, CI Cleanup & Dead Code Removal (#107)
-49aba0a chore: fix 17 CVEs, remove dead code and redundant CI workflow
-7dbd0dd chore(deps-dev): bump typescript from 5.9.3 to 6.0.3
-b5f1fc4 chore(deps): bump react-router-dom from 6.30.3 to 7.16.0
-28a7c0f chore(deps): bump lucide-react from 0.475.0 to 1.17.0
-8ed1a9b chore(deps): bump actions/setup-node from 4 to 6
-76519e4 chore(deps): bump peter-evans/create-pull-request from 6 to 8
-9b0dcba Merge pull request #89 from jospabloh/claude/affectionate-faraday-CDzaR
-9a03a7b Merge pull request #90 from jospabloh/claude/focused-gauss-IcvAJ
-dc2f6e7 security: backend tenant ownership + dependabot + integration tests
-0e02258 chore(release): bump to v2.15.0 — security audit, CVE fixes, new permissions
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.1",
+  "Actualización a la versión 2.16.2",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
