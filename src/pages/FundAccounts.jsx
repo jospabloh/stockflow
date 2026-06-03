@@ -26,12 +26,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { celebrate } from "@/lib/celebrate";
 import { seedAndDedupeCatalog } from "@/lib/seedCatalog";
-
-// Cuentas predeterminadas que se siembran la primera vez por negocio
-const DEFAULT_ACCOUNTS = [
-  { name: "Efectivo (Caja Chica)", affects_petty_cash: true },
-  { name: "Tarjeta AFIRME", affects_petty_cash: false },
-];
+import { DEFAULT_ACCOUNTS } from "@/lib/catalogDefaults";
 
 const EMPTY_FORM = { name: "", affects_petty_cash: false };
 
