@@ -6,10 +6,15 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.5";
+const CURRENT_VERSION_IN_CODE = "2.16.6";
 const SNAPSHOT_RELEASE_DATE = "2026-06-03";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+874ae77 Merge pull request #121 from jospabloh/claude/sharp-fermi-XAzki
+4c8ef31 Merge branch 'main' into claude/sharp-fermi-XAzki
+2a948fd Merge pull request #120 from jospabloh/automated/release-pr
+505897d feat(auth): add custom in-app login, registration and password reset
+7e10f6e chore: release and update documentation
 86933c5 chore: add boilerplate auth templates
 283dc8a Merge pull request #119 from jospabloh/automated/release-pr
 238a547 chore: release and update documentation
@@ -30,14 +35,9 @@ ad365b5 Add Utility module with configurable rubros and accounts
 4741728 Merge pull request #113 from jospabloh/claude/download-formats-csv-xlsx-pdf-2q5n3
 a3b982a Añadir exportación CSV/XLSX/PDF en todos los módulos con descarga
 c880046 Merge pull request #112 from jospabloh/claude/focused-tesla-PYuu6
-8ee4c29 Agregar reporte Top de Ventas por Cliente en Analisis Inteligente
-e153b53 Update base44 packages
-74dfcec Merge pull request #110 from jospabloh/claude/serene-noether-l4BQC
-581ea48 fix(deps): realign peer dependencies to fix npm ci ERESOLVE
-246a348 Merge pull request #109 from jospabloh/fix/base44-install-command
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.5",
+  "Actualización a la versión 2.16.6",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
