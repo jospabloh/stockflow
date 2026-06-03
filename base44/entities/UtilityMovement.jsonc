@@ -1,0 +1,96 @@
+{
+  "name": "UtilityMovement",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    },
+    "movement_type": {
+      "type": "string",
+      "enum": [
+        "income",
+        "expense"
+      ],
+      "description": "Tipo de movimiento: ingreso o egreso"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Monto del movimiento"
+    },
+    "movement_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha del movimiento"
+    },
+    "rubro_id": {
+      "type": "string",
+      "description": "ID del rubro seleccionado"
+    },
+    "rubro_name": {
+      "type": "string",
+      "description": "Nombre del rubro (desnormalizado al momento del registro)"
+    },
+    "rubro_kind": {
+      "type": "string",
+      "enum": [
+        "income",
+        "expense"
+      ],
+      "description": "Naturaleza del rubro al momento del registro"
+    },
+    "account_id": {
+      "type": "string",
+      "description": "ID de la cuenta/fuente de dinero"
+    },
+    "account_name": {
+      "type": "string",
+      "description": "Nombre de la cuenta (desnormalizado al momento del registro)"
+    },
+    "affects_petty_cash": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si el movimiento generó un espejo en Caja Chica"
+    },
+    "petty_cash_movement_id": {
+      "type": "string",
+      "description": "ID del PettyCashMovement asociado cuando affects_petty_cash=true"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripción del movimiento"
+    },
+    "reference": {
+      "type": "string",
+      "description": "Referencia o folio (opcional)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas adicionales (opcional)"
+    },
+    "registered_by": {
+      "type": "string",
+      "description": "Usuario que registró el movimiento"
+    }
+  },
+  "required": [
+    "business_id",
+    "movement_type",
+    "amount",
+    "movement_date"
+  ],
+  "rls": {
+    "create": {
+      "business_id": "{{user.business_id}}"
+    },
+    "read": {
+      "business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "business_id": "{{user.business_id}}"
+    },
+    "delete": {
+      "business_id": "{{user.business_id}}"
+    }
+  }
+}

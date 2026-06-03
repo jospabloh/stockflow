@@ -1,0 +1,51 @@
+{
+  "name": "Rubro",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del rubro (ej. Renta, Nómina, Ventas)"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "income",
+        "expense"
+      ],
+      "description": "Naturaleza del rubro: ingreso o egreso"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si está disponible para usar"
+    },
+    "is_system": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indica si fue sembrado por el sistema como predeterminado"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    }
+  },
+  "required": [
+    "name",
+    "kind",
+    "business_id"
+  ],
+  "rls": {
+    "create": {
+      "business_id": "{{user.business_id}}"
+    },
+    "read": {
+      "business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "business_id": "{{user.business_id}}"
+    },
+    "delete": {
+      "business_id": "{{user.business_id}}"
+    }
+  }
+}

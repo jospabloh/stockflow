@@ -50,9 +50,10 @@
       "type": "string",
       "enum": [
         "quotation",
-        "movement"
+        "movement",
+        "utility"
       ],
-      "description": "Tipo de origen: cotizaci\u00f3n o movimiento de inventario directo"
+      "description": "Tipo de origen: cotizaci\u00f3n, movimiento de inventario directo o movimiento de utilidad"
     },
     "origin_id": {
       "type": "string",

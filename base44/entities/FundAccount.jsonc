@@ -1,0 +1,47 @@
+{
+  "name": "FundAccount",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre de la cuenta o fuente de dinero (ej. Efectivo (Caja Chica), Tarjeta AFIRME)"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si está disponible para usar"
+    },
+    "affects_petty_cash": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si los movimientos con esta cuenta descuentan/ingresan a Caja Chica"
+    },
+    "is_system": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indica si fue sembrada por el sistema como predeterminada"
+    },
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que pertenece"
+    }
+  },
+  "required": [
+    "name",
+    "business_id"
+  ],
+  "rls": {
+    "create": {
+      "business_id": "{{user.business_id}}"
+    },
+    "read": {
+      "business_id": "{{user.business_id}}"
+    },
+    "update": {
+      "business_id": "{{user.business_id}}"
+    },
+    "delete": {
+      "business_id": "{{user.business_id}}"
+    }
+  }
+}
