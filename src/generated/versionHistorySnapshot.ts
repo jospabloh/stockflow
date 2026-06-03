@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-03T04:25:45.300Z
+// Generado: 2026-06-03T19:36:05.528Z
 
-export const SNAPSHOT_VERSION = "2.16.2";
+export const SNAPSHOT_VERSION = "2.16.3";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-06-03";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 
-export const SNAPSHOT_GIT_LOG = "4741728 Merge pull request #113 from jospabloh/claude/download-formats-csv-xlsx-pdf-2q5n3\na3b982a Añadir exportación CSV/XLSX/PDF en todos los módulos con descarga\nc880046 Merge pull request #112 from jospabloh/claude/focused-tesla-PYuu6\n8ee4c29 Agregar reporte Top de Ventas por Cliente en Analisis Inteligente\ne153b53 Update base44 packages\n74dfcec Merge pull request #110 from jospabloh/claude/serene-noether-l4BQC\n581ea48 fix(deps): realign peer dependencies to fix npm ci ERESOLVE\n246a348 Merge pull request #109 from jospabloh/fix/base44-install-command\n7905403 fix(ci): use npm ci instead of npm install in Base44 build config\na92517b Merge pull request #108 from jospabloh/automated/release-pr\n6dcda79 Merge branch 'main' into automated/release-pr\n1d0ce18 Merge pull request #104 from jospabloh/dependabot/npm_and_yarn/stripe/stripe-js-9.7.0\ne4a6f2a Merge branch 'main' into dependabot/npm_and_yarn/stripe/stripe-js-9.7.0\nc037b2d Merge pull request #105 from jospabloh/dependabot/npm_and_yarn/multi-3d3f0671f1\nf1c94f1 Merge branch 'main' into dependabot/npm_and_yarn/multi-3d3f0671f1\n52608bf Merge pull request #102 from jospabloh/dependabot/npm_and_yarn/framer-motion-12.40.0\n49400ef chore(deps): bump react-dom and @types/react-dom\n6a0decb chore(deps): bump framer-motion from 11.18.2 to 12.40.0\n687bd7e Merge pull request #101 from jospabloh/dependabot/npm_and_yarn/baseline-browser-mapping-2.10.33\n596ea3a Merge branch 'main' into dependabot/npm_and_yarn/baseline-browser-mapping-2.10.33\n039b899 Merge pull request #100 from jospabloh/dependabot/npm_and_yarn/date-fns-4.4.0\n8da96ba chore: release and update documentation\na697a2b Merge branch 'main' into dependabot/npm_and_yarn/date-fns-4.4.0\n1a17cde Merge pull request #99 from jospabloh/dependabot/npm_and_yarn/typescript-6.0.3\n08f6df8 Merge pull request #98 from jospabloh/dependabot/npm_and_yarn/react-router-dom-7.16.0";
+export const SNAPSHOT_GIT_LOG = "ff7e8e9 Merge pull request #117 from jospabloh/claude/utility-seed-idempotent\nae5ce55 Make Utility catalog seeding idempotent and self-healing\nb48a776 Merge pull request #116 from jospabloh/claude/utility-confetti-feedback\n27a9aa6 Merge branch 'main' into claude/utility-confetti-feedback\n7e5645a Add confetti on successful creation in Utility module\nb8b246e Merge pull request #111 from jospabloh/automated/release-pr\nbbfe2ff Merge pull request #114 from jospabloh/claude/clever-clarke-FY64i\nad365b5 Add Utility module with configurable rubros and accounts\n79eaef3 chore: release and update documentation\n4741728 Merge pull request #113 from jospabloh/claude/download-formats-csv-xlsx-pdf-2q5n3\na3b982a Añadir exportación CSV/XLSX/PDF en todos los módulos con descarga\nc880046 Merge pull request #112 from jospabloh/claude/focused-tesla-PYuu6\n8ee4c29 Agregar reporte Top de Ventas por Cliente en Analisis Inteligente\ne153b53 Update base44 packages\n74dfcec Merge pull request #110 from jospabloh/claude/serene-noether-l4BQC\n581ea48 fix(deps): realign peer dependencies to fix npm ci ERESOLVE\n246a348 Merge pull request #109 from jospabloh/fix/base44-install-command\n7905403 fix(ci): use npm ci instead of npm install in Base44 build config\na92517b Merge pull request #108 from jospabloh/automated/release-pr\n6dcda79 Merge branch 'main' into automated/release-pr\n1d0ce18 Merge pull request #104 from jospabloh/dependabot/npm_and_yarn/stripe/stripe-js-9.7.0\ne4a6f2a Merge branch 'main' into dependabot/npm_and_yarn/stripe/stripe-js-9.7.0\nc037b2d Merge pull request #105 from jospabloh/dependabot/npm_and_yarn/multi-3d3f0671f1\nf1c94f1 Merge branch 'main' into dependabot/npm_and_yarn/multi-3d3f0671f1\n52608bf Merge pull request #102 from jospabloh/dependabot/npm_and_yarn/framer-motion-12.40.0";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.16.2",
+  "Actualización a la versión 2.16.3",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.16.3",
+    date: "2026-06-03",
+    changes: [
+    "Actualización a la versión 2.16.3"
+    ]
+  },
   {
     version: "2.16.2",
     date: "2026-06-03",
