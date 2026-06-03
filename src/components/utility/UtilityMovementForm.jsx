@@ -8,6 +8,7 @@ import { MobileSelect } from "@/components/ui/MobileSelect";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PiggyBank } from "lucide-react";
 import { toast } from "sonner";
+import { celebrate } from "@/lib/celebrate";
 import moment from "moment";
 
 const TYPE_LABELS = { income: "Ingreso", expense: "Egreso" };
@@ -137,6 +138,7 @@ export default function UtilityMovementForm({ open, movementType, businessId, ru
           await base44.entities.UtilityMovement.update(created.id, { petty_cash_movement_id: pc?.id || "" });
         }
         toast.success("Movimiento guardado correctamente");
+        celebrate();
       }
       onSaved();
       onClose();

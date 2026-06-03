@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { celebrate } from "@/lib/celebrate";
 
 // Rubros predeterminados que se siembran la primera vez por negocio
 const DEFAULT_RUBROS = [
@@ -106,6 +107,7 @@ export default function Rubros() {
           business_id: businessId,
         });
         toast.success("✓ Rubro creado");
+        celebrate();
       }
       setFormOpen(false);
       setEditing(null);
