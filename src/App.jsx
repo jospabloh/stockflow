@@ -9,13 +9,16 @@ const PublicQuotation = lazy(() => import('./pages/PublicQuotation'));
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 import { BusinessProvider } from '@/components/BusinessContext';
-import { LicenseProvider } from '@/lib/LicenseContext';
 const LicenseAdmin = lazy(() => import('./pages/LicenseAdmin'));
 const TenantRulesAdmin = lazy(() => import('./pages/TenantRulesAdmin'));
 const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
 import { NavigationProvider } from '@/lib/NavigationContext';
-import { PermissionProvider } from '@/lib/PermissionContext';
 
 import BusinessSetup from './pages/BusinessSetup';
 
@@ -55,7 +58,7 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 
 const AuthenticatedApp = () => {
   const location = useLocation();
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
   if (location.pathname.startsWith('/q/')) {
     return (
@@ -74,22 +77,25 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
+  // Handle authentication errors. `auth_required` is no longer auto-redirected to
+  // the hosted login — the in-app /login page (via ProtectedRoute) handles it.
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
     }
   }
 
   // Render the main app
   return (
-    <LicenseProvider>
-    <PermissionProvider>
     <Routes>
+      {/* Public custom-auth pages */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* Authenticated area — everything below requires a signed-in user */}
+      <Route element={<ProtectedRoute />}>
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />
@@ -130,9 +136,8 @@ const AuthenticatedApp = () => {
       <Route path="/SuperAdminLogs" element={<LayoutWrapper currentPageName="SuperAdminLogs"><Suspense fallback={<PageLoader />}><SuperAdminLogs /></Suspense></LayoutWrapper>} />
       <Route path="/superadminlogs" element={<LayoutWrapper currentPageName="SuperAdminLogs"><Suspense fallback={<PageLoader />}><SuperAdminLogs /></Suspense></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
+      </Route>
     </Routes>
-    </PermissionProvider>
-    </LicenseProvider>
   );
 };
 

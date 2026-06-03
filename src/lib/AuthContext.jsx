@@ -111,6 +111,47 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // --- Custom auth helpers (in-app login/registration) ---
+
+  // Logs in a registered user with email + password. The SDK stores the token
+  // internally; we mirror it into appParams so the rest of the app (which reads
+  // appParams.token) stays in sync without a full page reload.
+  const login = async (email, password, turnstileToken) => {
+    const res = await base44.auth.loginViaEmailPassword(email, password, turnstileToken);
+    if (res?.access_token) {
+      appParams.token = res.access_token;
+    }
+    if (res?.user) {
+      setUser(res.user);
+    }
+    setIsAuthenticated(true);
+    setAuthError(null);
+    return res;
+  };
+
+  // Creates a new account. After registering, the caller should log in.
+  const register = async (params) => {
+    return base44.auth.register(params);
+  };
+
+  // Sends a password-reset email to the given address.
+  const requestPasswordReset = async (email) => {
+    return base44.auth.resetPasswordRequest(email);
+  };
+
+  // Completes the reset flow using the token received by email.
+  const resetPassword = async ({ resetToken, newPassword }) => {
+    return base44.auth.resetPassword({ resetToken, newPassword });
+  };
+
+  // Starts an OAuth flow (google | microsoft | facebook | apple | sso).
+  const loginWithProvider = (provider, fromUrl = `${globalThis.location.origin}/`) => {
+    base44.auth.loginWithProvider(provider, fromUrl);
+  };
+
+  // Which sign-in methods the app has enabled (read from public settings when present).
+  const authConfig = appPublicSettings?.auth_config || null;
+
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
@@ -137,6 +178,12 @@ export const AuthProvider = ({ children }) => {
       isLoadingPublicSettings,
       authError,
       appPublicSettings,
+      authConfig,
+      login,
+      register,
+      requestPasswordReset,
+      resetPassword,
+      loginWithProvider,
       logout,
       navigateToLogin,
       checkAppState
