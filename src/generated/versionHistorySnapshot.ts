@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-03T21:30:27.193Z
+// Generado: 2026-06-03T23:51:29.830Z
 
-export const SNAPSHOT_VERSION = "2.16.7";
+export const SNAPSHOT_VERSION = "2.16.8";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-06-03";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 
-export const SNAPSHOT_GIT_LOG = "cb57dd9 Merge pull request #123 from jospabloh/claude/lucid-euler-xrMBS\nf4b4d00 Fix cross-tenant IDOR in calculateQuotationWithTransport\na87455d Merge pull request #122 from jospabloh/automated/release-pr\nc33d6af chore: release and update documentation\n874ae77 Merge pull request #121 from jospabloh/claude/sharp-fermi-XAzki\n4c8ef31 Merge branch 'main' into claude/sharp-fermi-XAzki\n2a948fd Merge pull request #120 from jospabloh/automated/release-pr\n505897d feat(auth): add custom in-app login, registration and password reset\n7e10f6e chore: release and update documentation\n86933c5 chore: add boilerplate auth templates\n283dc8a Merge pull request #119 from jospabloh/automated/release-pr\n238a547 chore: release and update documentation\n78b9b55 Merge pull request #118 from jospabloh/claude/pettycash-rubro-categories\n9f7c1c1 Merge branch 'main' into claude/pettycash-rubro-categories\n2a2fb37 Merge pull request #115 from jospabloh/automated/release-pr\ne3d6c73 Drive Caja Chica category from configurable Rubros catalog\n75847fb chore: release and update documentation\nff7e8e9 Merge pull request #117 from jospabloh/claude/utility-seed-idempotent\nae5ce55 Make Utility catalog seeding idempotent and self-healing\nb48a776 Merge pull request #116 from jospabloh/claude/utility-confetti-feedback\n27a9aa6 Merge branch 'main' into claude/utility-confetti-feedback\n7e5645a Add confetti on successful creation in Utility module\nb8b246e Merge pull request #111 from jospabloh/automated/release-pr\nbbfe2ff Merge pull request #114 from jospabloh/claude/clever-clarke-FY64i\nad365b5 Add Utility module with configurable rubros and accounts";
+export const SNAPSHOT_GIT_LOG = "9cb9019 Merge pull request #125 from jospabloh/claude/magical-bohr-hN8ki\nf8bc282 docs: diseño de Utilidad integral (Estado de Resultados + proyección)\nac63cb0 Merge pull request #124 from jospabloh/automated/release-pr\n6ef0185 chore: release and update documentation\ncb57dd9 Merge pull request #123 from jospabloh/claude/lucid-euler-xrMBS\nf4b4d00 Fix cross-tenant IDOR in calculateQuotationWithTransport\na87455d Merge pull request #122 from jospabloh/automated/release-pr\nc33d6af chore: release and update documentation\n874ae77 Merge pull request #121 from jospabloh/claude/sharp-fermi-XAzki\n4c8ef31 Merge branch 'main' into claude/sharp-fermi-XAzki\n2a948fd Merge pull request #120 from jospabloh/automated/release-pr\n505897d feat(auth): add custom in-app login, registration and password reset\n7e10f6e chore: release and update documentation\n86933c5 chore: add boilerplate auth templates\n283dc8a Merge pull request #119 from jospabloh/automated/release-pr\n238a547 chore: release and update documentation\n78b9b55 Merge pull request #118 from jospabloh/claude/pettycash-rubro-categories\n9f7c1c1 Merge branch 'main' into claude/pettycash-rubro-categories\n2a2fb37 Merge pull request #115 from jospabloh/automated/release-pr\ne3d6c73 Drive Caja Chica category from configurable Rubros catalog\n75847fb chore: release and update documentation\nff7e8e9 Merge pull request #117 from jospabloh/claude/utility-seed-idempotent\nae5ce55 Make Utility catalog seeding idempotent and self-healing\nb48a776 Merge pull request #116 from jospabloh/claude/utility-confetti-feedback\n27a9aa6 Merge branch 'main' into claude/utility-confetti-feedback";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.16.7",
+  "Actualización a la versión 2.16.8",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.16.8",
+    date: "2026-06-03",
+    changes: [
+    "Actualización a la versión 2.16.8"
+    ]
+  },
   {
     version: "2.16.7",
     date: "2026-06-03",
