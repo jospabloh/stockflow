@@ -6,10 +6,19 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.2";
+const CURRENT_VERSION_IN_CODE = "2.16.3";
 const SNAPSHOT_RELEASE_DATE = "2026-06-03";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+ff7e8e9 Merge pull request #117 from jospabloh/claude/utility-seed-idempotent
+ae5ce55 Make Utility catalog seeding idempotent and self-healing
+b48a776 Merge pull request #116 from jospabloh/claude/utility-confetti-feedback
+27a9aa6 Merge branch 'main' into claude/utility-confetti-feedback
+7e5645a Add confetti on successful creation in Utility module
+b8b246e Merge pull request #111 from jospabloh/automated/release-pr
+bbfe2ff Merge pull request #114 from jospabloh/claude/clever-clarke-FY64i
+ad365b5 Add Utility module with configurable rubros and accounts
+79eaef3 chore: release and update documentation
 4741728 Merge pull request #113 from jospabloh/claude/download-formats-csv-xlsx-pdf-2q5n3
 a3b982a Añadir exportación CSV/XLSX/PDF en todos los módulos con descarga
 c880046 Merge pull request #112 from jospabloh/claude/focused-tesla-PYuu6
@@ -26,18 +35,9 @@ e4a6f2a Merge branch 'main' into dependabot/npm_and_yarn/stripe/stripe-js-9.7.0
 c037b2d Merge pull request #105 from jospabloh/dependabot/npm_and_yarn/multi-3d3f0671f1
 f1c94f1 Merge branch 'main' into dependabot/npm_and_yarn/multi-3d3f0671f1
 52608bf Merge pull request #102 from jospabloh/dependabot/npm_and_yarn/framer-motion-12.40.0
-49400ef chore(deps): bump react-dom and @types/react-dom
-6a0decb chore(deps): bump framer-motion from 11.18.2 to 12.40.0
-687bd7e Merge pull request #101 from jospabloh/dependabot/npm_and_yarn/baseline-browser-mapping-2.10.33
-596ea3a Merge branch 'main' into dependabot/npm_and_yarn/baseline-browser-mapping-2.10.33
-039b899 Merge pull request #100 from jospabloh/dependabot/npm_and_yarn/date-fns-4.4.0
-8da96ba chore: release and update documentation
-a697a2b Merge branch 'main' into dependabot/npm_and_yarn/date-fns-4.4.0
-1a17cde Merge pull request #99 from jospabloh/dependabot/npm_and_yarn/typescript-6.0.3
-08f6df8 Merge pull request #98 from jospabloh/dependabot/npm_and_yarn/react-router-dom-7.16.0
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.2",
+  "Actualización a la versión 2.16.3",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
