@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { celebrate } from "@/lib/celebrate";
 
 // Cuentas predeterminadas que se siembran la primera vez por negocio
 const DEFAULT_ACCOUNTS = [
@@ -94,6 +95,7 @@ export default function FundAccounts() {
           business_id: businessId,
         });
         toast.success("✓ Cuenta creada");
+        celebrate();
       }
       setFormOpen(false);
       setEditing(null);
