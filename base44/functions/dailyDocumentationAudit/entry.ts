@@ -6,10 +6,15 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.3";
+const CURRENT_VERSION_IN_CODE = "2.16.4";
 const SNAPSHOT_RELEASE_DATE = "2026-06-03";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+78b9b55 Merge pull request #118 from jospabloh/claude/pettycash-rubro-categories
+9f7c1c1 Merge branch 'main' into claude/pettycash-rubro-categories
+2a2fb37 Merge pull request #115 from jospabloh/automated/release-pr
+e3d6c73 Drive Caja Chica category from configurable Rubros catalog
+75847fb chore: release and update documentation
 ff7e8e9 Merge pull request #117 from jospabloh/claude/utility-seed-idempotent
 ae5ce55 Make Utility catalog seeding idempotent and self-healing
 b48a776 Merge pull request #116 from jospabloh/claude/utility-confetti-feedback
@@ -30,14 +35,9 @@ e153b53 Update base44 packages
 7905403 fix(ci): use npm ci instead of npm install in Base44 build config
 a92517b Merge pull request #108 from jospabloh/automated/release-pr
 6dcda79 Merge branch 'main' into automated/release-pr
-1d0ce18 Merge pull request #104 from jospabloh/dependabot/npm_and_yarn/stripe/stripe-js-9.7.0
-e4a6f2a Merge branch 'main' into dependabot/npm_and_yarn/stripe/stripe-js-9.7.0
-c037b2d Merge pull request #105 from jospabloh/dependabot/npm_and_yarn/multi-3d3f0671f1
-f1c94f1 Merge branch 'main' into dependabot/npm_and_yarn/multi-3d3f0671f1
-52608bf Merge pull request #102 from jospabloh/dependabot/npm_and_yarn/framer-motion-12.40.0
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.3",
+  "Actualización a la versión 2.16.4",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
