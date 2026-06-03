@@ -1,125 +1,107 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
-import AuthLayout from "@/components/AuthLayout";
-import GoogleIcon from "@/components/GoogleIcon";
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/lib/AuthContext';
+import AuthShell from '@/components/auth/AuthShell';
+import SocialButtons from '@/components/auth/SocialButtons';
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+const Login = () => {
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const from = location.state?.from?.pathname || '/';
+
+  // Already signed in → don't show the login form.
+  if (isAuthenticated) {
+    return <Navigate to={from} replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    if (submitting) return;
+    setSubmitting(true);
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = "/";
-    } catch (err) {
-      setError(err.message || "Invalid email or password");
+      await login(email.trim(), password);
+      toast.success('Sesión iniciada');
+      navigate(from, { replace: true });
+    } catch (error) {
+      toast.error(error?.message || 'Correo o contraseña incorrectos');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/");
-  };
-
   return (
-    <AuthLayout
-      icon={LogIn}
-      title="Welcome back"
-      subtitle="Log in to your account"
+    <AuthShell
+      title="Iniciar sesión"
+      subtitle="Accede a tu cuenta de StockFlow"
       footer={
         <>
-          Don't have an account?{" "}
-          <Link to="/register" className="text-primary font-medium hover:underline">
-            Create one
+          ¿No tienes cuenta?{' '}
+          <Link to="/register" className="font-semibold text-indigo-600 hover:text-indigo-500">
+            Crea una
           </Link>
         </>
       }
     >
-      <Button
-        variant="outline"
-        className="w-full h-12 text-sm font-medium mb-6"
-        onClick={handleGoogle}
-      >
-        <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
-      </Button>
-
-      <div className="relative mb-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
-        </div>
-      </div>
-
-      {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-          {error}
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              autoFocus
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="pl-10 h-12"
-              required
-            />
-          </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Correo electrónico</Label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tu@correo.com"
+          />
         </div>
-        <div className="space-y-2">
+
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link to="/forgot-password" className="text-xs text-primary hover:underline">
-              Forgot password?
+            <Label htmlFor="password">Contraseña</Label>
+            <Link
+              to="/forgot-password"
+              className="text-xs font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              ¿Olvidaste tu contraseña?
             </Link>
           </div>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-12"
-              required
-            />
-          </div>
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+          />
         </div>
-        <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Logging in...
-            </>
-          ) : (
-            "Log in"
-          )}
+
+        <Button type="submit" className="w-full" disabled={submitting}>
+          {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+          Iniciar sesión
         </Button>
       </form>
-    </AuthLayout>
+
+      <div className="my-6 flex items-center gap-3">
+        <div className="h-px flex-1 bg-slate-200" />
+        <span className="text-xs uppercase tracking-wide text-slate-400">o</span>
+        <div className="h-px flex-1 bg-slate-200" />
+      </div>
+
+      <SocialButtons nextUrl={`${globalThis.location.origin}${from}`} />
+    </AuthShell>
   );
-}
+};
+
+export default Login;

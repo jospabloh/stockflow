@@ -1,114 +1,107 @@
-import React, { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Lock, Loader2, AlertTriangle } from "lucide-react";
-import AuthLayout from "@/components/AuthLayout";
+import React, { useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/lib/AuthContext';
+import AuthShell from '@/components/auth/AuthShell';
 
-export default function ResetPassword() {
+const ResetPassword = () => {
+  const { resetPassword } = useAuth();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const resetToken = searchParams.get("token");
+  // The reset email may use any of these query param names for the token.
+  const resetToken =
+    searchParams.get('resetToken') ||
+    searchParams.get('reset_token') ||
+    searchParams.get('token') ||
+    '';
 
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
+    if (submitting) return;
+
+    if (password !== confirm) {
+      toast.error('Las contraseñas no coinciden');
       return;
     }
-    setLoading(true);
+    if (password.length < 8) {
+      toast.error('La contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+
+    setSubmitting(true);
     try {
-      await base44.auth.resetPassword({ resetToken, newPassword });
-      window.location.href = "/login";
-    } catch (err) {
-      setError(err.message || "Failed to reset password");
+      await resetPassword({ resetToken, newPassword: password });
+      toast.success('Contraseña actualizada. Inicia sesión con tu nueva contraseña.');
+      navigate('/login', { replace: true });
+    } catch (error) {
+      toast.error(error?.message || 'No se pudo restablecer la contraseña');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  if (!resetToken) {
-    return (
-      <AuthLayout
-        icon={AlertTriangle}
-        title="Invalid reset link"
-        subtitle="This password reset link is missing or invalid"
-        footer={
-          <Link to="/forgot-password" className="text-primary font-medium hover:underline">
-            Request a new link
-          </Link>
-        }
-      >
-        <p className="text-sm text-foreground text-center">
-          The link you used appears to be incomplete. Please request a new password reset email.
-        </p>
-      </AuthLayout>
-    );
-  }
-
   return (
-    <AuthLayout
-      icon={Lock}
-      title="New password"
-      subtitle="Enter your new password below"
+    <AuthShell
+      title="Restablecer contraseña"
+      subtitle="Elige una nueva contraseña para tu cuenta"
+      footer={
+        <Link to="/login" className="font-semibold text-indigo-600 hover:text-indigo-500">
+          Volver a iniciar sesión
+        </Link>
+      }
     >
-      {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-          {error}
-        </div>
-      )}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="password">New Password</Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+      {!resetToken ? (
+        <p className="text-center text-sm text-slate-600">
+          El enlace de restablecimiento no es válido o ha expirado. Solicita uno nuevo desde{' '}
+          <Link to="/forgot-password" className="font-semibold text-indigo-600 hover:text-indigo-500">
+            recuperar contraseña
+          </Link>
+          .
+        </p>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="password">Nueva contraseña</Label>
             <Input
               id="password"
               type="password"
               autoComplete="new-password"
-              autoFocus
-              placeholder="••••••••"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="pl-10 h-12"
               required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Mínimo 8 caracteres"
             />
           </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirm">Confirm Password</Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+
+          <div className="space-y-1.5">
+            <Label htmlFor="confirm">Confirmar contraseña</Label>
             <Input
               id="confirm"
               type="password"
               autoComplete="new-password"
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="pl-10 h-12"
               required
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder="••••••••"
             />
           </div>
-        </div>
-        <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Resetting...
-            </>
-          ) : (
-            "Reset password"
-          )}
-        </Button>
-      </form>
-    </AuthLayout>
+
+          <Button type="submit" className="w-full" disabled={submitting}>
+            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+            Restablecer contraseña
+          </Button>
+        </form>
+      )}
+    </AuthShell>
   );
-}
+};
+
+export default ResetPassword;

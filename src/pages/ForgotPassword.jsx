@@ -1,76 +1,76 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Mail, ArrowLeft, Loader2 } from "lucide-react";
-import AuthLayout from "@/components/AuthLayout";
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Loader2, MailCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/lib/AuthContext';
+import AuthShell from '@/components/auth/AuthShell';
 
-export default function ForgotPassword() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+const ForgotPassword = () => {
+  const { requestPasswordReset } = useAuth();
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    if (submitting) return;
+    setSubmitting(true);
     try {
-      await base44.auth.resetPasswordRequest(email);
-    } catch {
-      // Always show success regardless
-    } finally {
-      setLoading(false);
+      await requestPasswordReset(email.trim());
       setSent(true);
+    } catch (error) {
+      toast.error(error?.message || 'No se pudo enviar el correo de recuperación');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <AuthLayout
-      icon={Mail}
-      title="Reset password"
-      subtitle="We'll send you a link to reset it"
+    <AuthShell
+      title="Recuperar contraseña"
+      subtitle={sent ? undefined : 'Te enviaremos un enlace para restablecerla'}
       footer={
-        <Link to="/login" className="text-primary font-medium hover:underline">
-          <ArrowLeft className="w-3 h-3 inline mr-1" />Back to log in
+        <Link to="/login" className="font-semibold text-indigo-600 hover:text-indigo-500">
+          Volver a iniciar sesión
         </Link>
       }
     >
       {sent ? (
-        <p className="text-sm text-foreground text-center">
-          If an account exists with that email, you'll receive a password reset link shortly.
-        </p>
+        <div className="text-center">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
+            <MailCheck className="h-7 w-7 text-green-600" />
+          </div>
+          <p className="mt-4 text-sm text-slate-600">
+            Si existe una cuenta con <span className="font-medium text-slate-900">{email}</span>,
+            recibirás un correo con instrucciones para restablecer tu contraseña.
+          </p>
+        </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email address</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                autoFocus
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 h-12"
-                required
-              />
-            </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Correo electrónico</Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@correo.com"
+            />
           </div>
-          <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Sending...
-              </>
-            ) : (
-              "Send reset link"
-            )}
+
+          <Button type="submit" className="w-full" disabled={submitting}>
+            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+            Enviar enlace de recuperación
           </Button>
         </form>
       )}
-    </AuthLayout>
+    </AuthShell>
   );
-}
+};
+
+export default ForgotPassword;
