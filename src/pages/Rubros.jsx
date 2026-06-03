@@ -27,20 +27,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { celebrate } from "@/lib/celebrate";
 import { seedAndDedupeCatalog } from "@/lib/seedCatalog";
-
-// Rubros predeterminados que se siembran la primera vez por negocio
-const DEFAULT_RUBROS = [
-  { name: "Ventas", kind: "income" },
-  { name: "Otros ingresos", kind: "income" },
-  { name: "Renta", kind: "expense" },
-  { name: "Nómina", kind: "expense" },
-  { name: "Servicios", kind: "expense" },
-  { name: "Compras de mercancía", kind: "expense" },
-  { name: "Mantenimiento", kind: "expense" },
-  { name: "Publicidad", kind: "expense" },
-  { name: "Retiro de utilidades", kind: "expense" },
-  { name: "Otros", kind: "expense" },
-];
+import { DEFAULT_RUBROS } from "@/lib/catalogDefaults";
 
 const KIND_META = {
   income: { label: "Ingreso", color: "bg-emerald-100 text-emerald-700" },

@@ -16,6 +16,8 @@ import {
 import moment from "moment";
 import PettyCashMovementForm from "@/components/petty-cash/PettyCashMovementForm";
 import PettyCashHistory from "@/components/petty-cash/PettyCashHistory";
+import { seedAndDedupeCatalog } from "@/lib/seedCatalog";
+import { DEFAULT_RUBROS } from "@/lib/catalogDefaults";
 
 export default function PettyCash() {
   const { businessId } = useBusinessContext();
@@ -27,6 +29,7 @@ export default function PettyCash() {
   const [formType, setFormType] = useState("income");
   const [editingMovement, setEditingMovement] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [rubros, setRubros] = useState([]);
 
   const loadMovements = async () => {
     if (!businessId) return;
@@ -35,9 +38,25 @@ export default function PettyCash() {
     setLoading(false);
   };
 
+  const loadRubros = async () => {
+    if (!businessId) return;
+    try {
+      const data = await seedAndDedupeCatalog({
+        entity: "Rubro",
+        businessId,
+        defaults: DEFAULT_RUBROS,
+        keyOf: (r) => `${r.name}|${r.kind}`,
+      });
+      setRubros((data || []).filter((r) => r.active !== false));
+    } catch (err) {
+      console.error("Error loading rubros:", err);
+    }
+  };
+
   useEffect(() => {
     base44.auth.me().then(u => setIsAdmin(u?.role === "admin")).catch(() => {});
     loadMovements();
+    loadRubros();
   }, [businessId]);
 
   // ── Derived totals ──────────────────────────────────────────────────────────
@@ -267,6 +286,7 @@ export default function PettyCash() {
           movementType={formType}
           businessId={businessId}
           currentBalance={balance}
+          rubros={rubros}
           onSaved={loadMovements}
           onClose={() => { setFormOpen(false); setEditingMovement(null); }}
           movement={editingMovement}

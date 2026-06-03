@@ -8,20 +8,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import moment from "moment";
 
-const EXPENSE_CATEGORIES = ["Papelería", "Limpieza", "Transporte", "Compras menores", "Mantenimiento menor", "Viáticos locales", "Otros"];
-const INCOME_CATEGORIES = ["Reposición", "Reintegro", "Ajuste positivo", "Otros"];
-
-const TYPE_CONFIG = {
-  initial_fund: { label: "Fondo Inicial", categories: INCOME_CATEGORIES },
-  income:       { label: "Ingreso",       categories: INCOME_CATEGORIES },
-  expense:      { label: "Egreso",        categories: EXPENSE_CATEGORIES },
-  adjustment:   { label: "Ajuste",        categories: [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES] },
+const TYPE_LABELS = {
+  initial_fund: "Fondo Inicial",
+  income: "Ingreso",
+  expense: "Egreso",
+  adjustment: "Ajuste",
 };
 
-export default function PettyCashMovementForm({ open, movementType, businessId, currentBalance, onSaved, onClose, movement }) {
+export default function PettyCashMovementForm({ open, movementType, businessId, currentBalance, rubros = [], onSaved, onClose, movement }) {
   const isEdit = !!movement;
   const effectiveType = isEdit ? movement.movement_type : movementType;
-  const config = TYPE_CONFIG[effectiveType] || TYPE_CONFIG.income;
+  const typeLabel = TYPE_LABELS[effectiveType] || TYPE_LABELS.income;
   const [form, setForm] = useState(
     isEdit ? {
       amount: String(movement.amount || ""),
@@ -42,6 +39,24 @@ export default function PettyCashMovementForm({ open, movementType, businessId, 
   const [saving, setSaving] = useState(false);
 
   const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
+
+  // Categorías tomadas del catálogo de Rubros, filtradas por el tipo de movimiento.
+  // Egreso → rubros de egreso; Ingreso/Fondo inicial → rubros de ingreso; Ajuste → ambos.
+  const categoryOptions = (() => {
+    const list = (rubros || []).filter((r) => {
+      if (effectiveType === "expense") return r.kind === "expense";
+      if (effectiveType === "adjustment") return true;
+      return r.kind === "income";
+    });
+    const names = [];
+    const seen = new Set();
+    list.forEach((r) => {
+      if (r?.name && !seen.has(r.name)) { seen.add(r.name); names.push(r.name); }
+    });
+    // Conserva el valor actual si su rubro fue desactivado/eliminado, para no perderlo al editar.
+    if (form.category && !seen.has(form.category)) names.unshift(form.category);
+    return names;
+  })();
 
   const willBeNegative = movementType === "expense" && currentBalance - parseFloat(form.amount || 0) < 0;
 
@@ -84,7 +99,7 @@ export default function PettyCashMovementForm({ open, movementType, businessId, 
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEdit ? `Editar ${config.label}` : config.label}</DialogTitle>
+          <DialogTitle>{isEdit ? `Editar ${typeLabel}` : typeLabel}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-1">
           {/* Amount */}
@@ -118,7 +133,7 @@ export default function PettyCashMovementForm({ open, movementType, businessId, 
             <Input placeholder="Descripción breve..." value={form.description} onChange={e => set("description", e.target.value)} />
           </div>
 
-          {/* Category */}
+          {/* Category (desde catálogo de Rubros) */}
           <div>
             <Label>Categoría</Label>
             <select
@@ -127,8 +142,13 @@ export default function PettyCashMovementForm({ open, movementType, businessId, 
               onChange={e => set("category", e.target.value)}
             >
               <option value="">Sin categoría</option>
-              {config.categories.map(c => <option key={c} value={c}>{c}</option>)}
+              {categoryOptions.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
+            {categoryOptions.length === 0 && (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Administra estas categorías en Catálogos → Rubros
+              </p>
+            )}
           </div>
 
           {/* Reference */}
