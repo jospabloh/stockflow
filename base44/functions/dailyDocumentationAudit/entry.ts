@@ -6,10 +6,15 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.8";
-const SNAPSHOT_RELEASE_DATE = "2026-06-03";
+const CURRENT_VERSION_IN_CODE = "2.16.9";
+const SNAPSHOT_RELEASE_DATE = "2026-06-04";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+18f984a Merge pull request #127 from jospabloh/claude/magical-bohr-hN8ki
+3a6d6ad Merge branch 'main' into claude/magical-bohr-hN8ki
+782f62f Merge pull request #126 from jospabloh/automated/release-pr
+7672886 feat(utilidad): extraer motor de utilidad y cerrar decisiones de diseño
+7fcaaf2 chore: release and update documentation
 9cb9019 Merge pull request #125 from jospabloh/claude/magical-bohr-hN8ki
 f8bc282 docs: diseño de Utilidad integral (Estado de Resultados + proyección)
 ac63cb0 Merge pull request #124 from jospabloh/automated/release-pr
@@ -30,14 +35,9 @@ c33d6af chore: release and update documentation
 9f7c1c1 Merge branch 'main' into claude/pettycash-rubro-categories
 2a2fb37 Merge pull request #115 from jospabloh/automated/release-pr
 e3d6c73 Drive Caja Chica category from configurable Rubros catalog
-75847fb chore: release and update documentation
-ff7e8e9 Merge pull request #117 from jospabloh/claude/utility-seed-idempotent
-ae5ce55 Make Utility catalog seeding idempotent and self-healing
-b48a776 Merge pull request #116 from jospabloh/claude/utility-confetti-feedback
-27a9aa6 Merge branch 'main' into claude/utility-confetti-feedback
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.8",
+  "Actualización a la versión 2.16.9",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
