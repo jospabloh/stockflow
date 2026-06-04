@@ -6,10 +6,18 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.10";
+const CURRENT_VERSION_IN_CODE = "2.16.11";
 const SNAPSHOT_RELEASE_DATE = "2026-06-04";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+f01b086 Merge pull request #134 from jospabloh/claude/magical-bohr-hN8ki
+f13e193 Merge branch 'main' into claude/magical-bohr-hN8ki
+c3f9e5d feat(utilidad): proyección por pacing histórico + correcciones de modelo
+5ff14f8 Merge pull request #132 from jospabloh/claude/magical-bohr-hN8ki
+30e1986 Merge branch 'main' into claude/magical-bohr-hN8ki
+7ae4978 Merge pull request #130 from jospabloh/automated/release-pr
+db2b1e9 feat(utilidad): toggle de proyección + motor de pronóstico (Fase 4)
+265df03 chore: release and update documentation
 4888e86 Merge pull request #131 from jospabloh/claude/magical-bohr-hN8ki
 b8bd5e6 Merge branch 'main' into claude/magical-bohr-hN8ki
 96b33ad feat(rubros): campo pl_treatment para tratamiento contable (Fase 3)
@@ -27,17 +35,9 @@ f8bc282 docs: diseño de Utilidad integral (Estado de Resultados + proyección)
 ac63cb0 Merge pull request #124 from jospabloh/automated/release-pr
 6ef0185 chore: release and update documentation
 cb57dd9 Merge pull request #123 from jospabloh/claude/lucid-euler-xrMBS
-f4b4d00 Fix cross-tenant IDOR in calculateQuotationWithTransport
-a87455d Merge pull request #122 from jospabloh/automated/release-pr
-c33d6af chore: release and update documentation
-874ae77 Merge pull request #121 from jospabloh/claude/sharp-fermi-XAzki
-4c8ef31 Merge branch 'main' into claude/sharp-fermi-XAzki
-2a948fd Merge pull request #120 from jospabloh/automated/release-pr
-505897d feat(auth): add custom in-app login, registration and password reset
-7e10f6e chore: release and update documentation
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.10",
+  "Actualización a la versión 2.16.11",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
