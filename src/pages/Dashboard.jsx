@@ -23,6 +23,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import UnpaidDetailModal from "@/components/dashboard/UnpaidDetailModal";
 import OnboardingWizard from "@/components/OnboardingWizard";
+import { computeSalesData } from "@/lib/finance/profitEngine";
 
 // Función para obtener rango de fechas según período (México City timezone, respeta DST)
 function getDateRange(period) {
@@ -209,82 +210,17 @@ export default function Dashboard() {
   const periodMovementsCount = periodMovements.length;
 
   // Calcular ventas según período
-  const salesData = useMemo(() => {
-    // Exclude zero-price / internal (force_zero_price) from all commercial metrics
-    const periodConvertedQuotations = periodQuotations.filter((q) => q.status === "converted" && (q.total || 0) > 0 && q.payment_method !== "Sin cargo");
-    const periodExits = periodMovements.filter((m) => m.type === "exit");
-    const periodDirectExits = periodExits.filter((m) => m && !m.quotation_id);
-
-    const salesFromQuotations = periodConvertedQuotations.reduce((sum, q) => sum + (q.total || 0), 0);
-    const salesFromDirectExits = periodDirectExits.reduce((sum, m) => sum + (m.total || 0), 0);
-    const cancelledQuotationIds = new Set(
-      quotations.filter(q => q.status === "cancelled").map(q => q.id)
-    );
-
-    const periodReturnsRevenue = periodMovements.filter(m =>
-      m.type === "return" && m.quotation_id && !cancelledQuotationIds.has(m.quotation_id)
-    ).reduce((sum, m) => sum + (m.total || 0), 0);
-    const salesRevenue = salesFromQuotations + salesFromDirectExits - periodReturnsRevenue;
-    
-    const unpaidQuotations = periodConvertedQuotations.filter(q => !q.paid).reduce((sum, q) => sum + (q.total || 0), 0);
-    const unpaidDirectExits = periodDirectExits.filter(m => !m.paid).reduce((sum, m) => sum + (m.total || 0), 0);
-    const unpaidTotal = unpaidQuotations + unpaidDirectExits;
-    const realRevenue = salesRevenue - unpaidTotal;
-
-    const undeliveredQuotations = periodConvertedQuotations.filter(q => !q.delivered);
-    const undeliveredTotal = undeliveredQuotations.reduce((sum, q) => sum + (q.total || 0), 0);
-    const undeliveredItems = undeliveredQuotations.reduce((sum, q) => sum + (q.items?.length || 0), 0);
-
-    const productLookup = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
-
-    const validExits = periodExits.filter(m => !m.quotation_id || !cancelledQuotationIds.has(m.quotation_id));
-    const periodReturns = periodMovements.filter(m => m.type === "return" && m.quotation_id && !cancelledQuotationIds.has(m.quotation_id));
-
-    const salesCost = validExits.reduce((sum, m) => {
-      const costUnit = (m.cost_price != null && m.cost_price > 0)
-        ? m.cost_price
-        : (productLookup[m.product_id]?.purchase_price ?? 0);
-      return sum + ((m.quantity || 0) * costUnit);
-    }, 0) - periodReturns.reduce((sum, m) => {
-      const costUnit = (m.cost_price != null && m.cost_price > 0)
-        ? m.cost_price
-        : (productLookup[m.product_id]?.purchase_price ?? 0);
-      return sum + ((m.quantity || 0) * costUnit);
-    }, 0);
-    
-    const actualProfit = realRevenue - salesCost;
-    const actualMargin = realRevenue > 0 ? (actualProfit / realRevenue) * 100 : 0;
-
-    const potentialProfit = salesRevenue - salesCost;
-    const potentialMargin = salesRevenue > 0 ? (potentialProfit / salesRevenue) * 100 : 0;
-    const salesCount = periodConvertedQuotations.length + periodDirectExits.length;
-
-    const supplierPaymentsTotal = periodSupplierPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
-    const netProfit = actualProfit - supplierPaymentsTotal;
-    const netMargin = realRevenue > 0 ? (netProfit / realRevenue) * 100 : 0;
-    // % de utilidad real consumida por pagos a proveedores (solo cuando hay utilidad positiva)
-    const supplierImpactPct = actualProfit > 0 ? (supplierPaymentsTotal / actualProfit) * 100 : 0;
-
-    return {
-      salesRevenue,
-      realRevenue,
-      salesCost,
-      actualProfit,
-      actualMargin,
-      potentialProfit,
-      potentialMargin,
-      salesCount,
-      periodExits,
-      periodDirectExits,
-      periodConvertedQuotations,
-      undeliveredTotal,
-      undeliveredItems,
-      supplierPaymentsTotal,
-      netProfit,
-      netMargin,
-      supplierImpactPct,
-    };
-  }, [periodMovements, periodQuotations, periodSupplierPayments, products]);
+  const salesData = useMemo(
+    () =>
+      computeSalesData({
+        periodQuotations,
+        periodMovements,
+        periodSupplierPayments,
+        products,
+        quotations,
+      }),
+    [periodMovements, periodQuotations, periodSupplierPayments, products]
+  );
 
   // Cotizaciones concretadas sin pagar — GLOBAL (excluir force_zero_price / total === 0 / "Sin cargo")
   const unpaidConverted = quotations.filter(q => q.status === "converted" && !q.paid && (q.total || 0) > 0 && q.payment_method !== "Sin cargo");

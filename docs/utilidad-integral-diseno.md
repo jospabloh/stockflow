@@ -1,7 +1,7 @@
 # Utilidad Integral — Diseño y Fórmulas
 
-> Estado: **propuesta para revisión** (sin implementar).
-> Base contable elegida: **Devengado (accrual)**.
+> Estado: **decisiones cerradas** — listo para implementar por fases.
+> Base contable elegida: **Devengado (accrual)**, con pagos a proveedores en base efectivo (línea propia).
 > Objetivo: que la pestaña *Utilidad* deje de ser una libreta manual aislada y
 > se convierta en el **Estado de Resultados real** del negocio, derivado de la
 > operación, con capacidad de **proyección** a fin de día / semana / mes / año.
@@ -71,18 +71,40 @@ UTILIDAD REAL (operativa)  = Utilidad Bruta − Gastos operativos + Otros ingres
 UTILIDAD NETA              = Utilidad Real − Pagos a proveedores
 ```
 
-> ⚠️ **Riesgo de doble conteo (decisión clave a validar):**
-> Hoy `UtilityMovement` y `SupplierPayment` pueden representar lo mismo
-> (un egreso por pago a proveedor capturado en ambos lados). Y los pagos a
-> proveedores en devengado **no son un gasto del periodo** — el costo ya está
-> en el COGS cuando entregaste. Por eso se muestran como línea informativa
-> (impacto en caja), no se restan dos veces. Hay que definir reglas claras de
-> qué `rubro` de `UtilityMovement` es operativo vs. cuál ya está capturado en
-> otro módulo, para no contar gastos por duplicado.
+> ⚠️ **Doble conteo — decisión tomada:** los pagos a proveedores SÍ reducen el
+> resultado (gasto del periodo en que se pagó), pero como **línea separada y
+> etiquetada** (`Utilidad Neta`), nunca mezclados con el COGS en un solo número.
+> Restar pagos a proveedores *además* del COGS cuenta el costo del inventario
+> dos veces; por eso se presentan en dos renglones distintos: `Utilidad Real`
+> es la utilidad contable limpia (devengado), y `Utilidad Neta` es la vista
+> ajustada por la salida de caja a proveedores. Transparente para el usuario.
 
 ---
 
+## 3.1 Mapeo de rubros — anti doble-conteo (decidido)
+
+Se añade un campo **`pl_treatment`** a la entidad `Rubro` que define cómo entra
+cada rubro al Estado de Resultados. Mapeo sobre el catálogo real (`DEFAULT_RUBROS`
+en `src/lib/catalogDefaults.ts`):
+
+| `pl_treatment` | Efecto | Rubros |
+|---|---|---|
+| `operating` (default) | Cuenta como gasto/ingreso operativo manual | Renta, Nómina, Servicios, Mantenimiento, Publicidad, Papelería, Limpieza, Transporte, Compras menores, Viáticos locales, Otros, Otros ingresos, Reposición, Reintegro, Ajuste positivo |
+| `auto_sales` | Ya lo captura el motor de ventas → se **excluye** del manual | Ventas |
+| `auto_cogs` | Ya lo cubren COGS / pagos a proveedores → se **excluye** | Compras de mercancía |
+| `distribution` | Retiro de utilidad (no es gasto) → **excluido** del resultado, va "bajo la línea" | Retiro de utilidades |
+
+Regla: al agregar gastos/ingresos manuales se suman **solo** los movimientos cuyo
+rubro es `operating`. Los demás se ignoran (o se muestran informativos) para no
+duplicar lo que la app ya calcula sola.
+
 ## 4. Capa de proyección (predicción estadística)
+
+> **Toggle (decidido):** bandera `utility_forecast_enabled` en `AppSettings` por
+> negocio, con switch en la pestaña Utilidad.
+> - **OFF** → solo lo **real, al día y momento** (realizado hasta ahora, sin proyectar).
+> - **ON** → agrega las tarjetas de proyección descritas abajo.
+
 
 Tres técnicas que se suman. Los datos para las tres **ya existen** en la app.
 
@@ -158,17 +180,21 @@ Con horizontes: **día / semana / mes / año** (mismo motor, distinto rango).
 
 ---
 
-## 6. Decisiones abiertas (a resolver antes de implementar)
+## 6. Decisiones (cerradas)
 
-1. **Doble conteo proveedores:** ¿`SupplierPayment` es línea informativa (caja)
-   o gasto que afecta utilidad? En devengado → informativa. Confirmar.
-2. **Rubros operativos vs. ya-capturados:** mapear qué `Rubro` de `UtilityMovement`
-   cuenta como gasto operativo nuevo y cuál duplica otro módulo.
-3. **COGS de pipeline:** ¿estimamos costo de cotizaciones activas con `purchase_price`
-   actual de cada producto del item? (Sí, recomendado.)
-4. **Año/estacionalidad:** ¿proyección anual con los 12 meses o run-rate simple
-   al inicio cuando no hay histórico suficiente?
-5. **Gastos recurrentes:** ¿campo en `UtilityMovement` o entidad nueva dedicada?
+1. **Pagos a proveedores:** gasto del periodo en que se pagó, como línea
+   separada `Utilidad Neta` (no mezclado con COGS). ✅
+2. **Rubros operativos vs. ya-capturados:** campo `pl_treatment` en `Rubro`
+   (ver §3.1). Solo `operating` suma al resultado. ✅
+3. **Toggle de proyección:** `utility_forecast_enabled` en `AppSettings`. OFF =
+   solo real; ON = proyección. ✅
+4. **COGS de pipeline:** se estima con `purchase_price` actual de cada producto
+   del item de la cotización activa. ✅
+
+### Pendientes menores (a afinar durante la implementación)
+- **Año/estacionalidad:** run-rate simple cuando no hay histórico suficiente;
+  promedio móvil ponderado por día de semana cuando sí lo hay.
+- **Gastos recurrentes:** campo `recurrence` en `UtilityMovement` (no entidad nueva).
 
 ---
 
