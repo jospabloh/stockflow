@@ -7,9 +7,37 @@ Deno.serve(async (req) => {
 
     const { event, data, old_data } = body;
 
+    // ── Authentication & authorization ──────────────────────────────────────
+    // This endpoint mutates product stock via the service role, so it must
+    // never be invocable by an unauthenticated/anonymous HTTP caller. Accept:
+    //   1. The internal event/scheduler system presenting a valid CRON_SECRET, or
+    //   2. An authenticated user acting strictly within their own tenant.
+    const cronSecretEnv = Deno.env.get('CRON_SECRET');
+    const validCron = cronSecretEnv && (
+      req.headers.get('x-cron-secret') === cronSecretEnv ||
+      body?.['x-cron-secret'] === cronSecretEnv
+    );
+
+    let user = null;
+    if (!validCron) {
+      user = await base44.auth.me().catch(() => null);
+      if (!user) {
+        console.log('[SYNC-STOCK] Unauthorized request rejected');
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+
     if (!data || !data.product_id) {
       console.log('[SYNC-STOCK] No product_id, skipping');
       return Response.json({ skipped: true });
+    }
+
+    // Tenant isolation: a non-service-role user may only sync stock for
+    // movements that belong to their own business.
+    const isServiceRole = Boolean(validCron) || !user?.business_id;
+    if (!isServiceRole && data.business_id && data.business_id !== user.business_id) {
+      console.log(`[SYNC-STOCK] Forbidden: movement business ${data.business_id} != user business ${user.business_id}`);
+      return Response.json({ error: 'Forbidden: business_id mismatch' }, { status: 403 });
     }
 
     console.log(`[SYNC-STOCK] Movement ${event.type}: ${data.product_id}, quantity: ${data.quantity}, type: ${data.type}`);
@@ -19,6 +47,13 @@ Deno.serve(async (req) => {
     if (!product) {
       console.log(`[SYNC-STOCK] Product ${data.product_id} not found`);
       return Response.json({ error: 'Product not found' }, { status: 404 });
+    }
+
+    // Defense in depth: the product must belong to the same tenant as the
+    // movement, preventing cross-tenant stock manipulation.
+    if (data.business_id && product.business_id && product.business_id !== data.business_id) {
+      console.log(`[SYNC-STOCK] Forbidden: product business ${product.business_id} != movement business ${data.business_id}`);
+      return Response.json({ error: 'Forbidden: product/movement tenant mismatch' }, { status: 403 });
     }
 
     let newStock = product.stock || 0;
