@@ -6,10 +6,14 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.7";
+const CURRENT_VERSION_IN_CODE = "2.16.8";
 const SNAPSHOT_RELEASE_DATE = "2026-06-03";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+9cb9019 Merge pull request #125 from jospabloh/claude/magical-bohr-hN8ki
+f8bc282 docs: diseño de Utilidad integral (Estado de Resultados + proyección)
+ac63cb0 Merge pull request #124 from jospabloh/automated/release-pr
+6ef0185 chore: release and update documentation
 cb57dd9 Merge pull request #123 from jospabloh/claude/lucid-euler-xrMBS
 f4b4d00 Fix cross-tenant IDOR in calculateQuotationWithTransport
 a87455d Merge pull request #122 from jospabloh/automated/release-pr
@@ -31,13 +35,9 @@ ff7e8e9 Merge pull request #117 from jospabloh/claude/utility-seed-idempotent
 ae5ce55 Make Utility catalog seeding idempotent and self-healing
 b48a776 Merge pull request #116 from jospabloh/claude/utility-confetti-feedback
 27a9aa6 Merge branch 'main' into claude/utility-confetti-feedback
-7e5645a Add confetti on successful creation in Utility module
-b8b246e Merge pull request #111 from jospabloh/automated/release-pr
-bbfe2ff Merge pull request #114 from jospabloh/claude/clever-clarke-FY64i
-ad365b5 Add Utility module with configurable rubros and accounts
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.7",
+  "Actualización a la versión 2.16.8",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
