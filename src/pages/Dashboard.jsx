@@ -24,6 +24,7 @@ import { createPageUrl } from "@/utils";
 import UnpaidDetailModal from "@/components/dashboard/UnpaidDetailModal";
 import OnboardingWizard from "@/components/OnboardingWizard";
 import { computeSalesData } from "@/lib/finance/profitEngine";
+import { convertUTCToLocalDate, getDateStringMexico } from "@/lib/finance/period";
 
 // Función para obtener rango de fechas según período (México City timezone, respeta DST)
 function getDateRange(period) {
@@ -134,23 +135,6 @@ export default function Dashboard() {
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
-
-  // Función centralizada para convertir UTC a timezone México (UTC-6, FIJO sin daylight saving)
-  const convertUTCToLocalDate = (isoString) => {
-    const utcDate = new Date(isoString);
-    // México City siempre está en UTC-6 (sin cambio de horario)
-    const mexicoDate = new Date(utcDate.getTime() - (6 * 60 * 60 * 1000));
-    return mexicoDate;
-  };
-
-  // Helper: Convert date to YYYY-MM-DD string in Mexico timezone
-  const getDateStringMexico = (isoString) => {
-    const localDate = convertUTCToLocalDate(isoString);
-    const year = localDate.getUTCFullYear();
-    const month = String(localDate.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(localDate.getUTCDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
 
   // Calcular datos según período GLOBAL (usar custom range si está definido)
   const { startStr: periodStartStr, endStr: periodEndStr } = useMemo(() => {

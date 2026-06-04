@@ -14,9 +14,12 @@ import {
 } from "@/components/ui/table";
 import { createButtonProps } from "@/lib/a11y";
 import { toast } from "sonner";
-import { Wallet, TrendingUp, TrendingDown, Plus, Minus, Scale, Pencil, Trash2, Lock } from "lucide-react";
+import { Wallet, TrendingUp, Plus, Minus, Scale, Pencil, Trash2, Lock, Clock } from "lucide-react";
 import moment from "moment";
 import UtilityMovementForm from "@/components/utility/UtilityMovementForm";
+import { computeSalesData } from "@/lib/finance/profitEngine";
+import { getDateStringMexico } from "@/lib/finance/period";
+import { isOperatingMovement } from "@/lib/finance/rubroTreatment";
 
 const MONTHS = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -25,11 +28,33 @@ const MONTHS = [
 
 const fmt = (n) => `$${(n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
 
+// Renglón del Estado de Resultados (cascada)
+function Row({ label, value, sign, bold, muted, highlight }) {
+  const negativeResult = (bold || highlight) && value < 0;
+  return (
+    <div className={`flex items-center justify-between ${highlight ? "rounded-lg px-3 py-2 " + (negativeResult ? "bg-rose-50 dark:bg-rose-950/40" : "bg-emerald-50 dark:bg-emerald-950/40") : ""}`}>
+      <span className={`${bold ? "font-semibold text-slate-700 dark:text-slate-200" : "text-slate-600 dark:text-slate-400"}`}>{label}</span>
+      <span className={`${bold ? "font-bold" : "font-medium"} ${muted ? "text-rose-600" : negativeResult ? "text-rose-600" : bold ? "text-emerald-700 dark:text-emerald-300" : "text-slate-700 dark:text-slate-200"}`}>
+        {sign ? `${sign} ` : ""}{fmt(value)}
+      </span>
+    </div>
+  );
+}
+
+function Divider() {
+  return <div className="border-t border-dashed border-slate-200 dark:border-slate-700 my-1" />;
+}
+
 export default function Utility() {
   const { businessId } = useBusinessContext();
   const [movements, setMovements] = useState([]);
   const [rubros, setRubros] = useState([]);
   const [accounts, setAccounts] = useState([]);
+  // Datos operativos para el Estado de Resultados real (no la libreta manual)
+  const [quotations, setQuotations] = useState([]);
+  const [stockMovements, setStockMovements] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [supplierPayments, setSupplierPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [formOpen, setFormOpen] = useState(false);
@@ -49,14 +74,22 @@ export default function Utility() {
   const load = async () => {
     if (!businessId) return;
     try {
-      const [movs, rbs, accs] = await Promise.all([
+      const [movs, rbs, accs, quots, stockMovs, prods, pays] = await Promise.all([
         base44.entities.UtilityMovement.filter({ business_id: businessId }, "-movement_date", 500),
         base44.entities.Rubro.filter({ business_id: businessId, active: true }),
         base44.entities.FundAccount.filter({ business_id: businessId, active: true }),
+        base44.entities.Quotation.filter({ business_id: businessId }, "-created_date", 1000).catch(() => []),
+        base44.entities.Movement.filter({ business_id: businessId }, "-created_date", 1000).catch(() => []),
+        base44.entities.Product.filter({ business_id: businessId }, "-created_date", 500).catch(() => []),
+        base44.entities.SupplierPayment.filter({ business_id: businessId }, "-payment_date", 1000).catch(() => []),
       ]);
       setMovements(movs || []);
       setRubros(rbs || []);
       setAccounts(accs || []);
+      setQuotations(quots || []);
+      setStockMovements(stockMovs || []);
+      setProducts(prods || []);
+      setSupplierPayments(pays || []);
     } catch (err) {
       console.error("Error loading utility movements:", err);
       toast.error("No se pudieron cargar los movimientos de utilidad");
@@ -81,17 +114,6 @@ export default function Utility() {
 
   const monthMovements = useMemo(() => movements.filter(inMonth), [movements, monthStart, monthEnd]);
 
-  const { monthIncome, monthExpense } = useMemo(() => {
-    let inc = 0, exp = 0;
-    monthMovements.forEach((m) => {
-      if (m.movement_type === "income") inc += Number(m.amount) || 0;
-      else exp += Number(m.amount) || 0;
-    });
-    return { monthIncome: inc, monthExpense: exp };
-  }, [monthMovements]);
-
-  const utility = monthIncome - monthExpense;
-
   // Desglose por rubro (del mes)
   const byRubro = useMemo(() => {
     const map = {};
@@ -102,6 +124,60 @@ export default function Utility() {
     });
     return Object.values(map).sort((a, b) => b.total - a.total);
   }, [monthMovements]);
+
+  // Índice de rubros por id (para resolver tratamiento contable de cada movimiento)
+  const rubrosById = useMemo(() => {
+    const map = {};
+    rubros.forEach((r) => { map[r.id] = r; });
+    return map;
+  }, [rubros]);
+
+  // Estado de Resultados real del mes: parte operativa automática (ventas, COGS,
+  // pagos a proveedores) fusionada con los gastos/ingresos manuales operativos.
+  const incomeStatement = useMemo(() => {
+    const inRange = (dateStr) => dateStr >= monthStart && dateStr <= monthEnd;
+
+    const periodQuotations = quotations.filter((q) => inRange(getDateStringMexico(q.created_date)));
+    const periodMovements = stockMovements.filter((m) => inRange(getDateStringMexico(m.created_date)));
+    const periodSupplierPayments = supplierPayments.filter((p) => inRange(p.payment_date || ""));
+
+    const op = computeSalesData({
+      periodQuotations,
+      periodMovements,
+      periodSupplierPayments,
+      products,
+      quotations,
+    });
+
+    // Manuales: solo rubros operativos suman al resultado (anti doble conteo)
+    let manualIncome = 0, manualExpense = 0;
+    monthMovements.forEach((m) => {
+      if (!isOperatingMovement(m, rubrosById)) return;
+      if (m.movement_type === "income") manualIncome += Number(m.amount) || 0;
+      else manualExpense += Number(m.amount) || 0;
+    });
+
+    const salesRevenue = op.salesRevenue;                 // Ventas devengadas
+    const cogs = op.salesCost;                            // Costo de ventas
+    const grossProfit = salesRevenue - cogs;             // Utilidad Bruta
+    const realProfit = grossProfit + manualIncome - manualExpense; // Utilidad Real
+    const supplierPaymentsTotal = op.supplierPaymentsTotal;
+    const netProfit = realProfit - supplierPaymentsTotal; // Utilidad Neta
+    const pendingCollection = salesRevenue - op.realRevenue; // pendiente de cobrar (informativo)
+
+    return {
+      salesRevenue,
+      cogs,
+      grossProfit,
+      manualIncome,
+      manualExpense,
+      realProfit,
+      supplierPaymentsTotal,
+      netProfit,
+      pendingCollection,
+      hasOperations: salesRevenue !== 0 || cogs !== 0 || supplierPaymentsTotal !== 0 || manualIncome !== 0 || manualExpense !== 0,
+    };
+  }, [quotations, stockMovements, supplierPayments, products, monthMovements, rubrosById, monthStart, monthEnd]);
 
   // Historial filtrado (del mes seleccionado)
   const filtered = useMemo(() => {
@@ -162,7 +238,7 @@ export default function Utility() {
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Wallet className="h-6 w-6 text-indigo-500" /> Utilidad
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Ingresos y egresos del negocio para conocer tu utilidad real del mes</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Estado de resultados real del mes: ventas y costos automáticos + gastos que capturas a mano</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => openForm("income")} className="bg-emerald-600 hover:bg-emerald-700" {...createButtonProps('add')}>
@@ -196,35 +272,64 @@ export default function Utility() {
         </div>
       </div>
 
-      {/* Summary cards */}
+      {/* Summary cards — cifras reales del Estado de Resultados */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border-0 shadow-sm p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-muted-foreground text-sm">Ingresos del mes</span>
-            <TrendingUp className="h-5 w-5 text-emerald-500" />
+            <span className="text-muted-foreground text-sm">Ventas del mes</span>
+            <TrendingUp className="h-5 w-5 text-blue-500" />
           </div>
-          <p className="text-2xl font-bold text-emerald-600">{fmt(monthIncome)}</p>
-          <p className="text-muted-foreground text-xs mt-1">{MONTHS[month]} {year}</p>
+          <p className="text-2xl font-bold text-blue-600">{fmt(incomeStatement.salesRevenue)}</p>
+          <p className="text-muted-foreground text-xs mt-1">Devengado · {MONTHS[month]} {year}</p>
         </Card>
 
         <Card className="border-0 shadow-sm p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-muted-foreground text-sm">Egresos del mes</span>
-            <TrendingDown className="h-5 w-5 text-rose-500" />
+            <span className="text-muted-foreground text-sm">Utilidad Real</span>
+            <Scale className="h-5 w-5 text-emerald-500" />
           </div>
-          <p className="text-2xl font-bold text-rose-600">{fmt(monthExpense)}</p>
-          <p className="text-muted-foreground text-xs mt-1">{MONTHS[month]} {year}</p>
+          <p className={`text-2xl font-bold ${incomeStatement.realProfit < 0 ? "text-rose-600" : "text-emerald-600"}`}>{fmt(incomeStatement.realProfit)}</p>
+          <p className="text-muted-foreground text-xs mt-1">Ventas − COGS − gastos</p>
         </Card>
 
-        <Card className={`border-0 shadow-sm p-5 text-white bg-gradient-to-br ${utility < 0 ? "from-rose-500 to-rose-600" : "from-indigo-500 to-indigo-600"}`}>
+        <Card className={`border-0 shadow-sm p-5 text-white bg-gradient-to-br ${incomeStatement.netProfit < 0 ? "from-rose-500 to-rose-600" : "from-indigo-500 to-indigo-600"}`}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-indigo-100 text-sm font-medium">Utilidad del mes</span>
-            <Scale className="h-5 w-5 text-indigo-200" />
+            <span className="text-indigo-100 text-sm font-medium">Utilidad Neta</span>
+            <Wallet className="h-5 w-5 text-indigo-200" />
           </div>
-          <p className="text-3xl font-bold">{fmt(utility)}</p>
-          <p className="text-indigo-100 text-xs mt-1">Ingresos − Egresos</p>
+          <p className="text-3xl font-bold">{fmt(incomeStatement.netProfit)}</p>
+          <p className="text-indigo-100 text-xs mt-1">− pagos a proveedores</p>
         </Card>
       </div>
+
+      {/* Estado de Resultados — cascada */}
+      <Card className="border-0 shadow-sm p-5">
+        <h2 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
+          <Scale className="h-4 w-4 text-indigo-500" /> Estado de Resultados — {MONTHS[month]} {year}
+        </h2>
+        {!incomeStatement.hasOperations ? (
+          <p className="text-sm text-slate-400 py-4 text-center">Sin operaciones ni movimientos en {MONTHS[month]} {year}</p>
+        ) : (
+          <div className="space-y-1.5 text-sm">
+            <Row label="Ventas (devengado)" value={incomeStatement.salesRevenue} sign="+" />
+            <Row label="Costo de ventas (COGS)" value={incomeStatement.cogs} sign="−" muted />
+            <Divider />
+            <Row label="Utilidad Bruta" value={incomeStatement.grossProfit} bold />
+            {incomeStatement.manualIncome > 0 && <Row label="Otros ingresos" value={incomeStatement.manualIncome} sign="+" />}
+            <Row label="Gastos operativos" value={incomeStatement.manualExpense} sign="−" muted />
+            <Divider />
+            <Row label="Utilidad Real" value={incomeStatement.realProfit} bold highlight />
+            <Row label="Pagos a proveedores" value={incomeStatement.supplierPaymentsTotal} sign="−" muted />
+            <Divider />
+            <Row label="Utilidad Neta" value={incomeStatement.netProfit} bold highlight />
+            {incomeStatement.pendingCollection > 0 && (
+              <p className="text-xs text-amber-600 pt-2 flex items-center gap-1">
+                <Clock className="h-3 w-3" /> Pendiente de cobrar (no afecta la utilidad devengada): {fmt(incomeStatement.pendingCollection)}
+              </p>
+            )}
+          </div>
+        )}
+      </Card>
 
       {/* Desglose por rubro */}
       <Card className="border-0 shadow-sm p-5">
