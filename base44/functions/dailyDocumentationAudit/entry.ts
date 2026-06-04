@@ -6,10 +6,17 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.9";
+const CURRENT_VERSION_IN_CODE = "2.16.10";
 const SNAPSHOT_RELEASE_DATE = "2026-06-04";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+4888e86 Merge pull request #131 from jospabloh/claude/magical-bohr-hN8ki
+b8bd5e6 Merge branch 'main' into claude/magical-bohr-hN8ki
+96b33ad feat(rubros): campo pl_treatment para tratamiento contable (Fase 3)
+c7dd452 Merge pull request #129 from jospabloh/claude/magical-bohr-hN8ki
+52e2a5a feat(utilidad): conectar pestaña Utilidad al Estado de Resultados real
+676e394 Merge pull request #128 from jospabloh/automated/release-pr
+fc965a0 chore: release and update documentation
 18f984a Merge pull request #127 from jospabloh/claude/magical-bohr-hN8ki
 3a6d6ad Merge branch 'main' into claude/magical-bohr-hN8ki
 782f62f Merge pull request #126 from jospabloh/automated/release-pr
@@ -28,16 +35,9 @@ c33d6af chore: release and update documentation
 2a948fd Merge pull request #120 from jospabloh/automated/release-pr
 505897d feat(auth): add custom in-app login, registration and password reset
 7e10f6e chore: release and update documentation
-86933c5 chore: add boilerplate auth templates
-283dc8a Merge pull request #119 from jospabloh/automated/release-pr
-238a547 chore: release and update documentation
-78b9b55 Merge pull request #118 from jospabloh/claude/pettycash-rubro-categories
-9f7c1c1 Merge branch 'main' into claude/pettycash-rubro-categories
-2a2fb37 Merge pull request #115 from jospabloh/automated/release-pr
-e3d6c73 Drive Caja Chica category from configurable Rubros catalog
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.9",
+  "Actualización a la versión 2.16.10",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
