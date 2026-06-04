@@ -4,9 +4,12 @@
 
 // Rubros (categorías de ingreso/egreso). Lista unificada que alimenta tanto el
 // módulo de Utilidad como el campo Categoría de Caja Chica.
+//
+// pl_treatment define cómo entra cada rubro al Estado de Resultados (ver
+// src/lib/finance/rubroTreatment.js). Se omite cuando es "operating" (default).
 export const DEFAULT_RUBROS = [
   // Ingresos
-  { name: "Ventas", kind: "income" },
+  { name: "Ventas", kind: "income", pl_treatment: "auto_sales" },
   { name: "Otros ingresos", kind: "income" },
   { name: "Reposición", kind: "income" },
   { name: "Reintegro", kind: "income" },
@@ -15,10 +18,10 @@ export const DEFAULT_RUBROS = [
   { name: "Renta", kind: "expense" },
   { name: "Nómina", kind: "expense" },
   { name: "Servicios", kind: "expense" },
-  { name: "Compras de mercancía", kind: "expense" },
+  { name: "Compras de mercancía", kind: "expense", pl_treatment: "auto_cogs" },
   { name: "Mantenimiento", kind: "expense" },
   { name: "Publicidad", kind: "expense" },
-  { name: "Retiro de utilidades", kind: "expense" },
+  { name: "Retiro de utilidades", kind: "expense", pl_treatment: "distribution" },
   { name: "Papelería", kind: "expense" },
   { name: "Limpieza", kind: "expense" },
   { name: "Transporte", kind: "expense" },
