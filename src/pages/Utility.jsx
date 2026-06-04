@@ -18,9 +18,8 @@ import { Wallet, TrendingUp, Plus, Minus, Scale, Pencil, Trash2, Lock, Clock, Li
 import moment from "moment";
 import UtilityMovementForm from "@/components/utility/UtilityMovementForm";
 import { Switch } from "@/components/ui/switch";
-import { computeSalesData } from "@/lib/finance/profitEngine";
 import { getDateStringMexico } from "@/lib/finance/period";
-import { isOperatingMovement } from "@/lib/finance/rubroTreatment";
+import { computeIncomeStatement } from "@/lib/finance/incomeStatement";
 import { computeConversionRate, getActiveQuotations, computeForecast } from "@/lib/finance/forecast";
 
 const MONTHS = [
@@ -82,8 +81,8 @@ export default function Utility() {
         base44.entities.UtilityMovement.filter({ business_id: businessId }, "-movement_date", 500),
         base44.entities.Rubro.filter({ business_id: businessId, active: true }),
         base44.entities.FundAccount.filter({ business_id: businessId, active: true }),
-        base44.entities.Quotation.filter({ business_id: businessId }, "-created_date", 1000).catch(() => []),
-        base44.entities.Movement.filter({ business_id: businessId }, "-created_date", 1000).catch(() => []),
+        base44.entities.Quotation.filter({ business_id: businessId }, "-created_date", 3000).catch(() => []),
+        base44.entities.Movement.filter({ business_id: businessId }, "-created_date", 3000).catch(() => []),
         base44.entities.Product.filter({ business_id: businessId }, "-created_date", 500).catch(() => []),
         base44.entities.SupplierPayment.filter({ business_id: businessId }, "-payment_date", 1000).catch(() => []),
         base44.entities.AppSettings.filter({ business_id: businessId }).catch(() => []),
@@ -142,73 +141,76 @@ export default function Utility() {
 
   // Estado de Resultados real del mes: parte operativa automática (ventas, COGS,
   // pagos a proveedores) fusionada con los gastos/ingresos manuales operativos.
-  const incomeStatement = useMemo(() => {
-    const inRange = (dateStr) => dateStr >= monthStart && dateStr <= monthEnd;
-
-    const periodQuotations = quotations.filter((q) => inRange(getDateStringMexico(q.created_date)));
-    const periodMovements = stockMovements.filter((m) => inRange(getDateStringMexico(m.created_date)));
-    const periodSupplierPayments = supplierPayments.filter((p) => inRange(p.payment_date || ""));
-
-    const op = computeSalesData({
-      periodQuotations,
-      periodMovements,
-      periodSupplierPayments,
-      products,
-      quotations,
-    });
-
-    // Manuales: solo rubros operativos suman al resultado (anti doble conteo)
-    let manualIncome = 0, manualExpense = 0;
-    monthMovements.forEach((m) => {
-      if (!isOperatingMovement(m, rubrosById)) return;
-      if (m.movement_type === "income") manualIncome += Number(m.amount) || 0;
-      else manualExpense += Number(m.amount) || 0;
-    });
-
-    const salesRevenue = op.salesRevenue;                 // Ventas devengadas
-    const cogs = op.salesCost;                            // Costo de ventas
-    const grossProfit = salesRevenue - cogs;             // Utilidad Bruta
-    const realProfit = grossProfit + manualIncome - manualExpense; // Utilidad Real
-    const supplierPaymentsTotal = op.supplierPaymentsTotal;
-    const netProfit = realProfit - supplierPaymentsTotal; // Utilidad Neta
-    const pendingCollection = salesRevenue - op.realRevenue; // pendiente de cobrar (informativo)
-
-    return {
-      salesRevenue,
-      cogs,
-      grossProfit,
-      manualIncome,
-      manualExpense,
-      realProfit,
-      supplierPaymentsTotal,
-      netProfit,
-      pendingCollection,
-      hasOperations: salesRevenue !== 0 || cogs !== 0 || supplierPaymentsTotal !== 0 || manualIncome !== 0 || manualExpense !== 0,
-    };
-  }, [quotations, stockMovements, supplierPayments, products, monthMovements, rubrosById, monthStart, monthEnd]);
+  const incomeStatement = useMemo(
+    () =>
+      computeIncomeStatement({
+        quotations,
+        stockMovements,
+        supplierPayments,
+        products,
+        manualMovements: movements,
+        rubrosById,
+        rangeStart: monthStart,
+        rangeEnd: monthEnd,
+      }),
+    [quotations, stockMovements, supplierPayments, products, movements, rubrosById, monthStart, monthEnd]
+  );
 
   // Proyección de utilidad (solo si el negocio activó el pronóstico)
   const forecast = useMemo(() => {
     if (!forecastEnabled) return null;
     const todayStr = getDateStringMexico(new Date().toISOString());
 
-    // Tasa de conversión histórica (últimos 30 días)
+    // Tasa de conversión histórica (últimos 30 días) — informativa
     const thirty = new Date();
     thirty.setDate(thirty.getDate() - 30);
     const thirtyStr = getDateStringMexico(thirty.toISOString());
     const windowQuots = quotations.filter((q) => getDateStringMexico(q.created_date) >= thirtyStr);
     const { rate: conversionRate } = computeConversionRate(windowQuots);
 
+    // Muestras históricas: utilidad al MISMO recorte de día vs cierre del mes,
+    // de los meses previos. Permite proyectar con la curva real del negocio.
+    const dayCut = Number(todayStr.slice(8, 10)); // día del mes de hoy
+    const statementForRange = (rangeStart, rangeEnd) =>
+      computeIncomeStatement({
+        quotations,
+        stockMovements,
+        supplierPayments,
+        products,
+        manualMovements: movements,
+        rubrosById,
+        rangeStart,
+        rangeEnd,
+      });
+
+    const historicalSamples = [];
+    for (let i = 1; i <= 6; i++) {
+      const base = moment({ year, month, day: 1 }).subtract(i, "months");
+      const prevStart = base.clone().startOf("month");
+      const prevEnd = base.clone().endOf("month");
+      const cutDay = Math.min(dayCut, prevEnd.date());
+      const prevCut = base.clone().date(cutDay);
+      const partial = statementForRange(prevStart.format("YYYY-MM-DD"), prevCut.format("YYYY-MM-DD"));
+      const full = statementForRange(prevStart.format("YYYY-MM-DD"), prevEnd.format("YYYY-MM-DD"));
+      // Muestra válida solo si hubo ventas reales DESPUÉS del día de corte (curva
+      // intra-mes genuina). Descarta meses colapsados en un solo día (migraciones).
+      const hadPostCutoffSales = full.salesRevenue > partial.salesRevenue + 0.01;
+      if (partial.hasOperations && full.hasOperations && hadPostCutoffSales) {
+        historicalSamples.push({ partial: partial.netProfit, full: full.netProfit });
+      }
+    }
+
     return computeForecast({
       realizedNetProfit: incomeStatement.netProfit,
       monthStart,
       monthEnd,
       todayStr,
+      historicalSamples,
       activeQuotations: getActiveQuotations(quotations),
       conversionRate,
       products,
     });
-  }, [forecastEnabled, quotations, products, incomeStatement.netProfit, monthStart, monthEnd]);
+  }, [forecastEnabled, quotations, stockMovements, supplierPayments, products, movements, rubrosById, incomeStatement.netProfit, monthStart, monthEnd, year, month]);
 
   const handleToggleForecast = async (next) => {
     setForecastEnabled(next); // optimista
@@ -395,6 +397,8 @@ export default function Utility() {
           </div>
           {forecast.isClosed ? (
             <p className="text-sm text-slate-400 py-3 text-center">Mes cerrado — la utilidad ya es definitiva.</p>
+          ) : forecast.isFuture ? (
+            <p className="text-sm text-slate-400 py-3 text-center">Selecciona el mes en curso para ver la proyección.</p>
           ) : (
             <div className="space-y-3">
               <div className="rounded-lg bg-white dark:bg-slate-900 px-4 py-3 flex items-center justify-between">
@@ -404,20 +408,30 @@ export default function Utility() {
                 </span>
               </div>
               <div className="space-y-1.5 text-sm">
-                <Row label="Realizado hasta hoy" value={incomeStatement.netProfit} />
-                <Row
-                  label={`Pipeline esperado (${forecast.activeCount} activas × ${(forecast.conversionRate * 100).toFixed(0)}% conversión)`}
-                  value={forecast.expectedPipelineProfit}
-                  sign="+"
-                />
-                {!forecast.isFuture && (
+                <Row label={`Realizado hasta hoy (día ${forecast.daysElapsed}/${forecast.daysInMonth})`} value={incomeStatement.netProfit} />
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600 dark:text-slate-400">Curva aplicada</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-200">×{forecast.pacingFactor.toFixed(2)}</span>
+                </div>
+                {forecast.method === "historical" ? (
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 pt-1 flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    Proyectado con la curva real de {forecast.historicalMonths} {forecast.historicalMonths === 1 ? "mes anterior" : "meses anteriores"} (mismo día del mes).
+                  </p>
+                ) : (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 pt-1 flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Histórico insuficiente: proyección por ritmo lineal ({forecast.daysElapsed}/{forecast.daysInMonth} días). Gana precisión con más meses de datos.
+                  </p>
+                )}
+                {forecast.activeCount > 0 && (
                   <p className="text-xs text-slate-500 dark:text-slate-400 pt-1 flex items-center gap-1">
                     <TrendingUp className="h-3 w-3 text-indigo-400" />
-                    Al ritmo actual ({forecast.daysElapsed}/{forecast.daysInMonth} días) cerrarías cerca de {fmt(forecast.runRateNet)}.
+                    Además tienes {forecast.activeCount} {forecast.activeCount === 1 ? "cotización abierta" : "cotizaciones abiertas"} (~{fmt(forecast.expectedPipelineProfit)} esperado) que podrían sumar.
                   </p>
                 )}
                 <p className="text-[11px] text-slate-400 pt-1">
-                  Estimación: utilidad realizada + cotizaciones activas ponderadas por tu tasa de conversión histórica (30 días). No incluye gastos fijos aún no registrados.
+                  Las ventas concretadas sin cobrar ya están en tu utilidad (devengado); solo afectan tu flujo de caja, no esta proyección. No incluye gastos fijos aún no registrados.
                 </p>
               </div>
             </div>
