@@ -14,12 +14,14 @@ import {
 } from "@/components/ui/table";
 import { createButtonProps } from "@/lib/a11y";
 import { toast } from "sonner";
-import { Wallet, TrendingUp, Plus, Minus, Scale, Pencil, Trash2, Lock, Clock } from "lucide-react";
+import { Wallet, TrendingUp, Plus, Minus, Scale, Pencil, Trash2, Lock, Clock, LineChart, Sparkles } from "lucide-react";
 import moment from "moment";
 import UtilityMovementForm from "@/components/utility/UtilityMovementForm";
+import { Switch } from "@/components/ui/switch";
 import { computeSalesData } from "@/lib/finance/profitEngine";
 import { getDateStringMexico } from "@/lib/finance/period";
 import { isOperatingMovement } from "@/lib/finance/rubroTreatment";
+import { computeConversionRate, getActiveQuotations, computeForecast } from "@/lib/finance/forecast";
 
 const MONTHS = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -55,6 +57,8 @@ export default function Utility() {
   const [stockMovements, setStockMovements] = useState([]);
   const [products, setProducts] = useState([]);
   const [supplierPayments, setSupplierPayments] = useState([]);
+  const [appSettings, setAppSettings] = useState(null);
+  const [forecastEnabled, setForecastEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [formOpen, setFormOpen] = useState(false);
@@ -74,7 +78,7 @@ export default function Utility() {
   const load = async () => {
     if (!businessId) return;
     try {
-      const [movs, rbs, accs, quots, stockMovs, prods, pays] = await Promise.all([
+      const [movs, rbs, accs, quots, stockMovs, prods, pays, appSettingsList] = await Promise.all([
         base44.entities.UtilityMovement.filter({ business_id: businessId }, "-movement_date", 500),
         base44.entities.Rubro.filter({ business_id: businessId, active: true }),
         base44.entities.FundAccount.filter({ business_id: businessId, active: true }),
@@ -82,6 +86,7 @@ export default function Utility() {
         base44.entities.Movement.filter({ business_id: businessId }, "-created_date", 1000).catch(() => []),
         base44.entities.Product.filter({ business_id: businessId }, "-created_date", 500).catch(() => []),
         base44.entities.SupplierPayment.filter({ business_id: businessId }, "-payment_date", 1000).catch(() => []),
+        base44.entities.AppSettings.filter({ business_id: businessId }).catch(() => []),
       ]);
       setMovements(movs || []);
       setRubros(rbs || []);
@@ -90,6 +95,9 @@ export default function Utility() {
       setStockMovements(stockMovs || []);
       setProducts(prods || []);
       setSupplierPayments(pays || []);
+      const settings = (appSettingsList || [])[0] || null;
+      setAppSettings(settings);
+      setForecastEnabled(settings?.utility_forecast_enabled === true);
     } catch (err) {
       console.error("Error loading utility movements:", err);
       toast.error("No se pudieron cargar los movimientos de utilidad");
@@ -179,6 +187,46 @@ export default function Utility() {
     };
   }, [quotations, stockMovements, supplierPayments, products, monthMovements, rubrosById, monthStart, monthEnd]);
 
+  // Proyección de utilidad (solo si el negocio activó el pronóstico)
+  const forecast = useMemo(() => {
+    if (!forecastEnabled) return null;
+    const todayStr = getDateStringMexico(new Date().toISOString());
+
+    // Tasa de conversión histórica (últimos 30 días)
+    const thirty = new Date();
+    thirty.setDate(thirty.getDate() - 30);
+    const thirtyStr = getDateStringMexico(thirty.toISOString());
+    const windowQuots = quotations.filter((q) => getDateStringMexico(q.created_date) >= thirtyStr);
+    const { rate: conversionRate } = computeConversionRate(windowQuots);
+
+    return computeForecast({
+      realizedNetProfit: incomeStatement.netProfit,
+      monthStart,
+      monthEnd,
+      todayStr,
+      activeQuotations: getActiveQuotations(quotations),
+      conversionRate,
+      products,
+    });
+  }, [forecastEnabled, quotations, products, incomeStatement.netProfit, monthStart, monthEnd]);
+
+  const handleToggleForecast = async (next) => {
+    setForecastEnabled(next); // optimista
+    try {
+      if (appSettings?.id) {
+        await base44.entities.AppSettings.update(appSettings.id, { utility_forecast_enabled: next });
+      } else {
+        const created = await base44.entities.AppSettings.create({ business_id: businessId, utility_forecast_enabled: next });
+        setAppSettings(created);
+      }
+      toast.success(next ? "Proyección activada" : "Proyección desactivada");
+    } catch (err) {
+      console.error("No se pudo guardar la preferencia de proyección", err);
+      setForecastEnabled(!next); // revertir
+      toast.error("No se pudo guardar la preferencia");
+    }
+  };
+
   // Historial filtrado (del mes seleccionado)
   const filtered = useMemo(() => {
     return monthMovements.filter((m) => {
@@ -240,7 +288,12 @@ export default function Utility() {
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">Estado de resultados real del mes: ventas y costos automáticos + gastos que capturas a mano</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 bg-muted/50 rounded-lg px-3 py-2 cursor-pointer select-none">
+            <Sparkles className={`h-4 w-4 ${forecastEnabled ? "text-indigo-500" : "text-slate-400"}`} />
+            <span className="hidden sm:inline">Proyección</span>
+            <Switch checked={forecastEnabled} onCheckedChange={handleToggleForecast} />
+          </label>
           <Button onClick={() => openForm("income")} className="bg-emerald-600 hover:bg-emerald-700" {...createButtonProps('add')}>
             <Plus className="h-4 w-4 mr-1" /> Ingreso
           </Button>
@@ -330,6 +383,47 @@ export default function Utility() {
           </div>
         )}
       </Card>
+
+      {/* Proyección (pronóstico) */}
+      {forecastEnabled && forecast && (
+        <Card className="border border-indigo-200 dark:border-indigo-900 shadow-sm p-5 bg-indigo-50/40 dark:bg-indigo-950/20">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+              <LineChart className="h-4 w-4 text-indigo-500" /> Proyección — {MONTHS[month]} {year}
+            </h2>
+            <Badge className="bg-indigo-100 text-indigo-700 border-0 text-[10px]">estimado</Badge>
+          </div>
+          {forecast.isClosed ? (
+            <p className="text-sm text-slate-400 py-3 text-center">Mes cerrado — la utilidad ya es definitiva.</p>
+          ) : (
+            <div className="space-y-3">
+              <div className="rounded-lg bg-white dark:bg-slate-900 px-4 py-3 flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Utilidad Neta proyectada</span>
+                <span className={`text-2xl font-bold ${forecast.projectedNetProfit < 0 ? "text-rose-600" : "text-indigo-600 dark:text-indigo-400"}`}>
+                  {fmt(forecast.projectedNetProfit)}
+                </span>
+              </div>
+              <div className="space-y-1.5 text-sm">
+                <Row label="Realizado hasta hoy" value={incomeStatement.netProfit} />
+                <Row
+                  label={`Pipeline esperado (${forecast.activeCount} activas × ${(forecast.conversionRate * 100).toFixed(0)}% conversión)`}
+                  value={forecast.expectedPipelineProfit}
+                  sign="+"
+                />
+                {!forecast.isFuture && (
+                  <p className="text-xs text-slate-500 dark:text-slate-400 pt-1 flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3 text-indigo-400" />
+                    Al ritmo actual ({forecast.daysElapsed}/{forecast.daysInMonth} días) cerrarías cerca de {fmt(forecast.runRateNet)}.
+                  </p>
+                )}
+                <p className="text-[11px] text-slate-400 pt-1">
+                  Estimación: utilidad realizada + cotizaciones activas ponderadas por tu tasa de conversión histórica (30 días). No incluye gastos fijos aún no registrados.
+                </p>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Desglose por rubro */}
       <Card className="border-0 shadow-sm p-5">
