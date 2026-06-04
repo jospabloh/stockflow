@@ -34,7 +34,21 @@ const KIND_META = {
   expense: { label: "Egreso", color: "bg-rose-100 text-rose-700" },
 };
 
-const EMPTY_FORM = { name: "", kind: "expense" };
+// Tratamiento en el Estado de Resultados (ver src/lib/finance/rubroTreatment.js)
+const PL_TREATMENT_META = {
+  operating: { label: "Operativo", color: "bg-slate-100 text-slate-600", hint: "Cuenta como gasto/ingreso del negocio" },
+  auto_sales: { label: "Ventas (auto)", color: "bg-blue-100 text-blue-700", hint: "Ya lo calcula el sistema desde las ventas" },
+  auto_cogs: { label: "Costo (auto)", color: "bg-amber-100 text-amber-700", hint: "Ya lo cubren el COGS y pagos a proveedores" },
+  distribution: { label: "Retiro", color: "bg-purple-100 text-purple-700", hint: "Retiro de utilidad, no es un gasto" },
+};
+const PL_TREATMENT_OPTIONS = [
+  { value: "operating", label: "Operativo — cuenta en la utilidad" },
+  { value: "auto_sales", label: "Ventas — automático (no contar a mano)" },
+  { value: "auto_cogs", label: "Costo/Compras — automático (no contar a mano)" },
+  { value: "distribution", label: "Retiro de utilidad — fuera del resultado" },
+];
+
+const EMPTY_FORM = { name: "", kind: "expense", pl_treatment: "operating" };
 
 export default function Rubros() {
   const { businessId } = useBusinessContext();
@@ -69,18 +83,19 @@ export default function Rubros() {
   }, [businessId]);
 
   const openNew = () => { setEditing(null); setForm(EMPTY_FORM); setFormOpen(true); };
-  const openEdit = (r) => { setEditing(r); setForm({ name: r.name, kind: r.kind }); setFormOpen(true); };
+  const openEdit = (r) => { setEditing(r); setForm({ name: r.name, kind: r.kind, pl_treatment: r.pl_treatment || "operating" }); setFormOpen(true); };
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error("El nombre es requerido"); return; }
     try {
       if (editing) {
-        await base44.entities.Rubro.update(editing.id, { name: form.name.trim(), kind: form.kind });
+        await base44.entities.Rubro.update(editing.id, { name: form.name.trim(), kind: form.kind, pl_treatment: form.pl_treatment });
         toast.success("✓ Rubro actualizado");
       } else {
         await base44.entities.Rubro.create({
           name: form.name.trim(),
           kind: form.kind,
+          pl_treatment: form.pl_treatment,
           active: true,
           is_system: false,
           business_id: businessId,
@@ -148,6 +163,7 @@ export default function Rubros() {
             <TableRow>
               <TableHead>Nombre</TableHead>
               <TableHead>Tipo</TableHead>
+              <TableHead className="hidden sm:table-cell">Tratamiento</TableHead>
               <TableHead className="text-center">Activo</TableHead>
               <TableHead className="text-center">Acciones</TableHead>
             </TableRow>
@@ -155,7 +171,7 @@ export default function Rubros() {
           <TableBody>
             {rubros.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                   No hay rubros. Crea el primero.
                 </TableCell>
               </TableRow>
@@ -167,6 +183,12 @@ export default function Rubros() {
                   <Badge className={`${(KIND_META[r.kind] || KIND_META.expense).color} border-0 text-xs`}>
                     {(KIND_META[r.kind] || KIND_META.expense).label}
                   </Badge>
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {(() => {
+                    const meta = PL_TREATMENT_META[r.pl_treatment] || PL_TREATMENT_META.operating;
+                    return <Badge className={`${meta.color} border-0 text-xs`} title={meta.hint}>{meta.label}</Badge>;
+                  })()}
                 </TableCell>
                 <TableCell className="text-center">
                   <Switch checked={r.active !== false} onCheckedChange={() => handleToggle(r)} />
@@ -209,6 +231,17 @@ export default function Rubros() {
                   { value: "income", label: "Ingreso" },
                 ]}
               />
+            </div>
+            <div>
+              <Label>Tratamiento en la utilidad</Label>
+              <MobileSelect
+                value={form.pl_treatment}
+                onValueChange={(v) => setForm((p) => ({ ...p, pl_treatment: v }))}
+                options={PL_TREATMENT_OPTIONS}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {(PL_TREATMENT_META[form.pl_treatment] || PL_TREATMENT_META.operating).hint}. Usa “automático” para rubros que el sistema ya calcula solo (ventas, costos) y evitar contarlos dos veces.
+              </p>
             </div>
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setFormOpen(false)}>Cancelar</Button>
