@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-04T00:25:21.397Z
+// Generado: 2026-06-04T02:06:50.875Z
 
-export const SNAPSHOT_VERSION = "2.16.10";
+export const SNAPSHOT_VERSION = "2.16.11";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-06-04";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 
-export const SNAPSHOT_GIT_LOG = "4888e86 Merge pull request #131 from jospabloh/claude/magical-bohr-hN8ki\nb8bd5e6 Merge branch 'main' into claude/magical-bohr-hN8ki\n96b33ad feat(rubros): campo pl_treatment para tratamiento contable (Fase 3)\nc7dd452 Merge pull request #129 from jospabloh/claude/magical-bohr-hN8ki\n52e2a5a feat(utilidad): conectar pestaña Utilidad al Estado de Resultados real\n676e394 Merge pull request #128 from jospabloh/automated/release-pr\nfc965a0 chore: release and update documentation\n18f984a Merge pull request #127 from jospabloh/claude/magical-bohr-hN8ki\n3a6d6ad Merge branch 'main' into claude/magical-bohr-hN8ki\n782f62f Merge pull request #126 from jospabloh/automated/release-pr\n7672886 feat(utilidad): extraer motor de utilidad y cerrar decisiones de diseño\n7fcaaf2 chore: release and update documentation\n9cb9019 Merge pull request #125 from jospabloh/claude/magical-bohr-hN8ki\nf8bc282 docs: diseño de Utilidad integral (Estado de Resultados + proyección)\nac63cb0 Merge pull request #124 from jospabloh/automated/release-pr\n6ef0185 chore: release and update documentation\ncb57dd9 Merge pull request #123 from jospabloh/claude/lucid-euler-xrMBS\nf4b4d00 Fix cross-tenant IDOR in calculateQuotationWithTransport\na87455d Merge pull request #122 from jospabloh/automated/release-pr\nc33d6af chore: release and update documentation\n874ae77 Merge pull request #121 from jospabloh/claude/sharp-fermi-XAzki\n4c8ef31 Merge branch 'main' into claude/sharp-fermi-XAzki\n2a948fd Merge pull request #120 from jospabloh/automated/release-pr\n505897d feat(auth): add custom in-app login, registration and password reset\n7e10f6e chore: release and update documentation";
+export const SNAPSHOT_GIT_LOG = "f01b086 Merge pull request #134 from jospabloh/claude/magical-bohr-hN8ki\nf13e193 Merge branch 'main' into claude/magical-bohr-hN8ki\nc3f9e5d feat(utilidad): proyección por pacing histórico + correcciones de modelo\n5ff14f8 Merge pull request #132 from jospabloh/claude/magical-bohr-hN8ki\n30e1986 Merge branch 'main' into claude/magical-bohr-hN8ki\n7ae4978 Merge pull request #130 from jospabloh/automated/release-pr\ndb2b1e9 feat(utilidad): toggle de proyección + motor de pronóstico (Fase 4)\n265df03 chore: release and update documentation\n4888e86 Merge pull request #131 from jospabloh/claude/magical-bohr-hN8ki\nb8bd5e6 Merge branch 'main' into claude/magical-bohr-hN8ki\n96b33ad feat(rubros): campo pl_treatment para tratamiento contable (Fase 3)\nc7dd452 Merge pull request #129 from jospabloh/claude/magical-bohr-hN8ki\n52e2a5a feat(utilidad): conectar pestaña Utilidad al Estado de Resultados real\n676e394 Merge pull request #128 from jospabloh/automated/release-pr\nfc965a0 chore: release and update documentation\n18f984a Merge pull request #127 from jospabloh/claude/magical-bohr-hN8ki\n3a6d6ad Merge branch 'main' into claude/magical-bohr-hN8ki\n782f62f Merge pull request #126 from jospabloh/automated/release-pr\n7672886 feat(utilidad): extraer motor de utilidad y cerrar decisiones de diseño\n7fcaaf2 chore: release and update documentation\n9cb9019 Merge pull request #125 from jospabloh/claude/magical-bohr-hN8ki\nf8bc282 docs: diseño de Utilidad integral (Estado de Resultados + proyección)\nac63cb0 Merge pull request #124 from jospabloh/automated/release-pr\n6ef0185 chore: release and update documentation\ncb57dd9 Merge pull request #123 from jospabloh/claude/lucid-euler-xrMBS";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.16.10",
+  "Actualización a la versión 2.16.11",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.16.11",
+    date: "2026-06-04",
+    changes: [
+    "Actualización a la versión 2.16.11"
+    ]
+  },
   {
     version: "2.16.10",
     date: "2026-06-04",
