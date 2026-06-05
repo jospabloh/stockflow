@@ -3,12 +3,13 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { MobileSelect } from "@/components/ui/MobileSelect";
+import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { PiggyBank } from "lucide-react";
+import { PiggyBank, FileCheck2 } from "lucide-react";
 import { toast } from "sonner";
 import { celebrate } from "@/lib/celebrate";
+import { getRubroPlTreatment, PL_TREATMENT } from "@/lib/finance/rubroTreatment";
 import moment from "moment";
 
 const TYPE_LABELS = { income: "Ingreso", expense: "Retiro de utilidad" };
@@ -24,6 +25,8 @@ export default function UtilityMovementForm({ open, movementType, businessId, ru
           rubro_id: movement.rubro_id || "",
           account_id: movement.account_id || "",
           description: movement.description || "",
+          taken_by: movement.taken_by || "",
+          invoiced: !!movement.invoiced,
           reference: movement.reference || "",
           notes: movement.notes || "",
         }
@@ -33,6 +36,8 @@ export default function UtilityMovementForm({ open, movementType, businessId, ru
           rubro_id: "",
           account_id: "",
           description: "",
+          taken_by: "",
+          invoiced: false,
           reference: "",
           notes: "",
         }
@@ -41,9 +46,6 @@ export default function UtilityMovementForm({ open, movementType, businessId, ru
 
   const set = (k, v) => setForm((prev) => ({ ...prev, [k]: v }));
 
-  const rubroOptions = (rubros || [])
-    .filter((r) => r.kind === effectiveType)
-    .map((r) => ({ value: r.id, label: r.name }));
   const accountOptions = (accounts || []).map((a) => ({ value: a.id, label: a.name }));
 
   const selectedAccount = (accounts || []).find((a) => a.id === form.account_id);
@@ -66,12 +68,16 @@ export default function UtilityMovementForm({ open, movementType, businessId, ru
   const handleSave = async () => {
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) { toast.error("El monto debe ser mayor a cero"); return; }
-    if (!form.rubro_id) { toast.error("Selecciona un rubro"); return; }
-    if (!form.account_id) { toast.error("Selecciona una cuenta"); return; }
+    if (!form.account_id) { toast.error("Indica de dónde se tomó el dinero"); return; }
     if (!form.movement_date) { toast.error("La fecha es obligatoria"); return; }
     if (!businessId) { toast.error("No se encontró el negocio asociado"); return; }
 
-    const rubro = (rubros || []).find((r) => r.id === form.rubro_id);
+    // El retiro de utilidad no pide rubro: se clasifica solo bajo "Retiro de
+    // utilidades" (distribución). Al editar, se respeta el rubro existente.
+    let rubro = (rubros || []).find((r) => r.id === form.rubro_id);
+    if (!rubro && effectiveType === "expense") {
+      rubro = (rubros || []).find((r) => getRubroPlTreatment(r) === PL_TREATMENT.DISTRIBUTION);
+    }
     const account = (accounts || []).find((a) => a.id === form.account_id);
     const affects = !!account?.affects_petty_cash;
 
@@ -87,13 +93,15 @@ export default function UtilityMovementForm({ open, movementType, businessId, ru
         movement_type: effectiveType,
         amount,
         movement_date: form.movement_date,
-        rubro_id: form.rubro_id,
-        rubro_name: rubro?.name || "",
+        rubro_id: rubro?.id || "",
+        rubro_name: rubro?.name || "Retiro de utilidad",
         rubro_kind: rubro?.kind || effectiveType,
         account_id: form.account_id,
         account_name: account?.name || "",
         affects_petty_cash: affects,
         description: form.description.trim(),
+        taken_by: form.taken_by.trim(),
+        invoiced: !!form.invoiced,
         reference: form.reference.trim(),
         notes: form.notes.trim(),
         registered_by: registeredBy,
@@ -176,44 +184,40 @@ export default function UtilityMovementForm({ open, movementType, businessId, ru
           </div>
 
           <div>
-            <Label>Rubro *</Label>
-            <MobileSelect
-              value={form.rubro_id}
-              onValueChange={(v) => set("rubro_id", v)}
-              placeholder={rubroOptions.length === 0 ? "Sin rubros — créalos en Catálogos → Rubros" : "Selecciona un rubro"}
-              options={rubroOptions}
-            />
-          </div>
-
-          <div>
-            <Label>Cuenta *</Label>
+            <Label>¿De dónde se tomó? *</Label>
             <MobileSelect
               value={form.account_id}
               onValueChange={(v) => set("account_id", v)}
-              placeholder={accountOptions.length === 0 ? "Sin cuentas — créalas en Catálogos → Cuentas" : "¿De dónde salió/entró el dinero?"}
+              placeholder={accountOptions.length === 0 ? "Sin cuentas — créalas en Catálogos → Cuentas" : "Efectivo (Caja Chica) o AFIRME"}
               options={accountOptions}
             />
             {accountAffectsPettyCash && (
               <p className="text-[11px] text-rose-600 mt-1 flex items-center gap-1">
                 <PiggyBank className="h-3 w-3" />
-                {effectiveType === "expense" ? "Se descontará de Caja Chica" : "Ingresará a Caja Chica"}
+                Se descontará de Caja Chica
               </p>
             )}
           </div>
 
           <div>
-            <Label>Descripción</Label>
-            <Input placeholder="Descripción breve..." value={form.description} onChange={(e) => set("description", e.target.value)} />
+            <Label>¿Quién lo tomó?</Label>
+            <Input placeholder="Nombre de quien dispuso del dinero" value={form.taken_by} onChange={(e) => set("taken_by", e.target.value)} />
           </div>
 
           <div>
-            <Label>Referencia <span className="text-muted-foreground text-xs">(opcional)</span></Label>
-            <Input placeholder="Folio, factura, comprobante..." value={form.reference} onChange={(e) => set("reference", e.target.value)} />
+            <Label>Concepto</Label>
+            <Input placeholder="Concepto breve del retiro..." value={form.description} onChange={(e) => set("description", e.target.value)} />
           </div>
 
-          <div>
-            <Label>Notas <span className="text-muted-foreground text-xs">(opcional)</span></Label>
-            <Textarea rows={2} placeholder="Notas adicionales..." value={form.notes} onChange={(e) => set("notes", e.target.value)} />
+          <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5">
+            <span className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+              <FileCheck2 className={`h-4 w-4 ${form.invoiced ? "text-emerald-500" : "text-slate-400"}`} />
+              ¿Facturado?
+            </span>
+            <span className="flex items-center gap-2">
+              <span className={`text-xs font-semibold ${form.invoiced ? "text-emerald-600" : "text-slate-400"}`}>{form.invoiced ? "Sí" : "No"}</span>
+              <Switch checked={form.invoiced} onCheckedChange={(v) => set("invoiced", v)} />
+            </span>
           </div>
 
           <div className="flex justify-end gap-3 pt-1">
