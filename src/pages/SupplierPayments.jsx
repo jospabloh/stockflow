@@ -64,10 +64,18 @@ const EMPTY_FORM = {
   concept: "",
   reference: "",
   notes: "",
+  invoice_status: "",
   affects_petty_cash: false,
 };
 
 const PETTY_CASH_CATEGORY = "Pago a proveedor";
+
+// Estado de factura del proveedor — mismo patrón que cotizaciones
+const INVOICE_STATUS_OPTIONS = [
+  { value: "pendiente", label: "Pendiente", short: "Pte", active: "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700" },
+  { value: "recibida", label: "Recibida", short: "Rec", active: "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700" },
+  { value: "no_requerida", label: "No requerida", short: "N/R", active: "bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600" },
+];
 
 export default function SupplierPayments() {
   const { businessId } = useBusinessContext();
@@ -87,6 +95,7 @@ export default function SupplierPayments() {
 
   // Filtros
   const [filterSupplier, setFilterSupplier] = useState("all");
+  const [filterInvoiceStatus, setFilterInvoiceStatus] = useState("all");
   const [filterFrom, setFilterFrom] = useState("");
   const [filterTo, setFilterTo] = useState("");
   const [search, setSearch] = useState("");
@@ -158,6 +167,7 @@ export default function SupplierPayments() {
     const q = search.trim().toLowerCase();
     return payments.filter(p => {
       if (filterSupplier !== "all" && p.supplier_id !== filterSupplier) return false;
+      if (filterInvoiceStatus !== "all" && (p.invoice_status || "") !== filterInvoiceStatus) return false;
       const d = p.payment_date || "";
       if (filterFrom && d < filterFrom) return false;
       if (filterTo && d > filterTo) return false;
@@ -167,7 +177,7 @@ export default function SupplierPayments() {
       }
       return true;
     });
-  }, [payments, filterSupplier, filterFrom, filterTo, search]);
+  }, [payments, filterSupplier, filterInvoiceStatus, filterFrom, filterTo, search]);
 
   const openNew = () => {
     setEditing(null);
@@ -186,6 +196,7 @@ export default function SupplierPayments() {
       concept: p.concept || "",
       reference: p.reference || "",
       notes: p.notes || "",
+      invoice_status: p.invoice_status || "",
       affects_petty_cash: !!p.affects_petty_cash,
     });
     setFieldErrors({});
@@ -220,6 +231,7 @@ export default function SupplierPayments() {
       concept: form.concept.trim(),
       reference: form.reference.trim(),
       notes: form.notes.trim(),
+      invoice_status: form.invoice_status || "",
       affects_petty_cash: !!form.affects_petty_cash,
     };
 
@@ -316,6 +328,20 @@ export default function SupplierPayments() {
     } catch (err) {
       console.error("Delete payment error:", err);
       toast.error("No se pudo eliminar el pago");
+    }
+  };
+
+  // Cambio rápido del estado de factura desde la tabla (toggle, como en cotizaciones)
+  const handleInvoiceStatusChange = async (p, value) => {
+    const newVal = p.invoice_status === value ? "" : value;
+    // Optimista: refleja el cambio de inmediato
+    setPayments(prev => prev.map(x => (x.id === p.id ? { ...x, invoice_status: newVal } : x)));
+    try {
+      await base44.entities.SupplierPayment.update(p.id, { invoice_status: newVal });
+    } catch (err) {
+      console.error("invoice status update error", err);
+      toast.error("No se pudo actualizar el estado de la factura");
+      await loadAll();
     }
   };
 
@@ -422,6 +448,20 @@ export default function SupplierPayments() {
               </SelectContent>
             </Select>
           </div>
+          <div className="min-w-[160px]">
+            <Label className="text-xs text-muted-foreground">Factura</Label>
+            <Select value={filterInvoiceStatus} onValueChange={setFilterInvoiceStatus}>
+              <SelectTrigger>
+                <SelectValue placeholder="Todas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las facturas</SelectItem>
+                {INVOICE_STATUS_OPTIONS.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div>
             <Label className="text-xs text-muted-foreground">Desde</Label>
             <Input type="date" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
@@ -430,11 +470,11 @@ export default function SupplierPayments() {
             <Label className="text-xs text-muted-foreground">Hasta</Label>
             <Input type="date" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
           </div>
-          {(filterSupplier !== "all" || filterFrom || filterTo || search) && (
+          {(filterSupplier !== "all" || filterInvoiceStatus !== "all" || filterFrom || filterTo || search) && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => { setFilterSupplier("all"); setFilterFrom(""); setFilterTo(""); setSearch(""); }}
+              onClick={() => { setFilterSupplier("all"); setFilterInvoiceStatus("all"); setFilterFrom(""); setFilterTo(""); setSearch(""); }}
               className="text-slate-500"
             >
               <Filter className="h-4 w-4 mr-1" /> Limpiar
@@ -449,6 +489,7 @@ export default function SupplierPayments() {
               <TableHead>Proveedor</TableHead>
               <TableHead className="hidden md:table-cell">Concepto</TableHead>
               <TableHead className="hidden sm:table-cell">Método</TableHead>
+              <TableHead className="text-center">Factura</TableHead>
               <TableHead className="text-right">Monto</TableHead>
               <TableHead className="text-center w-24">Acciones</TableHead>
             </TableRow>
@@ -473,6 +514,28 @@ export default function SupplierPayments() {
                   {p.concept || "—"}
                 </TableCell>
                 <TableCell className="text-slate-500 hidden sm:table-cell">{p.payment_method || "—"}</TableCell>
+                <TableCell className="text-center">
+                  <div className="flex gap-0.5 justify-center flex-wrap">
+                    {INVOICE_STATUS_OPTIONS.map(opt => {
+                      const selected = (p.invoice_status || "") === opt.value;
+                      const canEdit = can('Pagos a Proveedores', 'edit_amount');
+                      return (
+                        <button
+                          type="button"
+                          key={opt.value}
+                          disabled={!canEdit}
+                          onClick={() => canEdit && handleInvoiceStatusChange(p, opt.value)}
+                          className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full transition-colors border ${
+                            selected ? opt.active : "bg-transparent text-slate-300 border-slate-200 dark:text-slate-600 dark:border-slate-700"
+                          } ${canEdit ? "cursor-pointer" : "cursor-default"}`}
+                          title={opt.label}
+                        >
+                          {opt.short}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </TableCell>
                 <TableCell className="text-right font-bold text-orange-700 dark:text-orange-400 whitespace-nowrap">
                   ${Number(p.amount || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                 </TableCell>
@@ -492,7 +555,7 @@ export default function SupplierPayments() {
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-slate-400 py-10">
+                <TableCell colSpan={7} className="text-center text-slate-400 py-10">
                   {payments.length === 0
                     ? "No hay pagos registrados. ¡Crea el primero!"
                     : "No hay pagos que coincidan con los filtros"}
@@ -592,6 +655,25 @@ export default function SupplierPayments() {
                 onChange={e => set("reference", e.target.value)}
                 placeholder="Opcional"
               />
+            </div>
+
+            {/* Estado de factura */}
+            <div>
+              <Label>Factura</Label>
+              <Select
+                value={form.invoice_status || "none"}
+                onValueChange={v => set("invoice_status", v === "none" ? "" : v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin definir" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin definir</SelectItem>
+                  {INVOICE_STATUS_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Notas */}

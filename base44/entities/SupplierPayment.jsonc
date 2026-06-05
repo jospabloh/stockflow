@@ -39,6 +39,15 @@
       "type": "string",
       "description": "Notas adicionales (opcional)"
     },
+    "invoice_status": {
+      "type": "string",
+      "enum": [
+        "pendiente",
+        "recibida",
+        "no_requerida"
+      ],
+      "description": "Estado de la factura del proveedor (pendiente, recibida, no requerida)"
+    },
     "affects_petty_cash": {
       "type": "boolean",
       "default": false,
