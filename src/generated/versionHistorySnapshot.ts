@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-04T19:55:23.992Z
+// Generado: 2026-06-05T18:52:45.766Z
 
-export const SNAPSHOT_VERSION = "2.16.12";
+export const SNAPSHOT_VERSION = "2.16.13";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-06-04";
+export const SNAPSHOT_RELEASE_DATE = "2026-06-05";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 
-export const SNAPSHOT_GIT_LOG = "e304619 Merge pull request #135 from jospabloh/claude/festive-newton-kOEq1\nef8859c Harden backend functions: auth on syncProductStock, drop hardcoded support email\n00e91b7 Merge pull request #133 from jospabloh/automated/release-pr\n3330544 chore: release and update documentation\nf01b086 Merge pull request #134 from jospabloh/claude/magical-bohr-hN8ki\nf13e193 Merge branch 'main' into claude/magical-bohr-hN8ki\nc3f9e5d feat(utilidad): proyección por pacing histórico + correcciones de modelo\n5ff14f8 Merge pull request #132 from jospabloh/claude/magical-bohr-hN8ki\n30e1986 Merge branch 'main' into claude/magical-bohr-hN8ki\n7ae4978 Merge pull request #130 from jospabloh/automated/release-pr\ndb2b1e9 feat(utilidad): toggle de proyección + motor de pronóstico (Fase 4)\n265df03 chore: release and update documentation\n4888e86 Merge pull request #131 from jospabloh/claude/magical-bohr-hN8ki\nb8bd5e6 Merge branch 'main' into claude/magical-bohr-hN8ki\n96b33ad feat(rubros): campo pl_treatment para tratamiento contable (Fase 3)\nc7dd452 Merge pull request #129 from jospabloh/claude/magical-bohr-hN8ki\n52e2a5a feat(utilidad): conectar pestaña Utilidad al Estado de Resultados real\n676e394 Merge pull request #128 from jospabloh/automated/release-pr\nfc965a0 chore: release and update documentation\n18f984a Merge pull request #127 from jospabloh/claude/magical-bohr-hN8ki\n3a6d6ad Merge branch 'main' into claude/magical-bohr-hN8ki\n782f62f Merge pull request #126 from jospabloh/automated/release-pr\n7672886 feat(utilidad): extraer motor de utilidad y cerrar decisiones de diseño\n7fcaaf2 chore: release and update documentation\n9cb9019 Merge pull request #125 from jospabloh/claude/magical-bohr-hN8ki";
+export const SNAPSHOT_GIT_LOG = "3eb78a4 Merge pull request #137 from jospabloh/claude/funny-tesla-w3wh5\n33c74de feat(pagos-proveedores): agregar estado de factura (Pendiente/Recibida/No requerida)\nc8c6de0 Merge pull request #136 from jospabloh/automated/release-pr\n4193e58 chore: release and update documentation\ne304619 Merge pull request #135 from jospabloh/claude/festive-newton-kOEq1\nef8859c Harden backend functions: auth on syncProductStock, drop hardcoded support email\n00e91b7 Merge pull request #133 from jospabloh/automated/release-pr\n3330544 chore: release and update documentation\nf01b086 Merge pull request #134 from jospabloh/claude/magical-bohr-hN8ki\nf13e193 Merge branch 'main' into claude/magical-bohr-hN8ki\nc3f9e5d feat(utilidad): proyección por pacing histórico + correcciones de modelo\n5ff14f8 Merge pull request #132 from jospabloh/claude/magical-bohr-hN8ki\n30e1986 Merge branch 'main' into claude/magical-bohr-hN8ki\n7ae4978 Merge pull request #130 from jospabloh/automated/release-pr\ndb2b1e9 feat(utilidad): toggle de proyección + motor de pronóstico (Fase 4)\n265df03 chore: release and update documentation\n4888e86 Merge pull request #131 from jospabloh/claude/magical-bohr-hN8ki\nb8bd5e6 Merge branch 'main' into claude/magical-bohr-hN8ki\n96b33ad feat(rubros): campo pl_treatment para tratamiento contable (Fase 3)\nc7dd452 Merge pull request #129 from jospabloh/claude/magical-bohr-hN8ki\n52e2a5a feat(utilidad): conectar pestaña Utilidad al Estado de Resultados real\n676e394 Merge pull request #128 from jospabloh/automated/release-pr\nfc965a0 chore: release and update documentation\n18f984a Merge pull request #127 from jospabloh/claude/magical-bohr-hN8ki\n3a6d6ad Merge branch 'main' into claude/magical-bohr-hN8ki";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.16.12",
+  "Actualización a la versión 2.16.13",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.16.13",
+    date: "2026-06-05",
+    changes: [
+    "Actualización a la versión 2.16.13"
+    ]
+  },
   {
     version: "2.16.12",
     date: "2026-06-04",
