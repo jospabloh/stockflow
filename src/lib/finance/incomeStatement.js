@@ -1,12 +1,14 @@
 // Estado de Resultados para un rango de fechas arbitrario (base devengada).
 //
-// Reutiliza el motor de ventas (computeSalesData) y le suma los movimientos
-// manuales operativos. Al ser parametrizable por rango, sirve tanto para el mes
-// en curso como para meses históricos (usado por la proyección por pacing).
+// Reutiliza el motor de ventas (computeSalesData) para la utilidad GENERADA
+// (Utilidad Total) y trata los movimientos manuales como RETIROS de utilidad
+// (disposición): dinero que ya se dispuso —en efectivo o con tarjeta— y que
+// resta a la utilidad disponible, no a la generada. Al ser parametrizable por
+// rango, sirve tanto para el mes en curso como para meses históricos (proyección).
 
 import { computeSalesData } from "./profitEngine";
 import { getDateStringMexico } from "./period";
-import { isOperatingMovement } from "./rubroTreatment";
+import { getRubroPlTreatment, PL_TREATMENT } from "./rubroTreatment";
 
 /**
  * @param {Object} args
@@ -44,34 +46,43 @@ export function computeIncomeStatement({
     quotations,
   });
 
-  // Manuales: solo rubros operativos suman al resultado (anti doble conteo)
-  let manualIncome = 0, manualExpense = 0;
+  // Movimientos manuales = retiros de utilidad (disposición). Van "bajo la línea":
+  // restan a la utilidad disponible, no a la generada. Se excluyen los rubros que
+  // ya captura el motor automático (ventas/COGS) para no contar doble. Un eventual
+  // ingreso manual heredado se trata como retiro negativo (devuelve disponibilidad).
+  let withdrawals = 0;
   manualMovements.forEach((m) => {
     if (!inRange(m.movement_date || "")) return;
-    if (!isOperatingMovement(m, rubrosById)) return;
-    if (m.movement_type === "income") manualIncome += Number(m.amount) || 0;
-    else manualExpense += Number(m.amount) || 0;
+    const rubro = (m.rubro_id && rubrosById[m.rubro_id]) || {
+      name: m.rubro_name,
+      pl_treatment: m.rubro_pl_treatment,
+    };
+    const treatment = getRubroPlTreatment(rubro);
+    if (treatment === PL_TREATMENT.AUTO_SALES || treatment === PL_TREATMENT.AUTO_COGS) return;
+    const amount = Number(m.amount) || 0;
+    withdrawals += m.movement_type === "income" ? -amount : amount;
   });
 
   const salesRevenue = op.salesRevenue;
   const cogs = op.salesCost;
   const grossProfit = salesRevenue - cogs;
-  const realProfit = grossProfit + manualIncome - manualExpense;
   const supplierPaymentsTotal = op.supplierPaymentsTotal;
-  const netProfit = realProfit - supplierPaymentsTotal;
+  // Utilidad Total = lo que el negocio GENERÓ en el periodo (provisional hasta el cierre).
+  const totalProfit = grossProfit - supplierPaymentsTotal;
+  // Utilidad Disponible = dinero sonante que queda tras los retiros ya dispuestos.
+  const availableProfit = totalProfit - withdrawals;
   const pendingCollection = salesRevenue - op.realRevenue;
 
   return {
     salesRevenue,
     cogs,
     grossProfit,
-    manualIncome,
-    manualExpense,
-    realProfit,
     supplierPaymentsTotal,
-    netProfit,
+    totalProfit,
+    withdrawals,
+    availableProfit,
     pendingCollection,
     hasOperations:
-      salesRevenue !== 0 || cogs !== 0 || supplierPaymentsTotal !== 0 || manualIncome !== 0 || manualExpense !== 0,
+      salesRevenue !== 0 || cogs !== 0 || supplierPaymentsTotal !== 0 || withdrawals !== 0,
   };
 }

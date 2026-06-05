@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { createButtonProps } from "@/lib/a11y";
 import { toast } from "sonner";
-import { Wallet, TrendingUp, Plus, Minus, Scale, Pencil, Trash2, Lock, Clock, LineChart, Sparkles } from "lucide-react";
+import { Wallet, TrendingUp, Minus, Scale, Pencil, Trash2, Lock, Clock, LineChart, Sparkles } from "lucide-react";
 import moment from "moment";
 import UtilityMovementForm from "@/components/utility/UtilityMovementForm";
 import { Switch } from "@/components/ui/switch";
@@ -196,12 +196,12 @@ export default function Utility() {
       // intra-mes genuina). Descarta meses colapsados en un solo día (migraciones).
       const hadPostCutoffSales = full.salesRevenue > partial.salesRevenue + 0.01;
       if (partial.hasOperations && full.hasOperations && hadPostCutoffSales) {
-        historicalSamples.push({ partial: partial.netProfit, full: full.netProfit });
+        historicalSamples.push({ partial: partial.totalProfit, full: full.totalProfit });
       }
     }
 
     return computeForecast({
-      realizedNetProfit: incomeStatement.netProfit,
+      realizedNetProfit: incomeStatement.totalProfit,
       monthStart,
       monthEnd,
       todayStr,
@@ -210,7 +210,7 @@ export default function Utility() {
       conversionRate,
       products,
     });
-  }, [forecastEnabled, quotations, stockMovements, supplierPayments, products, movements, rubrosById, incomeStatement.netProfit, monthStart, monthEnd, year, month]);
+  }, [forecastEnabled, quotations, stockMovements, supplierPayments, products, movements, rubrosById, incomeStatement.totalProfit, monthStart, monthEnd, year, month]);
 
   const handleToggleForecast = async (next) => {
     setForecastEnabled(next); // optimista
@@ -288,7 +288,7 @@ export default function Utility() {
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Wallet className="h-6 w-6 text-indigo-500" /> Utilidad
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Estado de resultados real del mes: ventas y costos automáticos + gastos que capturas a mano</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Estado de resultados del mes: ventas y costos automáticos. Registra a mano solo los retiros de utilidad (efectivo o tarjeta).</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 bg-muted/50 rounded-lg px-3 py-2 cursor-pointer select-none">
@@ -296,11 +296,8 @@ export default function Utility() {
             <span className="hidden sm:inline">Proyección</span>
             <Switch checked={forecastEnabled} onCheckedChange={handleToggleForecast} />
           </label>
-          <Button onClick={() => openForm("income")} className="bg-emerald-600 hover:bg-emerald-700" {...createButtonProps('add')}>
-            <Plus className="h-4 w-4 mr-1" /> Ingreso
-          </Button>
           <Button onClick={() => openForm("expense")} className="bg-rose-600 hover:bg-rose-700" {...createButtonProps('add')}>
-            <Minus className="h-4 w-4 mr-1" /> Egreso
+            <Minus className="h-4 w-4 mr-1" /> Retiro de utilidad
           </Button>
         </div>
       </div>
@@ -327,33 +324,33 @@ export default function Utility() {
         </div>
       </div>
 
-      {/* Summary cards — cifras reales del Estado de Resultados */}
+      {/* Summary cards — las tres cifras contables: Total, Retirada y Disponible */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border-0 shadow-sm p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-muted-foreground text-sm">Ventas del mes</span>
-            <TrendingUp className="h-5 w-5 text-blue-500" />
+            <span className="text-muted-foreground text-sm">Utilidad total</span>
+            <Scale className="h-5 w-5 text-blue-500" />
           </div>
-          <p className="text-2xl font-bold text-blue-600">{fmt(incomeStatement.salesRevenue)}</p>
-          <p className="text-muted-foreground text-xs mt-1">Devengado · {MONTHS[month]} {year}</p>
+          <p className={`text-2xl font-bold ${incomeStatement.totalProfit < 0 ? "text-rose-600" : "text-blue-600"}`}>{fmt(incomeStatement.totalProfit)}</p>
+          <p className="text-muted-foreground text-xs mt-1">Generada · provisional al cierre</p>
         </Card>
 
         <Card className="border-0 shadow-sm p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-muted-foreground text-sm">Utilidad Real</span>
-            <Scale className="h-5 w-5 text-emerald-500" />
+            <span className="text-muted-foreground text-sm">Utilidad retirada</span>
+            <Minus className="h-5 w-5 text-rose-500" />
           </div>
-          <p className={`text-2xl font-bold ${incomeStatement.realProfit < 0 ? "text-rose-600" : "text-emerald-600"}`}>{fmt(incomeStatement.realProfit)}</p>
-          <p className="text-muted-foreground text-xs mt-1">Ventas − COGS − gastos</p>
+          <p className="text-2xl font-bold text-rose-600">{fmt(incomeStatement.withdrawals)}</p>
+          <p className="text-muted-foreground text-xs mt-1">Efectivo + tarjeta dispuestos</p>
         </Card>
 
-        <Card className={`border-0 shadow-sm p-5 text-white bg-gradient-to-br ${incomeStatement.netProfit < 0 ? "from-rose-500 to-rose-600" : "from-indigo-500 to-indigo-600"}`}>
+        <Card className={`border-0 shadow-sm p-5 text-white bg-gradient-to-br ${incomeStatement.availableProfit < 0 ? "from-rose-500 to-rose-600" : "from-indigo-500 to-indigo-600"}`}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-indigo-100 text-sm font-medium">Utilidad Neta</span>
+            <span className="text-indigo-100 text-sm font-medium">Utilidad disponible</span>
             <Wallet className="h-5 w-5 text-indigo-200" />
           </div>
-          <p className="text-3xl font-bold">{fmt(incomeStatement.netProfit)}</p>
-          <p className="text-indigo-100 text-xs mt-1">− pagos a proveedores</p>
+          <p className="text-3xl font-bold">{fmt(incomeStatement.availableProfit)}</p>
+          <p className="text-indigo-100 text-xs mt-1">Dinero sonante para gastar</p>
         </Card>
       </div>
 
@@ -370,13 +367,12 @@ export default function Utility() {
             <Row label="Costo de ventas (COGS)" value={incomeStatement.cogs} sign="−" muted />
             <Divider />
             <Row label="Utilidad Bruta" value={incomeStatement.grossProfit} bold />
-            {incomeStatement.manualIncome > 0 && <Row label="Otros ingresos" value={incomeStatement.manualIncome} sign="+" />}
-            <Row label="Gastos operativos" value={incomeStatement.manualExpense} sign="−" muted />
-            <Divider />
-            <Row label="Utilidad Real" value={incomeStatement.realProfit} bold highlight />
             <Row label="Pagos a proveedores" value={incomeStatement.supplierPaymentsTotal} sign="−" muted />
             <Divider />
-            <Row label="Utilidad Neta" value={incomeStatement.netProfit} bold highlight />
+            <Row label="Utilidad Total" value={incomeStatement.totalProfit} bold highlight />
+            <Row label="Retiros de utilidad" value={incomeStatement.withdrawals} sign="−" muted />
+            <Divider />
+            <Row label="Utilidad Disponible" value={incomeStatement.availableProfit} bold highlight />
             {incomeStatement.pendingCollection > 0 && (
               <p className="text-xs text-amber-600 pt-2 flex items-center gap-1">
                 <Clock className="h-3 w-3" /> Pendiente de cobrar (no afecta la utilidad devengada): {fmt(incomeStatement.pendingCollection)}
@@ -402,13 +398,13 @@ export default function Utility() {
           ) : (
             <div className="space-y-3">
               <div className="rounded-lg bg-white dark:bg-slate-900 px-4 py-3 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Utilidad Neta proyectada</span>
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Utilidad Total proyectada</span>
                 <span className={`text-2xl font-bold ${forecast.projectedNetProfit < 0 ? "text-rose-600" : "text-indigo-600 dark:text-indigo-400"}`}>
                   {fmt(forecast.projectedNetProfit)}
                 </span>
               </div>
               <div className="space-y-1.5 text-sm">
-                <Row label={`Realizado hasta hoy (día ${forecast.daysElapsed}/${forecast.daysInMonth})`} value={incomeStatement.netProfit} />
+                <Row label={`Realizado hasta hoy (día ${forecast.daysElapsed}/${forecast.daysInMonth})`} value={incomeStatement.totalProfit} />
                 <div className="flex items-center justify-between">
                   <span className="text-slate-600 dark:text-slate-400">Curva aplicada</span>
                   <span className="font-medium text-slate-700 dark:text-slate-200">×{forecast.pacingFactor.toFixed(2)}</span>

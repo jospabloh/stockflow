@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { celebrate } from "@/lib/celebrate";
 import moment from "moment";
 
-const TYPE_LABELS = { income: "Ingreso", expense: "Egreso" };
+const TYPE_LABELS = { income: "Ingreso", expense: "Retiro de utilidad" };
 
 export default function UtilityMovementForm({ open, movementType, businessId, rubros, accounts, movement, onSaved, onClose }) {
   const isEdit = !!movement;
