@@ -2,7 +2,7 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.16.13";
+export const APP_VERSION = "2.16.14";
 
 export const RELEASE_DATE = "2026-06-05";
 
@@ -12,6 +12,13 @@ export const RELEASE_DATE = "2026-06-05";
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 
 export const CHANGELOG = [
+  {
+    version: "2.16.14",
+    date: "2026-06-05",
+    changes: [
+      "Actualización a la versión 2.16.14",
+    ],
+  },
   {
     version: "2.16.13",
     date: "2026-06-05",

@@ -6,10 +6,17 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.13";
+const CURRENT_VERSION_IN_CODE = "2.16.14";
 const SNAPSHOT_RELEASE_DATE = "2026-06-05";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+54b5fd0 Merge pull request #141 from jospabloh/claude/exciting-fermat-14g5G
+c6637dd Merge branch 'main' into claude/exciting-fermat-14g5G
+5e3aa98 Simplifica el modal de Retiro de utilidad y agrega estado Facturado
+13ad09c Merge pull request #139 from jospabloh/claude/exciting-fermat-14g5G
+e2e7e1e Reestructura Utilidad: retiros de utilidad y vista Total/Retirada/Disponible
+c93cc2d Merge pull request #138 from jospabloh/automated/release-pr
+719199d chore: release and update documentation
 3eb78a4 Merge pull request #137 from jospabloh/claude/funny-tesla-w3wh5
 33c74de feat(pagos-proveedores): agregar estado de factura (Pendiente/Recibida/No requerida)
 c8c6de0 Merge pull request #136 from jospabloh/automated/release-pr
@@ -28,16 +35,9 @@ db2b1e9 feat(utilidad): toggle de proyección + motor de pronóstico (Fase 4)
 265df03 chore: release and update documentation
 4888e86 Merge pull request #131 from jospabloh/claude/magical-bohr-hN8ki
 b8bd5e6 Merge branch 'main' into claude/magical-bohr-hN8ki
-96b33ad feat(rubros): campo pl_treatment para tratamiento contable (Fase 3)
-c7dd452 Merge pull request #129 from jospabloh/claude/magical-bohr-hN8ki
-52e2a5a feat(utilidad): conectar pestaña Utilidad al Estado de Resultados real
-676e394 Merge pull request #128 from jospabloh/automated/release-pr
-fc965a0 chore: release and update documentation
-18f984a Merge pull request #127 from jospabloh/claude/magical-bohr-hN8ki
-3a6d6ad Merge branch 'main' into claude/magical-bohr-hN8ki
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.13",
+  "Actualización a la versión 2.16.14",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
