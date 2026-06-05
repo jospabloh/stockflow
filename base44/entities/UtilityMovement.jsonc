@@ -71,6 +71,15 @@
     "registered_by": {
       "type": "string",
       "description": "Usuario que registró el movimiento"
+    },
+    "taken_by": {
+      "type": "string",
+      "description": "Persona que tomó el retiro de utilidad (quién dispuso del dinero)"
+    },
+    "invoiced": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si el retiro está facturado (sí/no)"
     }
   },
   "required": [

@@ -500,9 +500,10 @@ export default function Utility() {
             <TableHeader>
               <TableRow className="bg-muted/40">
                 <TableHead>Fecha</TableHead>
-                <TableHead>Rubro</TableHead>
                 <TableHead>Cuenta</TableHead>
-                <TableHead className="hidden md:table-cell">Descripción</TableHead>
+                <TableHead className="hidden lg:table-cell">Quién</TableHead>
+                <TableHead className="hidden md:table-cell">Concepto</TableHead>
+                <TableHead className="text-center">Facturado</TableHead>
                 <TableHead className="text-right">Monto</TableHead>
                 <TableHead className="text-center w-24">Acciones</TableHead>
               </TableRow>
@@ -510,7 +511,7 @@ export default function Utility() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10 text-slate-400">
+                  <TableCell colSpan={7} className="text-center py-10 text-slate-400">
                     Sin movimientos con estos filtros
                   </TableCell>
                 </TableRow>
@@ -522,19 +523,22 @@ export default function Utility() {
                       <TableCell className="text-sm text-slate-600 whitespace-nowrap">
                         {m.movement_date ? moment(m.movement_date).format("DD/MM/YY") : "—"}
                       </TableCell>
-                      <TableCell>
-                        <Badge className={`${isIncome ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"} border-0 text-xs`}>
-                          {m.rubro_name || "—"}
-                        </Badge>
-                      </TableCell>
                       <TableCell className="text-slate-600 text-sm">
                         <span className="flex items-center gap-1">
                           {m.account_name || "—"}
                           {m.affects_petty_cash && <Lock className="h-3 w-3 text-slate-400" title="Reflejado en Caja Chica" />}
                         </span>
                       </TableCell>
+                      <TableCell className="text-slate-600 text-sm hidden lg:table-cell">
+                        {m.taken_by || "—"}
+                      </TableCell>
                       <TableCell className="text-slate-500 text-sm hidden md:table-cell max-w-[220px] truncate" title={m.description}>
                         {m.description || "—"}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge className={`${m.invoiced ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"} border-0 text-xs`}>
+                          {m.invoiced ? "Sí" : "No"}
+                        </Badge>
                       </TableCell>
                       <TableCell className={`text-right font-semibold whitespace-nowrap ${isIncome ? "text-emerald-600" : "text-rose-600"}`}>
                         {isIncome ? "+" : "−"} {fmt(m.amount)}
