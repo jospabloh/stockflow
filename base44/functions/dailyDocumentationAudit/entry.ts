@@ -6,10 +6,14 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.12";
-const SNAPSHOT_RELEASE_DATE = "2026-06-04";
+const CURRENT_VERSION_IN_CODE = "2.16.13";
+const SNAPSHOT_RELEASE_DATE = "2026-06-05";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+3eb78a4 Merge pull request #137 from jospabloh/claude/funny-tesla-w3wh5
+33c74de feat(pagos-proveedores): agregar estado de factura (Pendiente/Recibida/No requerida)
+c8c6de0 Merge pull request #136 from jospabloh/automated/release-pr
+4193e58 chore: release and update documentation
 e304619 Merge pull request #135 from jospabloh/claude/festive-newton-kOEq1
 ef8859c Harden backend functions: auth on syncProductStock, drop hardcoded support email
 00e91b7 Merge pull request #133 from jospabloh/automated/release-pr
@@ -31,13 +35,9 @@ c7dd452 Merge pull request #129 from jospabloh/claude/magical-bohr-hN8ki
 fc965a0 chore: release and update documentation
 18f984a Merge pull request #127 from jospabloh/claude/magical-bohr-hN8ki
 3a6d6ad Merge branch 'main' into claude/magical-bohr-hN8ki
-782f62f Merge pull request #126 from jospabloh/automated/release-pr
-7672886 feat(utilidad): extraer motor de utilidad y cerrar decisiones de diseño
-7fcaaf2 chore: release and update documentation
-9cb9019 Merge pull request #125 from jospabloh/claude/magical-bohr-hN8ki
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.12",
+  "Actualización a la versión 2.16.13",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
