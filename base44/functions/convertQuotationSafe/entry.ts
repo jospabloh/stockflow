@@ -86,10 +86,15 @@ Deno.serve(async (req) => {
           business_id: user.business_id,
         });
         // Descuento de stock síncrono y exactamente-una-vez (no depende del trigger).
-        await base44.asServiceRole.functions.invoke('applyMovementStock', {
-          movement_id: mov.id,
-          business_id: user.business_id,
-        });
+        // Best-effort: automatización + dailyStockReconcile son respaldo.
+        try {
+          await base44.asServiceRole.functions.invoke('applyMovementStock', {
+            movement_id: mov.id,
+            business_id: user.business_id,
+          });
+        } catch (e) {
+          console.log(`[convertQuotationSafe] applyMovementStock failed for ${mov.id}: ${(e as Error).message}`);
+        }
       }
 
       // Check if client has force_zero_price — if so, mark as paid automatically with "Sin cargo"

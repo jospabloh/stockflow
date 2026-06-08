@@ -92,10 +92,15 @@ Deno.serve(async (req) => {
               business_id: user.business_id,
             });
             // Reintegro de stock síncrono y exactamente-una-vez (no depende del trigger).
-            await base44.asServiceRole.functions.invoke('applyMovementStock', {
-              movement_id: mov.id,
-              business_id: user.business_id,
-            });
+            // Best-effort: automatización + dailyStockReconcile son respaldo.
+            try {
+              await base44.asServiceRole.functions.invoke('applyMovementStock', {
+                movement_id: mov.id,
+                business_id: user.business_id,
+              });
+            } catch (e) {
+              console.log(`[cancelQuotationSafe] applyMovementStock failed for ${mov.id}: ${(e as Error).message}`);
+            }
           }
         }
       } catch (error) {

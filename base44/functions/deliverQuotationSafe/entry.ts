@@ -69,10 +69,15 @@ Deno.serve(async (req) => {
       // Descuento de stock síncrono y exactamente-una-vez.
       // (Antes se hacía un Product.update manual además de la automatización, lo
       // que provocaba doble descuento. applyMovementStock aplica una sola vez.)
-      await base44.asServiceRole.functions.invoke('applyMovementStock', {
-        movement_id: mov.id,
-        business_id: q.business_id,
-      });
+      // Best-effort: automatización + dailyStockReconcile son respaldo.
+      try {
+        await base44.asServiceRole.functions.invoke('applyMovementStock', {
+          movement_id: mov.id,
+          business_id: q.business_id,
+        });
+      } catch (e) {
+        console.log(`[deliverQuotationSafe] applyMovementStock failed for ${mov.id}: ${(e as Error).message}`);
+      }
     }
 
     // Mark quotation as delivered

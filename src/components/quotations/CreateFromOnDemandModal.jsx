@@ -44,7 +44,10 @@ export default function CreateFromOnDemandModal({ open, onOpenChange, quotation,
       const currentStock = product.stock || 0;
       const newStock = currentStock + qty;
 
-      // 2. Create entry movement
+      // 2. Create entry movement.
+      // El stock se actualiza a mano en el paso 3, por eso se marca
+      // stock_applied=true: evita que applyMovementStock/automatización lo
+      // sume otra vez (evita doble descuento/entrada).
       await base44.entities.Movement.create({
         product_id: item.product_id,
         product_name: item.product_name,
@@ -56,6 +59,7 @@ export default function CreateFromOnDemandModal({ open, onOpenChange, quotation,
         stock_after: newStock,
         reason: `Entrada por pedido - Cotización #${quotation.folio || quotation.id}${notes ? ` — ${notes}` : ""}`,
         business_id: businessId,
+        stock_applied: true,
       });
 
       // 3. Update product stock

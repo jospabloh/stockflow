@@ -36,14 +36,17 @@ Deno.serve(async (req) => {
 
     const cutoff = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
-    // Movimientos recientes sin aplicar (anomalías candidatas).
+    // Traer los movimientos más recientes y filtrar en código.
+    // (Se evita usar operadores tipo $gte en el query del SDK por compatibilidad;
+    // el filtrado por fecha y por stock_applied se hace en JS.)
     const recent = await base44.asServiceRole.entities.Movement.filter(
-      { created_date: { $gte: cutoff } },
+      {},
       '-created_date',
-      1000,
+      2000,
     );
 
-    const anomalies = (recent || []).filter((m) => m.stock_applied !== true && m.product_id);
+    const inWindow = (recent || []).filter((m) => (m.created_date || '') >= cutoff);
+    const anomalies = inWindow.filter((m) => m.stock_applied !== true && m.product_id);
 
     const byBusiness: Record<string, number> = {};
     for (const m of anomalies) {
@@ -53,7 +56,7 @@ Deno.serve(async (req) => {
 
     const report = {
       checked_since: cutoff,
-      movements_checked: recent?.length || 0,
+      movements_checked: inWindow.length,
       unapplied_count: anomalies.length,
       unapplied_by_business: byBusiness,
       unapplied_ids: anomalies.slice(0, 100).map((m) => m.id),

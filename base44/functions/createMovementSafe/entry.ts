@@ -64,12 +64,15 @@ Deno.serve(async (req) => {
     // Aplicar el efecto sobre el stock de forma SÍNCRONA y exactamente-una-vez.
     // No depende del trigger del panel (resuelve precio cero); idempotente vía
     // stock_applied, por lo que la automatización no lo duplica.
-    const applyRes = await base44.asServiceRole.functions.invoke('applyMovementStock', {
-      movement_id: movement.id,
-      business_id,
-    });
-    if (applyRes?.data && applyRes.data.success === false) {
-      return Response.json({ success: false, error: `stock apply failed: ${applyRes.data.error}` }, { status: 500 });
+    // Best-effort: si fallara, la automatización (idempotente) y dailyStockReconcile
+    // actúan como respaldo; no se rompe el registro del movimiento.
+    try {
+      await base44.asServiceRole.functions.invoke('applyMovementStock', {
+        movement_id: movement.id,
+        business_id,
+      });
+    } catch (e) {
+      console.log(`[createMovementSafe] applyMovementStock failed for ${movement.id}: ${(e as Error).message}`);
     }
 
     // If this is a paid direct exit, reconcile petty cash based on tenant rule + payment method
