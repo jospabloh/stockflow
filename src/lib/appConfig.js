@@ -2,7 +2,7 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.16.15";
+export const APP_VERSION = "2.16.16";
 
 export const RELEASE_DATE = "2026-06-08";
 
@@ -12,6 +12,18 @@ export const RELEASE_DATE = "2026-06-08";
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-08";
 
 export const CHANGELOG = [
+  {
+    version: "2.16.16",
+    date: "2026-06-08",
+    changes: [
+      "🛡️ Utilidad y Rubros: los permisos granulares ahora se aplican en el frontend (antes solo estaban registrados en la matriz)",
+      "🔒 Utilidad: la página exige el permiso 'Ver Estado de Resultados'; sin él se muestra Acceso Restringido en vez del contenido confidencial",
+      "💸 Utilidad: el botón 'Retiro de utilidad' y las acciones de editar/eliminar del historial requieren el permiso 'Registrar Retiro de Utilidad'",
+      "📈 Utilidad: el interruptor de Proyección requiere el permiso 'Gestionar proyección'",
+      "🏷️ Rubros: la página exige 'Ver lista de rubros'; crear, editar/activar y eliminar requieren sus permisos respectivos",
+      "🗺️ Mapa de permisos: la página Utility ahora resuelve correctamente al módulo Utilidad (la visibilidad en el menú lateral respeta el permiso de vista)",
+    ],
+  },
   {
     version: "2.16.15",
     date: "2026-06-08",

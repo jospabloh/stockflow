@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useBusinessContext } from "@/components/BusinessContext";
+import { usePermissions } from "@/lib/PermissionContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ function Divider() {
 
 export default function Utility() {
   const { businessId } = useBusinessContext();
+  const { can } = usePermissions();
   const [movements, setMovements] = useState([]);
   const [rubros, setRubros] = useState([]);
   const [accounts, setAccounts] = useState([]);
@@ -280,6 +282,17 @@ export default function Utility() {
     </div>
   );
 
+  if (!can('Utilidad', 'view')) return (
+    <div className="flex flex-col items-center justify-center min-h-64 gap-4">
+      <Lock className="h-12 w-12 text-rose-300" />
+      <h2 className="text-xl font-semibold text-slate-700">Acceso Restringido</h2>
+      <p className="text-slate-500 text-sm text-center">No tienes permiso para ver el Estado de Resultados.</p>
+    </div>
+  );
+
+  const canAddWithdrawal = can('Utilidad', 'add_withdrawal');
+  const canManageForecast = can('Utilidad', 'manage_forecast');
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
@@ -291,14 +304,18 @@ export default function Utility() {
           <p className="text-sm text-muted-foreground mt-0.5">Estado de resultados del mes: ventas y costos automáticos. Registra a mano solo los retiros de utilidad (efectivo o tarjeta).</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 bg-muted/50 rounded-lg px-3 py-2 cursor-pointer select-none">
-            <Sparkles className={`h-4 w-4 ${forecastEnabled ? "text-indigo-500" : "text-slate-400"}`} />
-            <span className="hidden sm:inline">Proyección</span>
-            <Switch checked={forecastEnabled} onCheckedChange={handleToggleForecast} />
-          </label>
-          <Button onClick={() => openForm("expense")} className="bg-rose-600 hover:bg-rose-700" {...createButtonProps('add')}>
-            <Minus className="h-4 w-4 mr-1" /> Retiro de utilidad
-          </Button>
+          {canManageForecast && (
+            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 bg-muted/50 rounded-lg px-3 py-2 cursor-pointer select-none">
+              <Sparkles className={`h-4 w-4 ${forecastEnabled ? "text-indigo-500" : "text-slate-400"}`} />
+              <span className="hidden sm:inline">Proyección</span>
+              <Switch checked={forecastEnabled} onCheckedChange={handleToggleForecast} />
+            </label>
+          )}
+          {canAddWithdrawal && (
+            <Button onClick={() => openForm("expense")} className="bg-rose-600 hover:bg-rose-700" {...createButtonProps('add')}>
+              <Minus className="h-4 w-4 mr-1" /> Retiro de utilidad
+            </Button>
+          )}
         </div>
       </div>
 
@@ -544,12 +561,18 @@ export default function Utility() {
                         {isIncome ? "+" : "−"} {fmt(m.amount)}
                       </TableCell>
                       <TableCell className="text-center">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)} {...createButtonProps('edit')}>
-                          <Pencil className="h-4 w-4 text-slate-400" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeletingMovement(m)} {...createButtonProps('delete')}>
-                          <Trash2 className="h-4 w-4 text-rose-400" />
-                        </Button>
+                        {canAddWithdrawal ? (
+                          <>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)} {...createButtonProps('edit')}>
+                              <Pencil className="h-4 w-4 text-slate-400" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeletingMovement(m)} {...createButtonProps('delete')}>
+                              <Trash2 className="h-4 w-4 text-rose-400" />
+                            </Button>
+                          </>
+                        ) : (
+                          <span className="text-slate-300 text-xs">—</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
