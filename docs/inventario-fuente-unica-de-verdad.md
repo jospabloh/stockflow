@@ -121,6 +121,16 @@ Una sola función backend, **idempotente y absoluta**, que:
 Por ser **absoluta e idempotente**, es segura de ejecutar cuantas veces sea:
 ejecutarla N veces da el mismo resultado. No puede causar doble descuento.
 
+> ⚠️ **Auto-baseline obligatorio.** El ledger actual está **incompleto**: el
+> stock inicial creado por `createProductSafe` y las ediciones manuales de
+> `updateProductStockSafe` **no** existen como `Movement`. Por eso un recompute
+> "ingenuo" (solo suma de movimientos) **subestimaría** el stock real en
+> producción. Para que `reconcileProductStock` sea seguro de desplegar **antes**
+> del backfill, en su primera ejecución sobre un producto **sin checkpoint** debe
+> crear un `Movement` `adjustment = Product.stock actual` (no-op visible) y usar
+> ese valor como base. Así nunca corrompe datos: la primera reconciliación deja
+> el stock igual, y las siguientes ya son correctas.
+
 ### 4.2 Todos los caminos pasan por el ledger
 - Cada función que cambie inventario **crea el/los `Movement` correspondiente(s)**
   y luego llama a `reconcileProductStock(product_id)` de forma **síncrona**.
@@ -159,18 +169,22 @@ ejecutarla N veces da el mismo resultado. No puede causar doble descuento.
 
 **Fase 0 — Diagnóstico y diseño (este documento).** ✅
 
-**Fase 1 — Primitiva idempotente (sin cambio de comportamiento).**
-- Desplegar `reconcileProductStock` (solo lectura + escritura idempotente).
+**Fase 1 — Primitiva idempotente con auto-baseline (sin cambio de comportamiento).**
+- Desplegar `reconcileProductStock` con **auto-baseline** (ver 4.1): seguro aun
+  con el ledger incompleto, porque sobre un producto sin checkpoint fija la base
+  = stock actual antes de recalcular.
 - Reescribir `syncProductStock` para delegar en ella.
-- Riesgo: bajo. El recompute es absoluto; el resultado es ≥ correcto vs. el
-  delta actual. Reversible revirtiendo la función.
+- Riesgo: bajo. La primera reconciliación por producto es un no-op visible (crea
+  el checkpoint base); las siguientes son idempotentes. Reversible revirtiendo
+  la función y borrando los checkpoints generados.
 
-**Fase 2 — Completar el ledger (backfill controlado).**
-- Para cada producto sin checkpoint, crear un `Movement` `adjustment` =
-  `Product.stock` actual con `reason = "Checkpoint de migración"`. Esto fija la
-  base sin cambiar el stock visible.
-- ⚠️ Mutación de datos en producción: requiere autorización explícita y se
-  ejecuta por negocio, con respaldo previo (export de `Product` + `Movement`).
+**Fase 2 — Completar el ledger (backfill explícito, opcional).**
+- Ejecutar `reconcileProductStock` una vez por producto para materializar todos
+  los checkpoints base de golpe (en vez de hacerlo perezosamente al primer
+  movimiento). `reason = "Checkpoint de migración"`. No cambia el stock visible.
+- ⚠️ Aunque el auto-baseline lo hace seguro, sigue siendo una mutación de datos
+  en producción: se ejecuta por negocio y con respaldo previo (export de
+  `Product` + `Movement`).
 
 **Fase 3 — Conectar los escritores.**
 - `createMovementSafe`, `convertQuotationSafe`, `partialReturnQuotation`,
