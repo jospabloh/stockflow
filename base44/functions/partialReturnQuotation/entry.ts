@@ -65,10 +65,9 @@ Deno.serve(async (req) => {
       const product = prods[0];
       const newStock = (product.stock || 0) + ri.quantity;
 
-      // 'entry' type: syncProductStock automation adds qty to stock (correct for customer return).
-      // Using 'return' would cause automation to SUBTRACT qty — wrong direction.
-      // No explicit Product.update: automation is the sole stock authority.
-      await base44.asServiceRole.entities.Movement.create({
+      // 'entry' type: suma qty al stock (correcto para una devolución de cliente).
+      // Usar 'return' restaría qty — dirección equivocada.
+      const mov = await base44.asServiceRole.entities.Movement.create({
         product_id: ri.product_id,
         product_name: ri.product_name,
         type: 'entry',
@@ -81,6 +80,16 @@ Deno.serve(async (req) => {
         quotation_id: quotation.id,
         business_id: user.business_id,
       });
+      // Reintegro de stock síncrono y exactamente-una-vez (no depende del trigger).
+      // Best-effort: automatización + dailyStockReconcile son respaldo.
+      try {
+        await base44.asServiceRole.functions.invoke('applyMovementStock', {
+          movement_id: mov.id,
+          business_id: user.business_id,
+        });
+      } catch (e) {
+        console.log(`[partialReturnQuotation] applyMovementStock failed for ${mov.id}: ${(e as Error).message}`);
+      }
     }
 
     // Recalculate quotation totals removing returned items

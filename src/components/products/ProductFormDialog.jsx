@@ -151,7 +151,10 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
         return;
       }
 
-      // Crear movimiento inicial si es nuevo producto con stock
+      // Crear movimiento inicial si es nuevo producto con stock.
+      // El stock inicial YA quedó fijado por createProductSafe, por eso este
+      // movimiento se marca stock_applied=true: documenta el origen sin que
+      // applyMovementStock/automatización lo sume otra vez (evita doble).
       if (!product && response.data.product && form.stock > 0) {
         await base44.entities.Movement.create({
           product_id: response.data.product.id,
@@ -164,6 +167,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           reference: "Stock inicial",
           stock_after: form.stock,
           business_id: businessId,
+          stock_applied: true,
         });
       }
 

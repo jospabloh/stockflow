@@ -75,7 +75,10 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.Product.update(product_id, { stock: finalStock });
     }
 
-    // Create a reconciliation adjustment movement for the audit trail
+    // Create a reconciliation adjustment movement for the audit trail.
+    // El stock final ya quedó fijado arriba (o se mantiene el actual), por eso
+    // se marca stock_applied=true: es un registro de auditoría que no debe
+    // volver a modificar el stock vía applyMovementStock/automatización.
     // quantity = delta needed to reach finalStock (can be 0 for accept_current)
     const delta = finalStock - currentStock;
     await base44.asServiceRole.entities.Movement.create({
@@ -88,6 +91,7 @@ Deno.serve(async (req) => {
       stock_after: finalStock,
       reason: movementReason,
       business_id: businessId,
+      stock_applied: true,
     });
 
     // Log the correction to InventoryAuditLog
