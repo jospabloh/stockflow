@@ -9,6 +9,8 @@ export const PAGE_TO_MODULE_MAP = {
   Movements: 'Movimientos',
   Quotations: 'Cotizaciones',
   PettyCash: 'Caja Chica',
+  Utility: 'Utilidad',
+  Rubros: 'Rubros',
   SupplierPayments: 'Pagos a Proveedores',
   Reports: 'Reportes',
   Settings: 'Configuración',

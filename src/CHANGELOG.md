@@ -1,5 +1,29 @@
 # Changelog — StockFlow
 
+## v2.16.16 (2026-06-08)
+
+### 🛡️ Permisos granulares aplicados en el frontend — Utilidad y Rubros
+
+Los módulos **Utilidad** y **Rubros** ya estaban registrados en la matriz de permisos (v2.16.15), pero las páginas aún no aplicaban esas restricciones en la interfaz. Esta versión cierra esa brecha: los permisos ahora se respetan en el cliente.
+
+#### Módulo Utilidad
+- **`Utilidad:view`** — sin este permiso la página muestra *Acceso Restringido* en lugar del Estado de Resultados (información financiera confidencial)
+- **`Utilidad:add_withdrawal`** — controla el botón *Retiro de utilidad* y las acciones de editar/eliminar movimientos del historial
+- **`Utilidad:manage_forecast`** — controla el interruptor de *Proyección* de fin de mes
+
+#### Módulo Rubros
+- **`Rubros:view`** — sin este permiso la página muestra *Acceso Restringido*
+- **`Rubros:create`** — controla el botón *Nuevo*
+- **`Rubros:edit`** — controla la edición y el interruptor de *Activo*
+- **`Rubros:delete`** — controla la eliminación de rubros
+
+#### Mapa de permisos
+- La página `Utility` ahora se mapea explícitamente al módulo `Utilidad` en `permissionModuleMap.js`. Antes caía al nombre por defecto (`Utility`), por lo que `Utilidad:view` no resolvía y la visibilidad del ítem en el menú lateral no respetaba el permiso de vista.
+
+> **Nota:** el aislamiento de tenant y la autoridad de datos siguen garantizados en el backend; estos cambios refuerzan la capa de UX para que cada rol vea solo lo que le corresponde.
+
+---
+
 ## v2.16.15 (2026-06-08)
 
 ### 🔧 Fix Crítico de Inventario — Stock Fuente Única de Verdad
