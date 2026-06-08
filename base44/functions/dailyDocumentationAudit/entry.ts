@@ -6,10 +6,11 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.15";
+const CURRENT_VERSION_IN_CODE = "2.16.16";
 const SNAPSHOT_RELEASE_DATE = "2026-06-08";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-08";
 const GIT_LOG_SNAPSHOT = `
+32dbe68 chore(release): v2.16.15 — fix inventario, permisos Utilidad/Rubros, changelog completo
 5d38c4e Merge pull request #144 from jospabloh/claude/inventory-zero-price-client-eUSDp
 442876a Merge branch 'main' into claude/inventory-zero-price-client-eUSDp
 23879f1 fix(inventario): elimina la carrera de doble aplicación (create = no-op)
@@ -34,19 +35,14 @@ c8c6de0 Merge pull request #136 from jospabloh/automated/release-pr
 e304619 Merge pull request #135 from jospabloh/claude/festive-newton-kOEq1
 ef8859c Harden backend functions: auth on syncProductStock, drop hardcoded support email
 00e91b7 Merge pull request #133 from jospabloh/automated/release-pr
-3330544 chore: release and update documentation
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "🔧 Fix crítico de inventario: el stock se aplica exactamente una vez — resuelve desincronización con clientes de precio cero (Baristop Distribuidora)",
-  "🏗️ Movement.stock_applied: nueva marca de idempotencia que garantiza que cada movimiento aplica su delta una sola vez",
-  "🔒 applyMovementStock: función única y canónica de autoridad para el delta de stock, con aislamiento de tenant reforzado",
-  "🔄 dailyStockReconcile: auditoría nocturna de solo lectura detecta movimientos sin aplicar (red de seguridad)",
-  "💰 Retiro de utilidad: modal simplificado — solo pide Monto, Fecha, Fuente (Efectivo/AFIRME), Quién lo tomó y Concepto",
-  "🏷️ Estado 'Facturado' (Sí/No): nuevo campo en retiros de utilidad con toggle e insignia visual en el historial",
-  "📊 Estado de Resultados refactorizado: distinción clara entre Utilidad Total (generada), Retirada y Disponible",
-  "📋 Estado de factura en Pagos a Proveedores: Pendiente / Recibida / No requerida, con filtros y cambio rápido en tabla",
-  "🛡️ Matriz de permisos actualizada: módulos Utilidad y Rubros registrados (admin=true, almacenista conserva comportamiento actual)",
-  "📚 Manual de usuario revisado y actualizado al 8 de junio de 2026",
+  "🛡️ Utilidad y Rubros: los permisos granulares ahora se aplican en el frontend (antes solo estaban registrados en la matriz)",
+  "🔒 Utilidad: la página exige el permiso 'Ver Estado de Resultados'; sin él se muestra Acceso Restringido en vez del contenido confidencial",
+  "💸 Utilidad: el botón 'Retiro de utilidad' y las acciones de editar/eliminar del historial requieren el permiso 'Registrar Retiro de Utilidad'",
+  "📈 Utilidad: el interruptor de Proyección requiere el permiso 'Gestionar proyección'",
+  "🏷️ Rubros: la página exige 'Ver lista de rubros'; crear, editar/activar y eliminar requieren sus permisos respectivos",
+  "🗺️ Mapa de permisos: la página Utility ahora resuelve correctamente al módulo Utilidad (la visibilidad en el menú lateral respeta el permiso de vista)",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

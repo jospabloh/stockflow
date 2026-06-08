@@ -1,26 +1,22 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-08T08:13:15.546Z
+// Generado: 2026-06-08T17:39:03.948Z
 
-export const SNAPSHOT_VERSION = "2.16.15";
+export const SNAPSHOT_VERSION = "2.16.16";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-06-08";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-08";
 
-export const SNAPSHOT_GIT_LOG = "5d38c4e Merge pull request #144 from jospabloh/claude/inventory-zero-price-client-eUSDp\n442876a Merge branch 'main' into claude/inventory-zero-price-client-eUSDp\n23879f1 fix(inventario): elimina la carrera de doble aplicación (create = no-op)\nc0c09c2 fix(inventario): premortem — evita doble aplicación y endurece la aplicación de stock\n09ec799 fix(inventario): aplicar el efecto de cada movimiento al stock exactamente una vez\n0df50cf Merge pull request #142 from jospabloh/claude/inventory-zero-price-client-eUSDp\n10a27ec docs: añade auto-baseline al recompute para despliegue seguro con ledger incompleto\ne7b3319 docs: diagnóstico y diseño de fuente única de verdad para inventario\n20bec0e Merge pull request #140 from jospabloh/automated/release-pr\naae4dc1 chore: release and update documentation\n54b5fd0 Merge pull request #141 from jospabloh/claude/exciting-fermat-14g5G\nc6637dd Merge branch 'main' into claude/exciting-fermat-14g5G\n5e3aa98 Simplifica el modal de Retiro de utilidad y agrega estado Facturado\n13ad09c Merge pull request #139 from jospabloh/claude/exciting-fermat-14g5G\ne2e7e1e Reestructura Utilidad: retiros de utilidad y vista Total/Retirada/Disponible\nc93cc2d Merge pull request #138 from jospabloh/automated/release-pr\n719199d chore: release and update documentation\n3eb78a4 Merge pull request #137 from jospabloh/claude/funny-tesla-w3wh5\n33c74de feat(pagos-proveedores): agregar estado de factura (Pendiente/Recibida/No requerida)\nc8c6de0 Merge pull request #136 from jospabloh/automated/release-pr\n4193e58 chore: release and update documentation\ne304619 Merge pull request #135 from jospabloh/claude/festive-newton-kOEq1\nef8859c Harden backend functions: auth on syncProductStock, drop hardcoded support email\n00e91b7 Merge pull request #133 from jospabloh/automated/release-pr\n3330544 chore: release and update documentation";
+export const SNAPSHOT_GIT_LOG = "32dbe68 chore(release): v2.16.15 — fix inventario, permisos Utilidad/Rubros, changelog completo\n5d38c4e Merge pull request #144 from jospabloh/claude/inventory-zero-price-client-eUSDp\n442876a Merge branch 'main' into claude/inventory-zero-price-client-eUSDp\n23879f1 fix(inventario): elimina la carrera de doble aplicación (create = no-op)\nc0c09c2 fix(inventario): premortem — evita doble aplicación y endurece la aplicación de stock\n09ec799 fix(inventario): aplicar el efecto de cada movimiento al stock exactamente una vez\n0df50cf Merge pull request #142 from jospabloh/claude/inventory-zero-price-client-eUSDp\n10a27ec docs: añade auto-baseline al recompute para despliegue seguro con ledger incompleto\ne7b3319 docs: diagnóstico y diseño de fuente única de verdad para inventario\n20bec0e Merge pull request #140 from jospabloh/automated/release-pr\naae4dc1 chore: release and update documentation\n54b5fd0 Merge pull request #141 from jospabloh/claude/exciting-fermat-14g5G\nc6637dd Merge branch 'main' into claude/exciting-fermat-14g5G\n5e3aa98 Simplifica el modal de Retiro de utilidad y agrega estado Facturado\n13ad09c Merge pull request #139 from jospabloh/claude/exciting-fermat-14g5G\ne2e7e1e Reestructura Utilidad: retiros de utilidad y vista Total/Retirada/Disponible\nc93cc2d Merge pull request #138 from jospabloh/automated/release-pr\n719199d chore: release and update documentation\n3eb78a4 Merge pull request #137 from jospabloh/claude/funny-tesla-w3wh5\n33c74de feat(pagos-proveedores): agregar estado de factura (Pendiente/Recibida/No requerida)\nc8c6de0 Merge pull request #136 from jospabloh/automated/release-pr\n4193e58 chore: release and update documentation\ne304619 Merge pull request #135 from jospabloh/claude/festive-newton-kOEq1\nef8859c Harden backend functions: auth on syncProductStock, drop hardcoded support email\n00e91b7 Merge pull request #133 from jospabloh/automated/release-pr";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "🔧 Fix crítico de inventario: el stock se aplica exactamente una vez — resuelve desincronización con clientes de precio cero (Baristop Distribuidora)",
-  "🏗️ Movement.stock_applied: nueva marca de idempotencia que garantiza que cada movimiento aplica su delta una sola vez",
-  "🔒 applyMovementStock: función única y canónica de autoridad para el delta de stock, con aislamiento de tenant reforzado",
-  "🔄 dailyStockReconcile: auditoría nocturna de solo lectura detecta movimientos sin aplicar (red de seguridad)",
-  "💰 Retiro de utilidad: modal simplificado — solo pide Monto, Fecha, Fuente (Efectivo/AFIRME), Quién lo tomó y Concepto",
-  "🏷️ Estado 'Facturado' (Sí/No): nuevo campo en retiros de utilidad con toggle e insignia visual en el historial",
-  "📊 Estado de Resultados refactorizado: distinción clara entre Utilidad Total (generada), Retirada y Disponible",
-  "📋 Estado de factura en Pagos a Proveedores: Pendiente / Recibida / No requerida, con filtros y cambio rápido en tabla",
-  "🛡️ Matriz de permisos actualizada: módulos Utilidad y Rubros registrados (admin=true, almacenista conserva comportamiento actual)",
-  "📚 Manual de usuario revisado y actualizado al 8 de junio de 2026",
+  "🛡️ Utilidad y Rubros: los permisos granulares ahora se aplican en el frontend (antes solo estaban registrados en la matriz)",
+  "🔒 Utilidad: la página exige el permiso 'Ver Estado de Resultados'; sin él se muestra Acceso Restringido en vez del contenido confidencial",
+  "💸 Utilidad: el botón 'Retiro de utilidad' y las acciones de editar/eliminar del historial requieren el permiso 'Registrar Retiro de Utilidad'",
+  "📈 Utilidad: el interruptor de Proyección requiere el permiso 'Gestionar proyección'",
+  "🏷️ Rubros: la página exige 'Ver lista de rubros'; crear, editar/activar y eliminar requieren sus permisos respectivos",
+  "🗺️ Mapa de permisos: la página Utility ahora resuelve correctamente al módulo Utilidad (la visibilidad en el menú lateral respeta el permiso de vista)",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -28,6 +24,18 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.16.16",
+    date: "2026-06-08",
+    changes: [
+    "🛡️ Utilidad y Rubros: los permisos granulares ahora se aplican en el frontend (antes solo estaban registrados en la matriz)",
+    "🔒 Utilidad: la página exige el permiso 'Ver Estado de Resultados'; sin él se muestra Acceso Restringido en vez del contenido confidencial",
+    "💸 Utilidad: el botón 'Retiro de utilidad' y las acciones de editar/eliminar del historial requieren el permiso 'Registrar Retiro de Utilidad'",
+    "📈 Utilidad: el interruptor de Proyección requiere el permiso 'Gestionar proyección'",
+    "🏷️ Rubros: la página exige 'Ver lista de rubros'; crear, editar/activar y eliminar requieren sus permisos respectivos",
+    "🗺️ Mapa de permisos: la página Utility ahora resuelve correctamente al módulo Utilidad (la visibilidad en el menú lateral respeta el permiso de vista)"
+    ]
+  },
   {
     version: "2.16.15",
     date: "2026-06-08",

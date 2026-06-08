@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Pencil, Tag } from "lucide-react";
+import { Plus, Trash2, Pencil, Tag, Shield } from "lucide-react";
 import { useBusinessContext } from "@/components/BusinessContext";
+import { usePermissions } from "@/lib/PermissionContext";
 import { createButtonProps, createTableProps } from "@/lib/a11y";
 import { MobileSelect } from "@/components/ui/MobileSelect";
 import {
@@ -52,6 +53,7 @@ const EMPTY_FORM = { name: "", kind: "expense", pl_treatment: "operating" };
 
 export default function Rubros() {
   const { businessId } = useBusinessContext();
+  const { can } = usePermissions();
   const [rubros, setRubros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -139,6 +141,20 @@ export default function Rubros() {
     );
   }
 
+  if (!can('Rubros', 'view')) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-64 gap-4">
+        <Shield className="h-12 w-12 text-rose-300" />
+        <h2 className="text-xl font-semibold text-slate-700">Acceso Restringido</h2>
+        <p className="text-slate-500 text-sm text-center">No tienes permiso para ver los rubros.</p>
+      </div>
+    );
+  }
+
+  const canCreate = can('Rubros', 'create');
+  const canEdit = can('Rubros', 'edit');
+  const canDelete = can('Rubros', 'delete');
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       <Card className="border-0 shadow-sm p-6">
@@ -149,14 +165,16 @@ export default function Rubros() {
             </h1>
             <p className="text-xs text-muted-foreground mt-0.5">Categorías de ingresos y egresos para el módulo de Utilidad</p>
           </div>
-          <Button
-            size="sm"
-            className="bg-indigo-600 hover:bg-indigo-700"
-            onClick={openNew}
-            {...createButtonProps('add')}
-          >
-            <Plus className="h-4 w-4 mr-1" /> Nuevo
-          </Button>
+          {canCreate && (
+            <Button
+              size="sm"
+              className="bg-indigo-600 hover:bg-indigo-700"
+              onClick={openNew}
+              {...createButtonProps('add')}
+            >
+              <Plus className="h-4 w-4 mr-1" /> Nuevo
+            </Button>
+          )}
         </div>
         <Table {...createTableProps('rubros-table')}>
           <TableHeader>
@@ -191,15 +209,20 @@ export default function Rubros() {
                   })()}
                 </TableCell>
                 <TableCell className="text-center">
-                  <Switch checked={r.active !== false} onCheckedChange={() => handleToggle(r)} />
+                  <Switch checked={r.active !== false} onCheckedChange={() => handleToggle(r)} disabled={!canEdit} />
                 </TableCell>
                 <TableCell className="text-center">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(r)} {...createButtonProps('edit')}>
-                    <Pencil className="h-4 w-4 text-slate-400" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(r.id)} {...createButtonProps('delete')}>
-                    <Trash2 className="h-4 w-4 text-slate-400" />
-                  </Button>
+                  {canEdit && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(r)} {...createButtonProps('edit')}>
+                      <Pencil className="h-4 w-4 text-slate-400" />
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(r.id)} {...createButtonProps('delete')}>
+                      <Trash2 className="h-4 w-4 text-slate-400" />
+                    </Button>
+                  )}
+                  {!canEdit && !canDelete && <span className="text-slate-300 text-xs">—</span>}
                 </TableCell>
               </TableRow>
             ))}
