@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-06-05T23:20:04.005Z
+// Generado: 2026-06-08T08:13:15.379Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -147,6 +147,13 @@ export const ALL_PERMISSION_KEYS = [
   "Configuracion:manage_team",
   "Configuracion:manage_referral",
   "Configuracion:delete_account",
+  "Utilidad:view",
+  "Utilidad:add_withdrawal",
+  "Utilidad:manage_forecast",
+  "Rubros:view",
+  "Rubros:create",
+  "Rubros:edit",
+  "Rubros:delete",
 ] as const;
 
 export type PermissionKey = (typeof ALL_PERMISSION_KEYS)[number];
@@ -359,6 +366,23 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "delete_account", label: "Eliminar cuenta", category: "actionable" }
     ]
   },
+  "Utilidad": {
+    label: "Utilidad",
+    actions: [
+    { id: "view", label: "Ver Estado de Resultados", category: "report", sensitive: true },
+    { id: "add_withdrawal", label: "Registrar Retiro de Utilidad", category: "actionable" },
+    { id: "manage_forecast", label: "Gestionar proyección", category: "actionable", sensitive: true }
+    ]
+  },
+  "Rubros": {
+    label: "Rubros",
+    actions: [
+    { id: "view", label: "Ver lista de rubros", category: "visual" },
+    { id: "create", label: "Crear rubro", category: "actionable" },
+    { id: "edit", label: "Editar rubro", category: "actionable" },
+    { id: "delete", label: "Eliminar rubro", category: "actionable" }
+    ]
+  },
 };
 
 export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
@@ -507,6 +531,13 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Configuracion:manage_team": true,
   "Configuracion:manage_referral": true,
   "Configuracion:delete_account": true,
+  "Utilidad:view": true,
+  "Utilidad:add_withdrawal": true,
+  "Utilidad:manage_forecast": true,
+  "Rubros:view": true,
+  "Rubros:create": true,
+  "Rubros:edit": true,
+  "Rubros:delete": true,
   } as Record<PermissionKey, boolean>,
   almacenista: {
   "Dashboard:view": true,
@@ -653,5 +684,12 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Configuracion:manage_team": false,
   "Configuracion:manage_referral": true,
   "Configuracion:delete_account": false,
+  "Utilidad:view": false,
+  "Utilidad:add_withdrawal": false,
+  "Utilidad:manage_forecast": false,
+  "Rubros:view": true,
+  "Rubros:create": true,
+  "Rubros:edit": true,
+  "Rubros:delete": true,
   } as Record<PermissionKey, boolean>,
 };

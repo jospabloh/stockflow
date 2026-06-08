@@ -152,6 +152,13 @@ const CANONICAL_KEYS: string[] = [
   "Configuracion:manage_team",
   "Configuracion:manage_referral",
   "Configuracion:delete_account",
+  "Utilidad:view",
+  "Utilidad:add_withdrawal",
+  "Utilidad:manage_forecast",
+  "Rubros:view",
+  "Rubros:create",
+  "Rubros:edit",
+  "Rubros:delete",
 ];
 
 const ALMACENISTA_DENIED = new Set<string>([
@@ -199,6 +206,9 @@ const ALMACENISTA_DENIED = new Set<string>([
   "Configuracion:import_products",
   "Configuracion:manage_team",
   "Configuracion:delete_account",
+  "Utilidad:view",
+  "Utilidad:add_withdrawal",
+  "Utilidad:manage_forecast",
 ]);
 // AUTOGEN:CANONICAL_KEYS:END
 

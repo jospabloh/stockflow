@@ -2,16 +2,32 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.16.14";
+export const APP_VERSION = "2.16.15";
 
-export const RELEASE_DATE = "2026-06-05";
+export const RELEASE_DATE = "2026-06-08";
 
 // Fecha (ISO) de la última revisión manual del Manual de Usuario por un humano.
 // Actualizar al volver a leer y validar el manual end-to-end. La auditoría
 // nocturna alerta si pasan más de 60 días desde esta fecha.
-export const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
+export const USER_MANUAL_LAST_REVIEWED = "2026-06-08";
 
 export const CHANGELOG = [
+  {
+    version: "2.16.15",
+    date: "2026-06-08",
+    changes: [
+      "🔧 Fix crítico de inventario: el stock se aplica exactamente una vez — resuelve desincronización con clientes de precio cero (Baristop Distribuidora)",
+      "🏗️ Movement.stock_applied: nueva marca de idempotencia que garantiza que cada movimiento aplica su delta una sola vez",
+      "🔒 applyMovementStock: función única y canónica de autoridad para el delta de stock, con aislamiento de tenant reforzado",
+      "🔄 dailyStockReconcile: auditoría nocturna de solo lectura detecta movimientos sin aplicar (red de seguridad)",
+      "💰 Retiro de utilidad: modal simplificado — solo pide Monto, Fecha, Fuente (Efectivo/AFIRME), Quién lo tomó y Concepto",
+      "🏷️ Estado 'Facturado' (Sí/No): nuevo campo en retiros de utilidad con toggle e insignia visual en el historial",
+      "📊 Estado de Resultados refactorizado: distinción clara entre Utilidad Total (generada), Retirada y Disponible",
+      "📋 Estado de factura en Pagos a Proveedores: Pendiente / Recibida / No requerida, con filtros y cambio rápido en tabla",
+      "🛡️ Matriz de permisos actualizada: módulos Utilidad y Rubros registrados (admin=true, almacenista conserva comportamiento actual)",
+      "📚 Manual de usuario revisado y actualizado al 8 de junio de 2026",
+    ],
+  },
   {
     version: "2.16.14",
     date: "2026-06-05",

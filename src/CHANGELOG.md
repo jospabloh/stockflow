@@ -1,5 +1,55 @@
 # Changelog — StockFlow
 
+## v2.16.15 (2026-06-08)
+
+### 🔧 Fix Crítico de Inventario — Stock Fuente Única de Verdad
+
+#### Causa raíz resuelta
+El stock de productos no tenía una única autoridad: la automatización asíncrona del panel, las escrituras directas y el ledger de movimientos podían aplicar el mismo delta 0, 1 o 2 veces según condiciones de carrera. Esto causaba desincronización visible al usar clientes de precio cero.
+
+#### Cambios en el motor de inventario
+- **`Movement.stock_applied`** — nuevo campo de idempotencia: garantiza que el efecto de cada movimiento se aplica exactamente una vez
+- **`applyMovementStock`** — nueva función canónica y única autoridad del delta de stock; idempotente, con aislamiento de tenant en profundidad
+- **`syncProductStock`** — el evento `create` ahora es no-op (el escritor síncrono ya aplicó el efecto); mantiene ajuste relativo en `update`/`delete`
+- **`dailyStockReconcile`** — auditoría nocturna de solo lectura que detecta movimientos sin aplicar como red de seguridad
+
+#### Flujos actualizados
+- `createMovementSafe`, `convertQuotationSafe`, `partialReturnQuotation`, `cancelQuotationSafe`, `deliverQuotationSafe`: aplican stock de forma síncrona tras crear el movimiento
+- `deliverQuotationSafe`: elimina el `Product.update` manual que causaba doble descuento
+- `importItemsSafe`, `applyInventoryAuditCorrection`: marcan `stock_applied=true` (ya fijan el stock directamente)
+
+---
+
+### 💰 Módulo Utilidad — Retiro y Estado de Resultados
+
+#### Modal de Retiro simplificado
+- Solo pide: **Monto**, **Fecha**, **Fuente** (Efectivo/Caja Chica o AFIRME), **¿Quién lo tomó?** y **Concepto**
+- Eliminados: selección de Rubro, Referencia y Notas (el retiro siempre se clasifica como distribución)
+- Nuevo campo **¿Facturado?** con toggle Sí/No e insignia de color en el historial
+
+#### Estado de Resultados refactorizado
+- Tres cifras claras: **Utilidad Total** (generada por operación) → **Utilidad Retirada** (disposiciones ya realizadas) → **Utilidad Disponible**
+- Los retiros manuales ya no se mezclan con gastos operativos — se tratan como disposiciones, bajo la línea
+
+---
+
+### 📋 Estado de Factura en Pagos a Proveedores
+
+- Nuevo campo `invoice_status` en `SupplierPayment`: **Pendiente** / **Recibida** / **No requerida**
+- Toggle rápido en la tabla (Pte / Rec / N/R) con colores
+- Filtro por estado de factura
+- Consistent con el patrón de estados de cotizaciones
+
+---
+
+### 🛡️ Permisos — Módulos Registrados (sin cambio de comportamiento actual)
+
+- Módulo **Utilidad** añadido a la matriz: `view` (admin=true, almacenista=false — sensible), `add_withdrawal` (almacenista=false), `manage_forecast` (sensible)
+- Módulo **Rubros** añadido a la matriz: `view`, `create`, `edit`, `delete` (almacenista=true — operativo)
+- El acceso actual **no cambia**: la aplicación de estos permisos requiere activar `enable_granular_permissions` y añadir `PermissionGate` a los componentes en una futura iteración
+
+---
+
 ## v2.16.0 (2026-06-02)
 
 ### 🔒 Auditoría de Seguridad, Calidad de Código y Mantenimiento

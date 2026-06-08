@@ -206,6 +206,23 @@ export const PERMISSION_REGISTRY = {
       { id: "delete_account", label: "Eliminar cuenta", category: "actionable", icon: "🗑️", description: "Eliminar cuenta del sistema (irreversible)" },
     ]
   },
+  Utilidad: {
+    label: "Utilidad",
+    actions: [
+      { id: "view", label: "Ver Estado de Resultados", category: "report", icon: "📊", sensitive: true, description: "Ver Estado de Resultados, retiros de utilidad y proyección de fin de mes (confidencial)" },
+      { id: "add_withdrawal", label: "Registrar Retiro de Utilidad", category: "actionable", icon: "💸", description: "Registrar un retiro de utilidad del negocio" },
+      { id: "manage_forecast", label: "Gestionar proyección", category: "actionable", icon: "📈", sensitive: true, description: "Activar/desactivar la proyección de utilidad a fin de mes (confidencial)" },
+    ]
+  },
+  Rubros: {
+    label: "Rubros",
+    actions: [
+      { id: "view", label: "Ver lista de rubros", category: "visual", icon: "🏷️", description: "Ver categorías de ingresos y egresos de caja" },
+      { id: "create", label: "Crear rubro", category: "actionable", icon: "➕", description: "Crear nuevas categorías de ingresos o egresos" },
+      { id: "edit", label: "Editar rubro", category: "actionable", icon: "✏️", description: "Modificar nombre, tipo y tratamiento contable de rubros" },
+      { id: "delete", label: "Eliminar rubro", category: "actionable", icon: "🗑️", description: "Eliminar categorías de ingresos o egresos" },
+    ]
+  },
 };
 
 export const ALL_PERMISSION_KEYS = Object.entries(PERMISSION_REGISTRY)
@@ -268,6 +285,7 @@ export function getDefaultsForRole(role) {
             'Configuracion:delete_account',
             'Clientes:edit_force_wholesale',
             'Clientes:edit_force_purchase',
+            'Utilidad:add_withdrawal',
           ];
           defaults[key] = !deniedActionable.includes(key);
         } else if (action.category === 'report') {

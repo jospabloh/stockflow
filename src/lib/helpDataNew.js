@@ -1,5 +1,6 @@
-// Artículos de ayuda — última versión: v2.16.0
+// Artículos de ayuda — última versión: v2.16.15
 // Solo contiene notas de versión (release notes). Los artículos de manual permanente están en helpDataExtension.js
+// v2.16.15: Fix inventario (stock exactamente una vez), retiro de utilidad simplificado, estado facturado, estado factura en pagos proveedores
 // v2.16.0: Auditoría de mantenimiento — CVEs adicionales, CI unificado, código muerto eliminado
 // v2.15.0: Auditoría de seguridad y calidad, corrección de CVEs, nuevos permisos (share, manage_referral)
 // v2.14.0: Auditoría de seguridad, Compartir Cotización, Programa de Referidos, Onboarding Wizard
@@ -12,6 +13,81 @@
 // v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor
 
 export const newHelpArticles = [
+    {
+      id: "release-2-16-15",
+      category: "Novedades",
+      role: "admin",
+      title: "🆕 v2.16.15 — Fix de Inventario, Utilidad Simplificada y Estado de Factura",
+      keywords: ["versión", "2.16.15", "inventario", "stock", "utilidad", "retiro", "facturado", "pagos proveedores", "arreglo"],
+      related_ids: ["release-2-16-0", "inventory-movements", "petty-cash"],
+      content: `## 🆕 Versión 2.16.15 — 8 de junio de 2026
+
+### ✅ Novedades de esta versión
+
+---
+
+### 🔧 Fix Crítico de Inventario — Sincronización de Stock
+
+Se resolvió un problema estructural donde el stock de un producto podía quedar desincronizado al usar **clientes con precio cero** u otras condiciones de carrera.
+
+**¿Qué pasaba?** El sistema tenía tres caminos distintos para actualizar el stock, y en ciertos casos el mismo movimiento se aplicaba 0 o 2 veces en lugar de exactamente 1.
+
+**¿Qué se hizo?**
+- Cada movimiento de inventario ahora aplica su efecto en el stock **exactamente una vez** (idempotencia garantizada)
+- Los movimientos de entrega, cancelación, devolución parcial y venta directa aplican el stock de forma inmediata, sin depender de procesos asíncronos
+- El doble descuento en entregas fue eliminado
+- Una auditoría nocturna automática detecta y reporta cualquier anomalía como red de seguridad
+
+**No se requiere ninguna acción por tu parte** — el stock se calcula correctamente desde esta versión.
+
+---
+
+### 💰 Módulo Utilidad — Modal Simplificado y Estado Facturado
+
+#### Registro de Retiro de Utilidad más sencillo
+
+El formulario de **Retiro de Utilidad** ahora pide solo lo necesario:
+
+| Campo | Descripción |
+|---|---|
+| **Monto** | Cuánto se retiró |
+| **Fecha** | Cuándo se realizó |
+| **Fuente** | De dónde salió el dinero: Efectivo/Caja Chica o AFIRME |
+| **¿Quién lo tomó?** | Nombre del responsable |
+| **Concepto** | Breve descripción del retiro |
+
+#### Nuevo: Estado "Facturado"
+
+- Cada retiro puede marcarse como **Facturado (Sí/No)**
+- Se muestra como un badge verde/gris en el historial de retiros
+
+#### Estado de Resultados más claro
+
+La pantalla de Utilidad ahora muestra tres cifras:
+1. **Utilidad Total** — todo lo generado por las operaciones del negocio
+2. **Utilidad Retirada** — lo que ya se disposicionó (retiros)
+3. **Utilidad Disponible** — lo que queda por usar
+
+---
+
+### 📋 Estado de Factura en Pagos a Proveedores
+
+Cada pago a proveedor ahora puede tener un estado de factura:
+
+| Estado | Significado |
+|---|---|
+| **Pendiente** | La factura aún no se ha recibido |
+| **Recibida** | La factura ya fue entregada por el proveedor |
+| **No requerida** | No aplica factura para este pago |
+
+- Cambia el estado directamente desde la tabla con los botones **Pte / Rec / N/R**
+- Filtra pagos por estado de factura desde el panel de filtros
+
+---
+
+> Para ajustar acceso al módulo Utilidad, ve a **Configuración → Permisos** (solo admins).
+`,
+    },
     {
       id: "release-2-16-0",
       category: "Novedades",
