@@ -6,10 +6,20 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.14";
-const SNAPSHOT_RELEASE_DATE = "2026-06-05";
+const CURRENT_VERSION_IN_CODE = "2.16.15";
+const SNAPSHOT_RELEASE_DATE = "2026-06-08";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 const GIT_LOG_SNAPSHOT = `
+5d38c4e Merge pull request #144 from jospabloh/claude/inventory-zero-price-client-eUSDp
+442876a Merge branch 'main' into claude/inventory-zero-price-client-eUSDp
+23879f1 fix(inventario): elimina la carrera de doble aplicación (create = no-op)
+c0c09c2 fix(inventario): premortem — evita doble aplicación y endurece la aplicación de stock
+09ec799 fix(inventario): aplicar el efecto de cada movimiento al stock exactamente una vez
+0df50cf Merge pull request #142 from jospabloh/claude/inventory-zero-price-client-eUSDp
+10a27ec docs: añade auto-baseline al recompute para despliegue seguro con ledger incompleto
+e7b3319 docs: diagnóstico y diseño de fuente única de verdad para inventario
+20bec0e Merge pull request #140 from jospabloh/automated/release-pr
+aae4dc1 chore: release and update documentation
 54b5fd0 Merge pull request #141 from jospabloh/claude/exciting-fermat-14g5G
 c6637dd Merge branch 'main' into claude/exciting-fermat-14g5G
 5e3aa98 Simplifica el modal de Retiro de utilidad y agrega estado Facturado
@@ -25,19 +35,9 @@ e304619 Merge pull request #135 from jospabloh/claude/festive-newton-kOEq1
 ef8859c Harden backend functions: auth on syncProductStock, drop hardcoded support email
 00e91b7 Merge pull request #133 from jospabloh/automated/release-pr
 3330544 chore: release and update documentation
-f01b086 Merge pull request #134 from jospabloh/claude/magical-bohr-hN8ki
-f13e193 Merge branch 'main' into claude/magical-bohr-hN8ki
-c3f9e5d feat(utilidad): proyección por pacing histórico + correcciones de modelo
-5ff14f8 Merge pull request #132 from jospabloh/claude/magical-bohr-hN8ki
-30e1986 Merge branch 'main' into claude/magical-bohr-hN8ki
-7ae4978 Merge pull request #130 from jospabloh/automated/release-pr
-db2b1e9 feat(utilidad): toggle de proyección + motor de pronóstico (Fase 4)
-265df03 chore: release and update documentation
-4888e86 Merge pull request #131 from jospabloh/claude/magical-bohr-hN8ki
-b8bd5e6 Merge branch 'main' into claude/magical-bohr-hN8ki
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.14",
+  "Actualización a la versión 2.16.15",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

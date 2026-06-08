@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-05T23:20:04.176Z
+// Generado: 2026-06-08T03:51:09.570Z
 
-export const SNAPSHOT_VERSION = "2.16.14";
+export const SNAPSHOT_VERSION = "2.16.15";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-06-05";
+export const SNAPSHOT_RELEASE_DATE = "2026-06-08";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-02";
 
-export const SNAPSHOT_GIT_LOG = "54b5fd0 Merge pull request #141 from jospabloh/claude/exciting-fermat-14g5G\nc6637dd Merge branch 'main' into claude/exciting-fermat-14g5G\n5e3aa98 Simplifica el modal de Retiro de utilidad y agrega estado Facturado\n13ad09c Merge pull request #139 from jospabloh/claude/exciting-fermat-14g5G\ne2e7e1e Reestructura Utilidad: retiros de utilidad y vista Total/Retirada/Disponible\nc93cc2d Merge pull request #138 from jospabloh/automated/release-pr\n719199d chore: release and update documentation\n3eb78a4 Merge pull request #137 from jospabloh/claude/funny-tesla-w3wh5\n33c74de feat(pagos-proveedores): agregar estado de factura (Pendiente/Recibida/No requerida)\nc8c6de0 Merge pull request #136 from jospabloh/automated/release-pr\n4193e58 chore: release and update documentation\ne304619 Merge pull request #135 from jospabloh/claude/festive-newton-kOEq1\nef8859c Harden backend functions: auth on syncProductStock, drop hardcoded support email\n00e91b7 Merge pull request #133 from jospabloh/automated/release-pr\n3330544 chore: release and update documentation\nf01b086 Merge pull request #134 from jospabloh/claude/magical-bohr-hN8ki\nf13e193 Merge branch 'main' into claude/magical-bohr-hN8ki\nc3f9e5d feat(utilidad): proyección por pacing histórico + correcciones de modelo\n5ff14f8 Merge pull request #132 from jospabloh/claude/magical-bohr-hN8ki\n30e1986 Merge branch 'main' into claude/magical-bohr-hN8ki\n7ae4978 Merge pull request #130 from jospabloh/automated/release-pr\ndb2b1e9 feat(utilidad): toggle de proyección + motor de pronóstico (Fase 4)\n265df03 chore: release and update documentation\n4888e86 Merge pull request #131 from jospabloh/claude/magical-bohr-hN8ki\nb8bd5e6 Merge branch 'main' into claude/magical-bohr-hN8ki";
+export const SNAPSHOT_GIT_LOG = "5d38c4e Merge pull request #144 from jospabloh/claude/inventory-zero-price-client-eUSDp\n442876a Merge branch 'main' into claude/inventory-zero-price-client-eUSDp\n23879f1 fix(inventario): elimina la carrera de doble aplicación (create = no-op)\nc0c09c2 fix(inventario): premortem — evita doble aplicación y endurece la aplicación de stock\n09ec799 fix(inventario): aplicar el efecto de cada movimiento al stock exactamente una vez\n0df50cf Merge pull request #142 from jospabloh/claude/inventory-zero-price-client-eUSDp\n10a27ec docs: añade auto-baseline al recompute para despliegue seguro con ledger incompleto\ne7b3319 docs: diagnóstico y diseño de fuente única de verdad para inventario\n20bec0e Merge pull request #140 from jospabloh/automated/release-pr\naae4dc1 chore: release and update documentation\n54b5fd0 Merge pull request #141 from jospabloh/claude/exciting-fermat-14g5G\nc6637dd Merge branch 'main' into claude/exciting-fermat-14g5G\n5e3aa98 Simplifica el modal de Retiro de utilidad y agrega estado Facturado\n13ad09c Merge pull request #139 from jospabloh/claude/exciting-fermat-14g5G\ne2e7e1e Reestructura Utilidad: retiros de utilidad y vista Total/Retirada/Disponible\nc93cc2d Merge pull request #138 from jospabloh/automated/release-pr\n719199d chore: release and update documentation\n3eb78a4 Merge pull request #137 from jospabloh/claude/funny-tesla-w3wh5\n33c74de feat(pagos-proveedores): agregar estado de factura (Pendiente/Recibida/No requerida)\nc8c6de0 Merge pull request #136 from jospabloh/automated/release-pr\n4193e58 chore: release and update documentation\ne304619 Merge pull request #135 from jospabloh/claude/festive-newton-kOEq1\nef8859c Harden backend functions: auth on syncProductStock, drop hardcoded support email\n00e91b7 Merge pull request #133 from jospabloh/automated/release-pr\n3330544 chore: release and update documentation";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.16.14",
+  "Actualización a la versión 2.16.15",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.16.15",
+    date: "2026-06-08",
+    changes: [
+    "Actualización a la versión 2.16.15"
+    ]
+  },
   {
     version: "2.16.14",
     date: "2026-06-05",
