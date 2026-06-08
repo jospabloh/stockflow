@@ -112,7 +112,17 @@ export function exportToCSV(columns, rows, filename) {
   triggerDownload(blob, `${filename}.csv`);
 }
 
-/** Exporta a XLSX (SheetJS, import dinámico). Números/moneda quedan numéricos. */
+/**
+ * Exporta a XLSX (SheetJS, import dinámico). Números/moneda quedan numéricos.
+ *
+ * Nota de seguridad: SheetJS (xlsx) en npm tiene avisos GHSA-4r6h-8v6p-xvw6
+ * (Prototype Pollution) y GHSA-5pgg-2g8v-p4x9 (ReDoS). Ambos solo se activan al
+ * *parsear* archivos no confiables (XLSX.read / sheet_to_json). Aquí únicamente
+ * *escribimos* archivos a partir de datos propios de la app (aoa_to_sheet +
+ * writeFile); nunca leemos hojas subidas por el usuario (la importación es solo
+ * CSV). Por eso las rutas vulnerables no son alcanzables. npm no publica versión
+ * corregida (0.18.5 es la última); el parche vive solo en el CDN de SheetJS.
+ */
 export async function exportToXLSX(columns, rows, filename, { sheetName } = {}) {
   if (!ensureHasData(rows)) return;
   const XLSX = await import("xlsx");
