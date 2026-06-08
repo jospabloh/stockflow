@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
     // PHASE 2: Create movements for catalog items only — on-demand items stay pending
     try {
       for (const item of itemsWithStock) {
-        await base44.asServiceRole.entities.Movement.create({
+        const mov = await base44.asServiceRole.entities.Movement.create({
           product_id: item.product_id,
           product_name: item.product_name,
           type: 'exit',
@@ -83,6 +83,11 @@ Deno.serve(async (req) => {
           reference: `Venta ${quotation.folio}`,
           reason: `Venta a ${quotation.client_name}`,
           quotation_id: quotation.id,
+          business_id: user.business_id,
+        });
+        // Descuento de stock síncrono y exactamente-una-vez (no depende del trigger).
+        await base44.asServiceRole.functions.invoke('applyMovementStock', {
+          movement_id: mov.id,
           business_id: user.business_id,
         });
       }

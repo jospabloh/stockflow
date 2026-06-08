@@ -61,6 +61,17 @@ Deno.serve(async (req) => {
       paid: paid ?? false
     });
 
+    // Aplicar el efecto sobre el stock de forma SÍNCRONA y exactamente-una-vez.
+    // No depende del trigger del panel (resuelve precio cero); idempotente vía
+    // stock_applied, por lo que la automatización no lo duplica.
+    const applyRes = await base44.asServiceRole.functions.invoke('applyMovementStock', {
+      movement_id: movement.id,
+      business_id,
+    });
+    if (applyRes?.data && applyRes.data.success === false) {
+      return Response.json({ success: false, error: `stock apply failed: ${applyRes.data.error}` }, { status: 500 });
+    }
+
     // If this is a paid direct exit, reconcile petty cash based on tenant rule + payment method
     // Skip when total is 0 (force_zero_price / internal transfer)
     const movementTotal = (movement.quantity || 0) * (movement.unit_price || 0);

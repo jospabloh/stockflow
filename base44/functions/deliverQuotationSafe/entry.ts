@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
       const newStock = (product.stock || 0) - item.quantity;
 
       // Create EXIT movement
-      await base44.asServiceRole.entities.Movement.create({
+      const mov = await base44.asServiceRole.entities.Movement.create({
         product_id: item.product_id,
         product_name: item.product_name,
         type: 'exit',
@@ -66,9 +66,12 @@ Deno.serve(async (req) => {
         business_id: q.business_id,
       });
 
-      // Update product stock
-      await base44.asServiceRole.entities.Product.update(item.product_id, {
-        stock: Math.max(0, newStock),
+      // Descuento de stock síncrono y exactamente-una-vez.
+      // (Antes se hacía un Product.update manual además de la automatización, lo
+      // que provocaba doble descuento. applyMovementStock aplica una sola vez.)
+      await base44.asServiceRole.functions.invoke('applyMovementStock', {
+        movement_id: mov.id,
+        business_id: q.business_id,
       });
     }
 

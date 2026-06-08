@@ -1,12 +1,14 @@
-# Inventario: una sola fuente de verdad para el stock
+# Inventario: aplicación de stock exactamente-una-vez (single source of truth en código)
 
-> Estado: **propuesta de diseño** · Autor: equipo StockFlow · Fecha: 2026-06-08
+> Estado: **diseño + implementación** · Fecha: 2026-06-08
 > Origen: reporte de Baristop Distribuidora — "el inventario no se actualiza
 > después de usar un cliente de tipo precio cero".
 
 Este documento explica **por qué el inventario se desincroniza**, con evidencia
-real de producción, y define la **solución escalable** (no un parche) con un
-plan de migración seguro para producción.
+real de producción, y define la **solución escalable** (no un parche): el efecto
+de cada `Movement` sobre el stock se aplica **exactamente una vez**, de forma
+**síncrona y determinista en el código**, sin depender de una automatización
+oculta del panel.
 
 ---
 
@@ -14,218 +16,175 @@ plan de migración seguro para producción.
 
 Al registrar una salida con un cliente `force_zero_price` (precio cero /
 transferencia interna), el movimiento se crea correctamente en $0 pero **el
-stock del producto no refleja el cambio de forma confiable**.
+stock del producto no cambia de forma confiable**.
 
-## 2. Causa raíz: NO existe una única fuente de verdad para el stock
+## 2. Causa raíz: el stock se aplica por caminos inconsistentes y no-determinista
 
-El stock de un producto (`Product.stock`) se modifica hoy por **tres caminos
-distintos e inconsistentes entre sí**. No hay un contrato único, y ninguno es
-transaccional con la creación del `Movement`.
+`Product.stock` se modifica hoy por **tres caminos distintos que no concuerdan**,
+y ninguno garantiza que el efecto de un movimiento se aplique **una y solo una vez**:
 
 ### Camino A — Automatización asíncrona (`syncProductStock`)
-La mayoría de las funciones **solo crean el `Movement`** y delegan el ajuste de
-stock a una automatización de Base44 que se dispara con los eventos de
-`Movement` y aplica un **delta relativo** (`stock ± quantity`):
+La mayoría de funciones **solo crean el `Movement`** y delegan el ajuste a una
+automatización de Base44 que se dispara con los eventos de `Movement` y aplica un
+**delta relativo** (`stock ± quantity`):
 
-- `createMovementSafe` — crea el `Movement`, nunca toca `Product.stock`.
-- `convertQuotationSafe` — crea movimientos `exit`, nunca toca `Product.stock`.
-- `partialReturnQuotation` — crea movimientos `entry`, nunca toca `Product.stock`.
-- `cancelQuotationSafe` — crea movimientos `entry`, nunca toca `Product.stock`.
+- `createMovementSafe`, `convertQuotationSafe`, `partialReturnQuotation`,
+  `cancelQuotationSafe` — crean el `Movement` y **nunca** tocan `Product.stock`.
 
-Estas funciones llevan comentarios explícitos como:
-> *"No explicit stock update: automation is the sole stock authority."*
+Lo llevan comentado: *"No explicit stock update: automation is the sole stock authority."*
 
-Problemas de este camino:
-- Es **asíncrono y best-effort**: si el evento no se dispara, se pierde, se
-  duplica o llega con retraso, el stock queda mal y **nadie se entera**.
-- El **trigger vive en el panel de Base44**, fuera del repositorio y sin
-  versionar. Cualquier condición de filtro ahí (por ejemplo sobre `total` o
-  `unit_price`) hace que los movimientos en **$0** no disparen el ajuste — que
-  es exactamente el caso del cliente de precio cero.
-- Aplica **deltas relativos**, por lo que es sensible a **condiciones de
-  carrera** (dos movimientos simultáneos sobre el mismo producto) y a **eventos
-  duplicados**.
+Problemas:
+- Es **asíncrona y best-effort**: si el evento no se dispara, se pierde, se
+  duplica o llega tarde, el stock queda mal y **nadie se entera**.
+- El **trigger vive en el panel de Base44**, fuera del repo y sin versionar.
+  Cualquier condición de filtro ahí (p. ej. sobre `total`/`unit_price`) hace que
+  los movimientos en **$0** no apliquen — exactamente el caso de precio cero.
+- Aplica **deltas relativos** ⇒ sensible a **carreras** y **eventos duplicados**.
 
 ### Camino B — Escritura directa `Product.update({ stock })`
-Otras funciones **sí** escriben el stock directamente:
+- `deliverQuotationSafe` — **crea el `Movement` Y ADEMÁS** escribe `Product.stock`.
+  Si la automatización del Camino A también dispara ⇒ **doble descuento**.
+- `deleteMovementSafe` — escribe stock explícitamente para compensar el delta.
+- `updateProductStockSafe` — fija `stock` sin registrar movimiento.
 
-- `deliverQuotationSafe` — **crea el `Movement` Y ADEMÁS** hace
-  `Product.update({ stock })`. Si la automatización del Camino A también se
-  dispara para ese movimiento, el stock se **descuenta dos veces**.
-- `deleteMovementSafe` — para `adjustment` escribe stock explícitamente para
-  compensar el delta de la automatización (lógica frágil, dependiente del orden).
-- `updateProductStockSafe` — fija `stock` directamente, **sin** registrar un
-  `Movement`. El historial (ledger) no se entera de ese cambio.
-- `createProductSafe` — fija el `stock` inicial directamente, **sin** crear un
-  movimiento inicial. ⇒ el stock inicial **no está en el ledger**.
-
-### Camino C — Edición manual / importación
-- `importItemsSafe` — sí crea un movimiento inicial (consistente).
-- Edición manual de producto — puede fijar `stock` sin movimiento.
+### Camino C — Stock inicial / edición manual
+- `createProductSafe` — fija `stock` inicial **sin** crear un movimiento ⇒ **el
+  ledger de `Movement` está incompleto**: no contiene el stock inicial.
 
 ### Consecuencia
-- El **ledger de `Movement` está incompleto**: el stock inicial creado por UI y
-  las ediciones manuales no están registrados como movimientos.
-- `Product.stock` y "el stock calculado por el historial de movimientos" **se
-  desincronizan** de forma rutinaria. Tan conocido es el problema que **ya
-  existe una función dedicada a reconciliarlo manualmente**:
-  `applyInventoryAuditCorrection` (acciones `accept_current` /
-  `revert_to_calculated`). Es decir: el sistema ya convive con la deriva en
-  lugar de prevenirla.
+- No se puede "recalcular el stock sumando movimientos", porque el ledger no
+  contiene el stock inicial ni las ediciones manuales.
+- El efecto de cada movimiento puede aplicarse **0, 1 o 2 veces** según el camino
+  y el azar del trigger ⇒ deriva rutinaria. Tan conocido es esto que **ya existe**
+  `applyInventoryAuditCorrection` para reconciliar a mano.
 
-El "no se actualiza con precio cero" es **una manifestación visible** de este
-problema estructural, no un bug aislado.
+El "no se actualiza con precio cero" es **una manifestación** de este problema
+estructural, no un bug aislado.
 
 ---
 
 ## 3. Evidencia en producción (Baristop Distribuidora)
 
-`business_id = 69c575fa1beaf2c90214d3ee`
+`business_id = 69c575fa1beaf2c90214d3ee` — reconciliando dos productos con venta
+de precio cero el 2026-06-04:
 
-Reconciliando el ledger de dos productos con venta de precio cero el 2026-06-04:
-
-| Producto | Último `Movement.stock_after` | `Product.stock` real | Δ |
+| Producto | Esperado (último movimiento) | `Product.stock` real | Δ |
 |---|---|---|---|
-| Tisana Frutos Rojos (`…7544`) | 9 (salida 06-05) | **11** | +2 |
-| Tisana Irimbo Moras (`…94b`) | 10 (salida 06-05) | **11** | +1 |
+| Tisana Frutos Rojos (`…7544`) | 9 | **11** | +2 |
+| Tisana Irimbo Moras (`…94b`) | 10 | **11** | +1 |
 
-En ambos casos el stock real **no coincide** con el resultado esperado del
-último movimiento: hay deriva real entre el ledger y `Product.stock`. La
-magnitud (+2 y +1) corresponde exactamente a cantidades de movimientos recientes
-que no se aplicaron / se aplicaron de forma inconsistente. Esto confirma que el
-problema es de **sincronización de stock**, no de cálculo de precio (el precio
-sí sale en $0 correctamente).
+El stock real **no coincide** con el resultado esperado del último movimiento.
+Hay deriva real entre el historial y `Product.stock` (no es un problema de
+cálculo de precio: el precio sí sale en $0 correctamente).
 
 ---
 
-## 4. Solución escalable: el ledger es la única fuente de verdad
+## 4. Solución escalable: aplicar el efecto de cada movimiento exactamente una vez
 
-Principio: **`Product.stock` deja de ser un valor mutado por deltas y pasa a ser
-una proyección determinista del ledger de `Movement`.**
+Principio: **`Product.stock` sigue siendo el valor canónico** (ya refleja
+correctamente el stock inicial y las ediciones manuales), pero el efecto de cada
+`Movement` se aplica **exactamente una vez**, de forma **síncrona en el código**
+y de manera **idempotente**.
 
-```
-stock(producto) = (último checkpoint de adjustment) 
-                  + Σ entradas posteriores 
-                  − Σ salidas/devoluciones posteriores
-                  (nunca por debajo de 0)
-```
+### 4.1 Marca de idempotencia en `Movement`
+Se agrega el campo `stock_applied: boolean` (default `false`). Marca si el efecto
+de ese movimiento sobre el stock **ya fue aplicado**. Es la garantía de
+exactamente-una-vez y permite auditar anomalías (movimientos viejos sin aplicar).
 
-### 4.1 Función canónica `reconcileProductStock`
-Una sola función backend, **idempotente y absoluta**, que:
-1. Lee todos los `Movement` del producto en orden cronológico.
-2. Toma como base el último movimiento `adjustment` (checkpoint absoluto) o 0 si
-   no hay.
-3. Aplica entradas/salidas/devoluciones posteriores.
-4. Escribe `Product.stock` con el valor calculado.
+### 4.2 Función canónica `applyMovementStock`
+Único lugar con la lógica de delta. Dado `{ movement_id }`:
+1. Carga el movimiento (valida tenant).
+2. Si `stock_applied === true` ⇒ **no hace nada** (idempotente).
+3. Calcula el nuevo stock a partir de `Product.stock`:
+   - `entry`  → `stock + quantity`
+   - `exit` / `return` → `stock − quantity`
+   - `adjustment` → `quantity` (valor **absoluto**, como indica la UI)
+   (nunca por debajo de 0)
+4. Escribe `Product.stock` y marca `stock_applied = true` (+ `stock_after`).
 
-Por ser **absoluta e idempotente**, es segura de ejecutar cuantas veces sea:
-ejecutarla N veces da el mismo resultado. No puede causar doble descuento.
+Es **O(1)** (no escanea el ledger) ⇒ escalable a cualquier volumen.
 
-> ⚠️ **Auto-baseline obligatorio.** El ledger actual está **incompleto**: el
-> stock inicial creado por `createProductSafe` y las ediciones manuales de
-> `updateProductStockSafe` **no** existen como `Movement`. Por eso un recompute
-> "ingenuo" (solo suma de movimientos) **subestimaría** el stock real en
-> producción. Para que `reconcileProductStock` sea seguro de desplegar **antes**
-> del backfill, en su primera ejecución sobre un producto **sin checkpoint** debe
-> crear un `Movement` `adjustment = Product.stock actual` (no-op visible) y usar
-> ese valor como base. Así nunca corrompe datos: la primera reconciliación deja
-> el stock igual, y las siguientes ya son correctas.
+### 4.3 Los escritores aplican de forma síncrona
+Cada función que registra inventario crea el/los `Movement` y **a continuación
+invoca `applyMovementStock` de forma síncrona** (`await`). Así el stock queda
+correcto **antes de responder**, sin depender de que un trigger dispare ni de su
+condición (resuelve el caso de precio cero, independientemente del filtro del
+panel). Afecta: `createMovementSafe`, `convertQuotationSafe`,
+`partialReturnQuotation`, `cancelQuotationSafe`, `deliverQuotationSafe`.
 
-### 4.2 Todos los caminos pasan por el ledger
-- Cada función que cambie inventario **crea el/los `Movement` correspondiente(s)**
-  y luego llama a `reconcileProductStock(product_id)` de forma **síncrona**.
-- Las ediciones manuales de stock (`updateProductStockSafe`) y el stock inicial
-  (`createProductSafe`) pasan a **registrar un `Movement` de tipo `adjustment`**
-  (checkpoint absoluto) en vez de escribir `Product.stock` a mano. Así el ledger
-  queda **completo** y la reconciliación siempre es correcta.
-- `deliverQuotationSafe` deja de hacer el `Product.update` manual (lo reemplaza
-  la reconciliación) ⇒ se elimina el doble descuento.
+### 4.4 La automatización deja de ser autoridad y se vuelve idempotente
+`syncProductStock` se reescribe para **delegar en `applyMovementStock`** en los
+eventos `create`. Como respeta `stock_applied`, si dispara después de que el
+escritor ya aplicó, **no duplica**. Una vez validado en producción, el trigger
+del panel puede **deshabilitarse**: la autoridad del stock vive 100% en el código
+y versionada. (El `delete` se sigue revirtiendo explícitamente en
+`deleteMovementSafe`, que no depende del trigger.)
 
-### 4.3 La automatización deja de ser autoridad
-- `syncProductStock` se reescribe para **delegar en `reconcileProductStock`**
-  (recompute absoluto) en lugar de aplicar deltas. Así, si el trigger se dispara,
-  produce el mismo resultado idempotente; si no se dispara (p. ej. filtrado por
-  `total = 0`), la llamada síncrona del paso 4.2 ya dejó el stock correcto.
-- Una vez validado, el trigger del panel puede **deshabilitarse**: la autoridad
-  del stock vive 100% en el código y versionada.
+### 4.5 Doble descuento eliminado
+`deliverQuotationSafe` deja de escribir `Product.stock` a mano y pasa por
+`applyMovementStock` (con la marca), por lo que la automatización ya no puede
+volver a descontar.
 
-### 4.4 Red de seguridad: reconciliación nocturna
-- Cron diario `dailyStockReconcile` que recorre los productos por negocio y
-  ejecuta `reconcileProductStock`. Garantiza convergencia ante cualquier evento
-  perdido o carrera, y deja un reporte de derivas corregidas.
-
-### 4.5 Escalabilidad
-- El recompute por producto es O(nº movimientos del producto). Para volúmenes
-  altos se optimiza con el **checkpoint de `adjustment`**: solo se suman los
-  movimientos posteriores al último checkpoint. La reconciliación nocturna puede
-  además "compactar" creando checkpoints periódicos.
+### 4.6 Red de seguridad: auditoría nocturna
+Cron diario `dailyStockReconcile` que detecta y reporta:
+- Movimientos recientes con `stock_applied = false` (efectos no aplicados).
+- Discrepancias entre `Product.stock` y el efecto acumulado de sus movimientos
+  aplicados desde el último checkpoint.
+No corrige en silencio: deja reporte para revisión vía
+`applyInventoryAuditCorrection`.
 
 ---
 
-## 5. Plan de migración seguro para producción
+## 5. Plan de despliegue seguro para producción
 
-> Cada fase es independiente, verificable y reversible. Nada destructivo se
-> ejecuta sin checkpoint previo.
+> Cada fase es independiente, verificable y reversible.
 
-**Fase 0 — Diagnóstico y diseño (este documento).** ✅
+**Fase 0 — Diagnóstico y diseño.** ✅ (este documento)
 
-**Fase 1 — Primitiva idempotente con auto-baseline (sin cambio de comportamiento).**
-- Desplegar `reconcileProductStock` con **auto-baseline** (ver 4.1): seguro aun
-  con el ledger incompleto, porque sobre un producto sin checkpoint fija la base
-  = stock actual antes de recalcular.
+**Fase 1 — Esquema + primitiva (sin cambio de comportamiento observable).**
+- Agregar `stock_applied` a `Movement` (default `false`).
+- Desplegar `applyMovementStock` (idempotente).
 - Reescribir `syncProductStock` para delegar en ella.
-- Riesgo: bajo. La primera reconciliación por producto es un no-op visible (crea
-  el checkpoint base); las siguientes son idempotentes. Reversible revirtiendo
-  la función y borrando los checkpoints generados.
+- Riesgo bajo: para movimientos existentes/nuevos, el resultado es el mismo o más
+  correcto; la marca evita duplicar. Reversible revirtiendo el deploy.
 
-**Fase 2 — Completar el ledger (backfill explícito, opcional).**
-- Ejecutar `reconcileProductStock` una vez por producto para materializar todos
-  los checkpoints base de golpe (en vez de hacerlo perezosamente al primer
-  movimiento). `reason = "Checkpoint de migración"`. No cambia el stock visible.
-- ⚠️ Aunque el auto-baseline lo hace seguro, sigue siendo una mutación de datos
-  en producción: se ejecuta por negocio y con respaldo previo (export de
-  `Product` + `Movement`).
-
-**Fase 3 — Conectar los escritores.**
+**Fase 2 — Aplicación síncrona en los escritores.**
 - `createMovementSafe`, `convertQuotationSafe`, `partialReturnQuotation`,
-  `cancelQuotationSafe`, `deliverQuotationSafe`: llamar a
-  `reconcileProductStock` de forma síncrona tras crear/borrar movimientos.
-- `createProductSafe` / `updateProductStockSafe`: registrar `adjustment` en vez
-  de escribir stock directo.
-- Eliminar el `Product.update` duplicado de `deliverQuotationSafe` y la
-  compensación de `adjustment` en `deleteMovementSafe`.
+  `cancelQuotationSafe`, `deliverQuotationSafe`: invocar `applyMovementStock`
+  tras crear el/los movimiento(s). Quitar el `Product.update` duplicado de
+  `deliverQuotationSafe`.
+- A partir de aquí el stock es correcto **sin depender del trigger** (incluye
+  precio cero).
 
-**Fase 4 — Red de seguridad y apagado del trigger.**
-- Desplegar `dailyStockReconcile`.
-- Tras 1–2 ciclos sin derivas, deshabilitar el trigger de `syncProductStock` en
-  el panel de Base44.
+**Fase 3 — Apagar el trigger del panel.**
+- Tras 1–2 días sin anomalías en `dailyStockReconcile`, deshabilitar el trigger
+  de `syncProductStock` en Base44. La aplicación síncrona ya es suficiente.
 
-**Fase 5 — Corrección de la deriva existente.**
-- Ejecutar `reconcileProductStock` para todos los productos de Baristop y
-  cualquier tenant afectado, dejando reporte de antes/después.
+**Fase 4 — Corrección de la deriva existente.**
+- Revisar el reporte de `dailyStockReconcile` y corregir los productos
+  desincronizados (Baristop incluido) vía `applyInventoryAuditCorrection`.
 
 ---
 
 ## 6. Verificación
 
-- **Unitario:** dado un set de movimientos conocido, `reconcileProductStock`
-  produce el stock esperado (incluye casos: solo salidas, checkpoint intermedio,
-  precio cero, devoluciones).
-- **Idempotencia:** ejecutar la reconciliación 2× no cambia el resultado.
-- **Sin doble descuento:** una venta con la automatización activa + llamada
-  síncrona deja el stock correcto (no duplicado).
+- **Idempotencia:** invocar `applyMovementStock` 2× sobre el mismo movimiento no
+  cambia el stock la segunda vez.
 - **Precio cero:** una venta `force_zero_price` descuenta stock igual que una
   venta normal.
-- **Producción:** tras Fase 5, `Product.stock == stock calculado por ledger`
-  para todos los productos (la diferencia que hoy detecta
-  `applyInventoryAuditCorrection` debe ser 0).
+- **Sin doble descuento:** crear un movimiento con el trigger activo + la llamada
+  síncrona deja el stock correcto (no duplicado).
+- **Devolución/cancelación:** restauran stock exactamente una vez.
+- **Producción:** tras Fase 4, `Product.stock` consistente con los movimientos
+  aplicados; `dailyStockReconcile` sin anomalías.
 
 ---
 
 ## 7. Rollback
 
-- Fases 1, 3, 4 son cambios de código: revertir el deploy.
-- Fase 2 (backfill) es reversible borrando los `Movement` con
-  `reason = "Checkpoint de migración"` (idempotentes e identificables).
-- El trigger del panel se puede reactivar en cualquier momento mientras la
-  reconciliación síncrona siga activa (ambos convergen al mismo valor).
+- Fases 1–2 son cambios de código: revertir el deploy. La marca `stock_applied`
+  es additiva y no rompe el camino anterior.
+- Fase 3: reactivar el trigger en el panel en cualquier momento (es idempotente
+  junto con la aplicación síncrona).
+- Fase 4: las correcciones quedan registradas como movimientos de auditoría
+  (`applyInventoryAuditCorrection`), trazables y reversibles.

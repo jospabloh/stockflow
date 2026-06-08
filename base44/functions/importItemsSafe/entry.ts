@@ -108,7 +108,10 @@ Deno.serve(async (req) => {
         // Cross-tenant guard: double-check businessId matches
         const created = await base44.asServiceRole.entities.Product.create(product);
 
-        // Register initial stock movement
+        // Register initial stock movement.
+        // El stock inicial YA quedó fijado en Product.create, por eso este
+        // movimiento se marca stock_applied=true: documenta el origen del stock
+        // sin que applyMovementStock/automatización lo sume de nuevo (evita doble).
         if (product.stock > 0 && created?.id) {
           await base44.asServiceRole.entities.Movement.create({
             product_id: created.id,
@@ -121,6 +124,7 @@ Deno.serve(async (req) => {
             reference: 'Importación CSV',
             stock_after: product.stock,
             business_id: businessId,
+            stock_applied: true,
           });
         }
 
