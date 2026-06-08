@@ -1,22 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-08T17:39:03.948Z
+// Generado: 2026-06-08T18:43:18.460Z
 
-export const SNAPSHOT_VERSION = "2.16.16";
+export const SNAPSHOT_VERSION = "2.16.17";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-06-08";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-08";
 
-export const SNAPSHOT_GIT_LOG = "32dbe68 chore(release): v2.16.15 — fix inventario, permisos Utilidad/Rubros, changelog completo\n5d38c4e Merge pull request #144 from jospabloh/claude/inventory-zero-price-client-eUSDp\n442876a Merge branch 'main' into claude/inventory-zero-price-client-eUSDp\n23879f1 fix(inventario): elimina la carrera de doble aplicación (create = no-op)\nc0c09c2 fix(inventario): premortem — evita doble aplicación y endurece la aplicación de stock\n09ec799 fix(inventario): aplicar el efecto de cada movimiento al stock exactamente una vez\n0df50cf Merge pull request #142 from jospabloh/claude/inventory-zero-price-client-eUSDp\n10a27ec docs: añade auto-baseline al recompute para despliegue seguro con ledger incompleto\ne7b3319 docs: diagnóstico y diseño de fuente única de verdad para inventario\n20bec0e Merge pull request #140 from jospabloh/automated/release-pr\naae4dc1 chore: release and update documentation\n54b5fd0 Merge pull request #141 from jospabloh/claude/exciting-fermat-14g5G\nc6637dd Merge branch 'main' into claude/exciting-fermat-14g5G\n5e3aa98 Simplifica el modal de Retiro de utilidad y agrega estado Facturado\n13ad09c Merge pull request #139 from jospabloh/claude/exciting-fermat-14g5G\ne2e7e1e Reestructura Utilidad: retiros de utilidad y vista Total/Retirada/Disponible\nc93cc2d Merge pull request #138 from jospabloh/automated/release-pr\n719199d chore: release and update documentation\n3eb78a4 Merge pull request #137 from jospabloh/claude/funny-tesla-w3wh5\n33c74de feat(pagos-proveedores): agregar estado de factura (Pendiente/Recibida/No requerida)\nc8c6de0 Merge pull request #136 from jospabloh/automated/release-pr\n4193e58 chore: release and update documentation\ne304619 Merge pull request #135 from jospabloh/claude/festive-newton-kOEq1\nef8859c Harden backend functions: auth on syncProductStock, drop hardcoded support email\n00e91b7 Merge pull request #133 from jospabloh/automated/release-pr";
+export const SNAPSHOT_GIT_LOG = "c22b15a Merge pull request #155 from jospabloh/dependabot/npm_and_yarn/baseline-browser-mapping-2.10.34\n39f245d Merge pull request #154 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-dropdown-menu-2.1.17\n3981671 chore(deps): bump @radix-ui/react-dropdown-menu from 2.1.16 to 2.1.17\n5d2583b Merge pull request #153 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-label-2.1.9\n90bf04f Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-label-2.1.9\nff535a9 Merge pull request #152 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-hover-card-1.1.16\naa396f4 Merge pull request #151 from jospabloh/dependabot/npm_and_yarn/tailwindcss-4.3.0\n3fced9a Merge pull request #150 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-toggle-group-1.1.12\ncd9d892 Merge pull request #149 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-slider-1.4.0\n722aebc chore(deps-dev): bump tailwindcss from 3.4.19 to 4.3.0\n301d7a7 Merge pull request #148 from jospabloh/dependabot/npm_and_yarn/stripe/react-stripe-js-6.6.0\na6b4fe8 Merge pull request #147 from jospabloh/dependabot/npm_and_yarn/react-resizable-panels-4.11.2\nc2871e8 Merge branch 'main' into dependabot/npm_and_yarn/react-resizable-panels-4.11.2\n62bf683 Merge pull request #146 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.0\n4721ad7 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.0\n8cd31e7 Merge pull request #156 from jospabloh/claude/keen-euler-mqjqx4\n777e721 chore(deps): elimina react-quill sin uso y documenta riesgo de xlsx\n6116f31 feat(permisos): aplica PermissionGate en Utilidad y Rubros (v2.16.16)\ne5b349f chore(deps-dev): bump baseline-browser-mapping from 2.10.33 to 2.10.34\n36b4a64 chore(deps): bump @radix-ui/react-label from 2.1.8 to 2.1.9\nccf3abb chore(deps): bump @radix-ui/react-hover-card from 1.1.15 to 1.1.16\n7ea5872 chore(deps): bump @radix-ui/react-toggle-group from 1.1.11 to 1.1.12\nb3d8716 chore(deps): bump @radix-ui/react-slider from 1.3.6 to 1.4.0\n825f0af chore(deps): bump @stripe/react-stripe-js from 6.5.0 to 6.6.0\n61863d9 chore(deps): bump react-resizable-panels from 2.1.9 to 4.11.2";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "🛡️ Utilidad y Rubros: los permisos granulares ahora se aplican en el frontend (antes solo estaban registrados en la matriz)",
-  "🔒 Utilidad: la página exige el permiso 'Ver Estado de Resultados'; sin él se muestra Acceso Restringido en vez del contenido confidencial",
-  "💸 Utilidad: el botón 'Retiro de utilidad' y las acciones de editar/eliminar del historial requieren el permiso 'Registrar Retiro de Utilidad'",
-  "📈 Utilidad: el interruptor de Proyección requiere el permiso 'Gestionar proyección'",
-  "🏷️ Rubros: la página exige 'Ver lista de rubros'; crear, editar/activar y eliminar requieren sus permisos respectivos",
-  "🗺️ Mapa de permisos: la página Utility ahora resuelve correctamente al módulo Utilidad (la visibilidad en el menú lateral respeta el permiso de vista)",
+  "Actualización a la versión 2.16.17",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -24,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.16.17",
+    date: "2026-06-08",
+    changes: [
+    "Actualización a la versión 2.16.17"
+    ]
+  },
   {
     version: "2.16.16",
     date: "2026-06-08",
