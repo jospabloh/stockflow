@@ -3,10 +3,21 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 /**
  * syncProductStock — automatización de Base44 sobre eventos de Movement.
  *
- * Ya NO es la autoridad del stock. Para eventos `create` delega en
- * `applyMovementStock`, que aplica el efecto EXACTAMENTE UNA VEZ (idempotente
- * vía Movement.stock_applied). Así, si el escritor ya aplicó el efecto de forma
- * síncrona, esta automatización no lo duplica.
+ * Ya NO es la autoridad del stock en `create`. TODOS los caminos que crean
+ * movimientos de inventario aplican el efecto ellos mismos, de una de dos formas:
+ *   1) invocando applyMovementStock de forma síncrona (createMovementSafe,
+ *      convertQuotationSafe, partialReturnQuotation, cancelQuotationSafe,
+ *      deliverQuotationSafe), o
+ *   2) creando el movimiento con stock_applied=true porque ya fijaron el stock
+ *      directamente (importItemsSafe, applyInventoryAuditCorrection, y en el
+ *      frontend ProductFormDialog y CreateFromOnDemandModal).
+ *
+ * Por eso el evento `create` aquí es un NO-OP a propósito: tener un segundo
+ * aplicador (la automatización) compitiendo con el escritor síncrono provoca una
+ * CARRERA que puede aplicar el delta dos veces (ambos leen stock_applied=false
+ * antes de que cualquiera lo marque). Con un único aplicador por movimiento, la
+ * carrera es imposible. Cualquier movimiento que quedara sin aplicar (camino
+ * futuro no contemplado) lo detecta dailyStockReconcile (stock_applied=false).
  *
  * Para `update`/`delete` mantiene el ajuste relativo (los borrados se manejan
  * además explícitamente en deleteMovementSafe).
@@ -45,16 +56,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: business_id mismatch' }, { status: 403 });
     }
 
-    // ── CREATE: delegar en la autoridad idempotente ───────────────────────
-    // applyMovementStock respeta stock_applied, por lo que NO duplica el efecto
-    // si el escritor ya lo aplicó de forma síncrona.
+    // ── CREATE: NO-OP (ver cabecera) ──────────────────────────────────────
+    // El efecto ya lo aplica el escritor síncrono o el movimiento se crea con
+    // stock_applied=true. No aplicar aquí evita la carrera de doble aplicación.
     if (event?.type === 'create') {
-      const res = await base44.asServiceRole.functions.invoke('applyMovementStock', {
-        movement_id: data.id,
-        business_id: data.business_id,
-      });
-      console.log(`[SYNC-STOCK] create delegated to applyMovementStock for movement ${data.id}`);
-      return Response.json({ success: true, delegated: true, result: res?.data ?? null });
+      console.log(`[SYNC-STOCK] create no-op (stock aplicado por el escritor) movement ${data.id}`);
+      return Response.json({ success: true, noop: true });
     }
 
     // ── UPDATE / DELETE: ajuste relativo (compatibilidad) ─────────────────

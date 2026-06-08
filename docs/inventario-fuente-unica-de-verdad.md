@@ -112,12 +112,19 @@ condición (resuelve el caso de precio cero, independientemente del filtro del
 panel). Afecta: `createMovementSafe`, `convertQuotationSafe`,
 `partialReturnQuotation`, `cancelQuotationSafe`, `deliverQuotationSafe`.
 
-### 4.4 La automatización deja de ser autoridad y se vuelve idempotente
-`syncProductStock` se reescribe para **delegar en `applyMovementStock`** en los
-eventos `create`. Como respeta `stock_applied`, si dispara después de que el
-escritor ya aplicó, **no duplica**. Una vez validado en producción, el trigger
-del panel puede **deshabilitarse**: la autoridad del stock vive 100% en el código
-y versionada. (El `delete` se sigue revirtiendo explícitamente en
+### 4.4 La automatización deja de ser autoridad (create = NO-OP, sin carrera)
+`syncProductStock` se reescribe para que el evento `create` sea un **no-op**.
+Motivo: como **todos** los caminos de creación ya aplican el efecto ellos mismos
+(síncronamente vía `applyMovementStock`, o creando con `stock_applied=true`),
+tener a la automatización como **segundo aplicador** abriría una **condición de
+carrera**: el escritor síncrono y la automatización podrían leer
+`stock_applied=false` a la vez —antes de que cualquiera marque la bandera— y
+aplicar el delta **dos veces**. Con un **único aplicador por movimiento**, la
+carrera es imposible. Cualquier movimiento que quedara sin aplicar (un camino
+futuro no contemplado) lo detecta `dailyStockReconcile` (`stock_applied=false`).
+
+El trigger del panel puede además **deshabilitarse** cuando se quiera; con el
+`create` en no-op ya no interfiere. (El `delete` se sigue revirtiendo en
 `deleteMovementSafe`, que no depende del trigger.)
 
 ### 4.5 Doble descuento eliminado
