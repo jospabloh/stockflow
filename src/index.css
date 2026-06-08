@@ -1,6 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Reutiliza la configuración JS existente (tema, colores, plugins, darkMode). */
+@config "../tailwind.config.js";
 
 @layer base {
   :root {
