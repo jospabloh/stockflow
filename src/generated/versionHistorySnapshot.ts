@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-08T18:43:18.460Z
+// Generado: 2026-06-09T22:19:00.452Z
 
-export const SNAPSHOT_VERSION = "2.16.17";
+export const SNAPSHOT_VERSION = "2.16.18";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-06-08";
+export const SNAPSHOT_RELEASE_DATE = "2026-06-09";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-08";
 
-export const SNAPSHOT_GIT_LOG = "c22b15a Merge pull request #155 from jospabloh/dependabot/npm_and_yarn/baseline-browser-mapping-2.10.34\n39f245d Merge pull request #154 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-dropdown-menu-2.1.17\n3981671 chore(deps): bump @radix-ui/react-dropdown-menu from 2.1.16 to 2.1.17\n5d2583b Merge pull request #153 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-label-2.1.9\n90bf04f Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-label-2.1.9\nff535a9 Merge pull request #152 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-hover-card-1.1.16\naa396f4 Merge pull request #151 from jospabloh/dependabot/npm_and_yarn/tailwindcss-4.3.0\n3fced9a Merge pull request #150 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-toggle-group-1.1.12\ncd9d892 Merge pull request #149 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-slider-1.4.0\n722aebc chore(deps-dev): bump tailwindcss from 3.4.19 to 4.3.0\n301d7a7 Merge pull request #148 from jospabloh/dependabot/npm_and_yarn/stripe/react-stripe-js-6.6.0\na6b4fe8 Merge pull request #147 from jospabloh/dependabot/npm_and_yarn/react-resizable-panels-4.11.2\nc2871e8 Merge branch 'main' into dependabot/npm_and_yarn/react-resizable-panels-4.11.2\n62bf683 Merge pull request #146 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.0\n4721ad7 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.0\n8cd31e7 Merge pull request #156 from jospabloh/claude/keen-euler-mqjqx4\n777e721 chore(deps): elimina react-quill sin uso y documenta riesgo de xlsx\n6116f31 feat(permisos): aplica PermissionGate en Utilidad y Rubros (v2.16.16)\ne5b349f chore(deps-dev): bump baseline-browser-mapping from 2.10.33 to 2.10.34\n36b4a64 chore(deps): bump @radix-ui/react-label from 2.1.8 to 2.1.9\nccf3abb chore(deps): bump @radix-ui/react-hover-card from 1.1.15 to 1.1.16\n7ea5872 chore(deps): bump @radix-ui/react-toggle-group from 1.1.11 to 1.1.12\nb3d8716 chore(deps): bump @radix-ui/react-slider from 1.3.6 to 1.4.0\n825f0af chore(deps): bump @stripe/react-stripe-js from 6.5.0 to 6.6.0\n61863d9 chore(deps): bump react-resizable-panels from 2.1.9 to 4.11.2";
+export const SNAPSHOT_GIT_LOG = "495c21d Update base44 packages\nb726367 Merge pull request #158 from jospabloh/claude/keen-euler-mqjqx4\n4a53e55 Merge branch 'main' into claude/keen-euler-mqjqx4\n1f8c87b fix(build): migra a Tailwind CSS v4 (PostCSS plugin separado)\n978c2e9 Merge pull request #157 from jospabloh/automated/release-pr\n5c5b166 chore: release and update documentation\nc22b15a Merge pull request #155 from jospabloh/dependabot/npm_and_yarn/baseline-browser-mapping-2.10.34\n39f245d Merge pull request #154 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-dropdown-menu-2.1.17\n3981671 chore(deps): bump @radix-ui/react-dropdown-menu from 2.1.16 to 2.1.17\n5d2583b Merge pull request #153 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-label-2.1.9\n90bf04f Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-label-2.1.9\nff535a9 Merge pull request #152 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-hover-card-1.1.16\naa396f4 Merge pull request #151 from jospabloh/dependabot/npm_and_yarn/tailwindcss-4.3.0\n3fced9a Merge pull request #150 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-toggle-group-1.1.12\ncd9d892 Merge pull request #149 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-slider-1.4.0\n722aebc chore(deps-dev): bump tailwindcss from 3.4.19 to 4.3.0\n301d7a7 Merge pull request #148 from jospabloh/dependabot/npm_and_yarn/stripe/react-stripe-js-6.6.0\na6b4fe8 Merge pull request #147 from jospabloh/dependabot/npm_and_yarn/react-resizable-panels-4.11.2\nc2871e8 Merge branch 'main' into dependabot/npm_and_yarn/react-resizable-panels-4.11.2\n62bf683 Merge pull request #146 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.0\n4721ad7 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.0\n8cd31e7 Merge pull request #156 from jospabloh/claude/keen-euler-mqjqx4\n777e721 chore(deps): elimina react-quill sin uso y documenta riesgo de xlsx\n6116f31 feat(permisos): aplica PermissionGate en Utilidad y Rubros (v2.16.16)\ne5b349f chore(deps-dev): bump baseline-browser-mapping from 2.10.33 to 2.10.34";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.16.17",
+  "Actualización a la versión 2.16.18",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.16.18",
+    date: "2026-06-09",
+    changes: [
+    "Actualización a la versión 2.16.18"
+    ]
+  },
   {
     version: "2.16.17",
     date: "2026-06-08",

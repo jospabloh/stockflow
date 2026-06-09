@@ -6,10 +6,16 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.17";
-const SNAPSHOT_RELEASE_DATE = "2026-06-08";
+const CURRENT_VERSION_IN_CODE = "2.16.18";
+const SNAPSHOT_RELEASE_DATE = "2026-06-09";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-08";
 const GIT_LOG_SNAPSHOT = `
+495c21d Update base44 packages
+b726367 Merge pull request #158 from jospabloh/claude/keen-euler-mqjqx4
+4a53e55 Merge branch 'main' into claude/keen-euler-mqjqx4
+1f8c87b fix(build): migra a Tailwind CSS v4 (PostCSS plugin separado)
+978c2e9 Merge pull request #157 from jospabloh/automated/release-pr
+5c5b166 chore: release and update documentation
 c22b15a Merge pull request #155 from jospabloh/dependabot/npm_and_yarn/baseline-browser-mapping-2.10.34
 39f245d Merge pull request #154 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-dropdown-menu-2.1.17
 3981671 chore(deps): bump @radix-ui/react-dropdown-menu from 2.1.16 to 2.1.17
@@ -29,15 +35,9 @@ c2871e8 Merge branch 'main' into dependabot/npm_and_yarn/react-resizable-panels-
 777e721 chore(deps): elimina react-quill sin uso y documenta riesgo de xlsx
 6116f31 feat(permisos): aplica PermissionGate en Utilidad y Rubros (v2.16.16)
 e5b349f chore(deps-dev): bump baseline-browser-mapping from 2.10.33 to 2.10.34
-36b4a64 chore(deps): bump @radix-ui/react-label from 2.1.8 to 2.1.9
-ccf3abb chore(deps): bump @radix-ui/react-hover-card from 1.1.15 to 1.1.16
-7ea5872 chore(deps): bump @radix-ui/react-toggle-group from 1.1.11 to 1.1.12
-b3d8716 chore(deps): bump @radix-ui/react-slider from 1.3.6 to 1.4.0
-825f0af chore(deps): bump @stripe/react-stripe-js from 6.5.0 to 6.6.0
-61863d9 chore(deps): bump react-resizable-panels from 2.1.9 to 4.11.2
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.17",
+  "Actualización a la versión 2.16.18",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
