@@ -223,6 +223,15 @@ export const PERMISSION_REGISTRY = {
       { id: "delete", label: "Eliminar rubro", category: "actionable", icon: "🗑️", description: "Eliminar categorías de ingresos o egresos" },
     ]
   },
+  CuentasFondo: {
+    label: "Cuentas de Fondos",
+    actions: [
+      { id: "view", label: "Ver lista", category: "visual", icon: "👁️", description: "Acceso a la lista de cuentas de fondos (efectivo, tarjetas, etc.)" },
+      { id: "create", label: "Crear cuenta", category: "actionable", icon: "➕", description: "Crear nuevas cuentas de fondos" },
+      { id: "edit", label: "Editar cuenta", category: "actionable", icon: "✏️", description: "Editar nombre, estado activo y si afecta caja chica" },
+      { id: "delete", label: "Eliminar cuenta", category: "actionable", icon: "🗑️", description: "Eliminar cuentas de fondos" },
+    ]
+  },
 };
 
 export const ALL_PERMISSION_KEYS = Object.entries(PERMISSION_REGISTRY)
@@ -286,6 +295,9 @@ export function getDefaultsForRole(role) {
             'Clientes:edit_force_wholesale',
             'Clientes:edit_force_purchase',
             'Utilidad:add_withdrawal',
+            'CuentasFondo:create',
+            'CuentasFondo:edit',
+            'CuentasFondo:delete',
           ];
           defaults[key] = !deniedActionable.includes(key);
         } else if (action.category === 'report') {

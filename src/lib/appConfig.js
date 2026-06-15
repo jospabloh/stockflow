@@ -2,16 +2,28 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.16.17";
+export const APP_VERSION = "2.17.0";
 
-export const RELEASE_DATE = "2026-06-08";
+export const RELEASE_DATE = "2026-06-15";
 
 // Fecha (ISO) de la última revisión manual del Manual de Usuario por un humano.
 // Actualizar al volver a leer y validar el manual end-to-end. La auditoría
 // nocturna alerta si pasan más de 60 días desde esta fecha.
-export const USER_MANUAL_LAST_REVIEWED = "2026-06-08";
+export const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
 
 export const CHANGELOG = [
+  {
+    version: "2.17.0",
+    date: "2026-06-15",
+    changes: [
+      "🛡️ Auditoría de seguridad y permisos: módulo Cuentas de Fondos registrado en la matriz de permisos granulares",
+      "🔒 CuentasFondo:view — almacenista puede ver las cuentas; CuentasFondo:create/edit/delete — solo admin por defecto",
+      "🚫 La página FundAccounts ahora muestra 'Acceso Restringido' si el rol no tiene el permiso de vista",
+      "📋 Matriz de permisos actualizada: 15 módulos, 152 claves (se añaden CuentasFondo:view/create/edit/delete)",
+      "📝 Mapa de permisos: FundAccounts → CuentasFondo añadido a permissionModuleMap.js",
+      "📚 Manual de usuario revisado y actualizado al 15 de junio de 2026",
+    ],
+  },
   {
     version: "2.16.17",
     date: "2026-06-08",
