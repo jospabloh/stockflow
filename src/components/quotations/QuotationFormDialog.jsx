@@ -329,9 +329,17 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
         });
       }, 450);
       } catch (error) {
-      const errMsg = error.response?.data?.error || error.message || "Error inesperado. Intenta nuevamente";
-      toast.error(`❌ ${errMsg}`);
-      setSaving(false);
+      // Base44Error exposes the server response body on `.data` (not `.response`).
+      // Function errors come back wrapped as { data: { error } }, so check both
+      // shapes before falling back to the (generic) axios message. Surfacing the
+      // real server error matters: a masked "Request failed with status code 500"
+      // gives the user nothing to act on and makes these reports hard to diagnose.
+      const errMsg =
+        error?.data?.error ||
+        error?.data?.data?.error ||
+        error?.message ||
+        "Error inesperado. Intenta nuevamente";
+      toast.error(`❌ No se pudo guardar: ${errMsg}`);
       } finally {
       setSaving(false);
       }
