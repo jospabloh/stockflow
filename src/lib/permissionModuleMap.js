@@ -17,6 +17,7 @@ export const PAGE_TO_MODULE_MAP = {
   PermissionAdmin: 'Configuración',
   LicenseAdmin: 'Configuración',
   TenantRulesAdmin: 'Configuración',
+  FundAccounts: 'CuentasFondo',
   HelpCenter: 'Centro de Ayuda',
   About: 'Acerca de',
 };

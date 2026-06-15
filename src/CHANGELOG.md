@@ -1,5 +1,36 @@
 # Changelog — StockFlow
 
+## v2.17.0 (2026-06-15)
+
+### 🛡️ Auditoría de Permisos — Módulo Cuentas de Fondos
+
+El módulo **Cuentas de Fondos** (`FundAccounts`) fue identificado durante la auditoría de seguridad como la única página del sistema sin cobertura en la matriz de permisos granulares. Esta versión cierra esa brecha.
+
+#### Cambios aplicados
+
+- **Nuevo módulo `CuentasFondo`** registrado en `permissionRegistry.js` con 4 claves:
+  - `CuentasFondo:view` — ver la lista de cuentas (almacenista: **true** por defecto)
+  - `CuentasFondo:create` — crear nuevas cuentas (almacenista: **false** por defecto)
+  - `CuentasFondo:edit` — editar nombre, estado activo y si afecta caja chica (almacenista: **false**)
+  - `CuentasFondo:delete` — eliminar cuentas (almacenista: **false**)
+- **Mapa de permisos**: `FundAccounts → CuentasFondo` añadido a `permissionModuleMap.js`
+- **Defaults de rol**:
+  - Admin: todas las claves = `true` (comportamiento existente)
+  - Almacenista: `view = true`, `create/edit/delete = false` (operaciones de configuración reservadas para admin)
+- **`FundAccounts.jsx`**: añade `usePermissions()`, muestra "Acceso Restringido" si falta `view`, oculta botones de acción según permiso individual
+- **Manifiestos generados** actualizados: `permissionManifests.ts`, `permissionArtifacts.js`
+- **Matriz de permisos**: 15 módulos, 152 claves
+
+#### Clasificación del hallazgo
+
+| Severidad | Hallazgo | Estado |
+|---|---|---|
+| Medium | FundAccounts sin cobertura de permisos | ✅ Fixed |
+
+> **Nota:** El aislamiento de tenant (business_id) ya estaba garantizado en el backend. Este fix añade la capa de control de roles en el frontend, consistente con el resto de módulos.
+
+---
+
 ## v2.16.16 (2026-06-08)
 
 ### 🛡️ Permisos granulares aplicados en el frontend — Utilidad y Rubros

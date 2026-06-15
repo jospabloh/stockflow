@@ -38,6 +38,7 @@ export const LEGACY_DEFAULTS = {
     'Pagos a Proveedores': { ver: true, leer: true, escribir: true, modificar: true, eliminar: true, view: true, create: true, edit_supplier: true, edit_amount: true, edit_date: true, edit_payment_method: true, edit_concept: true, edit_reference: true, edit_notes: true, affect_petty_cash: true, delete: true },
     'Centro de Ayuda': { ver: true, leer: true, view: true },
     'Acerca de': { ver: true, leer: true, view: true },
+    CuentasFondo: { ver: true, leer: true, view: true, create: true, edit: true, delete: true },
   },
   almacenista: {
     Dashboard: { ver: true, leer: true, view: true, summary: true, period_filter: true, stat_products: true, stat_movements: true, stat_low_stock: true, movements_chart: true, low_stock: true, recent_movements: true, unpaid_alert: true },
@@ -55,5 +56,6 @@ export const LEGACY_DEFAULTS = {
     'Pagos a Proveedores': { ver: false, leer: false, view: false, create: false, edit_supplier: false, edit_amount: false, edit_date: false, edit_payment_method: false, edit_concept: false, edit_reference: false, edit_notes: false, affect_petty_cash: false, delete: false, escribir: false, modificar: false, eliminar: false },
     'Centro de Ayuda': { ver: true, leer: true, view: true },
     'Acerca de': { ver: true, leer: true, view: true },
+    CuentasFondo: { ver: true, leer: true, view: true, create: false, edit: false, delete: false },
   },
 };

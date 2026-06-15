@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-06-08T18:43:18.134Z
+// Generado: 2026-06-15T00:00:00.000Z (actualizado manualmente durante auditoría v2.17.0 — regenerar con npm run generate:permission-manifests)
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -154,6 +154,10 @@ export const ALL_PERMISSION_KEYS = [
   "Rubros:create",
   "Rubros:edit",
   "Rubros:delete",
+  "CuentasFondo:view",
+  "CuentasFondo:create",
+  "CuentasFondo:edit",
+  "CuentasFondo:delete",
 ] as const;
 
 export type PermissionKey = (typeof ALL_PERMISSION_KEYS)[number];
@@ -383,6 +387,15 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "delete", label: "Eliminar rubro", category: "actionable" }
     ]
   },
+  "CuentasFondo": {
+    label: "Cuentas de Fondos",
+    actions: [
+    { id: "view", label: "Ver lista", category: "visual" },
+    { id: "create", label: "Crear cuenta", category: "actionable" },
+    { id: "edit", label: "Editar cuenta", category: "actionable" },
+    { id: "delete", label: "Eliminar cuenta", category: "actionable" }
+    ]
+  },
 };
 
 export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
@@ -538,6 +551,10 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Rubros:create": true,
   "Rubros:edit": true,
   "Rubros:delete": true,
+  "CuentasFondo:view": true,
+  "CuentasFondo:create": true,
+  "CuentasFondo:edit": true,
+  "CuentasFondo:delete": true,
   } as Record<PermissionKey, boolean>,
   almacenista: {
   "Dashboard:view": true,
@@ -691,5 +708,9 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Rubros:create": true,
   "Rubros:edit": true,
   "Rubros:delete": true,
+  "CuentasFondo:view": true,
+  "CuentasFondo:create": false,
+  "CuentasFondo:edit": false,
+  "CuentasFondo:delete": false,
   } as Record<PermissionKey, boolean>,
 };

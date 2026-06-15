@@ -1,5 +1,6 @@
-// Artículos de ayuda — última versión: v2.16.15
+// Artículos de ayuda — última versión: v2.17.0
 // Solo contiene notas de versión (release notes). Los artículos de manual permanente están en helpDataExtension.js
+// v2.17.0: Auditoría de permisos — módulo Cuentas de Fondos registrado en la matriz de permisos granulares
 // v2.16.15: Fix inventario (stock exactamente una vez), retiro de utilidad simplificado, estado facturado, estado factura en pagos proveedores
 // v2.16.0: Auditoría de mantenimiento — CVEs adicionales, CI unificado, código muerto eliminado
 // v2.15.0: Auditoría de seguridad y calidad, corrección de CVEs, nuevos permisos (share, manage_referral)
@@ -13,6 +14,55 @@
 // v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor
 
 export const newHelpArticles = [
+    {
+      id: "release-2-17-0",
+      category: "Novedades",
+      role: "admin",
+      title: "🛡️ v2.17.0 — Auditoría de Permisos: Módulo Cuentas de Fondos",
+      keywords: ["versión", "2.17.0", "permisos", "cuentas", "fondos", "seguridad", "auditoría", "FundAccounts", "CuentasFondo"],
+      related_ids: ["permissions-overview", "release-2-16-15"],
+      content: `## 🛡️ Versión 2.17.0 — 15 de junio de 2026
+
+### ✅ Novedades de esta versión
+
+---
+
+### 🔒 Permisos Granulares — Módulo Cuentas de Fondos
+
+Durante la auditoría de seguridad se identificó que el módulo **Cuentas de Fondos** (accesible en el menú lateral como "Cuentas") era la única página del sistema sin cobertura en la matriz de permisos granulares.
+
+Esta versión registra el módulo **CuentasFondo** con las siguientes claves de permiso:
+
+| Permiso | Descripción | Admin | Almacenista |
+|---|---|---|---|
+| \`CuentasFondo:view\` | Ver la lista de cuentas | ✅ | ✅ |
+| \`CuentasFondo:create\` | Crear nuevas cuentas | ✅ | ❌ |
+| \`CuentasFondo:edit\` | Editar nombre, estado y si afecta caja chica | ✅ | ❌ |
+| \`CuentasFondo:delete\` | Eliminar cuentas | ✅ | ❌ |
+
+#### ¿Qué significa para los usuarios?
+
+- **Administradores**: acceso completo (sin cambios respecto a versiones anteriores)
+- **Almacenistas**: pueden ver la lista de cuentas disponibles, pero no pueden crear, modificar ni eliminar cuentas
+- Sin el permiso de vista, la página muestra "Acceso Restringido" — el administrador puede otorgar el acceso desde el Panel de Permisos
+
+#### ¿Qué son las Cuentas de Fondos?
+
+Las cuentas de fondos definen las **fuentes de dinero** del negocio (por ejemplo: "Efectivo / Caja Chica", "Tarjeta AFIRME"). Se usan en el módulo de Utilidad para registrar de dónde proviene el dinero en los retiros.
+
+Algunas cuentas están marcadas con **"Descuenta de caja"**: esto significa que un retiro usando esa cuenta se registra automáticamente como un egreso en Caja Chica.
+
+> **Nota de seguridad**: el aislamiento por negocio ya estaba garantizado en el backend. Este cambio añade la capa de control de roles en el frontend, completando la cobertura de la matriz de permisos.
+
+---
+
+### 📋 Matriz de Permisos Actualizada
+
+- **Módulos cubiertos**: 15 (se añade CuentasFondo)
+- **Claves totales**: 152
+- La auditoría no detectó ninguna otra brecha de permisos activa
+`,
+    },
     {
       id: "release-2-16-15",
       category: "Novedades",
