@@ -6,38 +6,38 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.16.17";
-const SNAPSHOT_RELEASE_DATE = "2026-06-08";
-const USER_MANUAL_LAST_REVIEWED = "2026-06-08";
+const CURRENT_VERSION_IN_CODE = "2.17.1";
+const SNAPSHOT_RELEASE_DATE = "2026-06-16";
+const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
 const GIT_LOG_SNAPSHOT = `
-c22b15a Merge pull request #155 from jospabloh/dependabot/npm_and_yarn/baseline-browser-mapping-2.10.34
-39f245d Merge pull request #154 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-dropdown-menu-2.1.17
-3981671 chore(deps): bump @radix-ui/react-dropdown-menu from 2.1.16 to 2.1.17
-5d2583b Merge pull request #153 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-label-2.1.9
-90bf04f Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-label-2.1.9
-ff535a9 Merge pull request #152 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-hover-card-1.1.16
-aa396f4 Merge pull request #151 from jospabloh/dependabot/npm_and_yarn/tailwindcss-4.3.0
-3fced9a Merge pull request #150 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-toggle-group-1.1.12
-cd9d892 Merge pull request #149 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-slider-1.4.0
-722aebc chore(deps-dev): bump tailwindcss from 3.4.19 to 4.3.0
-301d7a7 Merge pull request #148 from jospabloh/dependabot/npm_and_yarn/stripe/react-stripe-js-6.6.0
-a6b4fe8 Merge pull request #147 from jospabloh/dependabot/npm_and_yarn/react-resizable-panels-4.11.2
-c2871e8 Merge branch 'main' into dependabot/npm_and_yarn/react-resizable-panels-4.11.2
-62bf683 Merge pull request #146 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.0
-4721ad7 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.0
-8cd31e7 Merge pull request #156 from jospabloh/claude/keen-euler-mqjqx4
-777e721 chore(deps): elimina react-quill sin uso y documenta riesgo de xlsx
-6116f31 feat(permisos): aplica PermissionGate en Utilidad y Rubros (v2.16.16)
-e5b349f chore(deps-dev): bump baseline-browser-mapping from 2.10.33 to 2.10.34
-36b4a64 chore(deps): bump @radix-ui/react-label from 2.1.8 to 2.1.9
-ccf3abb chore(deps): bump @radix-ui/react-hover-card from 1.1.15 to 1.1.16
-7ea5872 chore(deps): bump @radix-ui/react-toggle-group from 1.1.11 to 1.1.12
-b3d8716 chore(deps): bump @radix-ui/react-slider from 1.3.6 to 1.4.0
-825f0af chore(deps): bump @stripe/react-stripe-js from 6.5.0 to 6.6.0
-61863d9 chore(deps): bump react-resizable-panels from 2.1.9 to 4.11.2
+9ce0301 Merge pull request #175 from jospabloh/claude/fix-react-window-build
+4e14b12 fix(build): pin react-window to ^1.8.11 to fix MISSING_EXPORT build failure
+aeef074 Merge pull request #170 from jospabloh/dependabot/npm_and_yarn/react-window-2.2.7
+9b801b5 Merge branch 'main' into dependabot/npm_and_yarn/react-window-2.2.7
+c3f2721 Merge pull request #169 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0
+e01d196 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0
+7e35217 Merge pull request #168 from jospabloh/dependabot/npm_and_yarn/zod-4.4.3
+e6b4b4a Merge branch 'main' into dependabot/npm_and_yarn/zod-4.4.3
+9ecbc76 Merge pull request #174 from jospabloh/claude/sandbox-modal-container-error-2yp7c9
+0377b8a fix(build): bump @vitejs/plugin-react to v6 for Vite 8 compatibility
+44b5f5c Merge pull request #167 from jospabloh/dependabot/npm_and_yarn/vite-8.0.16
+75e9fc6 Merge branch 'main' into dependabot/npm_and_yarn/vite-8.0.16
+5ae2bdb Merge pull request #166 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-slot-1.2.5
+84f5f61 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-slot-1.2.5
+ffaab2a Merge pull request #165 from jospabloh/dependabot/npm_and_yarn/eslint-plugin-react-refresh-0.5.3
+c655ce3 chore(deps-dev): bump eslint-plugin-react-refresh from 0.4.26 to 0.5.3
+62829f9 Merge pull request #164 from jospabloh/dependabot/npm_and_yarn/globals-17.6.0
+df3d332 Merge branch 'main' into dependabot/npm_and_yarn/globals-17.6.0
+e953801 chore(deps): bump @radix-ui/react-slot from 1.2.4 to 1.3.0
+abe8fa0 Merge pull request #163 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-scroll-area-1.2.11
+b2668eb Merge pull request #162 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-menubar-1.1.17
+9a9f79a chore(deps): bump @radix-ui/react-context-menu from 2.2.16 to 2.3.1
+c81ffee Merge pull request #161 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-avatar-1.1.12
+72ee4f0 Merge pull request #173 from jospabloh/claude/quote-save-many-products-nzyg5a
+6d03ad4 fix(cotizaciones): mostrar el error real del servidor al guardar
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.16.17",
+  "Actualización a la versión 2.17.1",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

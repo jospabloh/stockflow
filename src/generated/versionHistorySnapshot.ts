@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-08T18:43:18.460Z
+// Generado: 2026-06-16T17:36:00.969Z
 
-export const SNAPSHOT_VERSION = "2.16.17";
+export const SNAPSHOT_VERSION = "2.17.1";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-06-08";
+export const SNAPSHOT_RELEASE_DATE = "2026-06-16";
 
-export const USER_MANUAL_LAST_REVIEWED = "2026-06-08";
+export const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
 
-export const SNAPSHOT_GIT_LOG = "c22b15a Merge pull request #155 from jospabloh/dependabot/npm_and_yarn/baseline-browser-mapping-2.10.34\n39f245d Merge pull request #154 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-dropdown-menu-2.1.17\n3981671 chore(deps): bump @radix-ui/react-dropdown-menu from 2.1.16 to 2.1.17\n5d2583b Merge pull request #153 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-label-2.1.9\n90bf04f Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-label-2.1.9\nff535a9 Merge pull request #152 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-hover-card-1.1.16\naa396f4 Merge pull request #151 from jospabloh/dependabot/npm_and_yarn/tailwindcss-4.3.0\n3fced9a Merge pull request #150 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-toggle-group-1.1.12\ncd9d892 Merge pull request #149 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-slider-1.4.0\n722aebc chore(deps-dev): bump tailwindcss from 3.4.19 to 4.3.0\n301d7a7 Merge pull request #148 from jospabloh/dependabot/npm_and_yarn/stripe/react-stripe-js-6.6.0\na6b4fe8 Merge pull request #147 from jospabloh/dependabot/npm_and_yarn/react-resizable-panels-4.11.2\nc2871e8 Merge branch 'main' into dependabot/npm_and_yarn/react-resizable-panels-4.11.2\n62bf683 Merge pull request #146 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.0\n4721ad7 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.0\n8cd31e7 Merge pull request #156 from jospabloh/claude/keen-euler-mqjqx4\n777e721 chore(deps): elimina react-quill sin uso y documenta riesgo de xlsx\n6116f31 feat(permisos): aplica PermissionGate en Utilidad y Rubros (v2.16.16)\ne5b349f chore(deps-dev): bump baseline-browser-mapping from 2.10.33 to 2.10.34\n36b4a64 chore(deps): bump @radix-ui/react-label from 2.1.8 to 2.1.9\nccf3abb chore(deps): bump @radix-ui/react-hover-card from 1.1.15 to 1.1.16\n7ea5872 chore(deps): bump @radix-ui/react-toggle-group from 1.1.11 to 1.1.12\nb3d8716 chore(deps): bump @radix-ui/react-slider from 1.3.6 to 1.4.0\n825f0af chore(deps): bump @stripe/react-stripe-js from 6.5.0 to 6.6.0\n61863d9 chore(deps): bump react-resizable-panels from 2.1.9 to 4.11.2";
+export const SNAPSHOT_GIT_LOG = "9ce0301 Merge pull request #175 from jospabloh/claude/fix-react-window-build\n4e14b12 fix(build): pin react-window to ^1.8.11 to fix MISSING_EXPORT build failure\naeef074 Merge pull request #170 from jospabloh/dependabot/npm_and_yarn/react-window-2.2.7\n9b801b5 Merge branch 'main' into dependabot/npm_and_yarn/react-window-2.2.7\nc3f2721 Merge pull request #169 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0\ne01d196 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0\n7e35217 Merge pull request #168 from jospabloh/dependabot/npm_and_yarn/zod-4.4.3\ne6b4b4a Merge branch 'main' into dependabot/npm_and_yarn/zod-4.4.3\n9ecbc76 Merge pull request #174 from jospabloh/claude/sandbox-modal-container-error-2yp7c9\n0377b8a fix(build): bump @vitejs/plugin-react to v6 for Vite 8 compatibility\n44b5f5c Merge pull request #167 from jospabloh/dependabot/npm_and_yarn/vite-8.0.16\n75e9fc6 Merge branch 'main' into dependabot/npm_and_yarn/vite-8.0.16\n5ae2bdb Merge pull request #166 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-slot-1.2.5\n84f5f61 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-slot-1.2.5\nffaab2a Merge pull request #165 from jospabloh/dependabot/npm_and_yarn/eslint-plugin-react-refresh-0.5.3\nc655ce3 chore(deps-dev): bump eslint-plugin-react-refresh from 0.4.26 to 0.5.3\n62829f9 Merge pull request #164 from jospabloh/dependabot/npm_and_yarn/globals-17.6.0\ndf3d332 Merge branch 'main' into dependabot/npm_and_yarn/globals-17.6.0\ne953801 chore(deps): bump @radix-ui/react-slot from 1.2.4 to 1.3.0\nabe8fa0 Merge pull request #163 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-scroll-area-1.2.11\nb2668eb Merge pull request #162 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-menubar-1.1.17\n9a9f79a chore(deps): bump @radix-ui/react-context-menu from 2.2.16 to 2.3.1\nc81ffee Merge pull request #161 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-avatar-1.1.12\n72ee4f0 Merge pull request #173 from jospabloh/claude/quote-save-many-products-nzyg5a\n6d03ad4 fix(cotizaciones): mostrar el error real del servidor al guardar";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.16.17",
+  "Actualización a la versión 2.17.1",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,25 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.17.1",
+    date: "2026-06-16",
+    changes: [
+    "Actualización a la versión 2.17.1"
+    ]
+  },
+  {
+    version: "2.17.0",
+    date: "2026-06-15",
+    changes: [
+    "🛡️ Auditoría de seguridad y permisos: módulo Cuentas de Fondos registrado en la matriz de permisos granulares",
+    "🔒 CuentasFondo:view — almacenista puede ver las cuentas; CuentasFondo:create/edit/delete — solo admin por defecto",
+    "🚫 La página FundAccounts ahora muestra 'Acceso Restringido' si el rol no tiene el permiso de vista",
+    "📋 Matriz de permisos actualizada: 15 módulos, 152 claves (se añaden CuentasFondo:view/create/edit/delete)",
+    "📝 Mapa de permisos: FundAccounts → CuentasFondo añadido a permissionModuleMap.js",
+    "📚 Manual de usuario revisado y actualizado al 15 de junio de 2026"
+    ]
+  },
   {
     version: "2.16.17",
     date: "2026-06-08",
