@@ -279,11 +279,13 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       toast.error("⚠️ Agrega al menos un producto a la cotización");
       return;
     }
-    const overStock = form.items.find(i => !i.is_on_demand && i.available_stock !== undefined && i.quantity > i.available_stock);
-    if (overStock) {
-      toast.error(`⚠️ Stock insuficiente para "${overStock.product_name}": disponible ${overStock.available_stock}, solicitado ${overStock.quantity}`);
-      return;
-    }
+    // NOTE: We intentionally do NOT block saving when an item's quantity exceeds
+    // available stock. A quotation is a proposal/draft — it does not commit stock.
+    // Stock is validated and decremented only when the quote is converted to a sale
+    // (see convertQuotationSafe). Blocking here prevented legitimate large quotes
+    // (e.g. initial stock for a new store with many products) from being saved at
+    // all — even as a draft. The per-row "Solo X en stock" warning still informs
+    // the user without preventing the save.
 
     setSaving(true);
     try {
@@ -327,9 +329,17 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
         });
       }, 450);
       } catch (error) {
-      const errMsg = error.response?.data?.error || error.message || "Error inesperado. Intenta nuevamente";
-      toast.error(`❌ ${errMsg}`);
-      setSaving(false);
+      // Base44Error exposes the server response body on `.data` (not `.response`).
+      // Function errors come back wrapped as { data: { error } }, so check both
+      // shapes before falling back to the (generic) axios message. Surfacing the
+      // real server error matters: a masked "Request failed with status code 500"
+      // gives the user nothing to act on and makes these reports hard to diagnose.
+      const errMsg =
+        error?.data?.error ||
+        error?.data?.data?.error ||
+        error?.message ||
+        "Error inesperado. Intenta nuevamente";
+      toast.error(`❌ No se pudo guardar: ${errMsg}`);
       } finally {
       setSaving(false);
       }
