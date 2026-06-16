@@ -159,6 +159,10 @@ const CANONICAL_KEYS: string[] = [
   "Rubros:create",
   "Rubros:edit",
   "Rubros:delete",
+  "CuentasFondo:view",
+  "CuentasFondo:create",
+  "CuentasFondo:edit",
+  "CuentasFondo:delete",
 ];
 
 const ALMACENISTA_DENIED = new Set<string>([
@@ -209,6 +213,9 @@ const ALMACENISTA_DENIED = new Set<string>([
   "Utilidad:view",
   "Utilidad:add_withdrawal",
   "Utilidad:manage_forecast",
+  "CuentasFondo:create",
+  "CuentasFondo:edit",
+  "CuentasFondo:delete",
 ]);
 // AUTOGEN:CANONICAL_KEYS:END
 
