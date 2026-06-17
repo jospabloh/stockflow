@@ -144,10 +144,16 @@
       "id": "{{user.data.business_id}}"
     },
     "update": {
-      "id": "{{user.data.business_id}}"
+      "$or": [
+        { "id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
     },
     "delete": {
-      "id": "{{user.data.business_id}}"
+      "$or": [
+        { "id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
     }
   }
 }

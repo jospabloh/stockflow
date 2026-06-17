@@ -36,16 +36,25 @@
   ],
   "rls": {
     "create": {
-      "data.business_id": "{{user.data.business_id}}"
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
     },
     "read": {
       "data.business_id": "{{user.data.business_id}}"
     },
     "update": {
-      "data.business_id": "{{user.data.business_id}}"
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
     },
     "delete": {
-      "data.business_id": "{{user.data.business_id}}"
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
     }
   }
 }
