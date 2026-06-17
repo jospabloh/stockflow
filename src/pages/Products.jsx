@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
+import { useBusinessContext } from "@/components/BusinessContext";
+import { useProducts, useCategories, useInvalidateEntities } from "@/hooks/queries";
+import { LoadingOverlay } from "@/components/ui/spinner";
 import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,41 +29,27 @@ export default function Products() {
   const navigate = useNavigate();
   const { can } = usePermissions();
   const { canSee } = useFieldVisibility("Productos");
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { businessId, user } = useBusinessContext();
+  const isAdmin = user?.role === "admin";
+  const invalidate = useInvalidateEntities();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [stockFilter, setStockFilter] = useState("all");
   const [deleteProduct, setDeleteProduct] = useState(null);
-  const [businessId, setBusinessId] = useState(null);
+
+  const productsQuery = useProducts(businessId);
+  const categoriesQuery = useCategories(businessId);
+  const products = productsQuery.data ?? [];
+  const categories = categoriesQuery.data ?? [];
+  // Carga inicial: muestra skeleton. Refetch en background: muestra overlay.
+  const loading = !businessId || productsQuery.isLoading;
+  const refreshing = productsQuery.isFetching && !productsQuery.isLoading;
 
   useEffect(() => {
     const params = new URLSearchParams(globalThis.location.search);
     if (params.get("filter") === "low_stock") {
       setStockFilter("low");
     }
-  }, []);
-
-  const loadData = async (bId) => {
-    if (!bId) return;
-    Promise.all([
-      base44.entities.Product.filter({ business_id: bId }, "-created_date", 500),
-      base44.entities.Category.filter({ business_id: bId }),
-    ]).then(([prods, cats]) => {
-      setProducts(prods);
-      setCategories(cats);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    base44.auth.me().then(u => {
-      setIsAdmin(u?.role === "admin");
-      setBusinessId(u?.business_id || null);
-      loadData(u?.business_id || null);
-    }).catch(() => setLoading(false));
   }, []);
 
   const isLowStockProduct = (product) => {
@@ -104,7 +93,7 @@ export default function Products() {
       });
       if (response.data?.success) {
         toast.success("Producto eliminado correctamente");
-        setProducts((prev) => prev.filter((p) => p.id !== deleteProduct.id));
+        await invalidate("Product");
       } else {
         toast.error(response.data?.error || "No se pudo eliminar el producto");
       }
@@ -193,17 +182,20 @@ export default function Products() {
 
       {/* Products table */}
        {canSee("view") && (
-       <ProductTable
-         products={filteredProducts}
-         categories={categories}
-         onEdit={handleEdit}
-         onDelete={setDeleteProduct}
-         isAdmin={isAdmin}
-         canShowCost={canSee("cost_price")}
-         onBarcodeGenerated={() => loadData(businessId)}
-         canEdit={can('Productos', 'edit_name') && canSee("edit_name")}
-          canDelete={can('Productos', 'delete') && canSee("delete")}
-       />
+       <div className="relative">
+         <LoadingOverlay show={refreshing} />
+         <ProductTable
+           products={filteredProducts}
+           categories={categories}
+           onEdit={handleEdit}
+           onDelete={setDeleteProduct}
+           isAdmin={isAdmin}
+           canShowCost={canSee("cost_price")}
+           onBarcodeGenerated={() => invalidate("Product")}
+           canEdit={can('Productos', 'edit_name') && canSee("edit_name")}
+           canDelete={can('Productos', 'delete') && canSee("delete")}
+         />
+       </div>
        )}
 
       {/* Delete confirmation */}

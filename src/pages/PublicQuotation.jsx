@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, XCircle, Clock, AlertTriangle, Package } from "lucide-react";
+import { FullPageLoader } from "@/components/ui/spinner";
 
 const STATUS_CONFIG = {
   draft:     { label: "Borrador",   color: "secondary" },
@@ -65,11 +66,7 @@ export default function PublicQuotation() {
   const statusCfg = STATUS_CONFIG[quotation?.status] ?? { label: quotation?.status, color: "secondary" };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-pulse text-gray-500 text-sm">Cargando cotización…</div>
-      </div>
-    );
+    return <FullPageLoader label="Cargando cotización…" />;
   }
 
   if (error || !quotation) {

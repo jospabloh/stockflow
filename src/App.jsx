@@ -15,6 +15,7 @@ import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import { BusinessProvider } from '@/components/BusinessContext';
+import { Spinner } from '@/components/ui/spinner';
 const LicenseAdmin = lazy(() => import('./pages/LicenseAdmin'));
 const TenantRulesAdmin = lazy(() => import('./pages/TenantRulesAdmin'));
 const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
@@ -44,7 +45,7 @@ const FundAccounts = lazy(() => import('./pages/FundAccounts'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center">
-    <div className="w-8 h-8 border-4 border-slate-200 border-t-indigo-500 rounded-full animate-spin" />
+    <Spinner size="lg" />
   </div>
 );
 
@@ -72,7 +73,7 @@ const AuthenticatedApp = () => {
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+        <Spinner size="lg" />
       </div>
     );
   }
