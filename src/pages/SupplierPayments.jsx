@@ -2,6 +2,12 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
 import { useBusinessContext } from "@/components/BusinessContext";
+import {
+  useSupplierPayments,
+  useInvalidateEntities,
+  useQueryClient,
+} from "@/hooks/queries";
+import { Spinner, LoadingOverlay } from "@/components/ui/spinner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,10 +86,14 @@ const INVOICE_STATUS_OPTIONS = [
 export default function SupplierPayments() {
   const { businessId } = useBusinessContext();
   const { can } = usePermissions();
-  const [payments, setPayments] = useState([]);
+  const invalidate = useInvalidateEntities();
+  const queryClient = useQueryClient();
+  const paymentsQuery = useSupplierPayments(businessId);
+  const payments = paymentsQuery.data ?? [];
+  const loading = !businessId || paymentsQuery.isLoading;
+  const refreshing = paymentsQuery.isFetching && !paymentsQuery.isLoading;
   const [suppliers, setSuppliers] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const [formOpen, setFormOpen] = useState(false);
@@ -100,10 +110,10 @@ export default function SupplierPayments() {
   const [filterTo, setFilterTo] = useState("");
   const [search, setSearch] = useState("");
 
-  // Carga pagos + catálogos del tenant — igual que QuotationFormDialog
-  const loadAll = async () => {
+  // Los pagos se cargan vía React Query (useSupplierPayments). Aquí solo se
+  // cargan los catálogos del tenant (proveedores y formas de pago).
+  const loadCatalogs = () => {
     if (!businessId) return;
-    // Catálogos: consultas directas, misma estrategia que QuotationFormDialog
     Promise.all([
       base44.entities.Supplier.filter({ business_id: businessId }),
       base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }),
@@ -111,35 +121,16 @@ export default function SupplierPayments() {
       setSuppliers(sups);
       setPaymentMethods(methods);
     }).catch(err => { console.error('SupplierPayments catalogs load failed', err); toast.error('No se pudieron cargar proveedores y formas de pago'); });
-    // Pagos: carga separada con indicador de carga
-    try {
-      const pays = await base44.entities.SupplierPayment.filter(
-        { business_id: businessId }, "-payment_date", 1000
-      );
-      setPayments(pays);
-    } catch (err) {
-      console.error("Error loading supplier payments:", err);
-      toast.error("Error al cargar pagos");
-    } finally {
-      setLoading(false);
-    }
   };
 
-  // Recarga catálogos cada vez que el formulario se abre — misma estrategia que QuotationFormDialog
+  // Carga inicial de catálogos y recarga cada vez que el formulario se abre.
   useEffect(() => {
-    if (!formOpen || !businessId) return;
-    Promise.all([
-      base44.entities.Supplier.filter({ business_id: businessId }),
-      base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }),
-    ]).then(([sups, methods]) => {
-      setSuppliers(sups);
-      setPaymentMethods(methods);
-    }).catch(err => { console.error('SupplierPayments catalogs load failed', err); toast.error('No se pudieron cargar proveedores y formas de pago'); });
-  }, [formOpen, businessId]);
+    loadCatalogs();
+  }, [businessId]);
 
   useEffect(() => {
-    loadAll();
-  }, [businessId]);
+    if (formOpen) loadCatalogs();
+  }, [formOpen, businessId]);
 
   // ── KPIs del mes actual ─────────────────────────────────────────
   const monthStart = moment().startOf("month").format("YYYY-MM-DD");
@@ -305,7 +296,7 @@ export default function SupplierPayments() {
       setFormOpen(false);
       setEditing(null);
       setForm(EMPTY_FORM);
-      await loadAll();
+      await invalidate("SupplierPayment");
     } catch (err) {
       console.error("Save payment error:", err);
       toast.error(`Error al guardar: ${err.message || "Intenta de nuevo"}`);
@@ -324,7 +315,7 @@ export default function SupplierPayments() {
       await base44.entities.SupplierPayment.delete(deletingPayment.id);
       toast.success("Pago eliminado");
       setDeletingPayment(null);
-      await loadAll();
+      await invalidate("SupplierPayment");
     } catch (err) {
       console.error("Delete payment error:", err);
       toast.error("No se pudo eliminar el pago");
@@ -334,14 +325,22 @@ export default function SupplierPayments() {
   // Cambio rápido del estado de factura desde la tabla (toggle, como en cotizaciones)
   const handleInvoiceStatusChange = async (p, value) => {
     const newVal = p.invoice_status === value ? "" : value;
-    // Optimista: refleja el cambio de inmediato
-    setPayments(prev => prev.map(x => (x.id === p.id ? { ...x, invoice_status: newVal } : x)));
+    const queryKey = ["SupplierPayment", businessId];
+    // Optimista: refleja el cambio de inmediato sobre la cache de React Query
+    await queryClient.cancelQueries({ queryKey });
+    const previous = queryClient.getQueryData(queryKey);
+    queryClient.setQueryData(queryKey, (old) =>
+      (old ?? []).map((x) => (x.id === p.id ? { ...x, invoice_status: newVal } : x))
+    );
     try {
       await base44.entities.SupplierPayment.update(p.id, { invoice_status: newVal });
     } catch (err) {
       console.error("invoice status update error", err);
       toast.error("No se pudo actualizar el estado de la factura");
-      await loadAll();
+      if (previous) queryClient.setQueryData(queryKey, previous);
+    } finally {
+      // Revalida contra el backend para confirmar que el cambio persistió.
+      invalidate("SupplierPayment");
     }
   };
 
@@ -354,7 +353,7 @@ export default function SupplierPayments() {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-64">
-      <div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+      <Spinner size="lg" label="Cargando pagos…" />
     </div>
   );
 
@@ -420,7 +419,8 @@ export default function SupplierPayments() {
       </div>
 
       {/* Filtros + tabla */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border-0 shadow-sm relative">
+        <LoadingOverlay show={refreshing} />
         <div className="p-4 border-b border-border flex flex-col lg:flex-row gap-3 lg:items-end">
           <div className="flex-1 min-w-[200px]">
             <Label className="text-xs text-muted-foreground">Buscar</Label>
