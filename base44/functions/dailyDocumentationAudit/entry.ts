@@ -6,10 +6,15 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.17.2";
+const CURRENT_VERSION_IN_CODE = "2.17.3";
 const SNAPSHOT_RELEASE_DATE = "2026-06-17";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
 const GIT_LOG_SNAPSHOT = `
+f1f32e4 Merge pull request #182 from jospabloh/claude/blissful-mccarthy-endxz1
+fed587e Merge branch 'main' into claude/blissful-mccarthy-endxz1
+8d69f50 feat: spinner de marca reutilizable + refresco automático con React Query
+cd8cb18 Merge pull request #177 from jospabloh/automated/release-pr
+795da59 chore: release and update documentation
 15096c4 Merge pull request #181 from jospabloh/claude/hopeful-cannon-36pn62
 852466e fix(cotizaciones): los estados de seguimiento no se guardaban y fallaban en silencio
 351dd60 Merge pull request #180 from jospabloh/claude/gifted-faraday-xro0v6
@@ -30,14 +35,9 @@ aeef074 Merge pull request #170 from jospabloh/dependabot/npm_and_yarn/react-win
 c3f2721 Merge pull request #169 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0
 e01d196 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0
 7e35217 Merge pull request #168 from jospabloh/dependabot/npm_and_yarn/zod-4.4.3
-e6b4b4a Merge branch 'main' into dependabot/npm_and_yarn/zod-4.4.3
-9ecbc76 Merge pull request #174 from jospabloh/claude/sandbox-modal-container-error-2yp7c9
-0377b8a fix(build): bump @vitejs/plugin-react to v6 for Vite 8 compatibility
-44b5f5c Merge pull request #167 from jospabloh/dependabot/npm_and_yarn/vite-8.0.16
-75e9fc6 Merge branch 'main' into dependabot/npm_and_yarn/vite-8.0.16
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.17.2",
+  "Actualización a la versión 2.17.3",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
