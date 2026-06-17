@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
+import { useBusinessContext } from "@/components/BusinessContext";
+import { useQuotations, useInvalidateEntities } from "@/hooks/queries";
+import { LoadingOverlay } from "@/components/ui/spinner";
 import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"; // usado en dialogs de pago/conversión
@@ -50,8 +53,13 @@ export default function Quotations() {
   const location = useLocation();
   const { can } = usePermissions();
   const { canSee } = useFieldVisibility("Cotizaciones");
-  const [quotations, setQuotations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { businessId, user } = useBusinessContext();
+  const userRole = user?.role || null;
+  const invalidate = useInvalidateEntities();
+  const quotationsQuery = useQuotations(businessId);
+  const quotations = quotationsQuery.data ?? [];
+  const loading = !businessId || quotationsQuery.isLoading;
+  const refreshing = quotationsQuery.isFetching && !quotationsQuery.isLoading;
   const [convertQuotation, setConvertQuotation] = useState(null);
   const [convertPaymentMethod, setConvertPaymentMethod] = useState("");
   const [convertError, setConvertError] = useState("");
@@ -64,8 +72,6 @@ export default function Quotations() {
   const [previewClient, setPreviewClient] = useState(null);
   const [returnQuotation, setReturnQuotation] = useState(null);
   const [settings, setSettings] = useState(null);
-  const [businessId, setBusinessId] = useState(null);
-  const [userRole, setUserRole] = useState(null);
   const [paymentMethodsCatalog, setPaymentMethodsCatalog] = useState([]);
   // Filtros tipo Excel — estado centralizado
   const [tableFilters, setTableFilters] = useState({
@@ -79,30 +85,16 @@ export default function Quotations() {
   });
 
   useEffect(() => {
-    base44.auth.me().then(u => {
-      setBusinessId(u?.business_id || null);
-      setUserRole(u?.role || null);
-      base44.entities.AppSettings.filter({ business_id: u?.business_id }).then(s => setSettings(s[0] || null)).catch(() => {});
-      base44.entities.PaymentMethod.filter({ business_id: u?.business_id, active: true }).then(setPaymentMethodsCatalog).catch(() => setPaymentMethodsCatalog([]));
-    }).catch(() => {});
-  }, []);
+    if (!businessId) return;
+    base44.entities.AppSettings.filter({ business_id: businessId }).then(s => setSettings(s[0] || null)).catch(() => {});
+    base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }).then(setPaymentMethodsCatalog).catch(() => setPaymentMethodsCatalog([]));
+  }, [businessId]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const status = params.get("status");
     if (status) setTableFilters(f => ({ ...f, statuses: new Set([status]) }));
   }, [location.search]);
-
-  const loadData = async (bId) => {
-    if (!bId) return;
-    setLoading(true);
-    base44.entities.Quotation.filter({ business_id: bId }, "-created_date", 100).then((q) => {
-      setQuotations(q);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => { if (businessId) loadData(businessId); }, [businessId]);
 
   const filtered = quotations.filter((q) => {
     // Filtro folio por columna
@@ -184,7 +176,7 @@ export default function Quotations() {
       setConvertPaymentMethod("");
       setConvertError("");
       toast.success("✓ Cotización convertida en venta");
-      loadData(businessId);
+      invalidate("Quotation");
       } catch (error) {
       const errMsg = error.response?.data?.error || error.message || "Intenta nuevamente";
       setConvertError(`❌ ${errMsg}`);
@@ -218,7 +210,7 @@ export default function Quotations() {
       setCancelQuotation(null);
       setCancelReason("");
       toast.success("✓ Cotización cancelada");
-      loadData(businessId);
+      invalidate("Quotation");
       } catch (error) {
       const errMsg = error.response?.data?.error || error.message || "Error inesperado";
       toast.error(`❌ ${errMsg}`);
@@ -262,7 +254,7 @@ export default function Quotations() {
      setPaymentMethod("");
      setPayMarkDelivered(false);
      toast.success("✓ Pago confirmado");
-     loadData(businessId);
+     invalidate("Quotation");
    } catch (error) {
      const errMsg = error.response?.data?.error || error.message || "Error inesperado";
      toast.error(`❌ ${errMsg}`);
@@ -283,7 +275,7 @@ export default function Quotations() {
 
       if (response.data.success) {
         toast.success("✓ Cotización re-generada con precios actualizados");
-        loadData(businessId);
+        invalidate("Quotation");
       } else {
         toast.error(`Error: ${response.data.error || "No se pudo re-generar"}`);
       }
@@ -324,7 +316,9 @@ export default function Quotations() {
       </div>
 
       {can('Cotizaciones', 'view') && (
-      <VirtualizedQuotationTable
+      <div className="relative">
+        <LoadingOverlay show={refreshing} />
+        <VirtualizedQuotationTable
         quotations={filtered}
         statusConfig={statusConfig}
         filters={tableFilters}
@@ -378,7 +372,7 @@ export default function Quotations() {
               updates: { invoice_status: val }
             });
             if (response.data?.success) {
-              loadData(businessId);
+              invalidate("Quotation");
             } else {
               toast.error(response.data?.error || response.data?.message || "No se pudo actualizar el estado de facturación");
             }
@@ -401,7 +395,7 @@ export default function Quotations() {
               return;
             }
             toast.success("✓ Pedido marcado como entregado");
-            loadData(businessId);
+            invalidate("Quotation");
           } else {
             let updates;
             if (action === "in_route") {
@@ -415,7 +409,7 @@ export default function Quotations() {
                 updates
               });
               if (response.data?.success) {
-                loadData(businessId);
+                invalidate("Quotation");
               } else {
                 toast.error(response.data?.error || response.data?.message || "No se pudo actualizar el estado de seguimiento");
               }
@@ -427,13 +421,14 @@ export default function Quotations() {
         onDeliveredChange={() => {}}
         isExpired={isExpired}
         />
+      </div>
         )}
 
       <PartialReturnDialog
         open={!!returnQuotation}
         onOpenChange={(v) => !v && setReturnQuotation(null)}
         quotation={returnQuotation}
-        onSaved={() => loadData(businessId)}
+        onSaved={() => invalidate("Quotation")}
       />
 
       <QuotationPreviewDialog
@@ -444,12 +439,12 @@ export default function Quotations() {
         userRole={userRole}
         onOpenChange={(v) => {
           if (!v) {
-            loadData(businessId);
+            invalidate("Quotation");
             setPreviewQuotation(null);
             setPreviewClient(null);
           }
         }}
-        onOnDemandCreated={() => loadData(businessId)}
+        onOnDemandCreated={() => invalidate("Quotation")}
         onQuotationUpdated={(updated) => setPreviewQuotation(updated)}
       />
 

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
+import { useBusinessContext } from "@/components/BusinessContext";
+import { useMovements, useProducts, useInvalidateEntities } from "@/hooks/queries";
+import { LoadingOverlay } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -53,42 +56,25 @@ export default function Movements() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = usePermissions();
-  const [movements, setMovements] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [canCreateMovement, setCanCreateMovement] = useState(false);
+  const { businessId, user } = useBusinessContext();
+  const isAdmin = user?.role === "admin";
+  const invalidate = useInvalidateEntities();
+  const movementsQuery = useMovements(businessId);
+  const productsQuery = useProducts(businessId);
+  const movements = movementsQuery.data ?? [];
+  const products = productsQuery.data ?? [];
+  const loading = !businessId || movementsQuery.isLoading;
+  const refreshing = movementsQuery.isFetching && !movementsQuery.isLoading;
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [businessId, setBusinessId] = useState(null);
   const [deletingMovement, setDeletingMovement] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [editingMovement, setEditingMovement] = useState(null);
   const [confirmingPayment, setConfirmingPayment] = useState(null);
   const [productIdFilter, setProductIdFilter] = useState(null);
 
-  const loadData = async (bId) => {
-    if (!bId) return;
-    Promise.all([
-      base44.entities.Movement.filter({ business_id: bId }, "-created_date", 1000),
-      base44.entities.Product.filter({ business_id: bId }, "-created_date", 500),
-    ]).then(([movs, prods]) => {
-      setMovements(movs);
-      setProducts(prods);
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    base44.auth.me().then(u => {
-      const role = u?.role;
-      setIsAdmin(role === "admin");
-      // Admins AND almacenistas can create inventory movements
-      setCanCreateMovement(role === "admin" || role === "almacenista" || role === "user");
-      setBusinessId(u?.business_id || null);
-      loadData(u?.business_id || null);
-    }).catch(() => setLoading(false));
-  }, []);
+  // Tras una mutación de inventario, refresca movimientos y productos (el stock cambia).
+  const refreshInventory = () => invalidate("Movement", "Product");
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -134,7 +120,7 @@ export default function Movements() {
       }
       toast.success("Movimiento eliminado y stock revertido");
       setDeletingMovement(null);
-      loadData(businessId);
+      refreshInventory();
     } catch (e) {
       toast.error(`Error: ${e.message}`);
     } finally {
@@ -155,7 +141,7 @@ export default function Movements() {
       }
       toast.success("Pago confirmado");
       setConfirmingPayment(null);
-      loadData(businessId);
+      refreshInventory();
     } catch (e) {
       toast.error(`Error: ${e.message}`);
     }
@@ -272,7 +258,8 @@ export default function Movements() {
         </div>
       </div>
 
-      <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+      <div className="relative bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+        <LoadingOverlay show={refreshing} />
         <div className="overflow-x-auto">
           <Table role="table" aria-label="Historial de movimientos de inventario">
             <TableHeader>
@@ -390,7 +377,7 @@ export default function Movements() {
         open={!!editingMovement}
         onOpenChange={(o) => !o && setEditingMovement(null)}
         movement={editingMovement}
-        onSaved={() => loadData(businessId)}
+        onSaved={refreshInventory}
       />
 
       {/* Confirmar pago */}
