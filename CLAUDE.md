@@ -21,3 +21,44 @@ field never sticks and reverts to blank on reload.
 > Reference: this exact issue caused the "Pagos a Proveedores" invoice-status
 > (semáforo) not to save — the `invoice_status` field was in the repo `.jsonc`
 > but missing from the deployed `SupplierPayment` schema.
+
+## Base44 RLS field paths (multi-tenant isolation)
+
+Every entity↔user RLS comparison has **two halves**, and getting **either** one
+wrong fails *silently* — there is no error, the rule just stops matching. Both
+halves must be correct:
+
+- **Entity side (left of the rule):** custom fields are stored under `data.`, so
+  the key must be a built-in (`id`, `created_by_id`, `created_date`,
+  `updated_date`) or start with `data.`. A bare `business_id` points at a field
+  that doesn't exist → the rule matches **every** row → RLS is effectively
+  **OFF** (cross-tenant data leak).
+- **User side (the template, right of the rule):** custom user fields resolve as
+  `{{user.data.<field>}}`. The only bare built-ins are `{{user.id}}`,
+  `{{user.email}}`, `{{user.role}}`. `{{user.business_id}}` resolves to
+  **nothing** → the rule matches **zero** rows → every tenant sees an empty app
+  ("cero items").
+
+Correct tenant rule for a business-scoped entity (all of create/read/update/
+delete):
+
+```jsonc
+"data.business_id": "{{user.data.business_id}}"
+```
+
+For the `Business` entity itself, scope by its built-in `id`:
+`"id": "{{user.data.business_id}}"`.
+
+> Reference (2026-06-16 outage): a "fix" corrected only the entity side
+> (`business_id` → `data.business_id`) but left the user side as the
+> non-resolving `{{user.business_id}}`. Before, both halves were wrong so the
+> rule was a no-op (everyone saw everything); fixing only one half flipped it to
+> matching nothing, so **every tenant saw zero items**. Fix was
+> `{{user.business_id}}` → `{{user.data.business_id}}` on all 15 business
+> entities + `Business`.
+
+**Guard:** `npm run validate:rls` (also runs in CI) parses every
+`base44/entities/*.jsonc` and fails on any invalid entity- or user-side RLS
+path. Run it after touching any `rls` block, and remember to **deploy** the
+fixed schema to the Base44 backend (`update_entity_schema`) — the repo `.jsonc`
+alone does not change runtime behavior.

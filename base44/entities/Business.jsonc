@@ -141,13 +141,13 @@
   "rls": {
     "create": {},
     "read": {
-      "id": "{{user.business_id}}"
+      "id": "{{user.data.business_id}}"
     },
     "update": {
-      "id": "{{user.business_id}}"
+      "id": "{{user.data.business_id}}"
     },
     "delete": {
-      "id": "{{user.business_id}}"
+      "id": "{{user.data.business_id}}"
     }
   }
 }
