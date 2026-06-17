@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-16T17:36:00.969Z
+// Generado: 2026-06-17T20:07:11.034Z
 
-export const SNAPSHOT_VERSION = "2.17.1";
+export const SNAPSHOT_VERSION = "2.17.2";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-06-16";
+export const SNAPSHOT_RELEASE_DATE = "2026-06-17";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
 
-export const SNAPSHOT_GIT_LOG = "9ce0301 Merge pull request #175 from jospabloh/claude/fix-react-window-build\n4e14b12 fix(build): pin react-window to ^1.8.11 to fix MISSING_EXPORT build failure\naeef074 Merge pull request #170 from jospabloh/dependabot/npm_and_yarn/react-window-2.2.7\n9b801b5 Merge branch 'main' into dependabot/npm_and_yarn/react-window-2.2.7\nc3f2721 Merge pull request #169 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0\ne01d196 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0\n7e35217 Merge pull request #168 from jospabloh/dependabot/npm_and_yarn/zod-4.4.3\ne6b4b4a Merge branch 'main' into dependabot/npm_and_yarn/zod-4.4.3\n9ecbc76 Merge pull request #174 from jospabloh/claude/sandbox-modal-container-error-2yp7c9\n0377b8a fix(build): bump @vitejs/plugin-react to v6 for Vite 8 compatibility\n44b5f5c Merge pull request #167 from jospabloh/dependabot/npm_and_yarn/vite-8.0.16\n75e9fc6 Merge branch 'main' into dependabot/npm_and_yarn/vite-8.0.16\n5ae2bdb Merge pull request #166 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-slot-1.2.5\n84f5f61 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-slot-1.2.5\nffaab2a Merge pull request #165 from jospabloh/dependabot/npm_and_yarn/eslint-plugin-react-refresh-0.5.3\nc655ce3 chore(deps-dev): bump eslint-plugin-react-refresh from 0.4.26 to 0.5.3\n62829f9 Merge pull request #164 from jospabloh/dependabot/npm_and_yarn/globals-17.6.0\ndf3d332 Merge branch 'main' into dependabot/npm_and_yarn/globals-17.6.0\ne953801 chore(deps): bump @radix-ui/react-slot from 1.2.4 to 1.3.0\nabe8fa0 Merge pull request #163 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-scroll-area-1.2.11\nb2668eb Merge pull request #162 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-menubar-1.1.17\n9a9f79a chore(deps): bump @radix-ui/react-context-menu from 2.2.16 to 2.3.1\nc81ffee Merge pull request #161 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-avatar-1.1.12\n72ee4f0 Merge pull request #173 from jospabloh/claude/quote-save-many-products-nzyg5a\n6d03ad4 fix(cotizaciones): mostrar el error real del servidor al guardar";
+export const SNAPSHOT_GIT_LOG = "15096c4 Merge pull request #181 from jospabloh/claude/hopeful-cannon-36pn62\n852466e fix(cotizaciones): los estados de seguimiento no se guardaban y fallaban en silencio\n351dd60 Merge pull request #180 from jospabloh/claude/gifted-faraday-xro0v6\n4ba25f6 Merge branch 'main' into claude/gifted-faraday-xro0v6\n51e1439 fix(rls): add service-role branch to read rules (asServiceRole reads)\n0555ecf Merge pull request #179 from jospabloh/claude/gifted-faraday-xro0v6\nf94e8ce fix(rls): restaurar escrituras — agregar rama service-role a create/update/delete\n0c6bee9 Merge pull request #178 from jospabloh/claude/baristop-zero-items-rls-6s4b4l\n61416ba fix(rls): resolver inquilino por {{user.data.business_id}} (arregla \"cero items\")\n7c26cee Merge pull request #176 from jospabloh/claude/confident-lamport-isg849\nc73dba1 fix(rls): corregir prefijo de campo en reglas RLS multi-tenant\ne071af1 Merge pull request #172 from jospabloh/automated/release-pr\n8a909c6 chore: release and update documentation\n9ce0301 Merge pull request #175 from jospabloh/claude/fix-react-window-build\n4e14b12 fix(build): pin react-window to ^1.8.11 to fix MISSING_EXPORT build failure\naeef074 Merge pull request #170 from jospabloh/dependabot/npm_and_yarn/react-window-2.2.7\n9b801b5 Merge branch 'main' into dependabot/npm_and_yarn/react-window-2.2.7\nc3f2721 Merge pull request #169 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0\ne01d196 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0\n7e35217 Merge pull request #168 from jospabloh/dependabot/npm_and_yarn/zod-4.4.3\ne6b4b4a Merge branch 'main' into dependabot/npm_and_yarn/zod-4.4.3\n9ecbc76 Merge pull request #174 from jospabloh/claude/sandbox-modal-container-error-2yp7c9\n0377b8a fix(build): bump @vitejs/plugin-react to v6 for Vite 8 compatibility\n44b5f5c Merge pull request #167 from jospabloh/dependabot/npm_and_yarn/vite-8.0.16\n75e9fc6 Merge branch 'main' into dependabot/npm_and_yarn/vite-8.0.16";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.17.1",
+  "Actualización a la versión 2.17.2",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.17.2",
+    date: "2026-06-17",
+    changes: [
+    "Actualización a la versión 2.17.2"
+    ]
+  },
   {
     version: "2.17.1",
     date: "2026-06-16",

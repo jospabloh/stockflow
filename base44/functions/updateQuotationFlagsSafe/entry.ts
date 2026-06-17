@@ -23,10 +23,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'updates object is required' }, { status: 400 });
     }
 
-    // Fetch quotation to validate ownership
-    const quotations = await base44.entities.Quotation.filter({ id: quotation_id });
+    // Fetch quotation via service role (consistent with the other quotation
+    // Safe functions: deliver/convert/cancel/update/partialReturn all read with
+    // asServiceRole). A user-scoped read here depends on the entity read RLS
+    // resolving correctly; when it doesn't, filter() returns [] and this
+    // function silently 403s — the tracking-state change just "does nothing".
+    // Tenant isolation is enforced by the explicit business_id check below.
+    const quotations = await base44.asServiceRole.entities.Quotation.filter({ id: quotation_id });
     if (quotations.length === 0) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+      return Response.json({ error: 'Quotation not found' }, { status: 404 });
     }
 
     const quotation = quotations[0];

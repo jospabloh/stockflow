@@ -33,8 +33,10 @@ Deno.serve(async (req) => {
     if (!amount || Number(amount) <= 0) return Response.json({ error: 'amount must be > 0' }, { status: 400 });
     if (!payment_method) return Response.json({ error: 'payment_method is required' }, { status: 400 });
 
-    // Fetch quotation
-    const quotations = await base44.entities.Quotation.filter({ id: quotation_id });
+    // Fetch quotation via service role (consistent with the other quotation
+    // Safe functions; avoids silent no-ops when the user-scoped read RLS does
+    // not resolve). Tenant isolation enforced by the business_id check below.
+    const quotations = await base44.asServiceRole.entities.Quotation.filter({ id: quotation_id });
     if (quotations.length === 0) return Response.json({ error: 'Quotation not found' }, { status: 404 });
 
     const q = quotations[0];

@@ -372,11 +372,19 @@ export default function Quotations() {
         }}
         onRegenerate={handleRegenerate}
         onInvoiceStatusChange={async (q, val) => {
-          const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
-            quotation_id: q.id,
-            updates: { invoice_status: val }
-          });
-          if (response.data.success) loadData(businessId);
+          try {
+            const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
+              quotation_id: q.id,
+              updates: { invoice_status: val }
+            });
+            if (response.data?.success) {
+              loadData(businessId);
+            } else {
+              toast.error(response.data?.error || response.data?.message || "No se pudo actualizar el estado de facturación");
+            }
+          } catch (err) {
+            toast.error(err?.response?.data?.error || err?.message || "No se pudo actualizar el estado de facturación");
+          }
         }}
         onInRouteChange={async (q, action) => {
           if (action === "delivered") {
@@ -401,11 +409,19 @@ export default function Quotations() {
             } else {
               updates = { in_route: false, delivered: false };
             }
-            const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
-              quotation_id: q.id,
-              updates
-            });
-            if (response.data.success) loadData(businessId);
+            try {
+              const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
+                quotation_id: q.id,
+                updates
+              });
+              if (response.data?.success) {
+                loadData(businessId);
+              } else {
+                toast.error(response.data?.error || response.data?.message || "No se pudo actualizar el estado de seguimiento");
+              }
+            } catch (err) {
+              toast.error(err?.response?.data?.error || err?.message || "No se pudo actualizar el estado de seguimiento");
+            }
           }
         }}
         onDeliveredChange={() => {}}
