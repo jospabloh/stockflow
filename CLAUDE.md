@@ -39,23 +39,53 @@ halves must be correct:
   **nothing** → the rule matches **zero** rows → every tenant sees an empty app
   ("cero items").
 
-Correct tenant rule for a business-scoped entity (all of create/read/update/
-delete):
+**The read rule and the write rules are NOT the same.** Reads run in the end
+user's context, so the strict tenant template is correct. But every backend
+write goes through `base44.asServiceRole` (see next section), which evaluates as
+`role: admin` with **no end-user context** — so a write rule of only
+`{{user.data.business_id}}` resolves the user template to **empty** and rejects
+the write. Reads keep working while **every** create/update/delete fails: a
+silent, app-wide write outage.
+
+Correct **read** rule for a business-scoped entity:
 
 ```jsonc
-"data.business_id": "{{user.data.business_id}}"
+"read": { "data.business_id": "{{user.data.business_id}}" }
 ```
 
-For the `Business` entity itself, scope by its built-in `id`:
-`"id": "{{user.data.business_id}}"`.
+Correct **create / update / delete** rules — same tenant check **OR** the service
+role (mirrors the `Session` entity, whose `asServiceRole` writes already work):
 
-> Reference (2026-06-16 outage): a "fix" corrected only the entity side
+```jsonc
+"update": {
+  "$or": [
+    { "data.business_id": "{{user.data.business_id}}" },
+    { "user_condition": { "role": "admin" } }
+  ]
+}
+```
+
+For the `Business` entity itself, scope by its built-in `id`
+(`"id": "{{user.data.business_id}}"`), with the same `$or` admin branch on
+update/delete.
+
+> Reference (2026-06-16 outage — reads): a "fix" corrected only the entity side
 > (`business_id` → `data.business_id`) but left the user side as the
 > non-resolving `{{user.business_id}}`. Before, both halves were wrong so the
 > rule was a no-op (everyone saw everything); fixing only one half flipped it to
 > matching nothing, so **every tenant saw zero items**. Fix was
 > `{{user.business_id}}` → `{{user.data.business_id}}` on all 15 business
 > entities + `Business`.
+
+> Reference (2026-06-17 outage — writes): activating those now-correct rules on
+> all four operations broke **every write app-wide**. The backend "Safe"
+> functions write via `base44.asServiceRole` (no user context), so the
+> create/update/delete templates resolved to empty and Base44 rejected the
+> writes. Symptom: reads work, but nothing saves — "no me deja guardar" /
+> marking a pedido delivered "no cambia", with **zero** records created or
+> updated in any tenant after the deploy. Fix: add the
+> `{"user_condition":{"role":"admin"}}` `$or` branch to create/update/delete on
+> all 15 business entities + `Business`, leaving `read` strict.
 
 **Guard:** `npm run validate:rls` (also runs in CI) parses every
 `base44/entities/*.jsonc` and fails on any invalid entity- or user-side RLS

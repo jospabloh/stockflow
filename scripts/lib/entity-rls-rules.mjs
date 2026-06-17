@@ -117,6 +117,35 @@ export function collectRlsErrors(entitiesDir) {
             `filter read by {"data.business_id":"{{user.data.business_id}}"}.`,
         );
       }
+
+      // WRITE side: create/update/delete must allow the service role. Backend
+      // "Safe" functions perform every write via base44.asServiceRole, which
+      // evaluates as role:admin and has NO end-user context — so a write rule
+      // of only {"data.business_id":"{{user.data.business_id}}"} resolves the
+      // user template to empty and rejects the write. The result is a silent,
+      // app-wide write outage (every create/update/delete via a Safe function
+      // fails) while reads keep working. The fix is the same OR-branch the
+      // Session entity already uses: {"user_condition":{"role":"admin"}}.
+      const adminBranch = '"user_condition":{"role":"admin"}';
+      for (const op of ["create", "update", "delete"]) {
+        if (!(op in rls)) {
+          errors.push(
+            `${entity} [${op}]: tenant-scoped entity must define a ${op} rule.`,
+          );
+          continue;
+        }
+        if (!JSON.stringify(rls[op]).includes(adminBranch)) {
+          errors.push(
+            `${entity} [${op}]: tenant-scoped write rule must include ` +
+              `{"user_condition":{"role":"admin"}} (e.g. {"$or":[` +
+              `{"data.business_id":"{{user.data.business_id}}"},` +
+              `{"user_condition":{"role":"admin"}}]}). Backend writes go ` +
+              `through base44.asServiceRole (role:admin, no end-user context); ` +
+              `without this branch the user template resolves to empty and ` +
+              `EVERY write via a Safe function fails silently.`,
+          );
+        }
+      }
     }
   }
 
