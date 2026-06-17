@@ -51,6 +51,24 @@ export function useSuppliers(businessId) {
   });
 }
 
+export function useQuotations(businessId) {
+  return useQuery({
+    queryKey: ["Quotation", businessId],
+    queryFn: () =>
+      base44.entities.Quotation.filter({ business_id: businessId }, "-created_date", 100),
+    enabled: !!businessId,
+  });
+}
+
+export function useMovements(businessId) {
+  return useQuery({
+    queryKey: ["Movement", businessId],
+    queryFn: () =>
+      base44.entities.Movement.filter({ business_id: businessId }, "-created_date", 1000),
+    enabled: !!businessId,
+  });
+}
+
 export function usePaymentMethods(businessId) {
   return useQuery({
     queryKey: ["PaymentMethod", businessId],

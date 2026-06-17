@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
 import { Card } from "@/components/ui/card";
@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Pencil, X, Users } from "lucide-react";
 import { useBusinessContext } from "@/components/BusinessContext";
+import { useSuppliers, useInvalidateEntities } from "@/hooks/queries";
+import { Spinner, LoadingOverlay } from "@/components/ui/spinner";
 import { createButtonProps, createTableProps } from "@/lib/a11y";
 import {
   Table,
@@ -35,28 +37,15 @@ function parseExtraContacts(raw) {
 export default function Suppliers() {
   const { businessId } = useBusinessContext();
   const { can } = usePermissions();
-  const [suppliers, setSuppliers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const invalidate = useInvalidateEntities();
+  const suppliersQuery = useSuppliers(businessId);
+  const suppliers = suppliersQuery.data ?? [];
+  const loading = !businessId || suppliersQuery.isLoading;
+  const refreshing = suppliersQuery.isFetching && !suppliersQuery.isLoading;
   const [supFormOpen, setSupFormOpen] = useState(false);
   const [editingSup, setEditingSup] = useState(null);
   const [supForm, setSupForm] = useState(EMPTY_FORM);
   const [fieldErrors, setFieldErrors] = useState({});
-
-  useEffect(() => {
-    const checkAndLoad = async () => {
-      try {
-        if (businessId) {
-          const sups = await base44.entities.Supplier.filter({ business_id: businessId });
-          setSuppliers(sups);
-        }
-      } catch (err) {
-        console.error("Error loading suppliers:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkAndLoad();
-  }, [businessId]);
 
   const openNew = () => {
     setEditingSup(null);
@@ -128,8 +117,7 @@ export default function Suppliers() {
         }
         toast.success("✓ Proveedor creado exitosamente");
       }
-      const sups = await base44.entities.Supplier.filter({ business_id: businessId });
-      setSuppliers(sups);
+      await invalidate("Supplier");
       setSupFormOpen(false);
       setEditingSup(null);
       setSupForm(EMPTY_FORM);
@@ -145,20 +133,21 @@ export default function Suppliers() {
       toast.error(response.data.error || 'No se pudo eliminar');
       return;
     }
-    setSuppliers(suppliers.filter((s) => s.id !== id));
+    await invalidate("Supplier");
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+        <Spinner size="lg" label="Cargando proveedores…" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      <Card className="border-0 shadow-sm p-6">
+      <Card className="border-0 shadow-sm p-6 relative">
+        <LoadingOverlay show={refreshing} />
         <div className="flex items-center justify-between mb-4">
           <h1 className="font-semibold text-slate-700 text-lg">Proveedores</h1>
           {can('Proveedores', 'create') && (
