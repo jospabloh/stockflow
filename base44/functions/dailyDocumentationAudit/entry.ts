@@ -6,10 +6,23 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.17.1";
-const SNAPSHOT_RELEASE_DATE = "2026-06-16";
+const CURRENT_VERSION_IN_CODE = "2.17.2";
+const SNAPSHOT_RELEASE_DATE = "2026-06-17";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
 const GIT_LOG_SNAPSHOT = `
+15096c4 Merge pull request #181 from jospabloh/claude/hopeful-cannon-36pn62
+852466e fix(cotizaciones): los estados de seguimiento no se guardaban y fallaban en silencio
+351dd60 Merge pull request #180 from jospabloh/claude/gifted-faraday-xro0v6
+4ba25f6 Merge branch 'main' into claude/gifted-faraday-xro0v6
+51e1439 fix(rls): add service-role branch to read rules (asServiceRole reads)
+0555ecf Merge pull request #179 from jospabloh/claude/gifted-faraday-xro0v6
+f94e8ce fix(rls): restaurar escrituras — agregar rama service-role a create/update/delete
+0c6bee9 Merge pull request #178 from jospabloh/claude/baristop-zero-items-rls-6s4b4l
+61416ba fix(rls): resolver inquilino por {{user.data.business_id}} (arregla "cero items")
+7c26cee Merge pull request #176 from jospabloh/claude/confident-lamport-isg849
+c73dba1 fix(rls): corregir prefijo de campo en reglas RLS multi-tenant
+e071af1 Merge pull request #172 from jospabloh/automated/release-pr
+8a909c6 chore: release and update documentation
 9ce0301 Merge pull request #175 from jospabloh/claude/fix-react-window-build
 4e14b12 fix(build): pin react-window to ^1.8.11 to fix MISSING_EXPORT build failure
 aeef074 Merge pull request #170 from jospabloh/dependabot/npm_and_yarn/react-window-2.2.7
@@ -22,22 +35,9 @@ e6b4b4a Merge branch 'main' into dependabot/npm_and_yarn/zod-4.4.3
 0377b8a fix(build): bump @vitejs/plugin-react to v6 for Vite 8 compatibility
 44b5f5c Merge pull request #167 from jospabloh/dependabot/npm_and_yarn/vite-8.0.16
 75e9fc6 Merge branch 'main' into dependabot/npm_and_yarn/vite-8.0.16
-5ae2bdb Merge pull request #166 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-slot-1.2.5
-84f5f61 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-slot-1.2.5
-ffaab2a Merge pull request #165 from jospabloh/dependabot/npm_and_yarn/eslint-plugin-react-refresh-0.5.3
-c655ce3 chore(deps-dev): bump eslint-plugin-react-refresh from 0.4.26 to 0.5.3
-62829f9 Merge pull request #164 from jospabloh/dependabot/npm_and_yarn/globals-17.6.0
-df3d332 Merge branch 'main' into dependabot/npm_and_yarn/globals-17.6.0
-e953801 chore(deps): bump @radix-ui/react-slot from 1.2.4 to 1.3.0
-abe8fa0 Merge pull request #163 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-scroll-area-1.2.11
-b2668eb Merge pull request #162 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-menubar-1.1.17
-9a9f79a chore(deps): bump @radix-ui/react-context-menu from 2.2.16 to 2.3.1
-c81ffee Merge pull request #161 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-avatar-1.1.12
-72ee4f0 Merge pull request #173 from jospabloh/claude/quote-save-many-products-nzyg5a
-6d03ad4 fix(cotizaciones): mostrar el error real del servidor al guardar
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.17.1",
+  "Actualización a la versión 2.17.2",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
