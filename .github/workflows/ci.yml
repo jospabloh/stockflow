@@ -9,6 +9,8 @@ jobs:
         with:
           deno-version: v2.x
       - run: deno lint
+      - name: Validate entity RLS rules
+        run: node scripts/validate-entity-rls.mjs
       - run: |
           if rg -l --glob '*_test.ts' --glob '*_test.js' --glob '*.test.ts' --glob '*.test.js' . > /dev/null; then
             deno test

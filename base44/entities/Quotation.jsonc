@@ -203,16 +203,16 @@
   ],
   "rls": {
     "create": {
-      "data.business_id": "{{user.business_id}}"
+      "data.business_id": "{{user.data.business_id}}"
     },
     "read": {
-      "data.business_id": "{{user.business_id}}"
+      "data.business_id": "{{user.data.business_id}}"
     },
     "update": {
-      "data.business_id": "{{user.business_id}}"
+      "data.business_id": "{{user.data.business_id}}"
     },
     "delete": {
-      "data.business_id": "{{user.business_id}}"
+      "data.business_id": "{{user.data.business_id}}"
     }
   }
 }
