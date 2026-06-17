@@ -39,25 +39,29 @@ halves must be correct:
   **nothing** → the rule matches **zero** rows → every tenant sees an empty app
   ("cero items").
 
-**The read rule and the write rules are NOT the same.** Reads run in the end
-user's context, so the strict tenant template is correct. But every backend
-write goes through `base44.asServiceRole` (see next section), which evaluates as
-`role: admin` with **no end-user context** — so a write rule of only
-`{{user.data.business_id}}` resolves the user template to **empty** and rejects
-the write. Reads keep working while **every** create/update/delete fails: a
-silent, app-wide write outage.
+**All four operations (read, create, update, delete) need the same `$or` shape.**
+The backend "Safe" functions go through `base44.asServiceRole` (see next
+section) for **both reads and writes**, and `asServiceRole` evaluates as
+`role: admin` with **no end-user context**. So a rule of only
+`{{user.data.business_id}}` resolves the user template to **empty**:
 
-Correct **read** rule for a business-scoped entity:
+- on **writes** → Base44 rejects the write (app-wide silent write outage);
+- on **reads** → `asServiceRole.filter()` returns **zero rows**, so any function
+  that loads a record before acting on it (`deliverQuotationSafe`, convert,
+  register-payment, `manageSession`) sees "not found" and silently does nothing
+  (a pedido won't mark Entregado, sessions duplicate every heartbeat).
+
+The tenant branch still isolates **end users**: an `almacenista` never matches
+`role: admin`, so they only ever see their own tenant. The admin branch is the
+service-role/owner tier (same access the write rules already grant). Trade-off
+accepted 2026-06-17: a `role: admin` user could read across tenants via raw API
+(never through the app UI, which always filters by `business_id`).
+
+Correct rule for a business-scoped entity — **identical `$or` on all four ops**
+(mirrors the `Session` entity, whose `asServiceRole` access already works):
 
 ```jsonc
-"read": { "data.business_id": "{{user.data.business_id}}" }
-```
-
-Correct **create / update / delete** rules — same tenant check **OR** the service
-role (mirrors the `Session` entity, whose `asServiceRole` writes already work):
-
-```jsonc
-"update": {
+"read": {
   "$or": [
     { "data.business_id": "{{user.data.business_id}}" },
     { "user_condition": { "role": "admin" } }
@@ -66,8 +70,8 @@ role (mirrors the `Session` entity, whose `asServiceRole` writes already work):
 ```
 
 For the `Business` entity itself, scope by its built-in `id`
-(`"id": "{{user.data.business_id}}"`), with the same `$or` admin branch on
-update/delete.
+(`"id": "{{user.data.business_id}}"`) inside the same `$or` admin branch on
+read/update/delete.
 
 > Reference (2026-06-16 outage — reads): a "fix" corrected only the entity side
 > (`business_id` → `data.business_id`) but left the user side as the
@@ -86,6 +90,20 @@ update/delete.
 > updated in any tenant after the deploy. Fix: add the
 > `{"user_condition":{"role":"admin"}}` `$or` branch to create/update/delete on
 > all 15 business entities + `Business`, leaving `read` strict.
+
+> Reference (2026-06-17 outage — reads): leaving `read` strict (above) still
+> broke every backend action that **reads a record before writing it**. Those
+> functions load via `asServiceRole.entities.X.filter(...)`, which (as
+> `role: admin`, no user context) matched **zero** rows under the strict read
+> rule → "not found" → the action silently no-ops. Symptom: marking a pedido
+> **Entregado** did nothing for **both** roles (admin *and* almacenista),
+> convert/register-payment failed, and `manageSession` created a duplicate
+> `Session` on every heartbeat. Fix: add the same
+> `{"user_condition":{"role":"admin"}}` `$or` branch to **`read`** on all 15
+> business entities + `Business` + `Session`. End-user isolation is preserved
+> (non-admin users never match the admin branch). The alternative — rewriting
+> ~70 functions to read via the user-scoped client — was rejected as far riskier
+> (many are shared with cron/internal jobs that have no user context).
 
 **Guard:** `npm run validate:rls` (also runs in CI) parses every
 `base44/entities/*.jsonc` and fails on any invalid entity- or user-side RLS

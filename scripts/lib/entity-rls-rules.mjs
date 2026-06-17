@@ -111,10 +111,36 @@ export function collectRlsErrors(entitiesDir) {
     if (hasBusinessId && rls.read && !adminGated) {
       businessScoped++;
       const readJson = JSON.stringify(rls.read);
+      const adminBranch = '"user_condition":{"role":"admin"}';
       if (!readJson.includes('"data.business_id":"{{user.data.business_id}}"')) {
         errors.push(
           `${entity} [read]: tenant-scoped entity (has business_id) must ` +
             `filter read by {"data.business_id":"{{user.data.business_id}}"}.`,
+        );
+      }
+
+      // READ side: the tenant equality above keeps end users isolated (an
+      // almacenista never matches the admin branch), but the read rule must
+      // ALSO carry the service-role branch. Backend "Safe" functions load a
+      // record via base44.asServiceRole BEFORE acting on it, and asServiceRole
+      // evaluates as role:admin with NO end-user context — so a read rule of
+      // only {"data.business_id":"{{user.data.business_id}}"} resolves the user
+      // template to empty and asServiceRole.filter() returns ZERO rows. The
+      // function then sees "not found" and fails silently: marking a pedido
+      // Entregado / converting / registering a payment does nothing, and
+      // manageSession can never find the existing session so it creates a new
+      // one on every heartbeat (duplicate Sessions). Same OR-branch as writes.
+      if (!readJson.includes(adminBranch)) {
+        errors.push(
+          `${entity} [read]: tenant-scoped read rule must include the ` +
+            `service-role branch {"user_condition":{"role":"admin"}} (e.g. ` +
+            `{"$or":[{"data.business_id":"{{user.data.business_id}}"},` +
+            `{"user_condition":{"role":"admin"}}]}). Backend reads go through ` +
+            `base44.asServiceRole (role:admin, no end-user context); without ` +
+            `this branch asServiceRole.filter() returns empty and Safe ` +
+            `functions that read-then-write fail silently (deliver/convert/` +
+            `payments do nothing; Sessions duplicate). End users stay isolated ` +
+            `via the tenant equality — almacenistas never match role:admin.`,
         );
       }
 
@@ -126,7 +152,6 @@ export function collectRlsErrors(entitiesDir) {
       // app-wide write outage (every create/update/delete via a Safe function
       // fails) while reads keep working. The fix is the same OR-branch the
       // Session entity already uses: {"user_condition":{"role":"admin"}}.
-      const adminBranch = '"user_condition":{"role":"admin"}';
       for (const op of ["create", "update", "delete"]) {
         if (!(op in rls)) {
           errors.push(
