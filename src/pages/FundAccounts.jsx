@@ -115,7 +115,7 @@ export default function FundAccounts() {
     }
   };
 
-  if (!can('FundAccounts', 'view')) {
+  if (!can('CuentasFondo', 'view')) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <Shield className="h-12 w-12 text-rose-300" />
@@ -125,9 +125,9 @@ export default function FundAccounts() {
     );
   }
 
-  const canCreate = can('FundAccounts', 'create');
-  const canEdit = can('FundAccounts', 'edit');
-  const canDelete = can('FundAccounts', 'delete');
+  const canCreate = can('CuentasFondo', 'create');
+  const canEdit = can('CuentasFondo', 'edit');
+  const canDelete = can('CuentasFondo', 'delete');
 
   if (loading) {
     return (
