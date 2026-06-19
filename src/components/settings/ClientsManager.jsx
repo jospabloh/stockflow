@@ -124,7 +124,7 @@ export default function ClientsManager() {
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-slate-700 text-lg">Clientes</h3>
         {can('Clientes', 'create') && (
-        <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={openNew}>
+        <Button size="sm" className="bg-brand-600 hover:bg-brand-700" onClick={openNew}>
           <Plus className="h-4 w-4 mr-1" /> Nuevo cliente
         </Button>
         )}
@@ -310,7 +310,7 @@ export default function ClientsManager() {
                   </div>
                 )}
                 {!form.force_zero_price && (form.force_wholesale_all_products || form.force_purchase_all_products) && (
-                  <p className="text-xs text-indigo-600 font-medium">
+                  <p className="text-xs text-brand-600 font-medium">
                     ⚡ {form.force_purchase_all_products ? "Precio de compra + 20 MXN transporte/producto" : "Precio mayoreo"} activo para este cliente
                   </p>
                 )}
@@ -324,7 +324,7 @@ export default function ClientsManager() {
           </div>
           <div className="flex justify-end gap-3 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-border shrink-0 bg-card">
             <Button variant="outline" onClick={() => setFormOpen(false)} disabled={saving}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={!form.name?.trim() || !form.business_name?.trim() || !form.phone?.trim() || saving} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button onClick={handleSave} disabled={!form.name?.trim() || !form.business_name?.trim() || !form.phone?.trim() || saving} className="bg-brand-600 hover:bg-brand-700">
               {saving ? "Guardando..." : "Guardar"}
             </Button>
           </div>

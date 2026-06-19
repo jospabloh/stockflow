@@ -217,8 +217,8 @@ export default function TopSalesByClientReport({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-0 shadow-sm p-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center">
-              <TrendingUp className="h-5 w-5 text-indigo-600" />
+            <div className="h-10 w-10 rounded-xl bg-brand-50 flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-brand-600" />
             </div>
             <div>
               <p className="text-xs text-slate-500">Total Vendido</p>
@@ -241,12 +241,12 @@ export default function TopSalesByClientReport({
         </Card>
         <Card className="border-0 shadow-sm p-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-cyan-50 flex items-center justify-center">
-              <Receipt className="h-5 w-5 text-cyan-600" />
+            <div className="h-10 w-10 rounded-xl bg-accent-50 flex items-center justify-center">
+              <Receipt className="h-5 w-5 text-accent-600" />
             </div>
             <div>
               <p className="text-xs text-slate-500">Promedio por Cliente</p>
-              <p className="text-lg font-bold text-cyan-700">{fmt(totals.avgPerClient)}</p>
+              <p className="text-lg font-bold text-accent-700">{fmt(totals.avgPerClient)}</p>
             </div>
           </div>
         </Card>
@@ -268,7 +268,7 @@ export default function TopSalesByClientReport({
 
       {/* Tabla ranking */}
       <Card className="border-0 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b bg-indigo-50/50">
+        <div className="flex items-center justify-between p-4 border-b bg-brand-50/50">
           <div>
             <h3 className="font-semibold text-slate-700">Top de Ventas por Cliente</h3>
             <p className="text-xs text-slate-400 mt-0.5">Ranking de clientes por monto total vendido en el período</p>
@@ -337,7 +337,7 @@ export default function TopSalesByClientReport({
                       <div className="flex items-center gap-2">
                         <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden min-w-[60px]">
                           <div
-                            className="bg-gradient-to-r from-indigo-500 to-cyan-500 h-full rounded-full"
+                            className="bg-gradient-to-r from-brand-500 to-accent-500 h-full rounded-full"
                             style={{ width: `${maxTotal > 0 ? (r.total / maxTotal) * 100 : 0}%` }}
                           />
                         </div>

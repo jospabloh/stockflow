@@ -156,15 +156,15 @@ function fmtValue(val, format) {
 
 const COLOR_MAP = {
   indigo: {
-    bg: "bg-indigo-50 dark:bg-indigo-950/40",
-    border: "border-indigo-200 dark:border-indigo-800",
-    badge: "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700",
-    title: "text-indigo-700 dark:text-indigo-300",
-    hint: "text-indigo-600 dark:text-indigo-400",
-    hintBg: "bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800",
-    btn: "bg-indigo-600 hover:bg-indigo-700",
-    step: "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300",
-    stepCard: "bg-indigo-50 dark:bg-indigo-950/30",
+    bg: "bg-brand-50 dark:bg-brand-950/40",
+    border: "border-brand-200 dark:border-brand-800",
+    badge: "bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-700",
+    title: "text-brand-700 dark:text-brand-300",
+    hint: "text-brand-600 dark:text-brand-400",
+    hintBg: "bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800",
+    btn: "bg-brand-600 hover:bg-brand-700",
+    step: "bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300",
+    stepCard: "bg-brand-50 dark:bg-brand-950/30",
   },
   emerald: {
     bg: "bg-emerald-50 dark:bg-emerald-950/40",

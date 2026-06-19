@@ -64,7 +64,7 @@ export default function MessageBubble({ message }) {
     return (
         <div className={cn("flex gap-2", isUser ? "justify-end" : "justify-start")}>
             {!isUser && (
-                <div className="h-6 w-6 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center mt-0.5 flex-shrink-0">
+                <div className="h-6 w-6 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center mt-0.5 flex-shrink-0">
                     <span className="text-xs">✦</span>
                 </div>
             )}
@@ -73,7 +73,7 @@ export default function MessageBubble({ message }) {
                     <div className={cn(
                         "rounded-2xl px-3 py-2",
                         isUser
-                            ? "bg-indigo-500 text-white"
+                            ? "bg-brand-500 text-white"
                             : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
                     )}>
                         {isUser ? (

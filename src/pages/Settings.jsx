@@ -186,7 +186,7 @@ export default function Settings() {
   if (loading || checkingAuth) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+        <div className="h-8 w-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
       </div>
     );
   }
@@ -242,7 +242,7 @@ export default function Settings() {
                 <p className="text-xs text-slate-400">Se usará en cotizaciones y documentos</p>
                 <label className="cursor-pointer">
                   <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
-                  <span className="inline-flex items-center gap-2 text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md font-medium transition-colors">
+                  <span className="inline-flex items-center gap-2 text-xs bg-brand-600 hover:bg-brand-700 text-white px-3 py-1.5 rounded-md font-medium transition-colors">
                     <Upload className="h-3 w-3" />
                     {uploadingLogo ? "Subiendo..." : "Subir logo"}
                   </span>
@@ -300,7 +300,7 @@ export default function Settings() {
             {/* Regional settings */}
             <div className="border-t border-border pt-5 space-y-3">
               <div className="flex items-center gap-2 mb-1">
-                <Globe className="h-4 w-4 text-indigo-500" />
+                <Globe className="h-4 w-4 text-brand-500" />
                 <h4 className="font-semibold text-slate-700 text-sm">Región y Zona Horaria</h4>
               </div>
               <p className="text-xs text-muted-foreground">Configura la zona horaria y el formato regional para que filtros de fechas, reportes y calendarios usen los valores correctos para tu país.</p>
@@ -349,7 +349,7 @@ export default function Settings() {
             </div>
 
             <div className="flex justify-end">
-              <Button onClick={handleSaveSettings} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
+              <Button onClick={handleSaveSettings} disabled={saving} className="bg-brand-600 hover:bg-brand-700" {...createButtonProps('save')}>
                 <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Guardar"}
               </Button>
             </div>
@@ -362,7 +362,7 @@ export default function Settings() {
         {isAdmin && <TabsContent value="sat">
           <Card className="border-0 shadow-sm overflow-hidden">
             {/* Under construction game section */}
-            <div className="relative bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 p-8 flex flex-col items-center justify-center min-h-[360px] overflow-hidden">
+            <div className="relative bg-gradient-to-br from-brand-900 via-purple-900 to-slate-900 p-8 flex flex-col items-center justify-center min-h-[360px] overflow-hidden">
               {/* Animated stars */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 {[...Array(20)].map((_, i) => (
@@ -384,19 +384,19 @@ export default function Settings() {
               <div className="text-7xl mb-4 animate-bounce" style={{ animationDuration: "1.8s" }}>🚀</div>
 
               <h2 className="text-white text-2xl font-bold mb-2 text-center">En Construcción</h2>
-              <p className="text-indigo-200 text-base text-center mb-1 font-medium">¡Estamos trabajando en algo genial!</p>
-              <p className="text-indigo-300 text-sm text-center max-w-sm">
+              <p className="text-brand-200 text-base text-center mb-1 font-medium">¡Estamos trabajando en algo genial!</p>
+              <p className="text-brand-300 text-sm text-center max-w-sm">
                 El módulo de <strong className="text-white">Facturación Electrónica (CFDI 4.0)</strong> estará disponible muy pronto. Mientras tanto, puedes registrar tus datos fiscales abajo.
               </p>
 
               {/* Mini progress bar game */}
               <div className="mt-6 w-64">
-                <div className="flex justify-between text-xs text-indigo-300 mb-1">
+                <div className="flex justify-between text-xs text-brand-300 mb-1">
                   <span>Progreso de desarrollo</span>
                   <span>42%</span>
                 </div>
-                <div className="h-3 bg-indigo-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-cyan-400 to-indigo-400 rounded-full" style={{ width: "42%", animation: "progressFill 2s ease-out forwards" }} />
+                <div className="h-3 bg-brand-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-accent-400 to-brand-400 rounded-full" style={{ width: "42%", animation: "progressFill 2s ease-out forwards" }} />
                 </div>
               </div>
             </div>
@@ -438,13 +438,13 @@ export default function Settings() {
                   >
                     <Trash2 className="h-4 w-4 mr-1" /> Eliminar RFC
                   </Button>
-                  <Button onClick={handleSaveSettings} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
+                  <Button onClick={handleSaveSettings} disabled={saving} className="bg-brand-600 hover:bg-brand-700">
                     <RefreshCw className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Actualizar RFC"}
                   </Button>
                 </>
               )}
               {!rfcSaved && (
-                <Button onClick={handleSaveSettings} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
+                <Button onClick={handleSaveSettings} disabled={saving} className="bg-brand-600 hover:bg-brand-700">
                   <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Guardar RFC"}
                 </Button>
               )}
@@ -503,10 +503,10 @@ export default function Settings() {
             {/* Invite code card */}
             <Card className="border-0 shadow-sm p-6 space-y-4">
               <h3 className="font-semibold text-slate-700 text-lg">Código de Invitación</h3>
-              <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 space-y-3">
+              <div className="bg-brand-50 border border-brand-100 rounded-xl p-5 space-y-3">
                 <p className="text-sm text-slate-600">Comparte este código con tu equipo para que puedan unirse a tu negocio en StockFlow.</p>
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 bg-white border border-indigo-200 rounded-xl px-4 py-3 font-mono text-2xl tracking-widest text-indigo-700 font-bold text-center">
+                  <div className="flex-1 bg-white border border-brand-200 rounded-xl px-4 py-3 font-mono text-2xl tracking-widest text-brand-700 font-bold text-center">
                     {business?.invite_code || "—"}
                   </div>
                   <button type="button"
@@ -516,14 +516,14 @@ export default function Settings() {
                         toast.success("Código copiado");
                       }
                     }}
-                    className="h-12 w-12 flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex-shrink-0"
+                    className="h-12 w-12 flex items-center justify-center rounded-xl bg-brand-600 hover:bg-brand-700 text-white transition-colors flex-shrink-0"
                     title="Copiar código"
                   >
                     <Copy className="h-5 w-5" />
                   </button>
                 </div>
                 <p className="text-xs text-slate-400">Al registrarse, los usuarios seleccionan "Unirme a un equipo" e ingresan este código. Entran con rol <strong>Almacenista</strong> por defecto.</p>
-                <div className="flex items-center justify-between pt-2 border-t border-indigo-100">
+                <div className="flex items-center justify-between pt-2 border-t border-brand-100">
                   <div className="flex items-center gap-3">
                     <Switch
                       checked={business?.invite_code_active !== false}
@@ -556,7 +556,7 @@ export default function Settings() {
                 <p className="text-sm font-semibold text-slate-700">Guía de roles</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
                   <div className="bg-white rounded-lg p-3 border border-slate-200">
-                    <span className="font-semibold text-indigo-700">Admin</span> — Acceso total: configura, crea, edita, elimina todo.
+                    <span className="font-semibold text-brand-700">Admin</span> — Acceso total: configura, crea, edita, elimina todo.
                   </div>
                   <div className="bg-white rounded-lg p-3 border border-slate-200">
                     <span className="font-semibold text-amber-700">Almacenista</span> — Productos, movimientos, cotizaciones y caja chica.
@@ -747,7 +747,7 @@ export default function Settings() {
                                         </Button>
                                         <Button
                                           size="sm"
-                                          className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
+                                          className="h-7 text-xs bg-brand-600 hover:bg-brand-700 text-white"
                                           disabled={isBusy}
                                           onClick={async () => {
                                             setFixingProductId(d.product_id);

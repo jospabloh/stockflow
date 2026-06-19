@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { ShieldCheck, RefreshCw, ChevronDown } from "lucide-react";
 
 const ROLE_LABELS = {
-  admin: { label: "Admin", color: "bg-indigo-100 text-indigo-700 border-indigo-200" },
+  admin: { label: "Admin", color: "bg-brand-100 text-brand-700 border-brand-200" },
   almacenista: { label: "Almacenista", color: "bg-amber-100 text-amber-700 border-amber-200" },
 };
 
@@ -63,7 +63,7 @@ export default function TeamMembersManager({ businessId, currentUserId }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="h-6 w-6 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+        <div className="h-6 w-6 border-2 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
       </div>
     );
   }
@@ -87,10 +87,10 @@ export default function TeamMembersManager({ businessId, currentUserId }) {
           return (
             <div
               key={member.id}
-              className={`flex items-center gap-3 px-4 py-3 ${idx < members.length - 1 ? "border-b border-border" : ""} ${isSelf ? "bg-indigo-50/40" : ""}`}
+              className={`flex items-center gap-3 px-4 py-3 ${idx < members.length - 1 ? "border-b border-border" : ""} ${isSelf ? "bg-brand-50/40" : ""}`}
             >
               {/* Avatar */}
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-400 to-cyan-400 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-brand-400 to-accent-400 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
                 {member.full_name?.charAt(0)?.toUpperCase() || member.email?.charAt(0)?.toUpperCase() || "?"}
               </div>
 
@@ -117,7 +117,7 @@ export default function TeamMembersManager({ businessId, currentUserId }) {
                       value={role}
                       disabled={isBusy}
                       onChange={(e) => handleRoleChange(member, e.target.value)}
-                      className="appearance-none h-7 pl-2 pr-6 text-xs rounded-md border border-slate-200 bg-white text-slate-600 cursor-pointer hover:border-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:opacity-50"
+                      className="appearance-none h-7 pl-2 pr-6 text-xs rounded-md border border-slate-200 bg-white text-slate-600 cursor-pointer hover:border-brand-300 focus:outline-none focus:ring-1 focus:ring-brand-400 disabled:opacity-50"
                     >
                       <option value="almacenista">Almacenista</option>
                       <option value="admin">Admin</option>
