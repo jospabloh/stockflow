@@ -4,6 +4,7 @@ import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 import pluginUnusedImports from "eslint-plugin-unused-imports";
 import permissionsPlugin from "./eslint-rules/registered-permission-key.js";
+import brandColorPlugin from "./eslint-rules/no-raw-brand-color.js";
 
 export default [
   {
@@ -35,9 +36,11 @@ export default [
       "react-hooks": pluginReactHooks,
       "unused-imports": pluginUnusedImports,
       "permissions": permissionsPlugin,
+      "brand-color": brandColorPlugin,
     },
     rules: {
       "permissions/registered-permission-key": "error",
+      "brand-color/no-raw-brand-color": "error",
       "no-unused-vars": "off",
       "react/jsx-uses-vars": "error",
       "react/jsx-uses-react": "error",
