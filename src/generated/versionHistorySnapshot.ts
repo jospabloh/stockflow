@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-17T20:24:53.499Z
+// Generado: 2026-06-19T05:00:34.297Z
 
-export const SNAPSHOT_VERSION = "2.17.3";
+export const SNAPSHOT_VERSION = "2.17.4";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-06-17";
+export const SNAPSHOT_RELEASE_DATE = "2026-06-19";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
 
-export const SNAPSHOT_GIT_LOG = "f1f32e4 Merge pull request #182 from jospabloh/claude/blissful-mccarthy-endxz1\nfed587e Merge branch 'main' into claude/blissful-mccarthy-endxz1\n8d69f50 feat: spinner de marca reutilizable + refresco automático con React Query\ncd8cb18 Merge pull request #177 from jospabloh/automated/release-pr\n795da59 chore: release and update documentation\n15096c4 Merge pull request #181 from jospabloh/claude/hopeful-cannon-36pn62\n852466e fix(cotizaciones): los estados de seguimiento no se guardaban y fallaban en silencio\n351dd60 Merge pull request #180 from jospabloh/claude/gifted-faraday-xro0v6\n4ba25f6 Merge branch 'main' into claude/gifted-faraday-xro0v6\n51e1439 fix(rls): add service-role branch to read rules (asServiceRole reads)\n0555ecf Merge pull request #179 from jospabloh/claude/gifted-faraday-xro0v6\nf94e8ce fix(rls): restaurar escrituras — agregar rama service-role a create/update/delete\n0c6bee9 Merge pull request #178 from jospabloh/claude/baristop-zero-items-rls-6s4b4l\n61416ba fix(rls): resolver inquilino por {{user.data.business_id}} (arregla \"cero items\")\n7c26cee Merge pull request #176 from jospabloh/claude/confident-lamport-isg849\nc73dba1 fix(rls): corregir prefijo de campo en reglas RLS multi-tenant\ne071af1 Merge pull request #172 from jospabloh/automated/release-pr\n8a909c6 chore: release and update documentation\n9ce0301 Merge pull request #175 from jospabloh/claude/fix-react-window-build\n4e14b12 fix(build): pin react-window to ^1.8.11 to fix MISSING_EXPORT build failure\naeef074 Merge pull request #170 from jospabloh/dependabot/npm_and_yarn/react-window-2.2.7\n9b801b5 Merge branch 'main' into dependabot/npm_and_yarn/react-window-2.2.7\nc3f2721 Merge pull request #169 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0\ne01d196 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0\n7e35217 Merge pull request #168 from jospabloh/dependabot/npm_and_yarn/zod-4.4.3";
+export const SNAPSHOT_GIT_LOG = "00364f3 Merge pull request #187 from jospabloh/claude/optimistic-carson-35zv8g\n07532e4 Redesign: real brand tokens, type system, inventory hero, reduced-motion\n4ca9bc8 Add files via upload\nd1974a0 Add Apache License 2.0 to frontend-design\nc2e96c2 Merge pull request #186 from jospabloh/claude/fix-fundaccounts-permission-key\ne024071 fix(permisos): usar la clave de módulo registrada CuentasFondo en FundAccounts\n5ed1bfa Merge pull request #184 from jospabloh/claude/react-query-listas\n06eef37 feat: migrar Quotations, Suppliers y Movements a React Query\n7e049cc Merge pull request #183 from jospabloh/automated/release-pr\ndb99309 chore: release and update documentation\nf1f32e4 Merge pull request #182 from jospabloh/claude/blissful-mccarthy-endxz1\nfed587e Merge branch 'main' into claude/blissful-mccarthy-endxz1\n8d69f50 feat: spinner de marca reutilizable + refresco automático con React Query\ncd8cb18 Merge pull request #177 from jospabloh/automated/release-pr\n795da59 chore: release and update documentation\n15096c4 Merge pull request #181 from jospabloh/claude/hopeful-cannon-36pn62\n852466e fix(cotizaciones): los estados de seguimiento no se guardaban y fallaban en silencio\n351dd60 Merge pull request #180 from jospabloh/claude/gifted-faraday-xro0v6\n4ba25f6 Merge branch 'main' into claude/gifted-faraday-xro0v6\n51e1439 fix(rls): add service-role branch to read rules (asServiceRole reads)\n0555ecf Merge pull request #179 from jospabloh/claude/gifted-faraday-xro0v6\nf94e8ce fix(rls): restaurar escrituras — agregar rama service-role a create/update/delete\n0c6bee9 Merge pull request #178 from jospabloh/claude/baristop-zero-items-rls-6s4b4l\n61416ba fix(rls): resolver inquilino por {{user.data.business_id}} (arregla \"cero items\")\n7c26cee Merge pull request #176 from jospabloh/claude/confident-lamport-isg849";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.17.3",
+  "Actualización a la versión 2.17.4",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.17.4",
+    date: "2026-06-19",
+    changes: [
+    "Actualización a la versión 2.17.4"
+    ]
+  },
   {
     version: "2.17.3",
     date: "2026-06-17",
