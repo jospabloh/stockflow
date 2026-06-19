@@ -48,11 +48,11 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
         <div className="w-20 text-muted-foreground text-xs truncate">{product.sku || "—"}</div>
         <div className="w-20 text-muted-foreground text-xs truncate">{getCategoryName(product.category)}</div>
         {isAdmin && (
-          <div className="w-24 text-right text-muted-foreground text-xs">
+          <div className="w-24 text-right text-muted-foreground text-xs tabular">
             ${product.purchase_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "—"}
           </div>
         )}
-        <div className="w-24 text-right font-semibold text-foreground text-xs">
+        <div className="w-24 text-right font-semibold text-foreground text-xs tabular">
           ${(product.retail_sale_price ?? product.sale_price ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
         </div>
         <div className="w-32 text-right">
@@ -61,7 +61,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
               {(isOutOfStock || isBelowMin || isAtMin) && (
                 <AlertTriangle className={`h-3.5 w-3.5 ${isOutOfStock ? "text-red-500" : "text-amber-500"}`} />
               )}
-              <span className={`font-semibold text-xs ${isOutOfStock ? "text-red-600" : (isBelowMin || isAtMin) ? "text-amber-600" : "text-foreground"}`}>
+              <span className={`font-semibold text-xs tabular ${isOutOfStock ? "text-red-600" : (isBelowMin || isAtMin) ? "text-amber-600" : "text-foreground"}`}>
                 {product.stock} {product.unit}
               </span>
             </div>
