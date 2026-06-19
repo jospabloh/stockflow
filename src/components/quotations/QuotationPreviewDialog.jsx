@@ -209,18 +209,18 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                           )}
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-center text-slate-700">{item.quantity}{item.unit ? ` ${item.unit}` : ""}</td>
-                      <td className="px-3 py-2 text-right text-slate-700">${fmt(displayUnitPrice)}</td>
+                      <td className="px-3 py-2 text-center text-slate-700 tabular">{item.quantity}{item.unit ? ` ${item.unit}` : ""}</td>
+                      <td className="px-3 py-2 text-right text-slate-700 tabular">${fmt(displayUnitPrice)}</td>
                       <td className="px-3 py-2 text-center">
                         {hasTax ? (
-                          <span className="bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded text-[10px]">
+                          <span className="bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded text-[10px] tabular">
                             ${fmt(ivaPerUnit)}
                           </span>
                         ) : (
                           <span className="bg-slate-100 text-slate-400 font-bold px-1.5 py-0.5 rounded text-[10px]">Exento</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-right font-medium text-slate-800">${fmt(totalPrice)}</td>
+                      <td className="px-3 py-2 text-right font-medium text-slate-800 tabular">${fmt(totalPrice)}</td>
                       {canCreateFromOnDemand && (
                         <td className="px-3 py-2 text-center">
                           {isPendingOnDemand && (
@@ -268,23 +268,23 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
             <div className="w-72 space-y-1">
               <div className="flex justify-between text-slate-600 text-xs py-1">
                 <span>Subtotal (neto)</span>
-                <span>${fmt(q.subtotal)}</span>
+                <span className="font-mono tabular">${fmt(q.subtotal)}</span>
               </div>
               {q.tax > 0 && (
                 <div className="flex justify-between text-slate-600 text-xs py-1">
                   <span>IVA 16% (desglose)</span>
-                  <span className="text-amber-600 font-semibold">${fmt(q.tax)}</span>
+                  <span className="text-amber-600 font-semibold font-mono tabular">${fmt(q.tax)}</span>
                 </div>
               )}
               {client?.force_purchase_all_products && q.items?.length > 0 && (
                 <div className="flex justify-between text-slate-600 text-xs py-1">
                   <span>Transporte</span>
-                  <span>${fmt(20 * q.items.length)}</span>
+                  <span className="font-mono tabular">${fmt(20 * q.items.length)}</span>
                 </div>
               )}
               <div className="flex justify-between text-white font-bold text-sm px-3 py-2 rounded-lg" style={{ backgroundColor: primaryColor }}>
                 <span>TOTAL A PAGAR</span>
-                <span>${fmt(q.total)}</span>
+                <span className="font-mono tabular">${fmt(q.total)}</span>
               </div>
               <div className="text-[10px] text-slate-500 pt-1">
                 ✓ {fmt(q.subtotal)} + {fmt(q.tax)} = {fmt(q.total)}

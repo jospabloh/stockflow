@@ -267,7 +267,7 @@ export default function OnDemandItemForm({ onAdd, selectedClient }) {
 
       <div className="flex items-center justify-between pt-1">
         <span className="text-sm text-orange-700 font-medium">
-          Total: <strong>${computedTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong>
+          Total: <strong className="font-mono tabular">${computedTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong>
         </span>
         <Button type="button" size="sm" onClick={handleAdd} className="bg-orange-500 hover:bg-orange-600 text-white">
           <Plus className="h-4 w-4 mr-1" /> Agregar bajo pedido

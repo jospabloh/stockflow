@@ -57,7 +57,7 @@ export default function PendingBalanceAlert({ businessId }) {
                   <p className="text-xs text-red-600 dark:text-red-400">Entregada con saldo pendiente</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-                  <span className="font-bold text-red-700 dark:text-red-400 text-sm">${fmt(balance)}</span>
+                  <span className="font-bold text-red-700 dark:text-red-400 text-sm font-mono tabular">${fmt(balance)}</span>
                   <Link
                     to={createPageUrl("Quotations")}
                     className="text-xs text-red-600 dark:text-red-400 hover:underline font-medium whitespace-nowrap"

@@ -149,15 +149,15 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 text-center">
           <p className="text-[10px] font-bold uppercase text-slate-400 mb-1">Total</p>
-          <p className="font-bold text-slate-800 dark:text-slate-200 text-sm">${fmt(total)}</p>
+          <p className="font-bold text-slate-800 dark:text-slate-200 text-sm font-mono tabular">${fmt(total)}</p>
         </div>
         <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3 text-center">
           <p className="text-[10px] font-bold uppercase text-emerald-500 mb-1">Pagado</p>
-          <p className="font-bold text-emerald-700 dark:text-emerald-400 text-sm">${fmt(amountPaid)}</p>
+          <p className="font-bold text-emerald-700 dark:text-emerald-400 text-sm font-mono tabular">${fmt(amountPaid)}</p>
         </div>
         <div className={`rounded-lg p-3 text-center ${balance > 0 ? "bg-red-50 dark:bg-red-900/20" : "bg-emerald-50 dark:bg-emerald-900/20"}`}>
           <p className={`text-[10px] font-bold uppercase mb-1 ${balance > 0 ? "text-red-400" : "text-emerald-500"}`}>Saldo</p>
-          <p className={`font-bold text-sm ${balance > 0 ? "text-red-700 dark:text-red-400" : "text-emerald-700 dark:text-emerald-400"}`}>
+          <p className={`font-bold text-sm font-mono tabular ${balance > 0 ? "text-red-700 dark:text-red-400" : "text-emerald-700 dark:text-emerald-400"}`}>
             ${fmt(balance)}
           </p>
         </div>
@@ -182,7 +182,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
                   <td className="px-3 py-2 text-muted-foreground">
                     {p.paid_at ? new Date(p.paid_at).toLocaleDateString("es-MX") : "—"}
                   </td>
-                  <td className="px-3 py-2 text-right font-semibold text-emerald-700 dark:text-emerald-400">
+                  <td className="px-3 py-2 text-right font-semibold text-emerald-700 dark:text-emerald-400 tabular">
                     ${fmt(p.amount)}
                   </td>
                   <td className="px-3 py-2 text-foreground">{p.payment_method}</td>
@@ -254,15 +254,15 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-muted rounded-lg px-2 py-2">
                 <p className="text-[10px] text-muted-foreground">Total</p>
-                <p className="font-bold text-xs">${fmt(total)}</p>
+                <p className="font-bold text-xs font-mono tabular">${fmt(total)}</p>
               </div>
               <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg px-2 py-2">
                 <p className="text-[10px] text-emerald-600">Pagado</p>
-                <p className="font-bold text-xs text-emerald-700">${fmt(amountPaid)}</p>
+                <p className="font-bold text-xs text-emerald-700 font-mono tabular">${fmt(amountPaid)}</p>
               </div>
               <div className="bg-red-50 dark:bg-red-900/20 rounded-lg px-2 py-2">
                 <p className="text-[10px] text-red-500">Saldo</p>
-                <p className="font-bold text-xs text-red-700">${fmt(balance)}</p>
+                <p className="font-bold text-xs text-red-700 font-mono tabular">${fmt(balance)}</p>
               </div>
             </div>
             <p className="text-[11px] text-muted-foreground bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded px-2 py-1.5">

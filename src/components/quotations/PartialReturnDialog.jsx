@@ -143,7 +143,7 @@ export default function PartialReturnDialog({ open, onOpenChange, quotation, onS
                   />
                   <label htmlFor={`item-${item.product_id}`} className="flex-1 cursor-pointer">
                     <p className="text-sm font-medium text-foreground">{item.product_name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground tabular">
                       Vendido: {item.quantity} u · ${item.unit_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 })} c/u
                     </p>
                   </label>
@@ -168,7 +168,7 @@ export default function PartialReturnDialog({ open, onOpenChange, quotation, onS
           {Object.keys(returnItems).length > 0 && (
             <div className="bg-orange-50 dark:bg-orange-950/20 rounded-xl px-4 py-2 text-sm flex justify-between">
               <span className="text-orange-700 dark:text-orange-400 font-medium">Monto a descontar de la venta</span>
-              <span className="font-bold text-orange-700 dark:text-orange-400">
+              <span className="font-bold text-orange-700 dark:text-orange-400 font-mono tabular">
                 −${returnTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
               </span>
             </div>
@@ -185,7 +185,7 @@ export default function PartialReturnDialog({ open, onOpenChange, quotation, onS
               </div>
               <p className="text-sm text-blue-700 dark:text-blue-400">
                 ¿Deseas registrar un egreso de{" "}
-                <span className="font-bold">
+                <span className="font-bold font-mono tabular">
                   ${returnTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                 </span>{" "}
                 en caja chica por esta devolución?

@@ -105,7 +105,7 @@ export default function CreateFromOnDemandModal({ open, onOpenChange, quotation,
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Cantidad cotizada</span>
-              <span className="font-medium text-foreground">{item.quantity} {item.unit || "pzs"}</span>
+              <span className="font-medium text-foreground tabular">{item.quantity} {item.unit || "pzs"}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Cotización</span>

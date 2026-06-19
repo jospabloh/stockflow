@@ -516,7 +516,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                   <div className="col-span-4 md:col-span-2">
                     <Label className="text-xs text-foreground mb-1.5 block">Cantidad</Label>
                     {item.is_on_demand ? (
-                      <p className="h-9 flex items-center text-sm font-medium pl-1">{item.quantity} {item.unit || ""}</p>
+                      <p className="h-9 flex items-center text-sm font-medium pl-1 tabular">{item.quantity} {item.unit || ""}</p>
                     ) : (
                       <>
                         <Input
@@ -536,7 +536,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                   <div className="col-span-4 md:col-span-3">
                     <Label className="text-xs text-foreground mb-1.5 block">Precio aplicado</Label>
                     {item.is_on_demand || isZeroPriceClient ? (
-                      <p className="h-9 flex items-center text-sm font-medium pl-1">
+                      <p className="h-9 flex items-center text-sm font-medium pl-1 tabular">
                         {isZeroPriceClient ? (
                           <span className="text-orange-600 font-semibold">$0.00</span>
                         ) : (
@@ -554,7 +554,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                   </div>
                   <div className="col-span-3 md:col-span-2">
                     <Label className="text-xs text-foreground mb-1.5 block">Total</Label>
-                    <p className="h-9 flex items-center font-bold text-foreground text-sm">${(item.total || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
+                    <p className="h-9 flex items-center font-bold text-foreground text-sm tabular">${(item.total || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
                   </div>
                   <div className="col-span-1 hidden md:flex flex-col items-center justify-start pt-6">
                     <span
@@ -603,23 +603,23 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           <div className="bg-card border border-border rounded-xl p-4 space-y-3 text-sm">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Subtotal (neto)</span>
-              <span className="font-semibold text-foreground">${formatMXN(subtotal)}</span>
+              <span className="font-semibold text-foreground font-mono tabular">${formatMXN(subtotal)}</span>
             </div>
             {taxAmount > 0 && (
               <div className="flex justify-between items-center text-muted-foreground text-xs">
                 <span>IVA 16% (desglose de incluidos)</span>
-                <span className="text-amber-600 font-semibold">${formatMXN(taxAmount)}</span>
+                <span className="text-amber-600 font-semibold font-mono tabular">${formatMXN(taxAmount)}</span>
               </div>
             )}
             {transportFee > 0 && (
               <div className="flex justify-between items-center text-muted-foreground text-xs">
                 <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-brand-500" /> Transporte ({form.items.length} × $20)</span>
-                <span className="text-brand-600 font-semibold">${formatMXN(transportFee)}</span>
+                <span className="text-brand-600 font-semibold font-mono tabular">${formatMXN(transportFee)}</span>
               </div>
             )}
             <div className="flex justify-between items-center text-lg font-bold border-t border-border pt-3 bg-foreground/10 -mx-4 px-4 py-3 rounded">
               <span className="text-foreground">Total a pagar</span>
-              <span className="text-foreground">${formatMXN(total)}</span>
+              <span className="text-foreground font-mono tabular">${formatMXN(total)}</span>
             </div>
             {form.items.length > 0 && (
               <div className="text-[10px] text-muted-foreground pt-2 border-t border-border/50">

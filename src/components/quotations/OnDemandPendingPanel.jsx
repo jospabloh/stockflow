@@ -60,7 +60,7 @@ export default function OnDemandPendingPanel() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">{item.product_name}</p>
                 <div className="flex flex-wrap gap-2 mt-0.5 text-xs text-muted-foreground">
-                  <span>{item.quantity} {item.unit || "uds"}</span>
+                  <span className="tabular">{item.quantity} {item.unit || "uds"}</span>
                   {item.supplier_name && <span>· {item.supplier_name}</span>}
                   <span>· Cot. <strong>{item._quotation.folio}</strong></span>
                 </div>

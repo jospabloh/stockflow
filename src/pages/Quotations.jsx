@@ -502,7 +502,7 @@ export default function Quotations() {
             <AlertDialogTitle>Confirmar pago — {payQuotation?.folio}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2">
-                <p>Total: <strong>${payQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong> · Cliente: {payQuotation?.client_name}</p>
+                <p>Total: <strong className="font-mono tabular">${payQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong> · Cliente: {payQuotation?.client_name}</p>
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2 text-sm text-blue-800 dark:text-blue-300">
                   💡 <strong>¿Pago parcial o con varios métodos?</strong> Usa el botón de abajo para registrar abonos con diferentes métodos.
                 </div>
@@ -568,7 +568,7 @@ export default function Quotations() {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Convertir en venta?</AlertDialogTitle>
             <AlertDialogDescription>
-              Se descontará el stock de los {convertQuotation?.items?.length || 0} producto(s) de la cotización {convertQuotation?.folio}. Total: ${convertQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+              Se descontará el stock de los {convertQuotation?.items?.length || 0} producto(s) de la cotización {convertQuotation?.folio}. Total: <span className="font-mono tabular">${convertQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="px-1 py-3 space-y-3">
