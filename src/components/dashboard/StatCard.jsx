@@ -4,15 +4,15 @@ import { Link } from "react-router-dom";
 
 export default function StatCard({ title, value, subtitle, icon: Icon, color = "indigo", trend, href }) {
   const colors = {
-    indigo: "from-indigo-500 to-indigo-600 shadow-indigo-200",
-    cyan: "from-cyan-500 to-cyan-600 shadow-cyan-200",
+    indigo: "from-brand-500 to-brand-600 shadow-brand-200",
+    cyan: "from-accent-500 to-accent-600 shadow-accent-200",
     emerald: "from-emerald-500 to-emerald-600 shadow-emerald-200",
     amber: "from-amber-500 to-amber-600 shadow-amber-200",
     rose: "from-rose-500 to-rose-600 shadow-rose-200",
   };
 
   const content = (
-    <Card className={`relative overflow-hidden shadow-sm hover:shadow-md hover:border-indigo-500/30 dark:hover:border-indigo-500/40 transition-all duration-300 ${href ? "cursor-pointer hover:-translate-y-0.5" : ""}`}>
+    <Card className={`relative overflow-hidden shadow-sm hover:shadow-md hover:border-brand-500/30 dark:hover:border-brand-500/40 transition-all duration-300 ${href ? "cursor-pointer hover:-translate-y-0.5" : ""}`}>
       <div className="p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-2">

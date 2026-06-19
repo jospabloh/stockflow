@@ -155,7 +155,7 @@ export default function SupplierPaymentsSection({ payments = [], salesPeriod = "
             <p className="text-sm">Sin pagos a proveedores en este período</p>
             <Link
               to={createPageUrl("SupplierPayments")}
-              className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline mt-2 inline-flex items-center gap-1"
+              className="text-xs text-brand-600 dark:text-brand-400 hover:underline mt-2 inline-flex items-center gap-1"
             >
               Registrar el primero <ArrowRight className="h-3 w-3" />
             </Link>
@@ -195,7 +195,7 @@ export default function SupplierPaymentsSection({ payments = [], salesPeriod = "
           </h3>
           <Link
             to={createPageUrl("SupplierPayments")}
-            className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1"
+            className="text-xs text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
           >
             Ver todos <ArrowRight className="h-3 w-3" />
           </Link>

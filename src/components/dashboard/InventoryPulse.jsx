@@ -32,7 +32,7 @@ export default function InventoryPulse({
   return (
     <section
       aria-label="Inventario en vivo"
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-indigo-600 to-cyan-600 text-white shadow-lg shadow-indigo-500/20"
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-700 via-brand-600 to-accent-600 text-white shadow-lg shadow-brand-500/20"
     >
       {/* Stacking-box motif, echoing the brand loader — quiet ambient texture */}
       <div aria-hidden="true" className="pointer-events-none absolute -right-6 top-1/2 -translate-y-1/2 hidden sm:flex items-end gap-2 opacity-20">

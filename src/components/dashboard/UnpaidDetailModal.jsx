@@ -26,17 +26,17 @@ export default function UnpaidDetailModal({ open, onOpenChange, unpaidConverted,
           {unpaidConverted.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <FileText className="h-4 w-4 text-indigo-500" />
+                <FileText className="h-4 w-4 text-brand-500" />
                 <p className="text-sm font-semibold text-slate-700">
                   Cotizaciones concretadas sin cobrar ({unpaidConverted.length})
                 </p>
-                <Badge className="ml-auto bg-indigo-100 text-indigo-700 border-0">
+                <Badge className="ml-auto bg-brand-100 text-brand-700 border-0">
                   ${totalQuotations.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                 </Badge>
               </div>
               <div className="space-y-1.5">
                 {unpaidConverted.map((q) => (
-                  <div key={q.id} className="flex items-center justify-between bg-indigo-50 dark:bg-indigo-950/30 rounded-lg px-3 py-2 text-sm">
+                  <div key={q.id} className="flex items-center justify-between bg-brand-50 dark:bg-brand-950/30 rounded-lg px-3 py-2 text-sm">
                     <div>
                       <p className="font-medium text-slate-700">{q.client_name || "—"}</p>
                       <p className="text-xs text-slate-500">
@@ -45,7 +45,7 @@ export default function UnpaidDetailModal({ open, onOpenChange, unpaidConverted,
                         {q.payment_method ? ` · ${q.payment_method}` : ""}
                       </p>
                     </div>
-                    <span className="font-bold text-indigo-700">
+                    <span className="font-bold text-brand-700">
                       ${(q.total || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                     </span>
                   </div>

@@ -357,10 +357,10 @@ export default function Dashboard() {
 
       {/* FILTRO GLOBAL EN TOP */}
       {can('Dashboard', 'period_filter') && (
-      <div className="sticky top-0 z-10 bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-indigo-950/30 dark:to-cyan-950/30 backdrop-blur-sm border-b border-indigo-200 dark:border-indigo-900 rounded-lg p-3 md:p-4 mb-2">
+      <div className="sticky top-0 z-10 bg-gradient-to-r from-brand-50 to-accent-50 dark:from-brand-950/30 dark:to-accent-950/30 backdrop-blur-sm border-b border-brand-200 dark:border-brand-900 rounded-lg p-3 md:p-4 mb-2">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">Período de análisis</p>
+            <p className="text-xs font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wide">Período de análisis</p>
             <p className="hidden sm:block text-sm text-slate-600 dark:text-slate-400 mt-1">Todos los datos se filtran por este período</p>
           </div>
           <SalesFilterToggle
@@ -488,7 +488,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
        {can('Dashboard', 'sales_breakdown') && <Card className="border-0 shadow-sm p-4 md:p-5">
          <h3 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2 mb-4">
-           <TrendingUp className="h-4 w-4 text-indigo-500" /> Análisis de Ventas
+           <TrendingUp className="h-4 w-4 text-brand-500" /> Análisis de Ventas
          </h3>
             {salesData.salesRevenue === 0 ? (
              <p className="text-sm text-slate-400 py-4 text-center">Sin movimientos en este período</p>
@@ -507,12 +507,12 @@ export default function Dashboard() {
                   <span className="font-bold text-purple-700 dark:text-purple-300">${salesData.realRevenue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                 </div>
                 {salesData.undeliveredTotal > 0 && (
-                  <div className="flex justify-between items-center bg-cyan-50 dark:bg-cyan-950/40 rounded-lg px-4 py-2.5 border border-cyan-200 dark:border-cyan-800">
+                  <div className="flex justify-between items-center bg-accent-50 dark:bg-accent-950/40 rounded-lg px-4 py-2.5 border border-accent-200 dark:border-accent-800">
                     <span className="text-sm text-slate-600 dark:text-slate-400">Vendido x entregar</span>
                     <div className="flex items-center gap-3">
                       <div className="text-right">
-                        <span className="font-bold text-cyan-700 dark:text-cyan-300 block">${salesData.undeliveredTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
-                        <span className="text-[10px] text-cyan-600 dark:text-cyan-400">{salesData.undeliveredItems} {salesData.undeliveredItems === 1 ? 'item' : 'items'}</span>
+                        <span className="font-bold text-accent-700 dark:text-accent-300 block">${salesData.undeliveredTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                        <span className="text-[10px] text-accent-600 dark:text-accent-400">{salesData.undeliveredItems} {salesData.undeliveredItems === 1 ? 'item' : 'items'}</span>
                       </div>
                     </div>
                   </div>
@@ -629,7 +629,7 @@ export default function Dashboard() {
               </div>
               <div className="mt-3 flex justify-between items-center">
                 <span className="text-xs text-slate-400 dark:text-slate-500">{quotationsLast30Days.length} cotización(es) total</span>
-                <Link to={createPageUrl("Quotations")} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+                <Link to={createPageUrl("Quotations")} className="text-xs text-brand-600 dark:text-brand-400 hover:underline font-medium">
                   Ver todas →
                 </Link>
               </div>
@@ -646,11 +646,11 @@ export default function Dashboard() {
             <h3 className="font-semibold text-slate-700 dark:text-slate-200">{chartTitle}</h3>
             <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-sm bg-indigo-500 inline-block" />
+                <span className="h-2.5 w-2.5 rounded-sm bg-brand-500 inline-block" />
                 Entradas
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-sm bg-cyan-500 inline-block" />
+                <span className="h-2.5 w-2.5 rounded-sm bg-accent-500 inline-block" />
                 Salidas
               </span>
             </div>

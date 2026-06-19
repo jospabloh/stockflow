@@ -99,7 +99,7 @@ export default function SupplierPaymentsReportChart({ dateFrom, dateTo }) {
     return (
       <Card className="border-0 shadow-sm p-8">
         <div className="flex items-center justify-center h-48">
-          <div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+          <div className="h-8 w-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
         </div>
       </Card>
     );
@@ -157,7 +157,7 @@ export default function SupplierPaymentsReportChart({ dateFrom, dateTo }) {
           <div className="flex items-center justify-between mb-2">
             <span className="text-muted-foreground text-xs font-medium uppercase tracking-wider">Proveedores</span>
           </div>
-          <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{uniqueSuppliers}</p>
+          <p className="text-2xl font-bold text-brand-600 dark:text-brand-400">{uniqueSuppliers}</p>
           <p className="text-muted-foreground text-xs mt-1">Distintos pagados</p>
         </Card>
       </div>
