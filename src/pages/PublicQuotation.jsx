@@ -1,27 +1,77 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { CheckCircle, XCircle, Clock, AlertTriangle, Package } from "lucide-react";
 import { FullPageLoader } from "@/components/ui/spinner";
 
 const STATUS_CONFIG = {
-  draft:     { label: "Borrador",   color: "secondary" },
-  sent:      { label: "Enviada",    color: "default" },
-  accepted:  { label: "Aceptada",   color: "default" },
-  converted: { label: "Convertida", color: "default" },
-  cancelled: { label: "Cancelada",  color: "destructive" },
+  draft:     { label: "Borrador",   tone: "neutral" },
+  sent:      { label: "Enviada",    tone: "accent" },
+  accepted:  { label: "Aceptada",   tone: "accent" },
+  converted: { label: "Convertida", tone: "accent" },
+  cancelled: { label: "Cancelada",  tone: "danger" },
 };
+
+const DEFAULT_ACCENT = "#4F46E5";
 
 function formatMXN(amount) {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(amount ?? 0);
 }
 
+function formatDate(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" });
+}
+
 function isExpired(valid_until) {
   if (!valid_until) return false;
   return new Date(valid_until + "T23:59:59") < new Date();
+}
+
+// Normalize a hex color to 6 digits, or null if invalid.
+function normalizeHex(hex) {
+  const c = (hex || "").replace("#", "").trim();
+  if (c.length === 3) return c.split("").map((x) => x + x).join("");
+  if (c.length === 6) return c;
+  return null;
+}
+
+// Pick a legible foreground (#0F172A or #FFFFFF) for any accent color, by WCAG
+// relative luminance — so light brand colors don't get unreadable white text.
+function readableTextOn(hex) {
+  const full = normalizeHex(hex);
+  if (!full) return "#FFFFFF";
+  const ch = (i) => parseInt(full.slice(i, i + 2), 16) / 255;
+  const lin = (v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+  const L = 0.2126 * lin(ch(0)) + 0.7152 * lin(ch(2)) + 0.0722 * lin(ch(4));
+  return L > 0.55 ? "#0F172A" : "#FFFFFF";
+}
+
+// rgba tint of the accent for subtle surfaces.
+function tint(hex, alpha) {
+  const full = normalizeHex(hex) || normalizeHex(DEFAULT_ACCENT);
+  const v = (i) => parseInt(full.slice(i, i + 2), 16);
+  return `rgba(${v(0)}, ${v(2)}, ${v(4)}, ${alpha})`;
+}
+
+// Accent darkened enough to read as TEXT on white/tinted surfaces. Dark accents
+// (e.g. teal) are returned essentially unchanged; light ones (e.g. yellow) are
+// darkened until they have adequate contrast — so the Total figure never washes out.
+function accentInk(hex) {
+  const full = normalizeHex(hex) || normalizeHex(DEFAULT_ACCENT);
+  let r = parseInt(full.slice(0, 2), 16);
+  let g = parseInt(full.slice(2, 4), 16);
+  let b = parseInt(full.slice(4, 6), 16);
+  const lin = (v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
+  const lum = () => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  let guard = 0;
+  while (lum() > 0.3 && guard++ < 24) {
+    r = Math.round(r * 0.85); g = Math.round(g * 0.85); b = Math.round(b * 0.85);
+  }
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 export default function PublicQuotation() {
@@ -60,187 +110,229 @@ export default function PublicQuotation() {
     }
   }
 
-  const biz = quotation?.business ?? {};
-  const primaryColor = biz.primary_color ?? "#4F46E5";
-  const expired = isExpired(quotation?.valid_until);
-  const statusCfg = STATUS_CONFIG[quotation?.status] ?? { label: quotation?.status, color: "secondary" };
-
   if (loading) {
     return <FullPageLoader label="Cargando cotización…" />;
   }
 
   if (error || !quotation) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50 p-6">
-        <AlertTriangle className="w-12 h-12 text-gray-400" />
-        <p className="text-gray-600 text-center">{error ?? "Cotización no encontrada."}</p>
-        <a
-          href="https://stockflow.app"
-          className="text-sm text-brand-600 hover:underline"
-        >
-          ¿Quieres crear cotizaciones profesionales? Prueba StockFlow gratis
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-50 px-6 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+          <AlertTriangle className="h-7 w-7 text-slate-400" />
+        </div>
+        <div>
+          <p className="font-display text-lg font-semibold text-slate-900">No encontramos esta cotización</p>
+          <p className="mt-1 text-sm text-slate-500">{error ?? "El enlace puede haber expirado o ser incorrecto."}</p>
+        </div>
+        <a href="https://stockflow.app" className="mt-2 text-sm font-medium text-brand-600 hover:underline">
+          Crea cotizaciones profesionales con StockFlow →
         </a>
       </div>
     );
   }
 
+  const biz = quotation.business ?? {};
+  const accent = normalizeHex(biz.primary_color) ? `#${normalizeHex(biz.primary_color)}` : DEFAULT_ACCENT;
+  const onAccent = readableTextOn(accent);
+  const accentText = accentInk(accent);
+  const expired = isExpired(quotation.valid_until);
+  const statusCfg = STATUS_CONFIG[quotation.status] ?? { label: quotation.status, tone: "neutral" };
+  const issueDate = formatDate(quotation.created_date);
+  const validDate = formatDate(quotation.valid_until);
+  const items = quotation.items ?? [];
+
+  const chipStyle =
+    statusCfg.tone === "accent"
+      ? { backgroundColor: tint(accent, 0.12), color: accentText }
+      : statusCfg.tone === "danger"
+      ? { backgroundColor: "rgba(220,38,38,0.1)", color: "#dc2626" }
+      : { backgroundColor: "#f1f5f9", color: "#475569" };
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Business header */}
-      <div style={{ backgroundColor: primaryColor }} className="text-white p-5">
-        <div className="max-w-2xl mx-auto flex items-center gap-4">
-          {biz.logo_url && (
-            <img
-              src={biz.logo_url}
-              alt={biz.name}
-              className="w-14 h-14 rounded-full object-cover bg-white"
-            />
-          )}
-          <div>
-            <h1 className="text-xl font-bold">{biz.name}</h1>
-            {biz.phone && <p className="text-sm opacity-80">{biz.phone}</p>}
-            {biz.address && <p className="text-sm opacity-80">{biz.address}</p>}
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
+      {/* Masthead — the business's brand leads */}
+      <header style={{ backgroundColor: accent, color: onAccent }}>
+        <div className="mx-auto flex w-full max-w-[720px] items-center justify-between gap-4 px-5 py-6">
+          <div className="flex items-center gap-3 min-w-0">
+            {biz.logo_url && (
+              <img
+                src={biz.logo_url}
+                alt={biz.name || "Logo"}
+                className="h-12 w-12 shrink-0 rounded-xl object-cover bg-white/90 ring-1 ring-black/5"
+              />
+            )}
+            <div className="min-w-0">
+              <h1 className="font-display text-xl font-bold leading-tight truncate">{biz.name || "Cotización"}</h1>
+              {biz.phone && <p className="text-sm opacity-80 truncate">{biz.phone}</p>}
+              {biz.address && <p className="text-xs opacity-70 truncate">{biz.address}</p>}
+            </div>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="font-display text-[11px] font-semibold uppercase tracking-[0.18em] opacity-80">Cotización</p>
+            <p className="font-mono tabular text-lg font-semibold leading-tight">
+              {quotation.folio ? `#${quotation.folio}` : "—"}
+            </p>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Main card */}
-      <div className="max-w-2xl mx-auto w-full px-4 py-6 flex-1">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* Title row */}
-          <div className="p-5 flex items-start justify-between gap-2">
+      <main className="mx-auto w-full max-w-[720px] flex-1 px-4 py-6">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          {/* Meta strip */}
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-slate-100 px-5 py-4">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Cotización</p>
-              <h2 className="text-lg font-semibold text-gray-900">
-                {quotation.folio ? `#${quotation.folio}` : "Sin folio"}
-              </h2>
-              <p className="text-sm text-gray-600 mt-0.5">Para: {quotation.client_name}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Para</p>
+              <p className="font-medium text-slate-900">{quotation.client_name || "—"}</p>
             </div>
-            <Badge variant={statusCfg.color} className="shrink-0">{statusCfg.label}</Badge>
+            <div className="flex items-center gap-6">
+              {(issueDate || validDate) && (
+                <div className="text-right">
+                  {issueDate && (
+                    <p className="text-xs text-slate-500">Emitida <span className="text-slate-700">{issueDate}</span></p>
+                  )}
+                  {validDate && (
+                    <p className="text-xs text-slate-500">Válida hasta <span className="text-slate-700">{validDate}</span></p>
+                  )}
+                </div>
+              )}
+              <span
+                className="inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-semibold"
+                style={chipStyle}
+              >
+                {statusCfg.label}
+              </span>
+            </div>
           </div>
 
           {/* Expiry warning */}
           {expired && quotation.status === "sent" && (
-            <div className="mx-5 mb-4 flex items-center gap-2 text-amber-700 bg-amber-50 rounded-lg px-3 py-2 text-sm">
-              <Clock className="w-4 h-4 shrink-0" />
-              Esta cotización venció el {new Date(quotation.valid_until).toLocaleDateString("es-MX")}.
+            <div className="mx-5 mt-4 flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+              <Clock className="h-4 w-4 shrink-0" />
+              Esta cotización venció el {validDate ?? "su fecha de validez"}.
             </div>
           )}
 
-          <Separator />
-
-          {/* Items table */}
-          <div className="p-5">
-            <p className="text-xs font-semibold text-gray-500 uppercase mb-3 flex items-center gap-1">
-              <Package className="w-3.5 h-3.5" /> Productos
+          {/* Items */}
+          <div className="px-5 py-5">
+            <p className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <Package className="h-3.5 w-3.5" /> Productos
             </p>
-            <div className="space-y-2">
-              {(quotation.items ?? []).map((item, i) => (
-                <div key={i} className="flex justify-between gap-2 text-sm">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-800 truncate">{item.product_name}</p>
+            <div className="divide-y divide-slate-100">
+              {items.map((item, i) => (
+                <div key={i} className="flex justify-between gap-3 py-2.5 text-sm">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-slate-800">{item.product_name}</p>
                     {item.product_description && (
-                      <p className="text-xs text-gray-500 truncate">{item.product_description}</p>
+                      <p className="truncate text-xs text-slate-500">{item.product_description}</p>
                     )}
-                    <p className="text-xs text-gray-500">
-                      {item.quantity} × {formatMXN(item.unit_price)}
+                    <p className="mt-0.5 text-xs text-slate-500">
+                      <span className="font-mono tabular">{item.quantity}</span>
+                      {" × "}
+                      <span className="font-mono tabular">{formatMXN(item.unit_price)}</span>
                       {item.tax_rate ? ` (+${item.tax_rate}% IVA)` : ""}
                     </p>
                   </div>
-                  <p className="font-semibold text-gray-900 shrink-0">{formatMXN(item.total)}</p>
+                  <p className="shrink-0 font-mono tabular font-semibold text-slate-900">{formatMXN(item.total)}</p>
                 </div>
               ))}
             </div>
 
-            <Separator className="my-4" />
-
             {/* Totals */}
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span><span>{formatMXN(quotation.subtotal)}</span>
+            <div className="mt-5 space-y-1.5 text-sm">
+              <div className="flex justify-between text-slate-500">
+                <span>Subtotal</span>
+                <span className="font-mono tabular text-slate-700">{formatMXN(quotation.subtotal)}</span>
               </div>
               {quotation.tax > 0 && (
-                <div className="flex justify-between text-gray-600">
-                  <span>IVA</span><span>{formatMXN(quotation.tax)}</span>
+                <div className="flex justify-between text-slate-500">
+                  <span>IVA</span>
+                  <span className="font-mono tabular text-slate-700">{formatMXN(quotation.tax)}</span>
                 </div>
               )}
-              <div className="flex justify-between font-bold text-gray-900 text-base pt-1">
-                <span>Total</span><span>{formatMXN(quotation.total)}</span>
+              <div
+                className="mt-2 flex items-center justify-between rounded-xl px-4 py-3"
+                style={{ backgroundColor: tint(accent, 0.08) }}
+              >
+                <span className="font-display text-sm font-semibold text-slate-900">Total</span>
+                <span className="font-mono tabular text-2xl font-bold" style={{ color: accentText }}>
+                  {formatMXN(quotation.total)}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Notes */}
           {quotation.notes && (
-            <>
-              <Separator />
-              <div className="p-5">
-                <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Notas</p>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{quotation.notes}</p>
-              </div>
-            </>
+            <div className="border-t border-slate-100 px-5 py-4">
+              <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Notas</p>
+              <p className="whitespace-pre-wrap text-sm text-slate-600">{quotation.notes}</p>
+            </div>
           )}
 
-          {/* Footer text */}
+          {/* Business footer text */}
           {biz.quotation_footer && (
-            <>
-              <Separator />
-              <div className="p-5">
-                <p className="text-xs text-gray-500 whitespace-pre-wrap">{biz.quotation_footer}</p>
-              </div>
-            </>
+            <div className="border-t border-slate-100 px-5 py-4">
+              <p className="whitespace-pre-wrap text-xs text-slate-400">{biz.quotation_footer}</p>
+            </div>
           )}
 
-          {/* Action buttons — only when status is "sent" and not expired */}
+          {/* Action zone — only when actionable */}
           {quotation.status === "sent" && !expired && !responded && (
-            <>
-              <Separator />
-              <div className="p-5 flex flex-col sm:flex-row gap-3">
-                <Button
-                  className="flex-1 gap-2"
-                  style={{ backgroundColor: primaryColor, borderColor: primaryColor }}
-                  disabled={responding}
-                  onClick={() => handleRespond("accepted")}
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Aprobar cotización
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 gap-2"
-                  disabled={responding}
-                  onClick={() => handleRespond("rejected")}
-                >
-                  <XCircle className="w-4 h-4" />
-                  Rechazar
-                </Button>
-              </div>
-            </>
+            <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-5 sm:flex-row">
+              <Button
+                className="h-11 flex-1 gap-2 border-0 text-base font-semibold hover:opacity-90 focus-visible:ring-2 focus-visible:ring-offset-2"
+                style={{ backgroundColor: accent, color: onAccent }}
+                disabled={responding}
+                onClick={() => handleRespond("accepted")}
+              >
+                <CheckCircle className="h-5 w-5" />
+                Aprobar cotización
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 flex-1 gap-2 border-slate-300 text-slate-600 hover:bg-slate-50"
+                disabled={responding}
+                onClick={() => handleRespond("rejected")}
+              >
+                <XCircle className="h-5 w-5" />
+                Rechazar
+              </Button>
+            </div>
           )}
 
-          {/* Confirmation message after responding */}
+          {/* Confirmation after responding — clean, warm, branded */}
           {responded && (
-            <>
-              <Separator />
-              <div className="p-5 text-center">
-                {quotation.status === "accepted" ? (
-                  <p className="text-green-700 font-medium flex items-center justify-center gap-2">
-                    <CheckCircle className="w-5 h-5" /> ¡Cotización aprobada! El proveedor se pondrá en contacto pronto.
+            <div className="border-t border-slate-100 px-5 py-8 text-center">
+              {quotation.status === "accepted" ? (
+                <>
+                  <div
+                    className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
+                    style={{ backgroundColor: tint(accent, 0.12), color: accentText }}
+                  >
+                    <CheckCircle className="h-7 w-7" />
+                  </div>
+                  <p className="mt-3 font-display text-lg font-semibold text-slate-900">¡Cotización aprobada!</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {biz.name || "El proveedor"} recibió tu aprobación y se pondrá en contacto contigo pronto.
                   </p>
-                ) : (
-                  <p className="text-gray-600 flex items-center justify-center gap-2">
-                    <XCircle className="w-5 h-5" /> Cotización rechazada. Gracias por tu respuesta.
-                  </p>
-                )}
-              </div>
-            </>
+                </>
+              ) : (
+                <>
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                    <XCircle className="h-7 w-7" />
+                  </div>
+                  <p className="mt-3 font-display text-lg font-semibold text-slate-900">Cotización rechazada</p>
+                  <p className="mt-1 text-sm text-slate-500">Gracias por tu respuesta.</p>
+                </>
+              )}
+            </div>
           )}
         </div>
-      </div>
+      </main>
 
-      {/* Sticky viral CTA */}
-      <div className="sticky bottom-0 bg-white border-t border-gray-200 py-3 px-4 text-center text-sm text-gray-500">
-        Cotización generada con{" "}
+      {/* Quiet "powered by" footer */}
+      <footer className="sticky bottom-0 border-t border-slate-200 bg-white/90 px-4 py-3 text-center text-sm text-slate-500 backdrop-blur">
+        Generada con{" "}
         <a
           href="https://stockflow.app"
           target="_blank"
@@ -249,16 +341,15 @@ export default function PublicQuotation() {
         >
           StockFlow
         </a>{" "}
-        —{" "}
-        <a
+        — <a
           href="https://stockflow.app"
           target="_blank"
           rel="noopener noreferrer"
           className="text-brand-600 hover:underline"
         >
-          ¡Pruébalo gratis!
+          pruébalo gratis
         </a>
-      </div>
+      </footer>
     </div>
   );
 }
