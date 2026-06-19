@@ -1,5 +1,34 @@
 # Changelog — StockFlow
 
+## v2.18.0 (2026-06-19)
+
+### 🎨 Identidad Visual — Iniciativa "Subir de Nivel"
+
+Esta versión consolida una renovación visual de toda la aplicación, ejecutada en cuatro entregas (rediseño del dashboard + 3 sub-proyectos), sin tocar datos, lógica de negocio ni el aislamiento por tenant. Todos los cambios son de presentación.
+
+#### Tipografía y cifras
+- Sistema tipográfico nuevo: **Space Grotesk** (títulos), **IBM Plex Sans** (cuerpo) e **IBM Plex Mono** (cifras).
+- Las cantidades de dinero y stock usan **figuras tabulares monoespaciadas** y se alinean en columnas en tablas, totales y reportes (regla de dos niveles: `tabular` en celdas, `font-mono tabular` en totales/KPIs y encabezados).
+
+#### Paleta de marca centralizada
+- La marca (índigo/cian) vive ahora en un **único sistema de tokens** (`brand`/`accent`) en lugar de ~500 literales de color repartidos por el código.
+- Se añadió una **regla de lint** que impide reintroducir literales `indigo-`/`cyan-` crudos, evitando que la marca se vuelva a fragmentar.
+
+#### Dashboard
+- Nuevo encabezado **"Inventario en vivo"** que abre el dashboard con el **stock total**, el **flujo de entradas/salidas del día** y una **alerta de reposición**.
+- El valor del inventario al costo respeta el permiso `Dashboard:stat_total_value` (no se expone a quien no debe verlo).
+
+#### Cotización pública (cara al cliente)
+- La página de cotización compartida pasó de una tarjeta genérica a un **documento profesional con la marca del negocio**: usa el `primary_color` del tenant como acento, con **texto legible en cualquier color de marca** (cálculo de luminancia) y cifras monoespaciadas.
+- Estados rediseñados: aviso de vencimiento, **confirmación de aprobación**, rechazo y "no encontrada", todos con dirección clara.
+
+#### Accesibilidad
+- Se respeta `prefers-reduced-motion` (transiciones y animaciones) y se mejoró el contraste de color en superficies de marca.
+
+> **Nota:** ningún cambio de esta versión modifica entidades de Base44, RLS ni permisos. La matriz de permisos permanece en 15 módulos / 155 claves.
+
+---
+
 ## v2.17.0 (2026-06-15)
 
 ### 🛡️ Auditoría de Permisos — Módulo Cuentas de Fondos

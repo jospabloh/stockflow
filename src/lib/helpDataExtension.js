@@ -630,8 +630,8 @@ Antes, si un proveedor tenía varios contactos (gerente de ventas, logística, c
     category: "Versión y Actualizaciones",
     role: "all",
     title: "📋 Versión de la App y Últimos Cambios",
-    keywords: ["versión", "actualización", "changelog", "acerca de", "about", "novedades", "cambios", "release", "1.5.0"],
-    related_ids: ["welcome-admin", "pending-payments", "movements-register"],
+    keywords: ["versión", "actualización", "changelog", "acerca de", "about", "novedades", "cambios", "release", "2.18.0", "identidad visual"],
+    related_ids: ["welcome-admin", "granular-permissions", "movements-register"],
     content: `## 📋 Versión de la App y Registro de Cambios
 
 StockFlow muestra la versión actual y el historial de cambios en la pestaña **Acerca de**.
@@ -649,24 +649,26 @@ Verás:
 
 ---
 
-### 🆕 Versión 1.5.0 — Últimos cambios *(1 de abril 2026)*
+### 🆕 Versión 2.18.0 — Últimos cambios *(19 de junio 2026)*
+
+**Identidad visual en toda la app** (cambios de presentación; no afectan datos ni permisos):
 
 | Área | Novedad |
 |---|---|
-| **Movimientos** | Toggle "Pago recibido" al registrar salidas directas |
-| **Movimientos** | Columna "Pago" en tabla con badge Pendiente/Cobrado y confirmación con un toque |
-| **Dashboard** | Alerta naranja unificada de cobros pendientes: cotizaciones + movimientos directos |
-| **Dashboard** | Desglose en la alerta: cuántas son cotizaciones vs movimientos directos |
+| **Toda la app** | Tipografías nuevas (Space Grotesk + IBM Plex) y cifras monoespaciadas que se alinean en tablas, totales y reportes |
+| **Dashboard** | Nuevo encabezado "Inventario en vivo": stock total, flujo de entradas/salidas del día y alerta de reposición |
+| **Marca** | Paleta de marca centralizada (índigo/cian), consistente en toda la aplicación |
+| **Cotización pública** | Rediseñada como documento profesional con el nombre y color de tu negocio, legible en cualquier color y optimizada para celular |
+| **Accesibilidad** | Se respeta "reducir movimiento" del dispositivo y mejora el contraste de color |
 
 ---
 
-### 📌 Versión 1.4.0 *(31 de marzo 2026)*
+### 📌 Versión 2.17.0 *(15 de junio 2026)*
 
 | Área | Novedad |
 |---|---|
-| **Cotizaciones** | Botón "Ruta" unificado con opciones En Ruta / Entregado / Quitar estado |
-| **Cotizaciones** | Indicador rojo pulsante "¡Cobrar!" para pedidos entregados sin cobrar |
-| **Reportes** | Filas resaltadas en rojo para ventas entregadas sin cobrar |
+| **Permisos** | Módulo Cuentas de Fondos añadido a la matriz de permisos (15 módulos, 155 claves) |
+| **Utilidad / Rubros** | Permisos granulares aplicados en la interfaz |
 
 ---
 
@@ -1091,34 +1093,50 @@ Los permisos granulares están **desactivados por defecto**. Para activarlos, el
 
 Para cada módulo y para cada rol (Admin, Almacenista/Member), puedes configurar accesos de visualización y operación.
 
-**Módulos activos cubiertos por la matriz:**
-- Dashboard
-- Productos
-- Categorías
-- Proveedores
-- Clientes
-- Tipo de Pago
-- Movimientos
-- Cotizaciones
-- Caja Chica
-- Pagos a Proveedores
-- Reportes
-- Configuración
+La matriz cubre **15 módulos** con **155 claves de permiso** en total, granuladas a nivel de acción individual (no solo "ver/crear/editar/eliminar", sino cada campo o tarjeta sensible por separado).
+
+**Módulos cubiertos por la matriz (claves por módulo):**
+
+| Módulo | Página | Claves | Notas |
+|---|---|---|---|
+| Dashboard | Dashboard | 22 | tarjetas, gráficos y reportes individuales; 6 sensibles (valor, utilidad, pagos a prov.) |
+| Productos | Products | 18 | edición campo por campo; costo de compra es sensible |
+| Categorías | Categories | 7 | |
+| Proveedores | Suppliers | 8 | |
+| Clientes | Clients | 12 | forzar mayoreo/compra es sensible |
+| Tipo de Pago | PaymentMethods | 5 | |
+| Movimientos | Movements | 12 | entradas, salidas, devoluciones, ajustes |
+| Cotizaciones | Quotations | 18 | crear, convertir, cobrar, devolver; precios es sensible |
+| Caja Chica | PettyCash | 11 | |
+| Pagos a Proveedores | SupplierPayments | 11 | edición campo por campo |
+| Reportes | Reports | 7 | reportes financieros sensibles |
+| Configuración | Settings | 13 | empresa, logo, colores, equipo, importación |
+| Utilidad | Utility | 3 | retiro y proyección son sensibles |
+| Rubros | Rubros | 4 | |
+| Cuentas de Fondos | FundAccounts | 4 | |
+
+Cada clave pertenece a una **categoría**: \`visual\` (ver una página/tarjeta), \`actionable\` (crear/editar/eliminar) o \`report\` (datos analíticos/financieros). Las claves marcadas como **sensibles** exponen información financiera confidencial.
 
 | Acción estándar | Descripción |
 |---|---|
-| **View** | Ver página, tarjetas, tablas y visuales del módulo |
-| **Add** | Crear nuevos registros |
-| **Modify** | Editar registros existentes |
-| **Delete** | Eliminar registros |
+| **View / Ver** | Ver página, tarjetas, tablas y visuales del módulo |
+| **Create / Crear** | Crear nuevos registros |
+| **Edit / Editar** | Editar registros existentes (a menudo campo por campo) |
+| **Delete / Eliminar** | Eliminar registros |
 
 ---
 
 ### 🧭 Política de Defaults por Rol
 
-- **Admin:** todos los permisos inician en **true** por defecto.
-- **Member/Almacenista:** mantiene acceso operativo; los permisos sensibles y cualquier permiso **nuevo** inician en **false**.
-- **Regla de crecimiento:** cuando se crea un módulo, visual o acción nueva, el default para member queda en **false** hasta que un admin lo otorgue explícitamente.
+- **Admin:** **todos** los permisos inician en **true** — el administrador siempre tiene acceso completo a las 155 claves.
+- **Almacenista (Member):** mantiene acceso operativo. Por defecto:
+  - **Ver (visual)** — concedido (**true**), salvo las tarjetas financieras del Dashboard.
+  - **Acciones (crear/editar)** — concedidas para operación diaria, salvo operaciones sensibles (ajustes de stock, importación, pagos a proveedores, configuración de empresa, retiros de utilidad, etc.).
+  - **Reportes y campos sensibles** (costo, utilidad, márgenes) — **false**.
+- **Regla de crecimiento (claves nuevas):** cuando se agrega un módulo o una acción nueva a la matriz, el default es:
+  - **Admin → true** (todo).
+  - **Almacenista → "ver" (view) en true**; las acciones de escritura/eliminación y los campos sensibles quedan en **false** hasta que un admin los otorgue.
+  - Los **permisos existentes no cambian** — la regla solo aplica a claves nuevas.
 
 ---
 
