@@ -30,4 +30,7 @@ dist-ssr
 .env
 
 # Generated audit reports
-permissions-audit-report.md.superpowers/
+permissions-audit-report.md
+
+# Superpowers SDD scratch
+.superpowers/
