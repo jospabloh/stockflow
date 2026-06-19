@@ -76,7 +76,7 @@ export default function PublicQuotation() {
         <p className="text-gray-600 text-center">{error ?? "Cotización no encontrada."}</p>
         <a
           href="https://stockflow.app"
-          className="text-sm text-indigo-600 hover:underline"
+          className="text-sm text-brand-600 hover:underline"
         >
           ¿Quieres crear cotizaciones profesionales? Prueba StockFlow gratis
         </a>
@@ -245,7 +245,7 @@ export default function PublicQuotation() {
           href="https://stockflow.app"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-semibold text-indigo-600 hover:underline"
+          className="font-semibold text-brand-600 hover:underline"
         >
           StockFlow
         </a>{" "}
@@ -254,7 +254,7 @@ export default function PublicQuotation() {
           href="https://stockflow.app"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-indigo-600 hover:underline"
+          className="text-brand-600 hover:underline"
         >
           ¡Pruébalo gratis!
         </a>

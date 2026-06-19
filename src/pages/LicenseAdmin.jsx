@@ -154,7 +154,7 @@ export default function LicenseAdmin() {
 
   if (licenseLoading) return (
     <div className="flex items-center justify-center min-h-64">
-      <div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+      <div className="h-8 w-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
     </div>
   );
 
@@ -171,7 +171,7 @@ export default function LicenseAdmin() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Shield className="h-6 w-6 text-indigo-500" /> Panel de Licencias
+            <Shield className="h-6 w-6 text-brand-500" /> Panel de Licencias
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">Gestión interna de licencias por tenant — solo administradores de plataforma</p>
         </div>
@@ -390,7 +390,7 @@ export default function LicenseAdmin() {
                 id="auto_renewal"
                 checked={editForm.auto_renewal || false}
                 onChange={e => setEditForm(f => ({ ...f, auto_renewal: e.target.checked }))}
-                className="h-4 w-4 rounded accent-indigo-600 cursor-pointer"
+                className="h-4 w-4 rounded accent-brand-600 cursor-pointer"
               />
               <div>
                 <Label htmlFor="auto_renewal" className="cursor-pointer font-medium">Renovación automática</Label>
@@ -418,7 +418,7 @@ export default function LicenseAdmin() {
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={() => { setEditTarget(null); setEditForm({}); setSaveWarning(null); }} disabled={saving}>Cancelar</Button>
               <Button variant="outline" onClick={() => { load(); setEditTarget(null); setEditForm({}); setSaveWarning(null); }} disabled={saving}>Cerrar</Button>
-              <Button onClick={handleSave} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
+              <Button onClick={handleSave} disabled={saving} className="bg-brand-600 hover:bg-brand-700">
                 {saving ? "Guardando..." : "Guardar Cambios"}
               </Button>
             </div>

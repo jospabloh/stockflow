@@ -46,7 +46,7 @@ const Login = () => {
       footer={
         <>
           ¿No tienes cuenta?{' '}
-          <Link to="/register" className="font-semibold text-indigo-600 hover:text-indigo-500">
+          <Link to="/register" className="font-semibold text-brand-600 hover:text-brand-500">
             Crea una
           </Link>
         </>
@@ -71,7 +71,7 @@ const Login = () => {
             <Label htmlFor="password">Contraseña</Label>
             <Link
               to="/forgot-password"
-              className="text-xs font-medium text-indigo-600 hover:text-indigo-500"
+              className="text-xs font-medium text-brand-600 hover:text-brand-500"
             >
               ¿Olvidaste tu contraseña?
             </Link>

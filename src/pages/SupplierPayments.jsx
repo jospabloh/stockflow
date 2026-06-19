@@ -363,14 +363,14 @@ export default function SupplierPayments() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <HandCoins className="h-6 w-6 text-indigo-500" /> Pagos a Proveedores
+            <HandCoins className="h-6 w-6 text-brand-500" /> Pagos a Proveedores
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Registra los desembolsos a tus proveedores para calcular la utilidad neta del negocio
           </p>
         </div>
         {can('Pagos a Proveedores', 'create') && (
-          <Button onClick={openNew} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('add')}>
+          <Button onClick={openNew} className="bg-brand-600 hover:bg-brand-700" {...createButtonProps('add')}>
             <Plus className="h-4 w-4 mr-1" /> Nuevo Pago
           </Button>
         )}
@@ -392,7 +392,7 @@ export default function SupplierPayments() {
         <Card className="border-0 shadow-sm p-5">
           <div className="flex items-center justify-between mb-2">
             <span className="text-muted-foreground text-sm">Pagos registrados</span>
-            <HandCoins className="h-5 w-5 text-indigo-500" />
+            <HandCoins className="h-5 w-5 text-brand-500" />
           </div>
           <p className="text-2xl font-bold text-foreground">{monthCount}</p>
           <p className="text-muted-foreground text-xs mt-1">En el mes actual</p>
@@ -713,7 +713,7 @@ export default function SupplierPayments() {
             <Button
               onClick={handleSave}
               disabled={saving || !form.supplier_id || !form.amount || !form.payment_date}
-              className="bg-indigo-600 hover:bg-indigo-700"
+              className="bg-brand-600 hover:bg-brand-700"
             >
               {saving ? "Guardando…" : "Guardar"}
             </Button>
