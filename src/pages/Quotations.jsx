@@ -309,7 +309,7 @@ export default function Quotations() {
           </span>
         </div>
         {can('Cotizaciones', 'create') && (
-          <Button className="bg-indigo-600 hover:bg-indigo-700 shrink-0" onClick={() => navigate("/Quotations/new")}>
+          <Button className="bg-brand-600 hover:bg-brand-700 shrink-0" onClick={() => navigate("/Quotations/new")}>
             <Plus className="h-4 w-4 mr-1" /> Nueva Cotización
           </Button>
         )}
@@ -516,7 +516,7 @@ export default function Quotations() {
                 <button type="button"
                   key={pm.id || pm.name}
                   onClick={() => setPaymentMethod(pm.name)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${paymentMethod === pm.name ? "bg-indigo-600 text-white border-indigo-600" : "bg-card text-foreground border-border hover:border-indigo-300"}`}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${paymentMethod === pm.name ? "bg-brand-600 text-white border-brand-600" : "bg-card text-foreground border-border hover:border-brand-300"}`}
                 >
                   {pm.name}
                 </button>
@@ -547,7 +547,7 @@ export default function Quotations() {
                   }).catch(() => setPreviewClient(null));
                 }
               }}
-              className="px-4 py-2 rounded-md text-sm font-medium border border-indigo-300 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+              className="px-4 py-2 rounded-md text-sm font-medium border border-brand-300 text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors"
             >
               <Coins className="h-4 w-4 mr-1.5" /> Ver pagos parciales
             </button>
@@ -582,7 +582,7 @@ export default function Quotations() {
                   key={pm.id || pm.name}
                   type="button"
                   onClick={() => { setConvertPaymentMethod(pm.name); setConvertError(""); }}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${convertPaymentMethod === pm.name ? "bg-indigo-600 text-white border-indigo-600" : "bg-card text-foreground border-border hover:border-indigo-300"}`}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${convertPaymentMethod === pm.name ? "bg-brand-600 text-white border-brand-600" : "bg-card text-foreground border-border hover:border-brand-300"}`}
                 >
                   {pm.name}
                 </button>
@@ -601,7 +601,7 @@ export default function Quotations() {
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConvertToSale} disabled={!convertPaymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(convertPaymentMethod.trim()))} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50">
+            <AlertDialogAction onClick={handleConvertToSale} disabled={!convertPaymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(convertPaymentMethod.trim()))} className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50">
               Confirmar Venta
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -192,7 +192,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
                       <div className="flex gap-1">
                         <button type="button"
                           onClick={() => openEdit(p)}
-                          className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-indigo-600 transition-colors"
+                          className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-brand-600 transition-colors"
                           title="Editar pago"
                         >
                           <Pencil className="h-3.5 w-3.5" />
@@ -296,8 +296,8 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
                     onClick={() => setMethod(m)}
                     className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
                       method === m
-                        ? "bg-indigo-600 text-white border-indigo-600"
-                        : "bg-card text-foreground border-border hover:border-indigo-300"
+                        ? "bg-brand-600 text-white border-brand-600"
+                        : "bg-card text-foreground border-border hover:border-brand-300"
                     }`}
                   >
                     {m}

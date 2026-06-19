@@ -107,7 +107,7 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                 <EyeOff className="h-4 w-4" />
               </Button>
             )}
-            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={handleDownload} disabled={downloading}>
+            <Button size="sm" className="bg-brand-600 hover:bg-brand-700" onClick={handleDownload} disabled={downloading}>
               <FileDown className="h-4 w-4 mr-1" /> {downloading ? "Generando..." : "Descargar PDF"}
             </Button>
           </div>
@@ -130,7 +130,7 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold tracking-wide">COTIZACIÓN</p>
-              <p className="text-indigo-200 font-mono">{q.folio}</p>
+              <p className="text-brand-200 font-mono">{q.folio}</p>
             </div>
           </div>
 
