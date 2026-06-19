@@ -32,7 +32,7 @@ export default function InventoryPulse({
   return (
     <section
       aria-label="Inventario en vivo"
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-indigo-600 to-cyan-500 text-white shadow-lg shadow-indigo-500/20"
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-indigo-600 to-cyan-600 text-white shadow-lg shadow-indigo-500/20"
     >
       {/* Stacking-box motif, echoing the brand loader — quiet ambient texture */}
       <div aria-hidden="true" className="pointer-events-none absolute -right-6 top-1/2 -translate-y-1/2 hidden sm:flex items-end gap-2 opacity-20">
@@ -112,12 +112,12 @@ export default function InventoryPulse({
           <div className="mt-4">
             {flow > 0 ? (
               <div
-                className="flex h-2 overflow-hidden rounded-full bg-white/20"
+                className="flex h-2 overflow-hidden rounded-full bg-black/25 ring-1 ring-inset ring-white/10"
                 role="img"
                 aria-label={`${todayEntries} entradas y ${todayExits} salidas hoy`}
               >
-                <div className="bg-white/90 transition-all" style={{ width: `${entriesPct}%` }} />
-                <div className="bg-cyan-200 transition-all" style={{ width: `${exitsPct}%` }} />
+                <div className="bg-white transition-all" style={{ width: `${entriesPct}%` }} />
+                <div className="bg-white/45 transition-all" style={{ width: `${exitsPct}%` }} />
               </div>
             ) : (
               <p className="text-xs text-white/70">Aún no hay movimientos hoy.</p>
