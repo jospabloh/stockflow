@@ -3,6 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
 import { Package, ArrowLeftRight, DollarSign, AlertTriangle, TrendingUp, Clock, HandCoins } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
+import InventoryPulse from "@/components/dashboard/InventoryPulse";
+import { Spinner } from "@/components/ui/spinner";
 import LowStockAlert from "@/components/dashboard/LowStockAlert";
 import PendingBalanceAlert from "@/components/quotations/PendingBalanceAlert";
 import RecentMovements from "@/components/dashboard/RecentMovements";
@@ -190,6 +192,12 @@ export default function Dashboard() {
   );
   const lowStockProducts = activeProducts.filter(isLowStockProduct);
 
+  // Flujo de HOY (independiente del filtro de período) — alimenta el hero "Inventario en vivo"
+  const todayStr = getDateRange("day").startStr;
+  const todayMovements = movements.filter((m) => getDateStringMexico(m.created_date) === todayStr);
+  const todayEntries = todayMovements.filter((m) => m.type === "entry").reduce((s, m) => s + (Number(m.quantity) || 0), 0);
+  const todayExits = todayMovements.filter((m) => m.type === "exit").reduce((s, m) => s + (Number(m.quantity) || 0), 0);
+
   // Movimientos en período
   const periodMovementsCount = periodMovements.length;
 
@@ -322,7 +330,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+        <Spinner size="lg" label="Cargando inventario…" />
       </div>
     );
   }
@@ -335,6 +343,18 @@ export default function Dashboard() {
           onClose={() => setShowOnboarding(false)}
         />
       )}
+
+      {/* Signature hero — leads with the inventory thesis */}
+      <InventoryPulse
+        totalStock={totalStock}
+        activeCount={activeProducts.length}
+        totalValue={totalValue}
+        todayEntries={todayEntries}
+        todayExits={todayExits}
+        lowStockCount={lowStockProducts.length}
+        showValue={can('Dashboard', 'stat_total_value')}
+      />
+
       {/* FILTRO GLOBAL EN TOP */}
       {can('Dashboard', 'period_filter') && (
       <div className="sticky top-0 z-10 bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-indigo-950/30 dark:to-cyan-950/30 backdrop-blur-sm border-b border-indigo-200 dark:border-indigo-900 rounded-lg p-3 md:p-4 mb-2">

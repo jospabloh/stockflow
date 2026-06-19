@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useNavigation } from "@/lib/NavigationContext";
 import { useLicense } from "@/lib/LicenseContext";
@@ -130,6 +130,7 @@ export default function Layout({ children, currentPageName }) {
   const isRoot = location.pathname === "/" || location.pathname === "/Dashboard";
   const isChildRoute = /\/(Products|Movements|Quotations)\/(new|edit)/.test(location.pathname);
   const { theme, setTheme } = useTheme();
+  const prefersReducedMotion = useReducedMotion();
 
   // Auto-expand "Catálogos"/"Sistema" si estamos en una página hijo
   useEffect(() => {
@@ -442,10 +443,10 @@ export default function Layout({ children, currentPageName }) {
             key={location.pathname}
             ref={mainRef}
             className="flex-1 p-4 lg:p-8 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-8 overflow-y-auto"
-            initial={{ opacity: 0, x: direction === 'back' ? -30 : 30 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, x: direction === 'back' ? -30 : 30 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction === 'back' ? 30 : -30 }}
-            transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: direction === 'back' ? 30 : -30 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
