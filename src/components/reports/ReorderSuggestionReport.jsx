@@ -116,10 +116,10 @@ export default function ReorderSuggestionReport({ products, movements, dateFrom,
               reorderData.map((p) => (
                 <tr key={p.id} className="border-t border-slate-100 hover:bg-slate-50/50">
                   <td className="px-4 py-3 font-medium text-slate-800">{p.name}</td>
-                  <td className="px-4 py-3 text-center text-slate-700">{p.stock}</td>
-                  <td className="px-4 py-3 text-center text-slate-600">{p.avgDemand} u</td>
-                  <td className="px-4 py-3 text-center text-slate-600">{p.coverageDays}</td>
-                  <td className="px-4 py-3 text-center font-semibold text-blue-700">{p.suggestedQty} u</td>
+                  <td className="px-4 py-3 text-center text-slate-700 tabular">{p.stock}</td>
+                  <td className="px-4 py-3 text-center text-slate-600 tabular">{p.avgDemand} u</td>
+                  <td className="px-4 py-3 text-center text-slate-600 tabular">{p.coverageDays}</td>
+                  <td className="px-4 py-3 text-center font-semibold text-blue-700 tabular">{p.suggestedQty} u</td>
                   <td className="px-4 py-3 text-center">
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                       p.urgency === "crítica" ? "bg-red-100 text-red-700" :

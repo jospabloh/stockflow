@@ -222,8 +222,8 @@ export default function TopSalesByClientReport({
             </div>
             <div>
               <p className="text-xs text-slate-500">Total Vendido</p>
-              <p className="text-lg font-bold text-slate-800">{fmt(totals.grandTotal)}</p>
-              <p className="text-xs text-slate-400">{totals.salesCount} ventas</p>
+              <p className="text-lg font-bold text-slate-800"><span className="font-mono tabular">{fmt(totals.grandTotal)}</span></p>
+              <p className="text-xs text-slate-400"><span className="tabular">{totals.salesCount}</span> ventas</p>
             </div>
           </div>
         </Card>
@@ -234,7 +234,7 @@ export default function TopSalesByClientReport({
             </div>
             <div>
               <p className="text-xs text-slate-500">Clientes</p>
-              <p className="text-lg font-bold text-emerald-700">{totals.clientCount}</p>
+              <p className="text-lg font-bold text-emerald-700"><span className="font-mono tabular">{totals.clientCount}</span></p>
               <p className="text-xs text-slate-400">con compras en el período</p>
             </div>
           </div>
@@ -246,7 +246,7 @@ export default function TopSalesByClientReport({
             </div>
             <div>
               <p className="text-xs text-slate-500">Promedio por Cliente</p>
-              <p className="text-lg font-bold text-accent-700">{fmt(totals.avgPerClient)}</p>
+              <p className="text-lg font-bold text-accent-700"><span className="font-mono tabular">{fmt(totals.avgPerClient)}</span></p>
             </div>
           </div>
         </Card>
@@ -260,7 +260,7 @@ export default function TopSalesByClientReport({
               <p className="text-sm font-bold text-amber-700 truncate max-w-[160px]">
                 {ranking.length > 0 ? ranking[0].client : "—"}
               </p>
-              <p className="text-xs text-slate-400">{ranking.length > 0 ? fmt(ranking[0].total) : ""}</p>
+              <p className="text-xs text-slate-400 tabular">{ranking.length > 0 ? fmt(ranking[0].total) : ""}</p>
             </div>
           </div>
         </Card>
@@ -315,7 +315,7 @@ export default function TopSalesByClientReport({
                   <tr key={r.client} className="border-t border-slate-100 hover:bg-slate-50/50">
                     <td className="px-4 py-3 text-center">
                       <span
-                        className={`inline-flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold ${
+                        className={`inline-flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold tabular ${
                           idx === 0
                             ? "bg-amber-100 text-amber-700"
                             : idx === 1
@@ -329,10 +329,10 @@ export default function TopSalesByClientReport({
                       </span>
                     </td>
                     <td className="px-4 py-3 font-medium text-slate-800">{r.client}</td>
-                    <td className="px-4 py-3 text-center text-slate-600">{r.count}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-slate-700">{fmt(r.total)}</td>
-                    <td className="px-4 py-3 text-right text-slate-600">{fmt(r.avgTicket)}</td>
-                    <td className="px-4 py-3 text-right text-emerald-700">{fmt(r.paidAmount)}</td>
+                    <td className="px-4 py-3 text-center text-slate-600 tabular">{r.count}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-slate-700 tabular">{fmt(r.total)}</td>
+                    <td className="px-4 py-3 text-right text-slate-600 tabular">{fmt(r.avgTicket)}</td>
+                    <td className="px-4 py-3 text-right text-emerald-700 tabular">{fmt(r.paidAmount)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden min-w-[60px]">
@@ -341,7 +341,7 @@ export default function TopSalesByClientReport({
                             style={{ width: `${maxTotal > 0 ? (r.total / maxTotal) * 100 : 0}%` }}
                           />
                         </div>
-                        <span className="text-xs text-slate-500 w-10 text-right">{r.pctOfTotal.toFixed(1)}%</span>
+                        <span className="text-xs text-slate-500 w-10 text-right tabular">{r.pctOfTotal.toFixed(1)}%</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-slate-500">

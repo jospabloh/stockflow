@@ -115,10 +115,10 @@ export default function DepletionRiskReport({ products, movements, dateFrom, dat
               depletionData.map((p) => (
                 <tr key={p.id} className="border-t border-slate-100 hover:bg-slate-50/50">
                   <td className="px-4 py-3 font-medium text-slate-800">{p.name}</td>
-                  <td className="px-4 py-3 text-center text-slate-700">{p.stock}</td>
-                  <td className="px-4 py-3 text-center text-slate-500">{p.minStock}</td>
-                  <td className="px-4 py-3 text-center text-slate-600">{p.avgDailyOutflow} u</td>
-                  <td className="px-4 py-3 text-center font-semibold">
+                  <td className="px-4 py-3 text-center text-slate-700 tabular">{p.stock}</td>
+                  <td className="px-4 py-3 text-center text-slate-500 tabular">{p.minStock}</td>
+                  <td className="px-4 py-3 text-center text-slate-600 tabular">{p.avgDailyOutflow} u</td>
+                  <td className="px-4 py-3 text-center font-semibold tabular">
                     {p.daysRemaining === "N/A" ? "N/A" : `${p.daysRemaining} d`}
                   </td>
                   <td className="px-4 py-3 text-center">

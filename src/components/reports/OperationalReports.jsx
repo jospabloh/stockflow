@@ -109,8 +109,8 @@ export default function OperationalReports({
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Total Ventas</p>
-                  <p className="text-lg font-bold text-slate-800">${totalConverted.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
-                  <p className="text-xs text-slate-400">{filteredQuotations.length} cotizaciones</p>
+                  <p className="text-lg font-bold text-slate-800"><span className="font-mono tabular">${totalConverted.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span></p>
+                  <p className="text-xs text-slate-400"><span className="tabular">{filteredQuotations.length}</span> cotizaciones</p>
                 </div>
               </div>
             </Card>
@@ -121,8 +121,8 @@ export default function OperationalReports({
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Cobrado</p>
-                  <p className="text-lg font-bold text-emerald-700">${totalPaid.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
-                  <p className="text-xs text-slate-400">{paidQuotations.length} pagadas</p>
+                  <p className="text-lg font-bold text-emerald-700"><span className="font-mono tabular">${totalPaid.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span></p>
+                  <p className="text-xs text-slate-400"><span className="tabular">{paidQuotations.length}</span> pagadas</p>
                 </div>
               </div>
             </Card>
@@ -133,8 +133,8 @@ export default function OperationalReports({
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Pendiente de Pago</p>
-                  <p className="text-lg font-bold text-amber-700">${totalPending.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
-                  <p className="text-xs text-slate-400">{pendingPayment.length} pendientes</p>
+                  <p className="text-lg font-bold text-amber-700"><span className="font-mono tabular">${totalPending.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span></p>
+                  <p className="text-xs text-slate-400"><span className="tabular">{pendingPayment.length}</span> pendientes</p>
                 </div>
               </div>
             </Card>
@@ -185,7 +185,7 @@ export default function OperationalReports({
                           </td>
                           <td className="px-4 py-3 font-medium text-slate-800">{q.client_name}</td>
                           <td className="px-4 py-3 text-slate-500">{moment(q.created_date).format("DD/MM/YY")}</td>
-                          <td className={`px-4 py-3 text-right font-semibold ${deliveredUnpaid ? "text-red-700" : "text-slate-700"}`}>${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
+                          <td className={`px-4 py-3 text-right font-semibold tabular ${deliveredUnpaid ? "text-red-700" : "text-slate-700"}`}>${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
                           <td className="px-4 py-3 text-center">
                             {q.delivered ? <span className="inline-flex items-center gap-1 text-emerald-600 text-xs font-medium"><CheckCircle2 className="h-3.5 w-3.5" /> Entregado</span>
                               : q.in_route ? <span className="inline-flex items-center gap-1 text-blue-600 text-xs font-medium">En ruta</span>
@@ -220,7 +220,7 @@ export default function OperationalReports({
                   <div>
                     <h3 className="font-semibold text-slate-700">Ventas Directas (sin cotización)</h3>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Movimientos de salida registrados directamente — Total: <span className="font-semibold text-accent-700">${totalDirect.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                      Movimientos de salida registrados directamente — Total: <span className="font-semibold text-accent-700 tabular">${totalDirect.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                     </p>
                   </div>
                   <ExportMenu
@@ -256,9 +256,9 @@ export default function OperationalReports({
                             <td className="px-4 py-3 font-medium text-slate-800">{m.product_name}</td>
                             <td className="px-4 py-3 text-slate-600">{m.reason || "—"}</td>
                             <td className="px-4 py-3 text-slate-500">{moment(m.created_date).format("DD/MM/YY")}</td>
-                            <td className="px-4 py-3 text-center text-slate-700">{m.quantity}</td>
-                            <td className="px-4 py-3 text-right text-slate-600">${(m.unit_price || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
-                            <td className="px-4 py-3 text-right font-semibold text-slate-700">${(m.total || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
+                            <td className="px-4 py-3 text-center text-slate-700 tabular">{m.quantity}</td>
+                            <td className="px-4 py-3 text-right text-slate-600 tabular">${(m.unit_price || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
+                            <td className="px-4 py-3 text-right font-semibold text-slate-700 tabular">${(m.total || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</td>
                             <td className="px-4 py-3 text-slate-600">{m.reference || "—"}</td>
                           </tr>
                         ))

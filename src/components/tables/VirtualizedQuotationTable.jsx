@@ -36,7 +36,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
       <div className="w-20 text-muted-foreground text-xs">{moment(q.created_date).format("DD/MM/YY")}</div>
 
       {/* Total */}
-      <div className="w-28 text-right font-semibold text-foreground text-xs">
+      <div className="w-28 text-right font-semibold text-foreground text-xs tabular">
         {q.total === 0 ? (
           <span className="inline-flex items-center gap-1 text-[10px] bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-2 py-0.5 rounded-full font-medium">
             Muestra / Interno
@@ -337,7 +337,7 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
               Muestra / Interno
             </span>
           ) : (
-            `$${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`
+            <span className="font-mono tabular">${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
           )}
         </span>
         {q.status === "converted" && (
