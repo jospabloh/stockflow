@@ -92,7 +92,7 @@ export default function HelpSidebar({ articles, activeId, onSelectArticle, searc
                       onClick={() => onSelectArticle(article.id)}
                       className={`w-full text-left px-6 py-2.5 text-sm border-l-2 transition-all ${
                         activeId === article.id
-                          ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 font-medium"
+                          ? "border-brand-500 bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-300 font-medium"
                           : "border-transparent text-slate-600 dark:text-slate-400 hover:bg-muted/50"
                       }`}
                     >

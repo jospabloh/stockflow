@@ -180,7 +180,7 @@ export default function TenantRulesAdmin() {
   };
 
   if (licenseLoading) {
-    return <div className="flex items-center justify-center min-h-64"><div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" /></div>;
+    return <div className="flex items-center justify-center min-h-64"><div className="h-8 w-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" /></div>;
   }
 
   if (!isPlatformAdmin) {
@@ -197,7 +197,7 @@ export default function TenantRulesAdmin() {
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Shield className="h-6 w-6 text-indigo-500" /> Reglas por Tenant</h1>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Shield className="h-6 w-6 text-brand-500" /> Reglas por Tenant</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Excepciones operativas por negocio administradas a nivel plataforma.</p>
         </div>
         <div className="flex gap-2">

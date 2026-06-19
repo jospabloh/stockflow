@@ -59,7 +59,7 @@ export default function AlmacenistaReviewPanel({ perms, onPermChange, onSave }) 
               <Button variant="outline" size="sm" onClick={() => setEditMode(false)}>
                 <X className="h-4 w-4 mr-1" /> Cancelar
               </Button>
-              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={onSave}>
+              <Button size="sm" className="bg-brand-600 hover:bg-brand-700" onClick={onSave}>
                 <Save className="h-4 w-4 mr-1" /> Guardar
               </Button>
             </>

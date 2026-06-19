@@ -24,7 +24,7 @@ import { calculateTotalsWithReconciliation, formatMXN } from "@/lib/vatCalculato
 function PriceInfo({ origin, warning }) {
   if (!origin) return null;
   return (
-    <div className={`mt-1 px-2 py-1 rounded text-[10px] flex items-start gap-1 ${warning ? "bg-amber-50 text-amber-700" : "bg-indigo-50 text-indigo-600"}`}>
+    <div className={`mt-1 px-2 py-1 rounded text-[10px] flex items-start gap-1 ${warning ? "bg-amber-50 text-amber-700" : "bg-brand-50 text-brand-600"}`}>
       {warning ? <AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" /> : <Info className="h-3 w-3 shrink-0 mt-0.5" />}
       <span>{warning || origin}</span>
     </div>
@@ -383,7 +383,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                       <button
                         key={c.id}
                         type="button"
-                        className="w-full text-left px-3 py-2 hover:bg-indigo-50 text-sm border-b border-slate-50 last:border-0"
+                        className="w-full text-left px-3 py-2 hover:bg-brand-50 text-sm border-b border-slate-50 last:border-0"
                         onMouseDown={() => {
                           setForm(prev => ({ ...prev, client_id: c.id, client_name: c.business_name || c.name, client_email: c.email || "", client_phone: c.phone || "" }));
                           setSelectedClient(c);
@@ -400,7 +400,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                           <p className="text-[10px] text-orange-500 font-medium">🔁 Transferencia interna · $0</p>
                         )}
                         {!c.force_zero_price && (c.force_purchase_all_products || c.force_wholesale_all_products) && (
-                          <p className="text-[10px] text-indigo-500 font-medium">
+                          <p className="text-[10px] text-brand-500 font-medium">
                             ⚡ {c.force_purchase_all_products ? "Precio compra forzado" : "Precio mayoreo forzado"}
                           </p>
                         )}
@@ -410,7 +410,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                 </div>
               )}
               {selectedClient && (selectedClient.force_purchase_all_products || selectedClient.force_wholesale_all_products) && !isZeroPriceClient && (
-                <p className="text-[10px] text-indigo-600 font-medium mt-1">
+                <p className="text-[10px] text-brand-600 font-medium mt-1">
                   ⚡ {selectedClient.force_purchase_all_products ? "Precio de compra activo para este cliente" : "Precio mayoreo activo para este cliente"}
                 </p>
               )}
@@ -460,7 +460,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                   <button
                     type="button"
                     onClick={() => setAddMode("catalog")}
-                    className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${addMode === "catalog" ? "bg-indigo-600 text-white" : "bg-card text-muted-foreground hover:bg-muted"}`}
+                    className={`px-3 py-1.5 flex items-center gap-1 transition-colors ${addMode === "catalog" ? "bg-brand-600 text-white" : "bg-card text-muted-foreground hover:bg-muted"}`}
                   >
                     <Package className="h-3 w-3" /> Catálogo
                   </button>
@@ -564,7 +564,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                       {item.tax_rate === 16 ? "IVA 16%" : "Excento"}
                     </span>
                     {selectedClient && (selectedClient.force_purchase_all_products || selectedClient.force_wholesale_all_products) && (
-                      <span className="text-[10px] text-indigo-500 font-semibold mt-1">
+                      <span className="text-[10px] text-brand-500 font-semibold mt-1">
                         {selectedClient.force_purchase_all_products ? "Compra" : "Mayoreo"}
                       </span>
                     )}
@@ -572,7 +572,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                        <TooltipProvider>
                          <Tooltip>
                            <TooltipTrigger asChild>
-                             <Truck className="h-4 w-4 text-indigo-500 mt-1 cursor-help" />
+                             <Truck className="h-4 w-4 text-brand-500 mt-1 cursor-help" />
                            </TooltipTrigger>
                            <TooltipContent side="right" className="text-xs">
                              Se aplica $20 MXN de transporte (cliente)
@@ -613,8 +613,8 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
             )}
             {transportFee > 0 && (
               <div className="flex justify-between items-center text-muted-foreground text-xs">
-                <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-indigo-500" /> Transporte ({form.items.length} × $20)</span>
-                <span className="text-indigo-600 font-semibold">${formatMXN(transportFee)}</span>
+                <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-brand-500" /> Transporte ({form.items.length} × $20)</span>
+                <span className="text-brand-600 font-semibold">${formatMXN(transportFee)}</span>
               </div>
             )}
             <div className="flex justify-between items-center text-lg font-bold border-t border-border pt-3 bg-foreground/10 -mx-4 px-4 py-3 rounded">
@@ -662,7 +662,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="bg-indigo-600 hover:bg-indigo-700"
+            className="bg-brand-600 hover:bg-brand-700"
             {...createButtonProps('save')}
           >
             <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Guardar"}

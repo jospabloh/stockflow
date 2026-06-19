@@ -62,7 +62,7 @@ const Register = () => {
       footer={
         <>
           ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="font-semibold text-indigo-600 hover:text-indigo-500">
+          <Link to="/login" className="font-semibold text-brand-600 hover:text-brand-500">
             Inicia sesión
           </Link>
         </>

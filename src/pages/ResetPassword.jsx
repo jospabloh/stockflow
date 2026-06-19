@@ -53,7 +53,7 @@ const ResetPassword = () => {
       title="Restablecer contraseña"
       subtitle="Elige una nueva contraseña para tu cuenta"
       footer={
-        <Link to="/login" className="font-semibold text-indigo-600 hover:text-indigo-500">
+        <Link to="/login" className="font-semibold text-brand-600 hover:text-brand-500">
           Volver a iniciar sesión
         </Link>
       }
@@ -61,7 +61,7 @@ const ResetPassword = () => {
       {!resetToken ? (
         <p className="text-center text-sm text-slate-600">
           El enlace de restablecimiento no es válido o ha expirado. Solicita uno nuevo desde{' '}
-          <Link to="/forgot-password" className="font-semibold text-indigo-600 hover:text-indigo-500">
+          <Link to="/forgot-password" className="font-semibold text-brand-600 hover:text-brand-500">
             recuperar contraseña
           </Link>
           .

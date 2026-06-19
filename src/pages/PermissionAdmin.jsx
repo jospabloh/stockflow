@@ -152,7 +152,7 @@ export default function PermissionAdmin() {
   if (loadingUser || loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
-        <div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+        <div className="h-8 w-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
       </div>
     );
   }
@@ -172,7 +172,7 @@ export default function PermissionAdmin() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Shield className="h-6 w-6 text-indigo-500" /> Permisos por Rol
+            <Shield className="h-6 w-6 text-brand-500" /> Permisos por Rol
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">Configura qué puede ver y hacer cada rol en el sistema.</p>
         </div>

@@ -222,7 +222,7 @@ export default function UtilityMovementForm({ open, movementType, businessId, ru
 
           <div className="flex justify-end gap-3 pt-1">
             <Button variant="outline" onClick={onClose} disabled={saving}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button onClick={handleSave} disabled={saving} className="bg-brand-600 hover:bg-brand-700">
               {saving ? "Guardando..." : "Guardar"}
             </Button>
           </div>

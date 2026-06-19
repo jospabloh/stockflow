@@ -34,7 +34,7 @@ export default function LowStockAlert({ products }) {
           {products.length > 5 && (
             <Link
               to={createPageUrl("Products") + "?filter=low_stock"}
-              className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+              className="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium"
             >
               Ver todos →
             </Link>

@@ -86,7 +86,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
               disabled={generatingId === product.id}
             >
               {generatingId === product.id
-                ? <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-400" />
+                ? <Loader2 className="h-3.5 w-3.5 animate-spin text-brand-400" />
                 : <Barcode className="h-3.5 w-3.5 text-slate-400" />}
             </Button>
           )}
@@ -99,7 +99,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
                 onClick={() => navigate(`/Movements?product_id=${product.id}`)}
                 title="Ver historial de movimientos"
               >
-                <History className="h-3.5 w-3.5 text-indigo-400" />
+                <History className="h-3.5 w-3.5 text-brand-400" />
               </Button>
               {isAdmin && canEdit && (
                 <Button

@@ -33,7 +33,7 @@ const ForgotPassword = () => {
       title="Recuperar contraseña"
       subtitle={sent ? undefined : 'Te enviaremos un enlace para restablecerla'}
       footer={
-        <Link to="/login" className="font-semibold text-indigo-600 hover:text-indigo-500">
+        <Link to="/login" className="font-semibold text-brand-600 hover:text-brand-500">
           Volver a iniciar sesión
         </Link>
       }

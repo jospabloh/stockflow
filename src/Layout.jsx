@@ -274,16 +274,16 @@ export default function Layout({ children, currentPageName }) {
                     aria-expanded={isSubmenuOpen}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
                       ${currentInSubmenu || isSubmenuOpen
-                        ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm" 
+                        ? "bg-brand-500/10 text-brand-600 dark:text-brand-400 shadow-sm"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                       }`}
                   >
-                    <item.icon className={`h-5 w-5 ${currentInSubmenu || isSubmenuOpen ? "text-indigo-600" : ""}`} aria-hidden="true" />
+                    <item.icon className={`h-5 w-5 ${currentInSubmenu || isSubmenuOpen ? "text-brand-600" : ""}`} aria-hidden="true" />
                     <span>{item.name}</span>
                     <ChevronDown className={`h-4 w-4 ml-auto transition-transform ${isSubmenuOpen ? "rotate-180" : ""}`} aria-hidden="true" />
                   </button>
                   {isSubmenuOpen && (
-                    <div className="mt-1 ml-2 border-l border-indigo-200 dark:border-indigo-800 pl-2 space-y-0.5">
+                    <div className="mt-1 ml-2 border-l border-brand-200 dark:border-brand-800 pl-2 space-y-0.5">
                       {visibleSubitems.map((subitem) => {
                         const subIsActive = currentPageName === subitem.page;
                         return (
@@ -294,14 +294,14 @@ export default function Layout({ children, currentPageName }) {
                             aria-label={subitem.name}
                             aria-current={subIsActive ? "page" : undefined}
                             className={`flex items-center gap-3 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200
-                              ${subIsActive 
-                                ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400" 
+                              ${subIsActive
+                                ? "bg-brand-500/15 text-brand-600 dark:text-brand-400"
                                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                               }`}
                           >
-                            <subitem.icon className={`h-4 w-4 ${subIsActive ? "text-indigo-600" : ""}`} aria-hidden="true" />
+                            <subitem.icon className={`h-4 w-4 ${subIsActive ? "text-brand-600" : ""}`} aria-hidden="true" />
                             <span>{subitem.name}</span>
-                            {subIsActive && <ChevronRight className="h-3 w-3 ml-auto text-indigo-400" aria-hidden="true" />}
+                            {subIsActive && <ChevronRight className="h-3 w-3 ml-auto text-brand-400" aria-hidden="true" />}
                           </Link>
                         );
                       })}
@@ -319,19 +319,19 @@ export default function Layout({ children, currentPageName }) {
                 aria-label={item.name}
                 aria-current={isActive ? "page" : undefined}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
-                  ${isActive 
-                    ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm" 
+                  ${isActive
+                    ? "bg-brand-500/10 text-brand-600 dark:text-brand-400 shadow-sm"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
               >
-                <item.icon className={`h-5 w-5 ${isActive ? "text-indigo-600" : ""}`} aria-hidden="true" />
+                <item.icon className={`h-5 w-5 ${isActive ? "text-brand-600" : ""}`} aria-hidden="true" />
                 <span>{item.name}</span>
                 {item.page === "Dashboard" && lowStockCount > 0 && (
                   <Badge variant="destructive" className="ml-auto text-xs h-5 px-1.5" aria-label={`${lowStockCount} productos con stock bajo`}>
                     {lowStockCount}
                   </Badge>
                 )}
-                {isActive && <ChevronRight className="h-4 w-4 ml-auto text-indigo-400" aria-hidden="true" />}
+                {isActive && <ChevronRight className="h-4 w-4 ml-auto text-brand-400" aria-hidden="true" />}
               </Link>
             );
           })}
@@ -340,7 +340,7 @@ export default function Layout({ children, currentPageName }) {
         {/* User section */}
         <div className="p-4 border-t border-border">
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-400 to-cyan-400 flex items-center justify-center text-white font-semibold text-sm">
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-brand-400 to-accent-400 flex items-center justify-center text-white font-semibold text-sm">
               {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
             </div>
             <div className="flex-1 min-w-0">
@@ -458,7 +458,7 @@ export default function Layout({ children, currentPageName }) {
                 style={{ height: refreshing ? 44 : pullY * 0.5 }}
               >
                 <div
-                  className={`h-6 w-6 border-2 border-indigo-400 border-t-transparent rounded-full ${refreshing ? "animate-spin" : ""}`}
+                  className={`h-6 w-6 border-2 border-brand-400 border-t-transparent rounded-full ${refreshing ? "animate-spin" : ""}`}
                   style={{ transform: refreshing ? undefined : `rotate(${pullY * 4}deg)` }}
                 />
               </div>
@@ -502,9 +502,9 @@ export default function Layout({ children, currentPageName }) {
                 }
               }}
               className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[12px] font-medium transition-colors min-h-[44px] relative
-                ${isActive ? "text-indigo-500" : "text-muted-foreground"}`}
+                ${isActive ? "text-brand-500" : "text-muted-foreground"}`}
             >
-              <item.icon className={`h-5 w-5 ${isActive ? "text-indigo-500" : "text-muted-foreground"}`} aria-hidden="true" />
+              <item.icon className={`h-5 w-5 ${isActive ? "text-brand-500" : "text-muted-foreground"}`} aria-hidden="true" />
               <span>{item.name}</span>
               {item.page === "Dashboard" && lowStockCount > 0 && (
                 <span className="absolute top-1 right-[calc(50%-18px)] h-4 w-4 bg-red-500 rounded-full text-[9px] text-white flex items-center justify-center" aria-hidden="true">

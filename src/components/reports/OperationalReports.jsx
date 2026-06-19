@@ -104,8 +104,8 @@ export default function OperationalReports({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
             <Card className="border-0 shadow-sm p-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center">
-                  <AlertCircle className="h-5 w-5 text-indigo-600" />
+                <div className="h-10 w-10 rounded-xl bg-brand-50 flex items-center justify-center">
+                  <AlertCircle className="h-5 w-5 text-brand-600" />
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Total Ventas</p>
@@ -142,7 +142,7 @@ export default function OperationalReports({
 
             {/* Table: Ventas por Cotización */}
             <Card className="border-0 shadow-sm overflow-hidden mb-6">
-            <div className="flex items-center justify-between p-4 border-b bg-indigo-50/50">
+            <div className="flex items-center justify-between p-4 border-b bg-brand-50/50">
               <div>
                 <h3 className="font-semibold text-slate-700">Ventas por Cotización</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Ventas concretadas a través del flujo de cotización</p>
@@ -179,7 +179,7 @@ export default function OperationalReports({
                       const deliveredUnpaid = q.delivered && !isPaidConfirmed(q);
                       return (
                         <tr key={q.id} className={`border-t border-slate-100 hover:bg-slate-50/50 ${deliveredUnpaid ? "bg-red-50/60" : ""}`}>
-                          <td className="px-4 py-3 font-mono text-indigo-600">
+                          <td className="px-4 py-3 font-mono text-brand-600">
                             {q.folio}
                             {deliveredUnpaid && <span className="ml-1 text-[10px] font-bold text-red-600 bg-red-100 px-1 py-0.5 rounded">¡COBRAR!</span>}
                           </td>
@@ -216,11 +216,11 @@ export default function OperationalReports({
             const totalDirect = directExits.reduce((s, m) => s + (m.total || 0), 0);
             return (
               <Card className="border-0 shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b bg-cyan-50/50">
+                <div className="flex items-center justify-between p-4 border-b bg-accent-50/50">
                   <div>
                     <h3 className="font-semibold text-slate-700">Ventas Directas (sin cotización)</h3>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Movimientos de salida registrados directamente — Total: <span className="font-semibold text-cyan-700">${totalDirect.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                      Movimientos de salida registrados directamente — Total: <span className="font-semibold text-accent-700">${totalDirect.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                     </p>
                   </div>
                   <ExportMenu

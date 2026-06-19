@@ -98,7 +98,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
                  disabled={generatingId === product.id}
                >
                  {generatingId === product.id
-                   ? <Loader2 className="h-4 w-4 animate-spin text-indigo-400" />
+                   ? <Loader2 className="h-4 w-4 animate-spin text-brand-400" />
                    : <Barcode className="h-4 w-4 text-slate-400" />}
                </Button>
             )}
@@ -111,7 +111,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
                   onClick={() => navigate(`/Movements?product_id=${product.id}`)}
                   title="Ver historial de movimientos"
                 >
-                  <History className="h-4 w-4 text-indigo-400" />
+                  <History className="h-4 w-4 text-brand-400" />
                 </Button>
                 {isAdmin && canEdit && (
                  <Button
@@ -192,7 +192,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-11 px-3 text-indigo-500"
+                className="h-11 px-3 text-brand-500"
                 onClick={() => navigate(`/Movements?product_id=${product.id}`)}
               >
                 <History className="h-4 w-4 mr-1" /> Historial

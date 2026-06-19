@@ -119,7 +119,7 @@ export default function PettyCash() {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-64">
-      <div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+      <div className="h-8 w-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
     </div>
   );
 
@@ -130,7 +130,7 @@ export default function PettyCash() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <PiggyBank className="h-6 w-6 text-indigo-500" /> Caja Chica
+            <PiggyBank className="h-6 w-6 text-brand-500" /> Caja Chica
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">Control de dinero para gastos menores del negocio</p>
         </div>
@@ -169,15 +169,15 @@ export default function PettyCash() {
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Balance */}
-        <Card className="border-0 shadow-sm p-5 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+        <Card className="border-0 shadow-sm p-5 bg-gradient-to-br from-brand-500 to-brand-600 text-white">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-indigo-100 text-sm font-medium">Saldo Actual</span>
-            <PiggyBank className="h-5 w-5 text-indigo-200" />
+            <span className="text-brand-100 text-sm font-medium">Saldo Actual</span>
+            <PiggyBank className="h-5 w-5 text-brand-200" />
           </div>
           <p className={`text-3xl font-bold ${balance < 0 ? "text-rose-200" : "text-white"}`}>
             ${balance.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-indigo-200 text-xs mt-1">{movements.length} movimiento(s) total</p>
+          <p className="text-brand-200 text-xs mt-1">{movements.length} movimiento(s) total</p>
         </Card>
 
         {/* Month income */}
@@ -236,7 +236,7 @@ export default function PettyCash() {
               };
               const isSystemGenerated = m.generated_by_system === true;
               return (
-                <div key={m.id} className={`flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 ${isSystemGenerated ? "border-indigo-200 dark:border-indigo-800" : ""}`}>
+                <div key={m.id} className={`flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 ${isSystemGenerated ? "border-brand-200 dark:border-brand-800" : ""}`}>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">{m.description}</p>
                     <p className="text-xs text-muted-foreground">

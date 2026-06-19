@@ -227,7 +227,7 @@ export default function FloatingHelpChat() {
                 onClick={() => setIsOpen(true)}
                 className={cn(
                     "fixed z-[100] w-14 h-14 rounded-full shadow-2xl",
-                    "bg-indigo-500 hover:bg-indigo-600 text-white",
+                    "bg-brand-500 hover:bg-brand-600 text-white",
                     "flex items-center justify-center transition-all duration-200",
                     "hover:scale-110 active:scale-95"
                 )}
@@ -263,7 +263,7 @@ export default function FloatingHelpChat() {
             <div
                 className={cn(
                     "flex items-center gap-2 px-3 py-2 rounded-t-2xl border-b border-border",
-                    "bg-indigo-500 text-white cursor-grab active:cursor-grabbing",
+                    "bg-brand-500 text-white cursor-grab active:cursor-grabbing",
                     isMinimized && "rounded-b-2xl border-b-0"
                 )}
                 onMouseDown={handleDragStart}
@@ -306,7 +306,7 @@ export default function FloatingHelpChat() {
 
                         {!loading && messages.length === 0 && (
                             <div className="flex flex-col items-center justify-center h-full text-center gap-3 px-4">
-                                <div className="h-12 w-12 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                                <div className="h-12 w-12 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center">
                                     <span className="text-2xl">✦</span>
                                 </div>
                                 <div>
@@ -339,7 +339,7 @@ export default function FloatingHelpChat() {
 
                         {sending && (
                             <div className="flex gap-2 justify-start">
-                                <div className="h-6 w-6 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center flex-shrink-0">
+                                <div className="h-6 w-6 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center flex-shrink-0">
                                     <span className="text-xs">✦</span>
                                 </div>
                                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-3 py-2">
@@ -361,10 +361,10 @@ export default function FloatingHelpChat() {
                         {attachedFiles.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mb-2">
                                 {attachedFiles.map((f, i) => (
-                                    <div key={i} className="flex items-center gap-1 bg-indigo-50 dark:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-700 rounded-lg px-2 py-1 text-xs text-indigo-700 dark:text-indigo-300 max-w-[140px]">
+                                    <div key={i} className="flex items-center gap-1 bg-brand-50 dark:bg-brand-900/40 border border-brand-200 dark:border-brand-700 rounded-lg px-2 py-1 text-xs text-brand-700 dark:text-brand-300 max-w-[140px]">
                                         {f.type.startsWith('image/') ? <ImageIcon className="h-3 w-3 flex-shrink-0" /> : <Mic className="h-3 w-3 flex-shrink-0" />}
                                         <span className="truncate">{f.name}</span>
-                                        <button type="button" onClick={() => removeAttachedFile(i)} className="ml-0.5 text-indigo-400 hover:text-red-500 flex-shrink-0">×</button>
+                                        <button type="button" onClick={() => removeAttachedFile(i)} className="ml-0.5 text-brand-400 hover:text-red-500 flex-shrink-0">×</button>
                                     </div>
                                 ))}
                             </div>
@@ -384,14 +384,14 @@ export default function FloatingHelpChat() {
                             <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-9 w-9 rounded-xl flex-shrink-0 text-muted-foreground hover:text-indigo-500"
+                                className="h-9 w-9 rounded-xl flex-shrink-0 text-muted-foreground hover:text-brand-500"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={uploadingFile || sending}
                                 aria-label="Adjuntar imagen"
                                 title="Adjuntar imagen"
                             >
                                 {uploadingFile ? (
-                                    <div className="h-4 w-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                                    <div className="h-4 w-4 border-2 border-brand-400 border-t-transparent rounded-full animate-spin" />
                                 ) : (
                                     <Paperclip className="h-4 w-4" />
                                 )}
@@ -400,7 +400,7 @@ export default function FloatingHelpChat() {
                             <Button
                                 size="icon"
                                 variant="ghost"
-                                className={cn("h-9 w-9 rounded-xl flex-shrink-0", isRecording ? "text-red-500 animate-pulse" : "text-muted-foreground hover:text-indigo-500")}
+                                className={cn("h-9 w-9 rounded-xl flex-shrink-0", isRecording ? "text-red-500 animate-pulse" : "text-muted-foreground hover:text-brand-500")}
                                 onClick={handleMicToggle}
                                 disabled={uploadingFile || sending}
                                 aria-label={isRecording ? "Detener grabación" : "Grabar audio"}
@@ -418,14 +418,14 @@ export default function FloatingHelpChat() {
                                 className={cn(
                                     "flex-1 resize-none rounded-xl border border-input bg-background",
                                     "px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground",
-                                    "focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                                    "focus:outline-none focus:ring-2 focus:ring-brand-500",
                                     "overflow-y-auto"
                                 )}
                                 style={{ minHeight: 38, maxHeight: 120 }}
                             />
                             <Button
                                 size="icon"
-                                className="h-9 w-9 rounded-xl bg-indigo-500 hover:bg-indigo-600 flex-shrink-0"
+                                className="h-9 w-9 rounded-xl bg-brand-500 hover:bg-brand-600 flex-shrink-0"
                                 onClick={handleSend}
                                 disabled={(!input.trim() && attachedFiles.length === 0) || sending || !conversation}
                                 aria-label="Enviar mensaje"
@@ -446,7 +446,7 @@ export default function FloatingHelpChat() {
 function Loader() {
     return (
         <div className="flex flex-col items-center gap-2 text-muted-foreground">
-            <div className="h-5 w-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+            <div className="h-5 w-5 border-2 border-brand-400 border-t-transparent rounded-full animate-spin" />
             <p className="text-xs">Iniciando asistente...</p>
         </div>
     );

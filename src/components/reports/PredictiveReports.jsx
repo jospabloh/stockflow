@@ -199,7 +199,7 @@ export default function PredictiveReports({
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                       <div 
-                        className="bg-gradient-to-r from-indigo-500 to-cyan-500 h-full rounded-full" 
+                        className="bg-gradient-to-r from-brand-500 to-accent-500 h-full rounded-full"
                         style={{ width: `${(p.valor / topSelling[0].valor) * 100}%` }}
                       />
                     </div>
@@ -485,7 +485,7 @@ function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo 
                     {col}
                   </th>
                 ))}
-                <th className="border border-slate-200 bg-indigo-50 px-3 py-2 text-right font-semibold text-indigo-700">Total</th>
+                <th className="border border-slate-200 bg-brand-50 px-3 py-2 text-right font-semibold text-brand-700">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -499,7 +499,7 @@ function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo 
                         {pivotData.data[row][col] ? getDisplayValue(pivotData.data[row][col]) : "—"}
                       </td>
                     ))}
-                    <td className="border border-slate-200 px-3 py-2 text-right font-semibold text-indigo-700 bg-indigo-50/50">
+                    <td className="border border-slate-200 px-3 py-2 text-right font-semibold text-brand-700 bg-brand-50/50">
                       {rowTotal.toFixed(metricType === "avg" ? 2 : 0)}
                     </td>
                   </tr>

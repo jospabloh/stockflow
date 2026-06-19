@@ -94,12 +94,12 @@ export function MobileSelect({
                     className={cn(
                       "w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-colors",
                       isSelected
-                        ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-medium"
+                        ? "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300 font-medium"
                         : "text-foreground hover:bg-muted"
                     )}
                   >
                     <span>{opt.label}</span>
-                    {isSelected && <Check className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0" />}
+                    {isSelected && <Check className="h-4 w-4 text-brand-600 dark:text-brand-400 shrink-0" />}
                   </button>
                 );
               })}

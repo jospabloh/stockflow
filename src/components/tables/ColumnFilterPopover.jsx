@@ -68,14 +68,14 @@ export default function ColumnFilterPopover({ label, type = "multiselect", optio
         className={cn(
           "flex items-center gap-1 text-[11px] font-semibold transition-colors rounded px-1 py-0.5",
           hasActive
-            ? "text-indigo-600 dark:text-indigo-400"
+            ? "text-brand-600 dark:text-brand-400"
             : "text-muted-foreground hover:text-foreground"
         )}
       >
         <span>{label}</span>
         {hasActive ? (
           <span className="flex items-center gap-0.5">
-            <Filter className="h-3 w-3 fill-indigo-500 text-indigo-500" />
+            <Filter className="h-3 w-3 fill-brand-500 text-brand-500" />
             <button
               type="button"
               onClick={clearAll}
@@ -141,12 +141,12 @@ export default function ColumnFilterPopover({ label, type = "multiselect", optio
                       onClick={() => toggleOption(opt.value)}
                       className={cn(
                         "w-full flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-muted transition-colors",
-                        isChecked && "bg-indigo-50 dark:bg-indigo-950/30"
+                        isChecked && "bg-brand-50 dark:bg-brand-950/30"
                       )}
                     >
                       <span className={cn(
                         "h-4 w-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors",
-                        isChecked ? "bg-indigo-600 border-indigo-600" : "border-border bg-background"
+                        isChecked ? "bg-brand-600 border-brand-600" : "border-border bg-background"
                       )}>
                         {isChecked && <Check className="h-2.5 w-2.5 text-white" />}
                       </span>
@@ -179,7 +179,7 @@ export default function ColumnFilterPopover({ label, type = "multiselect", optio
                   type="date"
                   value={selected?.from || ""}
                   onChange={e => onChange({ ...selected, from: e.target.value })}
-                  className="w-full text-xs border border-border rounded-md px-2 py-1.5 bg-background outline-none focus:ring-1 focus:ring-indigo-400"
+                  className="w-full text-xs border border-border rounded-md px-2 py-1.5 bg-background outline-none focus:ring-1 focus:ring-brand-400"
                 />
               </div>
               <div>
@@ -188,7 +188,7 @@ export default function ColumnFilterPopover({ label, type = "multiselect", optio
                   type="date"
                   value={selected?.to || ""}
                   onChange={e => onChange({ ...selected, to: e.target.value })}
-                  className="w-full text-xs border border-border rounded-md px-2 py-1.5 bg-background outline-none focus:ring-1 focus:ring-indigo-400"
+                  className="w-full text-xs border border-border rounded-md px-2 py-1.5 bg-background outline-none focus:ring-1 focus:ring-brand-400"
                 />
               </div>
             </div>
@@ -204,7 +204,7 @@ export default function ColumnFilterPopover({ label, type = "multiselect", optio
                   placeholder={`Buscar ${label.toLowerCase()}...`}
                   value={selected || ""}
                   onChange={e => onChange(e.target.value)}
-                  className="w-full pl-6 pr-2 py-1.5 text-xs border border-border rounded-md bg-background outline-none focus:ring-1 focus:ring-indigo-400"
+                  className="w-full pl-6 pr-2 py-1.5 text-xs border border-border rounded-md bg-background outline-none focus:ring-1 focus:ring-brand-400"
                   autoFocus
                 />
               </div>

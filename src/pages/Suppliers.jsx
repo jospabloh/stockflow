@@ -151,7 +151,7 @@ export default function Suppliers() {
         <div className="flex items-center justify-between mb-4">
           <h1 className="font-semibold text-slate-700 text-lg">Proveedores</h1>
           {can('Proveedores', 'create') && (
-            <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" onClick={openNew} {...createButtonProps('add')}>
+            <Button size="sm" className="bg-brand-600 hover:bg-brand-700" onClick={openNew} {...createButtonProps('add')}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo
             </Button>
           )}
@@ -175,7 +175,7 @@ export default function Suppliers() {
                   <TableCell className="text-slate-500">
                     <span>{sup.contact_name || "—"}</span>
                     {extras.length > 0 && (
-                      <span className="ml-2 inline-flex items-center gap-1 text-xs text-indigo-500 font-medium">
+                      <span className="ml-2 inline-flex items-center gap-1 text-xs text-brand-500 font-medium">
                         <Users className="h-3 w-3" />+{extras.length}
                       </span>
                     )}
@@ -274,14 +274,14 @@ export default function Suppliers() {
             ))}
 
             {/* Add contact button */}
-            <Button variant="outline" size="sm" onClick={addExtraContact} className="w-full border-dashed text-slate-500 hover:text-indigo-600">
+            <Button variant="outline" size="sm" onClick={addExtraContact} className="w-full border-dashed text-slate-500 hover:text-brand-600">
               <Plus className="h-4 w-4 mr-1" /> Agregar otro contacto
             </Button>
           </div>
 
           <div className="flex justify-end gap-3 px-6 py-4 border-t border-border shrink-0 bg-card">
             <Button variant="outline" onClick={() => setSupFormOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveSupplier} disabled={!supForm.name.trim() || !supForm.contact_name.trim()} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button onClick={handleSaveSupplier} disabled={!supForm.name.trim() || !supForm.contact_name.trim()} className="bg-brand-600 hover:bg-brand-700">
               Guardar
             </Button>
           </div>

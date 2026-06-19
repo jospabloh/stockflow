@@ -96,7 +96,7 @@ export default function PaymentMethods() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+        <div className="h-8 w-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
       </div>
     );
   }
@@ -112,7 +112,7 @@ export default function PaymentMethods() {
           {can('Tipo de Pago', 'create') && (
             <Button
               size="sm"
-              className="bg-indigo-600 hover:bg-indigo-700"
+              className="bg-brand-600 hover:bg-brand-700"
               onClick={() => { setEditingPm(null); setPmForm({ name: "" }); setPmFormOpen(true); }}
               {...createButtonProps('add')}
             >
@@ -177,7 +177,7 @@ export default function PaymentMethods() {
             </div>
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setPmFormOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSavePaymentMethod} disabled={!pmForm.name.trim()} className="bg-indigo-600 hover:bg-indigo-700">Guardar</Button>
+              <Button onClick={handleSavePaymentMethod} disabled={!pmForm.name.trim()} className="bg-brand-600 hover:bg-brand-700">Guardar</Button>
             </div>
           </div>
         </DialogContent>

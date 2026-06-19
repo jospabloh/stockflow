@@ -116,7 +116,7 @@ export default function SalesFilterToggle({
       )}
 
       {rangeLabel && (
-        <span className={`text-xs font-medium ${isCustomActive ? "text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-1 rounded" : "text-indigo-600 dark:text-indigo-400"}`}>
+        <span className={`text-xs font-medium ${isCustomActive ? "text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/50 px-2 py-1 rounded" : "text-brand-600 dark:text-brand-400"}`}>
           {rangeLabel}
         </span>
       )}

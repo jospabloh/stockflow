@@ -100,7 +100,7 @@ const MarkdownContent = ({ content }) => {
       }
     } else if (line.startsWith('> ')) {
       elements.push(
-        <blockquote key={i} className="border-l-4 border-indigo-400 pl-4 italic text-slate-600 my-3">
+        <blockquote key={i} className="border-l-4 border-brand-400 pl-4 italic text-slate-600 my-3">
           {line.slice(2)}
         </blockquote>
       );

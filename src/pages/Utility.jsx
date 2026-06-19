@@ -278,7 +278,7 @@ export default function Utility() {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-64">
-      <div className="h-8 w-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+      <div className="h-8 w-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
     </div>
   );
 
@@ -299,14 +299,14 @@ export default function Utility() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Wallet className="h-6 w-6 text-indigo-500" /> Utilidad
+            <Wallet className="h-6 w-6 text-brand-500" /> Utilidad
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">Estado de resultados del mes: ventas y costos automáticos. Registra a mano solo los retiros de utilidad (efectivo o tarjeta).</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {canManageForecast && (
             <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 bg-muted/50 rounded-lg px-3 py-2 cursor-pointer select-none">
-              <Sparkles className={`h-4 w-4 ${forecastEnabled ? "text-indigo-500" : "text-slate-400"}`} />
+              <Sparkles className={`h-4 w-4 ${forecastEnabled ? "text-brand-500" : "text-slate-400"}`} />
               <span className="hidden sm:inline">Proyección</span>
               <Switch checked={forecastEnabled} onCheckedChange={handleToggleForecast} />
             </label>
@@ -361,20 +361,20 @@ export default function Utility() {
           <p className="text-muted-foreground text-xs mt-1">Efectivo + tarjeta dispuestos</p>
         </Card>
 
-        <Card className={`border-0 shadow-sm p-5 text-white bg-gradient-to-br ${incomeStatement.availableProfit < 0 ? "from-rose-500 to-rose-600" : "from-indigo-500 to-indigo-600"}`}>
+        <Card className={`border-0 shadow-sm p-5 text-white bg-gradient-to-br ${incomeStatement.availableProfit < 0 ? "from-rose-500 to-rose-600" : "from-brand-500 to-brand-600"}`}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-indigo-100 text-sm font-medium">Utilidad disponible</span>
-            <Wallet className="h-5 w-5 text-indigo-200" />
+            <span className="text-brand-100 text-sm font-medium">Utilidad disponible</span>
+            <Wallet className="h-5 w-5 text-brand-200" />
           </div>
           <p className="text-3xl font-bold">{fmt(incomeStatement.availableProfit)}</p>
-          <p className="text-indigo-100 text-xs mt-1">Dinero sonante para gastar</p>
+          <p className="text-brand-100 text-xs mt-1">Dinero sonante para gastar</p>
         </Card>
       </div>
 
       {/* Estado de Resultados — cascada */}
       <Card className="border-0 shadow-sm p-5">
         <h2 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
-          <Scale className="h-4 w-4 text-indigo-500" /> Estado de Resultados — {MONTHS[month]} {year}
+          <Scale className="h-4 w-4 text-brand-500" /> Estado de Resultados — {MONTHS[month]} {year}
         </h2>
         {!incomeStatement.hasOperations ? (
           <p className="text-sm text-slate-400 py-4 text-center">Sin operaciones ni movimientos en {MONTHS[month]} {year}</p>
@@ -401,12 +401,12 @@ export default function Utility() {
 
       {/* Proyección (pronóstico) */}
       {forecastEnabled && forecast && (
-        <Card className="border border-indigo-200 dark:border-indigo-900 shadow-sm p-5 bg-indigo-50/40 dark:bg-indigo-950/20">
+        <Card className="border border-brand-200 dark:border-brand-900 shadow-sm p-5 bg-brand-50/40 dark:bg-brand-950/20">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
-              <LineChart className="h-4 w-4 text-indigo-500" /> Proyección — {MONTHS[month]} {year}
+              <LineChart className="h-4 w-4 text-brand-500" /> Proyección — {MONTHS[month]} {year}
             </h2>
-            <Badge className="bg-indigo-100 text-indigo-700 border-0 text-[10px]">estimado</Badge>
+            <Badge className="bg-brand-100 text-brand-700 border-0 text-[10px]">estimado</Badge>
           </div>
           {forecast.isClosed ? (
             <p className="text-sm text-slate-400 py-3 text-center">Mes cerrado — la utilidad ya es definitiva.</p>
@@ -416,7 +416,7 @@ export default function Utility() {
             <div className="space-y-3">
               <div className="rounded-lg bg-white dark:bg-slate-900 px-4 py-3 flex items-center justify-between">
                 <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Utilidad Total proyectada</span>
-                <span className={`text-2xl font-bold ${forecast.projectedNetProfit < 0 ? "text-rose-600" : "text-indigo-600 dark:text-indigo-400"}`}>
+                <span className={`text-2xl font-bold ${forecast.projectedNetProfit < 0 ? "text-rose-600" : "text-brand-600 dark:text-brand-400"}`}>
                   {fmt(forecast.projectedNetProfit)}
                 </span>
               </div>
@@ -439,7 +439,7 @@ export default function Utility() {
                 )}
                 {forecast.activeCount > 0 && (
                   <p className="text-xs text-slate-500 dark:text-slate-400 pt-1 flex items-center gap-1">
-                    <TrendingUp className="h-3 w-3 text-indigo-400" />
+                    <TrendingUp className="h-3 w-3 text-brand-400" />
                     Además tienes {forecast.activeCount} {forecast.activeCount === 1 ? "cotización abierta" : "cotizaciones abiertas"} (~{fmt(forecast.expectedPipelineProfit)} esperado) que podrían sumar.
                   </p>
                 )}

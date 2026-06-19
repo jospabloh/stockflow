@@ -40,7 +40,7 @@ export default function ReferralPanel() {
   if (loading) {
     return (
       <Card className="border-0 shadow-sm p-6 flex items-center justify-center h-40">
-        <div className="h-7 w-7 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+        <div className="h-7 w-7 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
       </Card>
     );
   }
@@ -55,7 +55,7 @@ export default function ReferralPanel() {
       {/* Code + share */}
       <Card className="border-0 shadow-sm p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <Gift className="h-5 w-5 text-indigo-500" />
+          <Gift className="h-5 w-5 text-brand-500" />
           <h3 className="font-semibold text-slate-700 text-lg">Programa de Referidos</h3>
         </div>
         <p className="text-sm text-slate-500">
@@ -63,16 +63,16 @@ export default function ReferralPanel() {
           <strong>ambos obtienen +15 días de prueba gratis</strong>.
         </p>
 
-        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 space-y-3">
-          <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">Tu código de referido</p>
+        <div className="bg-brand-50 border border-brand-100 rounded-xl p-4 space-y-3">
+          <p className="text-xs font-semibold text-brand-600 uppercase tracking-wide">Tu código de referido</p>
           <div className="flex items-center gap-3">
-            <div className="flex-1 bg-white border border-indigo-200 rounded-xl px-4 py-3 font-mono text-xl tracking-widest text-indigo-700 font-bold text-center">
+            <div className="flex-1 bg-white border border-brand-200 rounded-xl px-4 py-3 font-mono text-xl tracking-widest text-brand-700 font-bold text-center">
               {stats.referral_code}
             </div>
             <button
               type="button"
               onClick={handleCopy}
-              className="h-12 w-12 flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex-shrink-0"
+              className="h-12 w-12 flex items-center justify-center rounded-xl bg-brand-600 hover:bg-brand-700 text-white transition-colors flex-shrink-0"
               title="Copiar enlace"
             >
               <Copy className="h-5 w-5" />
@@ -92,13 +92,13 @@ export default function ReferralPanel() {
       {/* Stats */}
       <Card className="border-0 shadow-sm p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-indigo-500" />
+          <TrendingUp className="h-5 w-5 text-brand-500" />
           <h3 className="font-semibold text-slate-700">Tus estadísticas</h3>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-slate-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-indigo-600">{stats.total_referrals}</p>
+            <p className="text-2xl font-bold text-brand-600">{stats.total_referrals}</p>
             <p className="text-xs text-slate-500 mt-1">Referidos</p>
           </div>
           <div className="bg-slate-50 rounded-xl p-4 text-center">
@@ -124,7 +124,7 @@ export default function ReferralPanel() {
           </div>
           <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 rounded-full transition-all duration-700"
+              className="h-full bg-gradient-to-r from-brand-500 to-accent-400 rounded-full transition-all duration-700"
               style={{ width: `${progressPct}%` }}
             />
           </div>

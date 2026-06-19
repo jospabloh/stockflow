@@ -404,9 +404,9 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           </div>
 
           {/* Total general */}
-          <div className="bg-indigo-50 dark:bg-indigo-950 border border-indigo-300 dark:border-indigo-700 rounded-xl p-4 text-center">
+          <div className="bg-brand-50 dark:bg-brand-950 border border-brand-300 dark:border-brand-700 rounded-xl p-4 text-center">
             <p className="text-sm text-muted-foreground mb-1">Total</p>
-            <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-300">
+            <p className="text-2xl font-bold text-brand-700 dark:text-brand-300">
               ${grandTotal.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
             </p>
           </div>
@@ -536,7 +536,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           <Button
             onClick={handleSave}
             disabled={!canSave}
-            className="bg-indigo-600 hover:bg-indigo-700"
+            className="bg-brand-600 hover:bg-brand-700"
             {...createButtonProps('save')}
           >
             <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Registrar"}

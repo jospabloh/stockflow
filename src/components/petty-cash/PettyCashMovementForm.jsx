@@ -168,7 +168,7 @@ export default function PettyCashMovementForm({ open, movementType, businessId, 
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="bg-indigo-600 hover:bg-indigo-700"
+              className="bg-brand-600 hover:bg-brand-700"
             >
               {saving ? "Guardando..." : "Guardar"}
             </Button>

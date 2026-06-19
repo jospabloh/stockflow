@@ -56,7 +56,7 @@ export default function SuperAdminLogs() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center">
-            <Activity className="w-8 h-8 mr-3 text-indigo-600" />
+            <Activity className="w-8 h-8 mr-3 text-brand-600" />
             Observabilidad del Sistema
           </h1>
           <p className="text-slate-500 mt-1">Logs de automatizaciones, correos y tareas en segundo plano.</p>
@@ -65,7 +65,7 @@ export default function SuperAdminLogs() {
           type="button"
           onClick={fetchLogs} 
           disabled={loading}
-          className="flex items-center px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-indigo-600 transition-colors disabled:opacity-50"
+          className="flex items-center px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-brand-600 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           {loading ? 'Actualizando...' : 'Actualizar Logs'}
@@ -116,7 +116,7 @@ export default function SuperAdminLogs() {
                       </TableCell>
                       <TableCell className="font-medium text-slate-800">{email.recipient_email}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200">
+                        <Badge variant="outline" className="bg-brand-50 text-brand-700 border-brand-200">
                           {email.email_type}
                         </Badge>
                       </TableCell>
@@ -184,7 +184,7 @@ export default function SuperAdminLogs() {
                           {entry.released_at ? format(new Date(entry.released_at), "dd MMM yyyy, HH:mm", { locale: es }) : '—'}
                         </TableCell>
                         <TableCell className="font-medium text-slate-800">{entry.version || '—'}</TableCell>
-                        <TableCell><Badge className="bg-indigo-50 text-indigo-700 border-indigo-200" variant="outline">AppChangelog</Badge></TableCell>
+                        <TableCell><Badge className="bg-brand-50 text-brand-700 border-brand-200" variant="outline">AppChangelog</Badge></TableCell>
                         <TableCell className="max-w-[460px] truncate text-xs text-slate-500" title={entry.summary || ''}>{entry.summary || '—'}</TableCell>
                       </TableRow>
                     ))}

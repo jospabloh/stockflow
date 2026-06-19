@@ -125,7 +125,7 @@ export default function BusinessSetup() {
    };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/40 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-brand-50/40 flex flex-col items-center justify-center p-4">
       {/* Logo */}
        <div className="flex items-center gap-3 mb-10">
          <img src="https://media.base44.com/images/public/69af971d0fdb362c9ae52ed3/5032b5555_StockFlow_logo.png" alt="StockFlow" className="h-12 w-12 object-contain" />
@@ -144,31 +144,31 @@ export default function BusinessSetup() {
             </div>
             <div className="space-y-4">
               <button type="button" onClick={() => setMode("create")} className="group w-full text-left">
-                <Card className="border-2 border-transparent hover:border-indigo-300 hover:shadow-md transition-all p-6">
+                <Card className="border-2 border-transparent hover:border-brand-300 hover:shadow-md transition-all p-6">
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-indigo-100 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-200 transition-colors">
-                      <Building2 className="h-6 w-6 text-indigo-600" />
+                    <div className="h-12 w-12 rounded-xl bg-brand-100 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-200 transition-colors">
+                      <Building2 className="h-6 w-6 text-brand-600" />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-slate-800 mb-0.5">Crear mi negocio</h3>
                       <p className="text-sm text-slate-500">Soy dueño o administrador — iniciaré el espacio de trabajo</p>
                     </div>
-                    <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                    <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-brand-500 transition-colors" />
                   </div>
                 </Card>
               </button>
 
               <button type="button" onClick={() => setMode("join")} className="group w-full text-left">
-                <Card className="border-2 border-transparent hover:border-cyan-300 hover:shadow-md transition-all p-6">
+                <Card className="border-2 border-transparent hover:border-accent-300 hover:shadow-md transition-all p-6">
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-cyan-100 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-200 transition-colors">
-                      <Users className="h-6 w-6 text-cyan-600" />
+                    <div className="h-12 w-12 rounded-xl bg-accent-100 flex items-center justify-center flex-shrink-0 group-hover:bg-accent-200 transition-colors">
+                      <Users className="h-6 w-6 text-accent-600" />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-slate-800 mb-0.5">Unirme a un equipo</h3>
                       <p className="text-sm text-slate-500">Tengo un código de invitación de mi negocio</p>
                     </div>
-                    <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-cyan-500 transition-colors" />
+                    <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-accent-500 transition-colors" />
                   </div>
                 </Card>
               </button>
@@ -223,7 +223,7 @@ export default function BusinessSetup() {
             <Button
               onClick={handleCreate}
               disabled={!createForm.name.trim() || loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700"
+              className="w-full bg-brand-600 hover:bg-brand-700"
             >
               {loading ? "Creando negocio..." : "Crear y Continuar →"}
             </Button>
@@ -256,7 +256,7 @@ export default function BusinessSetup() {
             <Button
               onClick={handleJoin}
               disabled={inviteCode.length < 6 || loading || joinCooldown > 0}
-              className="w-full bg-cyan-600 hover:bg-cyan-700"
+              className="w-full bg-accent-600 hover:bg-accent-700"
             >
               {loading ? "Verificando..." : joinCooldown > 0 ? `Espera ${joinCooldown}s` : "Verificar y Unirse →"}
             </Button>
