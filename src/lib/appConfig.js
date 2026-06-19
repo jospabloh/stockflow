@@ -2,16 +2,27 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.17.6";
+export const APP_VERSION = "2.18.0";
 
 export const RELEASE_DATE = "2026-06-19";
 
 // Fecha (ISO) de la última revisión manual del Manual de Usuario por un humano.
 // Actualizar al volver a leer y validar el manual end-to-end. La auditoría
 // nocturna alerta si pasan más de 60 días desde esta fecha.
-export const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
+export const USER_MANUAL_LAST_REVIEWED = "2026-06-19";
 
 export const CHANGELOG = [
+  {
+    version: "2.18.0",
+    date: "2026-06-19",
+    changes: [
+      "🎨 Nueva identidad visual: tipografías Space Grotesk e IBM Plex en toda la app, con cifras monoespaciadas que se alinean en tablas, totales y reportes",
+      "📊 Dashboard renovado: nuevo encabezado “Inventario en vivo” con el stock total, el flujo de entradas/salidas del día y la alerta de reposición",
+      "🎨 Paleta de marca centralizada (índigo/cian): colores consistentes en toda la aplicación y listos para personalización",
+      "🧾 Cotización pública rediseñada: ahora es un documento profesional con el nombre y color de tu negocio, legible con cualquier color de marca y optimizado para celular",
+      "♿ Accesibilidad: se respeta la preferencia de “reducir movimiento” del dispositivo y mejora el contraste de color",
+    ],
+  },
   {
     version: "2.17.6",
     date: "2026-06-19",

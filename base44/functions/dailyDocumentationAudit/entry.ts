@@ -6,38 +6,42 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.17.6";
+const CURRENT_VERSION_IN_CODE = "2.18.0";
 const SNAPSHOT_RELEASE_DATE = "2026-06-19";
-const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
+const USER_MANUAL_LAST_REVIEWED = "2026-06-19";
 const GIT_LOG_SNAPSHOT = `
-2454780 Add files via upload
-017dd93 Add files via upload
-dd28f5e Add files via upload
-184ca9d Add empty dumb file to superpowers-main directory
-43fa660 Merge pull request #188 from jospabloh/automated/release-pr
-cd3cca1 chore: release and update documentation
-7d08d94 Add files via upload
-1fdd42a Merge pull request #185 from jospabloh/automated/release-pr
-b2875da chore: release and update documentation
-00364f3 Merge pull request #187 from jospabloh/claude/optimistic-carson-35zv8g
-07532e4 Redesign: real brand tokens, type system, inventory hero, reduced-motion
-4ca9bc8 Add files via upload
-d1974a0 Add Apache License 2.0 to frontend-design
-c2e96c2 Merge pull request #186 from jospabloh/claude/fix-fundaccounts-permission-key
-e024071 fix(permisos): usar la clave de módulo registrada CuentasFondo en FundAccounts
-5ed1bfa Merge pull request #184 from jospabloh/claude/react-query-listas
-06eef37 feat: migrar Quotations, Suppliers y Movements a React Query
-7e049cc Merge pull request #183 from jospabloh/automated/release-pr
-db99309 chore: release and update documentation
-f1f32e4 Merge pull request #182 from jospabloh/claude/blissful-mccarthy-endxz1
-fed587e Merge branch 'main' into claude/blissful-mccarthy-endxz1
-8d69f50 feat: spinner de marca reutilizable + refresco automático con React Query
-cd8cb18 Merge pull request #177 from jospabloh/automated/release-pr
-795da59 chore: release and update documentation
-15096c4 Merge pull request #181 from jospabloh/claude/hopeful-cannon-36pn62
+4c95259 Redesign public quote page into a branded quote document (#3)
+14ae899 Add spec: public quote page flagship redesign (#3)
+6ff2ccb Keep mono off the zero-total quote badge (mobile card)
+da364a8 Tabular/mono figures in Reports
+4f23000 Tabular/mono figures in Quotations
+d516cfd Tabular/mono figures in Products
+822b921 Tabular figures in shared data tables
+8e83976 Add implementation plan: visual identity propagation (#2)
+32d4064 Add spec: visual identity propagation (sub-project #2)
+a37976f Merge branch 'main' into claude/optimistic-carson-35zv8g
+f3e91a1 Add lint guard forbidding raw indigo/cyan literals
+9482b67 Migrate remaining pages to brand/accent tokens
+31c15fd Migrate remaining components + lib to brand/accent tokens
+9e49e74 Migrate reports + settings + chat to brand/accent tokens
+8e2e0c0 Migrate quotations to brand/accent tokens
+cdb1c60 Fix mangled .gitignore line (newline-at-EOF concat)
+6133d2a Migrate products + movements to brand/accent tokens
+3f7e574 Gitignore .superpowers/ SDD scratch dir
+4245a11 Migrate dashboard area to brand/accent tokens
+0c88514 Migrate ui/ + tables/ to brand/accent tokens
+51f391e Add brand/accent color scales (= indigo/cyan), no usage yet
+451c95e Add implementation plan: design token migration
+98ce5ac Add spec: design token migration (sub-project #1)
+534fade Delete skills/superpowers-main/dumb
+970e9f6 Fix InventoryPulse light-mode contrast (verified in browser)
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.17.6",
+  "🎨 Nueva identidad visual: tipografías Space Grotesk e IBM Plex en toda la app, con cifras monoespaciadas que se alinean en tablas, totales y reportes",
+  "📊 Dashboard renovado: nuevo encabezado “Inventario en vivo” con el stock total, el flujo de entradas/salidas del día y la alerta de reposición",
+  "🎨 Paleta de marca centralizada (índigo/cian): colores consistentes en toda la aplicación y listos para personalización",
+  "🧾 Cotización pública rediseñada: ahora es un documento profesional con el nombre y color de tu negocio, legible con cualquier color de marca y optimizado para celular",
+  "♿ Accesibilidad: se respeta la preferencia de “reducir movimiento” del dispositivo y mejora el contraste de color",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

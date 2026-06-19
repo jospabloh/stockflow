@@ -1,17 +1,21 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-19T06:06:52.569Z
+// Generado: 2026-06-19T12:57:43.869Z
 
-export const SNAPSHOT_VERSION = "2.17.6";
+export const SNAPSHOT_VERSION = "2.18.0";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-06-19";
 
-export const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
+export const USER_MANUAL_LAST_REVIEWED = "2026-06-19";
 
-export const SNAPSHOT_GIT_LOG = "2454780 Add files via upload\n017dd93 Add files via upload\ndd28f5e Add files via upload\n184ca9d Add empty dumb file to superpowers-main directory\n43fa660 Merge pull request #188 from jospabloh/automated/release-pr\ncd3cca1 chore: release and update documentation\n7d08d94 Add files via upload\n1fdd42a Merge pull request #185 from jospabloh/automated/release-pr\nb2875da chore: release and update documentation\n00364f3 Merge pull request #187 from jospabloh/claude/optimistic-carson-35zv8g\n07532e4 Redesign: real brand tokens, type system, inventory hero, reduced-motion\n4ca9bc8 Add files via upload\nd1974a0 Add Apache License 2.0 to frontend-design\nc2e96c2 Merge pull request #186 from jospabloh/claude/fix-fundaccounts-permission-key\ne024071 fix(permisos): usar la clave de módulo registrada CuentasFondo en FundAccounts\n5ed1bfa Merge pull request #184 from jospabloh/claude/react-query-listas\n06eef37 feat: migrar Quotations, Suppliers y Movements a React Query\n7e049cc Merge pull request #183 from jospabloh/automated/release-pr\ndb99309 chore: release and update documentation\nf1f32e4 Merge pull request #182 from jospabloh/claude/blissful-mccarthy-endxz1\nfed587e Merge branch 'main' into claude/blissful-mccarthy-endxz1\n8d69f50 feat: spinner de marca reutilizable + refresco automático con React Query\ncd8cb18 Merge pull request #177 from jospabloh/automated/release-pr\n795da59 chore: release and update documentation\n15096c4 Merge pull request #181 from jospabloh/claude/hopeful-cannon-36pn62";
+export const SNAPSHOT_GIT_LOG = "4c95259 Redesign public quote page into a branded quote document (#3)\n14ae899 Add spec: public quote page flagship redesign (#3)\n6ff2ccb Keep mono off the zero-total quote badge (mobile card)\nda364a8 Tabular/mono figures in Reports\n4f23000 Tabular/mono figures in Quotations\nd516cfd Tabular/mono figures in Products\n822b921 Tabular figures in shared data tables\n8e83976 Add implementation plan: visual identity propagation (#2)\n32d4064 Add spec: visual identity propagation (sub-project #2)\na37976f Merge branch 'main' into claude/optimistic-carson-35zv8g\nf3e91a1 Add lint guard forbidding raw indigo/cyan literals\n9482b67 Migrate remaining pages to brand/accent tokens\n31c15fd Migrate remaining components + lib to brand/accent tokens\n9e49e74 Migrate reports + settings + chat to brand/accent tokens\n8e2e0c0 Migrate quotations to brand/accent tokens\ncdb1c60 Fix mangled .gitignore line (newline-at-EOF concat)\n6133d2a Migrate products + movements to brand/accent tokens\n3f7e574 Gitignore .superpowers/ SDD scratch dir\n4245a11 Migrate dashboard area to brand/accent tokens\n0c88514 Migrate ui/ + tables/ to brand/accent tokens\n51f391e Add brand/accent color scales (= indigo/cyan), no usage yet\n451c95e Add implementation plan: design token migration\n98ce5ac Add spec: design token migration (sub-project #1)\n534fade Delete skills/superpowers-main/dumb\n970e9f6 Fix InventoryPulse light-mode contrast (verified in browser)";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.17.6",
+  "🎨 Nueva identidad visual: tipografías Space Grotesk e IBM Plex en toda la app, con cifras monoespaciadas que se alinean en tablas, totales y reportes",
+  "📊 Dashboard renovado: nuevo encabezado “Inventario en vivo” con el stock total, el flujo de entradas/salidas del día y la alerta de reposición",
+  "🎨 Paleta de marca centralizada (índigo/cian): colores consistentes en toda la aplicación y listos para personalización",
+  "🧾 Cotización pública rediseñada: ahora es un documento profesional con el nombre y color de tu negocio, legible con cualquier color de marca y optimizado para celular",
+  "♿ Accesibilidad: se respeta la preferencia de “reducir movimiento” del dispositivo y mejora el contraste de color",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +23,17 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.0",
+    date: "2026-06-19",
+    changes: [
+    "🎨 Nueva identidad visual: tipografías Space Grotesk e IBM Plex en toda la app, con cifras monoespaciadas que se alinean en tablas, totales y reportes",
+    "📊 Dashboard renovado: nuevo encabezado “Inventario en vivo” con el stock total, el flujo de entradas/salidas del día y la alerta de reposición",
+    "🎨 Paleta de marca centralizada (índigo/cian): colores consistentes en toda la aplicación y listos para personalización",
+    "🧾 Cotización pública rediseñada: ahora es un documento profesional con el nombre y color de tu negocio, legible con cualquier color de marca y optimizado para celular",
+    "♿ Accesibilidad: se respeta la preferencia de “reducir movimiento” del dispositivo y mejora el contraste de color"
+    ]
+  },
   {
     version: "2.17.6",
     date: "2026-06-19",
