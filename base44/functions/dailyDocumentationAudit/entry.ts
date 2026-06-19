@@ -6,10 +6,13 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.17.4";
+const CURRENT_VERSION_IN_CODE = "2.17.5";
 const SNAPSHOT_RELEASE_DATE = "2026-06-19";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
 const GIT_LOG_SNAPSHOT = `
+7d08d94 Add files via upload
+1fdd42a Merge pull request #185 from jospabloh/automated/release-pr
+b2875da chore: release and update documentation
 00364f3 Merge pull request #187 from jospabloh/claude/optimistic-carson-35zv8g
 07532e4 Redesign: real brand tokens, type system, inventory hero, reduced-motion
 4ca9bc8 Add files via upload
@@ -32,12 +35,9 @@ cd8cb18 Merge pull request #177 from jospabloh/automated/release-pr
 51e1439 fix(rls): add service-role branch to read rules (asServiceRole reads)
 0555ecf Merge pull request #179 from jospabloh/claude/gifted-faraday-xro0v6
 f94e8ce fix(rls): restaurar escrituras — agregar rama service-role a create/update/delete
-0c6bee9 Merge pull request #178 from jospabloh/claude/baristop-zero-items-rls-6s4b4l
-61416ba fix(rls): resolver inquilino por {{user.data.business_id}} (arregla "cero items")
-7c26cee Merge pull request #176 from jospabloh/claude/confident-lamport-isg849
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.17.4",
+  "Actualización a la versión 2.17.5",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
