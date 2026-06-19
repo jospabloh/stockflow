@@ -87,17 +87,17 @@ export default function Reports() {
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-emerald-500" />
                 <span className="text-slate-500">Total ventas:</span>
-                <span className="font-bold text-emerald-700">${totalSalesValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                <span className="font-bold text-emerald-700"><span className="font-mono tabular">${totalSalesValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span></span>
               </div>
               <p className="text-[11px] text-slate-400 ml-6">
-                Cot: ${totalSalesFromQuotations.toLocaleString("es-MX", { minimumFractionDigits: 2 })} · Directas: ${totalSalesFromDirectExits.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                Cot: <span className="tabular">${totalSalesFromQuotations.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span> · Directas: <span className="tabular">${totalSalesFromDirectExits.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
               </p>
             </div>
             {isAdmin && (
               <div className="flex items-center gap-2">
                 <TrendingDown className="h-4 w-4 text-blue-500" />
                 <span className="text-slate-500">Compras:</span>
-                <span className="font-bold text-blue-700">${totalPurchaseValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                <span className="font-bold text-blue-700"><span className="font-mono tabular">${totalPurchaseValue.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span></span>
               </div>
             )}
           </div>

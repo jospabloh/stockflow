@@ -195,7 +195,7 @@ export default function PredictiveReports({
                   <div key={idx} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium text-slate-700">{idx + 1}. {p.name}</span>
-                      <span className="text-slate-600">${p.valor.toLocaleString("es-MX")} · {p.cantidad} u.</span>
+                      <span className="text-slate-600 tabular">${p.valor.toLocaleString("es-MX")} · {p.cantidad} u.</span>
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                       <div 
@@ -245,9 +245,9 @@ export default function PredictiveReports({
                       return (
                         <tr key={p.name} className="border-t border-slate-100 hover:bg-slate-50/50">
                           <td className="px-4 py-3 font-medium text-slate-800">{p.name}</td>
-                          <td className="px-4 py-3 text-center font-semibold text-amber-600">{p.salidas}</td>
-                          <td className="px-4 py-3 text-center text-slate-700">{p.stock}</td>
-                          <td className="px-4 py-3 text-center text-slate-500">{prod?.min_stock || 5}</td>
+                          <td className="px-4 py-3 text-center font-semibold text-amber-600 tabular">{p.salidas}</td>
+                          <td className="px-4 py-3 text-center text-slate-700 tabular">{p.stock}</td>
+                          <td className="px-4 py-3 text-center text-slate-500 tabular">{prod?.min_stock || 5}</td>
                           <td className="px-4 py-3 text-slate-600">{p.ultima_salida}</td>
                         </tr>
                       );
@@ -495,11 +495,11 @@ function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo 
                   <tr key={row}>
                     <td className="border border-slate-200 px-3 py-2 font-medium text-slate-700 bg-slate-50/50">{row}</td>
                     {cols.map(col => (
-                      <td key={`${row}-${col}`} className="border border-slate-200 px-2 py-2 text-center text-slate-600">
+                      <td key={`${row}-${col}`} className="border border-slate-200 px-2 py-2 text-center text-slate-600 tabular">
                         {pivotData.data[row][col] ? getDisplayValue(pivotData.data[row][col]) : "—"}
                       </td>
                     ))}
-                    <td className="border border-slate-200 px-3 py-2 text-right font-semibold text-brand-700 bg-brand-50/50">
+                    <td className="border border-slate-200 px-3 py-2 text-right font-semibold text-brand-700 bg-brand-50/50 tabular">
                       {rowTotal.toFixed(metricType === "avg" ? 2 : 0)}
                     </td>
                   </tr>
@@ -510,12 +510,12 @@ function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo 
                 {cols.map(col => {
                   const colTotal = rows.reduce((sum, row) => sum + getTotalValue(pivotData.data[row][col] || { sum: 0, count: 0, avg: 0, min: Infinity, max: -Infinity }), 0);
                   return (
-                    <td key={`total-${col}`} className="border border-slate-200 px-2 py-2 text-center text-emerald-700">
+                    <td key={`total-${col}`} className="border border-slate-200 px-2 py-2 text-center text-emerald-700 tabular">
                       {colTotal.toFixed(metricType === "avg" ? 2 : 0)}
                     </td>
                   );
                 })}
-                <td className="border border-slate-200 px-3 py-2 text-right text-emerald-700">
+                <td className="border border-slate-200 px-3 py-2 text-right text-emerald-700 tabular">
                   {rows.reduce((sum, row) => sum + cols.reduce((cs, col) => cs + getTotalValue(pivotData.data[row][col] || { sum: 0, count: 0, avg: 0, min: Infinity, max: -Infinity }), 0), 0).toFixed(metricType === "avg" ? 2 : 0)}
                 </td>
               </tr>

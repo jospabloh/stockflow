@@ -106,8 +106,8 @@ export default function CollectionsRiskReport({ quotations }) {
               collectionsData.map((q) => (
                 <tr key={q.id} className="border-t border-slate-100 hover:bg-slate-50/50">
                   <td className="px-4 py-3 font-medium text-slate-800">{q.client}</td>
-                  <td className="px-4 py-3 text-right text-slate-700">${q.pendingAmount.toLocaleString("es-MX")}</td>
-                  <td className="px-4 py-3 text-center text-slate-600">{q.ageInDays}</td>
+                  <td className="px-4 py-3 text-right text-slate-700 tabular">${q.pendingAmount.toLocaleString("es-MX")}</td>
+                  <td className="px-4 py-3 text-center text-slate-600 tabular">{q.ageInDays}</td>
                   <td className="px-4 py-3 text-center">
                     {q.delivered ? <CheckCircle className="h-4 w-4 text-green-600 mx-auto" /> : <AlertCircle className="h-4 w-4 text-slate-400 mx-auto" />}
                   </td>
