@@ -182,14 +182,14 @@ export default function Movements() {
 
       {/* Banner de filtro por producto (solo admin) */}
       {isAdmin && filteredProductName && (
-        <div className="flex items-center justify-between gap-4 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-xl px-4 py-3">
+        <div className="flex items-center justify-between gap-4 bg-brand-50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-800 rounded-xl px-4 py-3">
           <div className="flex items-center gap-3">
-            <SlidersHorizontal className="h-5 w-5 text-indigo-500 flex-shrink-0" />
+            <SlidersHorizontal className="h-5 w-5 text-brand-500 flex-shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-indigo-800 dark:text-indigo-300">
+              <p className="text-sm font-semibold text-brand-800 dark:text-brand-300">
                 Historial de: <span className="font-bold">{filteredProductName}</span>
               </p>
-              <p className="text-xs text-indigo-600 dark:text-indigo-400">Mostrando solo movimientos de este producto</p>
+              <p className="text-xs text-brand-600 dark:text-brand-400">Mostrando solo movimientos de este producto</p>
             </div>
           </div>
           <Button variant="outline" size="sm" onClick={() => navigate("/Movements")}>
@@ -251,7 +251,7 @@ export default function Movements() {
             size="default"
           />
           {can('Movimientos', 'create') && (
-            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Movements/new")}>
+            <Button className="bg-brand-600 hover:bg-brand-700" onClick={() => navigate("/Movements/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Movimiento
             </Button>
           )}
@@ -344,7 +344,7 @@ export default function Movements() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/30"
+                              className="h-8 w-8 text-slate-400 hover:text-brand-600 hover:bg-brand-100 dark:hover:bg-brand-900/30"
                               onClick={(e) => { e.stopPropagation(); setEditingMovement(m); }}
                               aria-label="Editar movimiento"
                             >

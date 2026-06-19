@@ -41,7 +41,7 @@ export default function BarcodeCameraScanner({ onDetected, onClose }) {
       <div className="bg-white rounded-2xl overflow-hidden shadow-2xl w-full max-w-sm mx-4">
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <div className="flex items-center gap-2 text-slate-700 font-semibold">
-            <Camera className="h-5 w-5 text-indigo-500" />
+            <Camera className="h-5 w-5 text-brand-500" />
             Escanear código de barras
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>

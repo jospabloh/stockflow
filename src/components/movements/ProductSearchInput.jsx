@@ -45,7 +45,7 @@ export default function ProductSearchInput({ products, selectedProduct, onSelect
       <Label className="text-foreground mb-1.5 block">Producto *</Label>
 
       {selectedProduct ? (
-        <div className="flex items-center justify-between bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-md px-3 py-2 text-sm">
+        <div className="flex items-center justify-between bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-700 rounded-md px-3 py-2 text-sm">
           <div>
             <span className="font-semibold text-foreground">{selectedProduct.name}</span>
             <span className="text-muted-foreground ml-2">— Stock: {selectedProduct.stock} {selectedProduct.unit}</span>

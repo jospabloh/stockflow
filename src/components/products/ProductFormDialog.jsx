@@ -275,7 +275,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
             <div className="flex gap-2">
               <Input value={form.sku} onChange={(e) => updateField("sku", e.target.value)} placeholder="Código SKU" />
               <Button type="button" variant="outline" size="icon" onClick={generateSKU} title="Generar SKU automático">
-                <Wand2 className="h-4 w-4 text-indigo-500" />
+                <Wand2 className="h-4 w-4 text-brand-500" />
               </Button>
             </div>
           </div>
@@ -294,10 +294,10 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
               </div>
               {!form.barcode && (
                 <Button type="button" variant="outline" size="icon" onClick={handleGenerateBarcodeInForm} disabled={generatingBarcode} title="Generar código automático">
-                  {generatingBarcode ? <Loader2 className="h-4 w-4 animate-spin" /> : <Barcode className="h-4 w-4 text-indigo-500" />}
+                  {generatingBarcode ? <Loader2 className="h-4 w-4 animate-spin" /> : <Barcode className="h-4 w-4 text-brand-500" />}
                 </Button>
               )}
-              <Button type="button" variant={isMobile ? "default" : "outline"} size="icon" onClick={() => setShowCamera(true)} title="Escanear con cámara" className={isMobile ? "bg-indigo-600 hover:bg-indigo-700" : ""}>
+              <Button type="button" variant={isMobile ? "default" : "outline"} size="icon" onClick={() => setShowCamera(true)} title="Escanear con cámara" className={isMobile ? "bg-brand-600 hover:bg-brand-700" : ""}>
                 <Camera className="h-4 w-4" />
               </Button>
             </div>
@@ -309,7 +309,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
                 <MobileSelect value={form.category} onValueChange={(v) => updateField("category", v)} placeholder="Seleccionar categoría" options={categories.map((c) => ({ value: c.id, label: c.name }))} />
               </div>
               <Button type="button" variant="outline" size="icon" onClick={() => { setNewCatName(""); setShowNewCatDialog(true); }} title="Nueva categoría">
-                <Plus className="h-4 w-4 text-indigo-500" />
+                <Plus className="h-4 w-4 text-brand-500" />
               </Button>
             </div>
           </div>
@@ -320,7 +320,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
                 <MobileSelect value={form.supplier} onValueChange={(v) => updateField("supplier", v)} placeholder="Seleccionar proveedor" options={suppliers.map((s) => ({ value: s.id, label: s.name }))} />
               </div>
               <Button type="button" variant="outline" size="icon" onClick={() => { setNewSupName(""); setShowNewSupDialog(true); }} title="Nuevo proveedor">
-                <Plus className="h-4 w-4 text-indigo-500" />
+                <Plus className="h-4 w-4 text-brand-500" />
               </Button>
             </div>
           </div>
@@ -393,7 +393,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           <Button variant="outline" onClick={() => onOpenChange(false)} {...createButtonProps('cancel')}>
             <X className="h-4 w-4 mr-1" /> Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={!canSave || saving} className="bg-indigo-600 hover:bg-indigo-700" {...createButtonProps('save')}>
+          <Button onClick={handleSave} disabled={!canSave || saving} className="bg-brand-600 hover:bg-brand-700" {...createButtonProps('save')}>
             <Save className="h-4 w-4 mr-1" /> {saving ? "Guardando..." : "Guardar"}
           </Button>
         </div>
@@ -410,7 +410,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowNewCatDialog(false)}>Cancelar</Button>
-            <Button onClick={handleCreateCategory} disabled={!newCatName.trim()} className="bg-indigo-600 hover:bg-indigo-700">Crear</Button>
+            <Button onClick={handleCreateCategory} disabled={!newCatName.trim()} className="bg-brand-600 hover:bg-brand-700">Crear</Button>
           </div>
         </div>
       </DialogContent>
@@ -426,7 +426,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowNewSupDialog(false)}>Cancelar</Button>
-            <Button onClick={handleCreateSupplier} disabled={!newSupName.trim()} className="bg-indigo-600 hover:bg-indigo-700">Crear</Button>
+            <Button onClick={handleCreateSupplier} disabled={!newSupName.trim()} className="bg-brand-600 hover:bg-brand-700">Crear</Button>
           </div>
         </div>
       </DialogContent>

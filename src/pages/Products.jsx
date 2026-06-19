@@ -173,7 +173,7 @@ export default function Products() {
             size="default"
           />
           {can('Productos', 'create') && (
-            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={() => navigate("/Products/new")}>
+            <Button className="bg-brand-600 hover:bg-brand-700" onClick={() => navigate("/Products/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Producto
             </Button>
           )}
