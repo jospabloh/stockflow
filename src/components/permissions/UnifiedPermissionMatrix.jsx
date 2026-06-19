@@ -103,7 +103,7 @@ export default function UnifiedPermissionMatrix({ perms, onPermChange, onSave, s
                 </Button>
                 <Button
                   size="sm"
-                  className="bg-indigo-600 hover:bg-indigo-700"
+                  className="bg-brand-600 hover:bg-brand-700"
                   onClick={() => onSave(activeRole)}
                   disabled={saving}
                 >
@@ -293,7 +293,7 @@ export default function UnifiedPermissionMatrix({ perms, onPermChange, onSave, s
           <Button
             onClick={() => onSave(activeRole)}
             disabled={saving}
-            className="bg-indigo-600 hover:bg-indigo-700"
+            className="bg-brand-600 hover:bg-brand-700"
           >
             <Save className="h-4 w-4 mr-1" />
             {saving ? "Guardando..." : "Guardar cambios"}

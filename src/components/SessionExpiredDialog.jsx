@@ -41,7 +41,7 @@ export default function SessionExpiredDialog({ open }) {
 
         <div className="flex gap-2">
           <Button
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+            className="flex-1 bg-brand-600 hover:bg-brand-700 text-white gap-2"
             onClick={handleContinue}
             disabled={loading}
           >

@@ -15,7 +15,7 @@ export default function TrialBanner() {
     const urgent = trialDaysLeft !== null && trialDaysLeft <= 5;
     return (
       <div className={`w-full px-4 py-2.5 flex items-center gap-3 text-sm ${
-        urgent ? "bg-amber-500 text-white" : "bg-indigo-600 text-white"
+        urgent ? "bg-amber-500 text-white" : "bg-brand-600 text-white"
       }`}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Clock className="h-4 w-4 flex-shrink-0" />

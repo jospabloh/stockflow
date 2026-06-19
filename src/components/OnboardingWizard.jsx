@@ -49,7 +49,7 @@ export default function OnboardingWizard({ inviteCode, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
         {/* Progress header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-cyan-500 px-6 pt-5 pb-4">
+        <div className="bg-gradient-to-r from-brand-600 to-accent-500 px-6 pt-5 pb-4">
           <div className="flex items-center justify-between mb-3">
             <p className="text-white text-sm font-medium opacity-80">Paso {step} de 3</p>
             <button type="button" onClick={finish} className="text-white/60 hover:text-white transition-colors">
@@ -83,13 +83,13 @@ export default function OnboardingWizard({ inviteCode, onClose }) {
                   { icon: "📋", text: "Genera cotizaciones profesionales al instante" },
                   { icon: "💰", text: "Registra ventas y pagos sin complicaciones" },
                 ].map(({ icon, text }) => (
-                  <div key={text} className="flex items-center gap-3 bg-indigo-50 rounded-xl p-3">
+                  <div key={text} className="flex items-center gap-3 bg-brand-50 rounded-xl p-3">
                     <span className="text-2xl">{icon}</span>
                     <p className="text-sm text-slate-700 font-medium">{text}</p>
                   </div>
                 ))}
               </div>
-              <Button onClick={() => setStep(2)} className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2">
+              <Button onClick={() => setStep(2)} className="w-full bg-brand-600 hover:bg-brand-700 gap-2">
                 Comenzar <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -142,7 +142,7 @@ export default function OnboardingWizard({ inviteCode, onClose }) {
                 <Button
                   onClick={handleSaveProduct}
                   disabled={saving}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 gap-2"
+                  className="flex-1 bg-brand-600 hover:bg-brand-700 gap-2"
                 >
                   {saving ? "Guardando..." : <>Guardar <ChevronRight className="h-4 w-4" /></>}
                 </Button>
@@ -158,10 +158,10 @@ export default function OnboardingWizard({ inviteCode, onClose }) {
                 <p className="text-sm text-slate-500">Comparte este código para que se unan a tu negocio.</p>
               </div>
               {inviteCode ? (
-                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 space-y-3">
-                  <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">Código de invitación</p>
+                <div className="bg-brand-50 border border-brand-100 rounded-xl p-4 space-y-3">
+                  <p className="text-xs font-semibold text-brand-600 uppercase tracking-wide">Código de invitación</p>
                   <div className="flex items-center gap-3">
-                    <div className="flex-1 bg-white border border-indigo-200 rounded-xl px-4 py-3 font-mono text-xl tracking-widest text-indigo-700 font-bold text-center">
+                    <div className="flex-1 bg-white border border-brand-200 rounded-xl px-4 py-3 font-mono text-xl tracking-widest text-brand-700 font-bold text-center">
                       {inviteCode}
                     </div>
                     <button
@@ -170,7 +170,7 @@ export default function OnboardingWizard({ inviteCode, onClose }) {
                         navigator.clipboard.writeText(inviteCode);
                         toast.success("Código copiado");
                       }}
-                      className="h-12 w-12 flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex-shrink-0"
+                      className="h-12 w-12 flex items-center justify-center rounded-xl bg-brand-600 hover:bg-brand-700 text-white transition-colors flex-shrink-0"
                     >
                       <Copy className="h-5 w-5" />
                     </button>
@@ -194,7 +194,7 @@ export default function OnboardingWizard({ inviteCode, onClose }) {
                   Puedes ver y compartir el código de invitación desde <strong>Configuración → Equipo</strong>.
                 </p>
               )}
-              <Button onClick={finish} className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2">
+              <Button onClick={finish} className="w-full bg-brand-600 hover:bg-brand-700 gap-2">
                 Ir al Dashboard <ChevronRight className="h-4 w-4" />
               </Button>
             </div>

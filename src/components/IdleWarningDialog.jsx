@@ -46,7 +46,7 @@ export default function IdleWarningDialog({ open, onContinue }) {
         </p>
 
         <Button
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+          className="w-full bg-brand-600 hover:bg-brand-700 text-white gap-2"
           onClick={onContinue}
         >
           <RefreshCw className="h-4 w-4" />

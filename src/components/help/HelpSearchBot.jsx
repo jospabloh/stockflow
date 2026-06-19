@@ -7,7 +7,7 @@ export default function HelpSearchBot() {
   return (
     <button type="button"
       onClick={() => setOpen(true)}
-      className={`fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-110 ${
+      className={`fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all bg-brand-600 hover:bg-brand-700 text-white hover:scale-110 ${
         open ? "hidden" : ""
       }`}
       title="Asistente de Ayuda"

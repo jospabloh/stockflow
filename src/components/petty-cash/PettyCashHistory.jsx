@@ -122,7 +122,7 @@ export default function PettyCashHistory({ movements, isAdmin, onEdit, onDelete 
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <Badge className={`${cfg.color} border-0 text-xs`}>{cfg.label}</Badge>
                           {isSystemGenerated && (
-                            <Badge className="bg-indigo-50 text-indigo-600 border-0 text-[10px] gap-0.5 px-1.5 py-0.5">
+                            <Badge className="bg-brand-50 text-brand-600 border-0 text-[10px] gap-0.5 px-1.5 py-0.5">
                               <Lock className="h-2.5 w-2.5" /> Auto
                             </Badge>
                           )}

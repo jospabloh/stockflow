@@ -34,8 +34,8 @@ export default function HelpViewer({ article, allArticles, onNavigate }) {
                   onClick={() => onNavigate(rel.id)}
                   className="w-full flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors group text-left"
                 >
-                  <span className="font-medium text-sm group-hover:text-indigo-600">{rel.title}</span>
-                  <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-indigo-500 flex-shrink-0" />
+                  <span className="font-medium text-sm group-hover:text-brand-600">{rel.title}</span>
+                  <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-brand-500 flex-shrink-0" />
                 </button>
               ))}
             </div>

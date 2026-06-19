@@ -18,7 +18,7 @@ export default function LicenseInfoCard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <div className="h-6 w-6 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+        <div className="h-6 w-6 border-3 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
       </div>
     );
   }
@@ -34,7 +34,7 @@ export default function LicenseInfoCard() {
     <Card className="border-0 shadow-sm p-6 space-y-4 bg-gradient-to-br from-slate-50 to-white">
       <div className="flex items-center justify-between">
         <h4 className="font-semibold text-slate-700 text-lg flex items-center gap-2">
-          <Zap className="h-5 w-5 text-indigo-500" />
+          <Zap className="h-5 w-5 text-brand-500" />
           Información de Licencia
         </h4>
         <Badge className={`${cfg.color} border-0 text-xs flex items-center gap-1`}>
@@ -64,7 +64,7 @@ export default function LicenseInfoCard() {
         <div className="p-3 bg-white rounded-lg border border-slate-200">
           <p className="text-xs text-slate-500 font-semibold mb-1">Límite de Usuarios</p>
           <div className="flex items-center gap-1">
-            <Users className="h-4 w-4 text-indigo-500" />
+            <Users className="h-4 w-4 text-brand-500" />
             <p className="text-sm font-medium text-slate-700">{licensedUserLimit}</p>
           </div>
         </div>
