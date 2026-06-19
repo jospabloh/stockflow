@@ -20,7 +20,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
       <div className="w-24">
         <button type="button"
           onClick={() => onPreview(q)}
-          className="font-mono text-xs text-indigo-600 cursor-pointer hover:underline flex items-center gap-1"
+          className="font-mono text-xs text-brand-600 cursor-pointer hover:underline flex items-center gap-1"
         >
           {q.folio}
           {q.delivered && !q.paid && <AlertTriangle className="h-3 w-3 text-amber-500" />}
@@ -201,7 +201,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
                 <DropdownMenuItem onClick={() => onEdit(q)}>
                   <Pencil className="h-3 w-3 mr-2" /> Editar
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onRegenerate(q)} className="text-indigo-600 focus:text-indigo-600">
+                <DropdownMenuItem onClick={() => onRegenerate(q)} className="text-brand-600 focus:text-brand-600">
                   <RotateCcw className="h-3 w-3 mr-2" /> Re-generar
                 </DropdownMenuItem>
               </>
@@ -259,7 +259,7 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
       <div className="flex items-center justify-between">
         <button type="button"
           onClick={() => onPreview(q)}
-          className="font-mono text-sm font-bold text-indigo-600 hover:underline flex items-center gap-1"
+          className="font-mono text-sm font-bold text-brand-600 hover:underline flex items-center gap-1"
         >
           {q.folio}
           {q.delivered && !q.paid && <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />}
@@ -285,7 +285,7 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
                   <DropdownMenuItem onClick={() => onEdit(q)}>
                     <Pencil className="h-3.5 w-3.5 mr-2" /> Editar
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onRegenerate(q)} className="text-indigo-600">
+                  <DropdownMenuItem onClick={() => onRegenerate(q)} className="text-brand-600">
                     <RotateCcw className="h-3.5 w-3.5 mr-2" /> Re-generar
                   </DropdownMenuItem>
                 </>
@@ -408,7 +408,7 @@ export function derivePaymentState(q) {
 
 const PAYMENT_STATE_OPTIONS = [
   { value: "pagado", label: "Pagado", color: "bg-green-500" },
-  { value: "varios", label: "Varios métodos", color: "bg-indigo-400" },
+  { value: "varios", label: "Varios métodos", color: "bg-brand-400" },
   { value: "parcial", label: "Parcial", color: "bg-amber-400" },
   { value: "cobrar", label: "¡Cobrar!", color: "bg-red-500" },
   { value: "pendiente_pago", label: "Pendiente de pago", color: "bg-slate-400" },
