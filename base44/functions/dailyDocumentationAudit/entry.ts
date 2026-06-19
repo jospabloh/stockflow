@@ -6,12 +6,18 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.0";
+const CURRENT_VERSION_IN_CODE = "2.18.1";
 const SNAPSHOT_RELEASE_DATE = "2026-06-19";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-19";
 const GIT_LOG_SNAPSHOT = `
+bf897cb Merge pull request #194 from jospabloh/claude/optimistic-carson-35zv8g
+7a74927 Merge branch 'main' into claude/optimistic-carson-35zv8g
+c738a89 Docs: v2.18.0 — manual, changelog, version bump
+026ed89 Merge pull request #193 from jospabloh/claude/optimistic-carson-35zv8g
+0f047ab Merge branch 'main' into claude/optimistic-carson-35zv8g
 4c95259 Redesign public quote page into a branded quote document (#3)
 14ae899 Add spec: public quote page flagship redesign (#3)
+01926ca Merge pull request #192 from jospabloh/claude/optimistic-carson-35zv8g
 6ff2ccb Keep mono off the zero-total quote badge (mobile card)
 da364a8 Tabular/mono figures in Reports
 4f23000 Tabular/mono figures in Quotations
@@ -19,6 +25,7 @@ d516cfd Tabular/mono figures in Products
 822b921 Tabular figures in shared data tables
 8e83976 Add implementation plan: visual identity propagation (#2)
 32d4064 Add spec: visual identity propagation (sub-project #2)
+3e4193c Merge pull request #191 from jospabloh/claude/optimistic-carson-35zv8g
 a37976f Merge branch 'main' into claude/optimistic-carson-35zv8g
 f3e91a1 Add lint guard forbidding raw indigo/cyan literals
 9482b67 Migrate remaining pages to brand/accent tokens
@@ -28,20 +35,9 @@ f3e91a1 Add lint guard forbidding raw indigo/cyan literals
 cdb1c60 Fix mangled .gitignore line (newline-at-EOF concat)
 6133d2a Migrate products + movements to brand/accent tokens
 3f7e574 Gitignore .superpowers/ SDD scratch dir
-4245a11 Migrate dashboard area to brand/accent tokens
-0c88514 Migrate ui/ + tables/ to brand/accent tokens
-51f391e Add brand/accent color scales (= indigo/cyan), no usage yet
-451c95e Add implementation plan: design token migration
-98ce5ac Add spec: design token migration (sub-project #1)
-534fade Delete skills/superpowers-main/dumb
-970e9f6 Fix InventoryPulse light-mode contrast (verified in browser)
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "🎨 Nueva identidad visual: tipografías Space Grotesk e IBM Plex en toda la app, con cifras monoespaciadas que se alinean en tablas, totales y reportes",
-  "📊 Dashboard renovado: nuevo encabezado “Inventario en vivo” con el stock total, el flujo de entradas/salidas del día y la alerta de reposición",
-  "🎨 Paleta de marca centralizada (índigo/cian): colores consistentes en toda la aplicación y listos para personalización",
-  "🧾 Cotización pública rediseñada: ahora es un documento profesional con el nombre y color de tu negocio, legible con cualquier color de marca y optimizado para celular",
-  "♿ Accesibilidad: se respeta la preferencia de “reducir movimiento” del dispositivo y mejora el contraste de color",
+  "Actualización a la versión 2.18.1",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

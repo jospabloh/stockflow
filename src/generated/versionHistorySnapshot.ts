@@ -1,21 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-06-19T12:57:43.869Z
+// Generado: 2026-06-19T13:01:17.904Z
 
-export const SNAPSHOT_VERSION = "2.18.0";
+export const SNAPSHOT_VERSION = "2.18.1";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-06-19";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-19";
 
-export const SNAPSHOT_GIT_LOG = "4c95259 Redesign public quote page into a branded quote document (#3)\n14ae899 Add spec: public quote page flagship redesign (#3)\n6ff2ccb Keep mono off the zero-total quote badge (mobile card)\nda364a8 Tabular/mono figures in Reports\n4f23000 Tabular/mono figures in Quotations\nd516cfd Tabular/mono figures in Products\n822b921 Tabular figures in shared data tables\n8e83976 Add implementation plan: visual identity propagation (#2)\n32d4064 Add spec: visual identity propagation (sub-project #2)\na37976f Merge branch 'main' into claude/optimistic-carson-35zv8g\nf3e91a1 Add lint guard forbidding raw indigo/cyan literals\n9482b67 Migrate remaining pages to brand/accent tokens\n31c15fd Migrate remaining components + lib to brand/accent tokens\n9e49e74 Migrate reports + settings + chat to brand/accent tokens\n8e2e0c0 Migrate quotations to brand/accent tokens\ncdb1c60 Fix mangled .gitignore line (newline-at-EOF concat)\n6133d2a Migrate products + movements to brand/accent tokens\n3f7e574 Gitignore .superpowers/ SDD scratch dir\n4245a11 Migrate dashboard area to brand/accent tokens\n0c88514 Migrate ui/ + tables/ to brand/accent tokens\n51f391e Add brand/accent color scales (= indigo/cyan), no usage yet\n451c95e Add implementation plan: design token migration\n98ce5ac Add spec: design token migration (sub-project #1)\n534fade Delete skills/superpowers-main/dumb\n970e9f6 Fix InventoryPulse light-mode contrast (verified in browser)";
+export const SNAPSHOT_GIT_LOG = "bf897cb Merge pull request #194 from jospabloh/claude/optimistic-carson-35zv8g\n7a74927 Merge branch 'main' into claude/optimistic-carson-35zv8g\nc738a89 Docs: v2.18.0 — manual, changelog, version bump\n026ed89 Merge pull request #193 from jospabloh/claude/optimistic-carson-35zv8g\n0f047ab Merge branch 'main' into claude/optimistic-carson-35zv8g\n4c95259 Redesign public quote page into a branded quote document (#3)\n14ae899 Add spec: public quote page flagship redesign (#3)\n01926ca Merge pull request #192 from jospabloh/claude/optimistic-carson-35zv8g\n6ff2ccb Keep mono off the zero-total quote badge (mobile card)\nda364a8 Tabular/mono figures in Reports\n4f23000 Tabular/mono figures in Quotations\nd516cfd Tabular/mono figures in Products\n822b921 Tabular figures in shared data tables\n8e83976 Add implementation plan: visual identity propagation (#2)\n32d4064 Add spec: visual identity propagation (sub-project #2)\n3e4193c Merge pull request #191 from jospabloh/claude/optimistic-carson-35zv8g\na37976f Merge branch 'main' into claude/optimistic-carson-35zv8g\nf3e91a1 Add lint guard forbidding raw indigo/cyan literals\n9482b67 Migrate remaining pages to brand/accent tokens\n31c15fd Migrate remaining components + lib to brand/accent tokens\n9e49e74 Migrate reports + settings + chat to brand/accent tokens\n8e2e0c0 Migrate quotations to brand/accent tokens\ncdb1c60 Fix mangled .gitignore line (newline-at-EOF concat)\n6133d2a Migrate products + movements to brand/accent tokens\n3f7e574 Gitignore .superpowers/ SDD scratch dir";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "🎨 Nueva identidad visual: tipografías Space Grotesk e IBM Plex en toda la app, con cifras monoespaciadas que se alinean en tablas, totales y reportes",
-  "📊 Dashboard renovado: nuevo encabezado “Inventario en vivo” con el stock total, el flujo de entradas/salidas del día y la alerta de reposición",
-  "🎨 Paleta de marca centralizada (índigo/cian): colores consistentes en toda la aplicación y listos para personalización",
-  "🧾 Cotización pública rediseñada: ahora es un documento profesional con el nombre y color de tu negocio, legible con cualquier color de marca y optimizado para celular",
-  "♿ Accesibilidad: se respeta la preferencia de “reducir movimiento” del dispositivo y mejora el contraste de color",
+  "Actualización a la versión 2.18.1",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -23,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.1",
+    date: "2026-06-19",
+    changes: [
+    "Actualización a la versión 2.18.1"
+    ]
+  },
   {
     version: "2.18.0",
     date: "2026-06-19",
