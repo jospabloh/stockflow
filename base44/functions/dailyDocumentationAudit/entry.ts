@@ -6,10 +6,16 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.17.5";
+const CURRENT_VERSION_IN_CODE = "2.17.6";
 const SNAPSHOT_RELEASE_DATE = "2026-06-19";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
 const GIT_LOG_SNAPSHOT = `
+2454780 Add files via upload
+017dd93 Add files via upload
+dd28f5e Add files via upload
+184ca9d Add empty dumb file to superpowers-main directory
+43fa660 Merge pull request #188 from jospabloh/automated/release-pr
+cd3cca1 chore: release and update documentation
 7d08d94 Add files via upload
 1fdd42a Merge pull request #185 from jospabloh/automated/release-pr
 b2875da chore: release and update documentation
@@ -29,15 +35,9 @@ fed587e Merge branch 'main' into claude/blissful-mccarthy-endxz1
 cd8cb18 Merge pull request #177 from jospabloh/automated/release-pr
 795da59 chore: release and update documentation
 15096c4 Merge pull request #181 from jospabloh/claude/hopeful-cannon-36pn62
-852466e fix(cotizaciones): los estados de seguimiento no se guardaban y fallaban en silencio
-351dd60 Merge pull request #180 from jospabloh/claude/gifted-faraday-xro0v6
-4ba25f6 Merge branch 'main' into claude/gifted-faraday-xro0v6
-51e1439 fix(rls): add service-role branch to read rules (asServiceRole reads)
-0555ecf Merge pull request #179 from jospabloh/claude/gifted-faraday-xro0v6
-f94e8ce fix(rls): restaurar escrituras — agregar rama service-role a create/update/delete
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.17.5",
+  "Actualización a la versión 2.17.6",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
