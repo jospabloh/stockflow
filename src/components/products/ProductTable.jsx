@@ -62,17 +62,17 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
         <TableCell className="text-muted-foreground">{getCategoryName(product.category)}</TableCell>
         {canShowCost && (
           <TableCell className="text-right text-muted-foreground">
-            ${product.purchase_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "—"}
+            <span className="tabular">${product.purchase_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "—"}</span>
           </TableCell>
         )}
         <TableCell className="text-right font-semibold text-foreground">
-          ${(product.retail_sale_price ?? product.sale_price ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+          <span className="tabular">${(product.retail_sale_price ?? product.sale_price ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
         </TableCell>
         <TableCell className="text-right">
           <div className="flex flex-col items-end gap-0.5">
             <div className="flex items-center gap-1">
               {(isOutOfStock || isBelowMin || isAtMin) && <AlertTriangle className={`h-4 w-4 ${isOutOfStock ? "text-red-500" : "text-amber-500"}`} />}
-              <span className={`font-semibold ${isOutOfStock ? "text-red-600" : (isBelowMin || isAtMin) ? "text-amber-600" : "text-foreground"}`}>
+              <span className={`tabular font-semibold ${isOutOfStock ? "text-red-600" : (isBelowMin || isAtMin) ? "text-amber-600" : "text-foreground"}`}>
                 {product.stock} {product.unit}
               </span>
             </div>
@@ -162,14 +162,14 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
             {(isOutOfStock || isBelowMin || isAtMin) && <AlertTriangle className={`h-4 w-4 ${isOutOfStock ? "text-red-500" : "text-amber-500"}`} />}
-            <span className={`font-semibold text-sm ${isOutOfStock ? "text-red-600" : (isBelowMin || isAtMin) ? "text-amber-600" : "text-foreground"}`}>
+            <span className={`tabular font-semibold text-sm ${isOutOfStock ? "text-red-600" : (isBelowMin || isAtMin) ? "text-amber-600" : "text-foreground"}`}>
               {product.stock} {product.unit}
             </span>
             {isOutOfStock && <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1 rounded">AGOTADO</span>}
             {isBelowMin && <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1 rounded">STOCK CRÍTICO</span>}
             {isAtMin && <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-1 rounded">STOCK MÍNIMO</span>}
           </div>
-          <span className="font-bold text-foreground">${(product.retail_sale_price ?? product.sale_price ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+          <span className="font-mono tabular font-bold text-foreground">${(product.retail_sale_price ?? product.sale_price ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
         </div>
         <div className="flex items-center justify-end gap-1 border-t border-border pt-2 flex-wrap">
           {!product.barcode && (
