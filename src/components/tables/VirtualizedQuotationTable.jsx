@@ -331,13 +331,13 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
 
       {/* Total + tracking */}
       <div className="flex items-center justify-between">
-        <span className="font-bold text-foreground text-base font-mono tabular">
+        <span className="font-bold text-foreground text-base">
           {q.total === 0 ? (
             <span className="inline-flex items-center gap-1 text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-2 py-0.5 rounded-full font-medium">
               Muestra / Interno
             </span>
           ) : (
-            `$${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`
+            <span className="font-mono tabular">${q.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
           )}
         </span>
         {q.status === "converted" && (
