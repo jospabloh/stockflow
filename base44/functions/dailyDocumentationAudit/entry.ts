@@ -6,38 +6,38 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.17.3";
-const SNAPSHOT_RELEASE_DATE = "2026-06-17";
+const CURRENT_VERSION_IN_CODE = "2.17.6";
+const SNAPSHOT_RELEASE_DATE = "2026-06-19";
 const USER_MANUAL_LAST_REVIEWED = "2026-06-15";
 const GIT_LOG_SNAPSHOT = `
+2454780 Add files via upload
+017dd93 Add files via upload
+dd28f5e Add files via upload
+184ca9d Add empty dumb file to superpowers-main directory
+43fa660 Merge pull request #188 from jospabloh/automated/release-pr
+cd3cca1 chore: release and update documentation
+7d08d94 Add files via upload
+1fdd42a Merge pull request #185 from jospabloh/automated/release-pr
+b2875da chore: release and update documentation
+00364f3 Merge pull request #187 from jospabloh/claude/optimistic-carson-35zv8g
+07532e4 Redesign: real brand tokens, type system, inventory hero, reduced-motion
+4ca9bc8 Add files via upload
+d1974a0 Add Apache License 2.0 to frontend-design
+c2e96c2 Merge pull request #186 from jospabloh/claude/fix-fundaccounts-permission-key
+e024071 fix(permisos): usar la clave de módulo registrada CuentasFondo en FundAccounts
+5ed1bfa Merge pull request #184 from jospabloh/claude/react-query-listas
+06eef37 feat: migrar Quotations, Suppliers y Movements a React Query
+7e049cc Merge pull request #183 from jospabloh/automated/release-pr
+db99309 chore: release and update documentation
 f1f32e4 Merge pull request #182 from jospabloh/claude/blissful-mccarthy-endxz1
 fed587e Merge branch 'main' into claude/blissful-mccarthy-endxz1
 8d69f50 feat: spinner de marca reutilizable + refresco automático con React Query
 cd8cb18 Merge pull request #177 from jospabloh/automated/release-pr
 795da59 chore: release and update documentation
 15096c4 Merge pull request #181 from jospabloh/claude/hopeful-cannon-36pn62
-852466e fix(cotizaciones): los estados de seguimiento no se guardaban y fallaban en silencio
-351dd60 Merge pull request #180 from jospabloh/claude/gifted-faraday-xro0v6
-4ba25f6 Merge branch 'main' into claude/gifted-faraday-xro0v6
-51e1439 fix(rls): add service-role branch to read rules (asServiceRole reads)
-0555ecf Merge pull request #179 from jospabloh/claude/gifted-faraday-xro0v6
-f94e8ce fix(rls): restaurar escrituras — agregar rama service-role a create/update/delete
-0c6bee9 Merge pull request #178 from jospabloh/claude/baristop-zero-items-rls-6s4b4l
-61416ba fix(rls): resolver inquilino por {{user.data.business_id}} (arregla "cero items")
-7c26cee Merge pull request #176 from jospabloh/claude/confident-lamport-isg849
-c73dba1 fix(rls): corregir prefijo de campo en reglas RLS multi-tenant
-e071af1 Merge pull request #172 from jospabloh/automated/release-pr
-8a909c6 chore: release and update documentation
-9ce0301 Merge pull request #175 from jospabloh/claude/fix-react-window-build
-4e14b12 fix(build): pin react-window to ^1.8.11 to fix MISSING_EXPORT build failure
-aeef074 Merge pull request #170 from jospabloh/dependabot/npm_and_yarn/react-window-2.2.7
-9b801b5 Merge branch 'main' into dependabot/npm_and_yarn/react-window-2.2.7
-c3f2721 Merge pull request #169 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0
-e01d196 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.0
-7e35217 Merge pull request #168 from jospabloh/dependabot/npm_and_yarn/zod-4.4.3
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.17.3",
+  "Actualización a la versión 2.17.6",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
