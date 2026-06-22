@@ -1,5 +1,7 @@
-// Artículos de ayuda — última versión: v2.17.0
+// Artículos de ayuda — última versión: v2.18.1
 // Solo contiene notas de versión (release notes). Los artículos de manual permanente están en helpDataExtension.js
+// v2.18.1: Auditoría de seguridad y calidad — 0 hallazgos Críticos/Altos, corrección de debug logs
+// v2.18.0: Identidad visual — nueva tipografía, cifras tabulares, paleta de marca, cotización pública profesional
 // v2.17.0: Auditoría de permisos — módulo Cuentas de Fondos registrado en la matriz de permisos granulares
 // v2.16.15: Fix inventario (stock exactamente una vez), retiro de utilidad simplificado, estado facturado, estado factura en pagos proveedores
 // v2.16.0: Auditoría de mantenimiento — CVEs adicionales, CI unificado, código muerto eliminado
@@ -14,6 +16,114 @@
 // v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor
 
 export const newHelpArticles = [
+    {
+      id: "release-2-18-1",
+      category: "Novedades",
+      role: "admin",
+      title: "🔒 v2.18.1 — Auditoría de Seguridad y Calidad",
+      keywords: ["versión", "2.18.1", "seguridad", "auditoría", "calidad", "permisos", "aislamiento", "tenant"],
+      related_ids: ["release-2-18-0", "permissions-overview"],
+      content: `## 🔒 Versión 2.18.1 — 22 de junio de 2026
+
+### ✅ Novedades de esta versión
+
+Esta versión es una auditoría de seguridad y calidad de código. No incluye nuevas funciones visibles para el usuario.
+
+---
+
+### 🔍 Resultados de la Auditoría
+
+| Severidad | Hallazgos | Estado |
+|---|---|---|
+| Crítico | 0 | — |
+| Alto | 0 | — |
+| Medio | 0 | — |
+| Bajo | 2 | ✅ Corregidos |
+
+---
+
+### 🧹 Correcciones aplicadas
+
+#### Registros de depuración eliminados (Bajo)
+
+Se identificaron dos sentencias \`console.log\` en el módulo **Generador de Códigos de Barras** que registraban el ID del producto y el objeto completo del producto en la consola del navegador durante el guardado de un código de barras.
+
+**Impacto:** Bajo — la información solo era visible para usuarios con acceso a las herramientas de desarrollador del navegador, en sus propios datos del negocio.
+
+**Corrección:** Las sentencias de depuración fueron eliminadas del código.
+
+---
+
+### ✅ Validaciones completadas
+
+- **Aislamiento de tenant**: 22 entidades revisadas, 15 con alcance de tenant — todas pasan la validación RLS.
+- **Matriz de permisos**: 15+ módulos, 155 claves — sin brechas nuevas encontradas.
+- **Funciones de backend**: los endpoints de administración de plataforma verifican identidad en el servidor — sin exposición de datos entre tenants.
+- **Lint**: sin advertencias.
+- **Build**: sin errores.
+
+> **Nota:** Esta versión no modifica entidades de Base44, RLS, permisos ni lógica de negocio.
+`
+    },
+    {
+      id: "release-2-18-0",
+      category: "Novedades",
+      role: "all",
+      title: "🎨 v2.18.0 — Nueva Identidad Visual",
+      keywords: ["versión", "2.18.0", "tipografía", "diseño", "marca", "cotización", "dashboard", "accesibilidad"],
+      related_ids: ["release-2-17-0", "quotation-share"],
+      content: `## 🎨 Versión 2.18.0 — 19 de junio de 2026
+
+### ✅ Novedades de esta versión
+
+Esta versión consolida una renovación visual completa de la aplicación. No modifica datos, lógica de negocio ni permisos.
+
+---
+
+### 🔤 Nueva Tipografía
+
+- **Space Grotesk** para títulos y encabezados.
+- **IBM Plex Sans** para textos de cuerpo.
+- **IBM Plex Mono** para cantidades de dinero y stock — las cifras se alinean en columnas en tablas y totales.
+
+---
+
+### 🎨 Paleta de Marca Centralizada
+
+Los colores de la aplicación (índigo/cian) ahora viven en un sistema unificado de tokens. Esto garantiza consistencia visual en toda la app y facilita la personalización futura.
+
+---
+
+### 📊 Dashboard Renovado
+
+El encabezado del dashboard ahora muestra:
+
+- **Stock total** del inventario.
+- **Flujo del día**: entradas y salidas registradas hoy.
+- **Alerta de reposición**: resumen de productos con stock bajo.
+
+> El valor del inventario al costo solo es visible para quienes tienen el permiso \`Dashboard:stat_total_value\`.
+
+---
+
+### 🧾 Cotización Pública Rediseñada
+
+La página de cotización compartida (el enlace que recibes tus clientes) ahora es un **documento profesional** con:
+
+- El nombre y el color de marca de tu negocio.
+- Cifras alineadas y legibles en cualquier pantalla.
+- Estados claros: borrador, enviada, aprobada, rechazada, vencida.
+
+---
+
+### ♿ Accesibilidad
+
+- Se respeta la preferencia del dispositivo de **"reducir movimiento"** (transiciones y animaciones).
+- Mejora de contraste de color en superficies de marca.
+
+> **Nota:** ningún cambio de esta versión modifica entidades de Base44, RLS ni permisos. La matriz de permisos permanece en 15 módulos / 155 claves.
+`
+    },
     {
       id: "release-2-17-0",
       category: "Novedades",

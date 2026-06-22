@@ -38,9 +38,7 @@ export default function BarcodeGeneratorPage() {
 
     setSaving(true);
     try {
-      console.log("Guardando barcode:", barcode, "para producto:", product.id);
       const updatedProduct = await base44.entities.Product.update(product.id, { barcode });
-      console.log("Producto actualizado:", updatedProduct);
       setProduct({ ...product, barcode });
       toast.success("Código de barras guardado exitosamente");
     } catch (err) {
