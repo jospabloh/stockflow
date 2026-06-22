@@ -1,5 +1,31 @@
 # Changelog — StockFlow
 
+## v2.18.1 (2026-06-22)
+
+### 🔒 Auditoría de Seguridad y Calidad
+
+Auditoría automatizada completa del repositorio. Sin hallazgos Críticos ni Altos. Sin cambios en lógica de negocio, datos ni permisos.
+
+#### Hallazgos y correcciones
+
+| Severidad | Descripción | Estado |
+|---|---|---|
+| Bajo | 2 `console.log` de depuración en `BarcodeGenerator.jsx` — exponían ID de producto y objeto completo en la consola del navegador | ✅ Corregido |
+| Bajo | Cadena de versión en `helpData.js` mostraba v2.15.0 en lugar de la versión actual | ✅ Corregido |
+
+#### Validaciones completadas
+
+- Validación RLS: 22 entidades, 15 con alcance de tenant — sin hallazgos.
+- Matriz de permisos: 15+ módulos, 155 claves — sin brechas nuevas.
+- Funciones de backend: endpoints de admin de plataforma verifican identidad en servidor.
+- Lint: sin advertencias.
+- Build: sin errores.
+- PR #190 (automatizado de liberación, sin cambios reales): cerrado y reemplazado por esta revisión.
+
+> Nota: ningún cambio modifica entidades de Base44, RLS, lógica de negocio ni permisos.
+
+---
+
 ## v2.18.0 (2026-06-19)
 
 ### 🎨 Identidad Visual — Iniciativa "Subir de Nivel"

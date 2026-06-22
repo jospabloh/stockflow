@@ -2,16 +2,26 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.18.0";
+export const APP_VERSION = "2.18.1";
 
-export const RELEASE_DATE = "2026-06-19";
+export const RELEASE_DATE = "2026-06-22";
 
 // Fecha (ISO) de la última revisión manual del Manual de Usuario por un humano.
 // Actualizar al volver a leer y validar el manual end-to-end. La auditoría
 // nocturna alerta si pasan más de 60 días desde esta fecha.
-export const USER_MANUAL_LAST_REVIEWED = "2026-06-19";
+export const USER_MANUAL_LAST_REVIEWED = "2026-06-22";
 
 export const CHANGELOG = [
+  {
+    version: "2.18.1",
+    date: "2026-06-22",
+    changes: [
+      "🔒 Auditoría de seguridad y calidad v2.18.1: 0 hallazgos Críticos o Altos. Se eliminaron 2 console.log de depuración en el Generador de Códigos de Barras (datos de producto visibles en consola del navegador).",
+      "📖 Manual de usuario actualizado: versión y fecha de revisión sincronizadas con la versión actual de la app.",
+      "✅ Validación de aislamiento de tenant completada: 22 entidades, 15 con alcance de tenant, todas pasan la validación RLS.",
+      "🧹 PR #190 (automatizado / sin cambios reales) cerrado: el PR de liberación automática fue reemplazado por esta revisión manual.",
+    ],
+  },
   {
     version: "2.18.0",
     date: "2026-06-19",
