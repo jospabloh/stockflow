@@ -2,94 +2,123 @@
   "name": "AppSettings",
   "type": "object",
   "properties": {
-    "business_name": {
-      "type": "string",
-      "description": "Nombre del negocio"
-    },
-    "logo_url": {
-      "type": "string",
-      "description": "URL del logotipo"
-    },
-    "primary_color": {
-      "type": "string",
-      "description": "Color primario (hex)",
-      "default": "#4F46E5"
-    },
-    "secondary_color": {
-      "type": "string",
-      "description": "Color secundario (hex)",
-      "default": "#06B6D4"
-    },
-    "tax_rate": {
-      "type": "number",
-      "description": "Tasa de IVA (%)",
-      "default": 16
-    },
-    "currency": {
-      "type": "string",
-      "description": "Moneda",
-      "default": "MXN"
-    },
-    "low_stock_email": {
-      "type": "string",
-      "description": "Email para alertas de stock bajo"
-    },
-    "quotation_footer": {
-      "type": "string",
-      "description": "Texto al pie de las cotizaciones"
-    },
     "address": {
-      "type": "string",
-      "description": "Direcci\u00f3n del negocio"
-    },
-    "phone": {
-      "type": "string",
-      "description": "Tel\u00e9fono del negocio"
-    },
-    "rfc": {
-      "type": "string",
-      "description": "RFC del negocio",
-      "pattern": "^[A-Z&\u00d1]{3,4}[0-9]{6}[A-Z0-9]{3}$"
-    },
-    "timezone": {
-      "type": "string",
-      "description": "Zona horaria del negocio (ej: America/Mexico_City)",
-      "default": "America/Mexico_City"
-    },
-    "locale": {
-      "type": "string",
-      "description": "Configuraci\u00f3n regional (ej: es-MX)",
-      "default": "es-MX"
+      "description": "Direcci\u00f3n del negocio",
+      "type": "string"
     },
     "business_id": {
-      "type": "string",
-      "description": "ID del negocio al que pertenece"
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
+    },
+    "business_name": {
+      "description": "Nombre del negocio",
+      "type": "string"
+    },
+    "currency": {
+      "default": "MXN",
+      "description": "Moneda",
+      "type": "string"
+    },
+    "locale": {
+      "default": "es-MX",
+      "description": "Configuraci\u00f3n regional (ej: es-MX)",
+      "type": "string"
+    },
+    "logo_url": {
+      "description": "URL del logotipo",
+      "type": "string"
+    },
+    "low_stock_email": {
+      "description": "Email para alertas de stock bajo",
+      "type": "string"
+    },
+    "phone": {
+      "description": "Tel\u00e9fono del negocio",
+      "type": "string"
+    },
+    "primary_color": {
+      "default": "#4F46E5",
+      "description": "Color primario (hex)",
+      "type": "string"
+    },
+    "quotation_footer": {
+      "description": "Texto al pie de las cotizaciones",
+      "type": "string"
+    },
+    "rfc": {
+      "description": "RFC del negocio",
+      "pattern": "^[A-Z&\u00d1]{3,4}[0-9]{6}[A-Z0-9]{3}$",
+      "type": "string"
+    },
+    "secondary_color": {
+      "default": "#06B6D4",
+      "description": "Color secundario (hex)",
+      "type": "string"
+    },
+    "tax_rate": {
+      "default": 16,
+      "description": "Tasa de IVA (%)",
+      "type": "number"
+    },
+    "timezone": {
+      "default": "America/Mexico_City",
+      "description": "Zona horaria del negocio (ej: America/Mexico_City)",
+      "type": "string"
+    },
+    "utility_forecast_enabled": {
+      "default": false,
+      "description": "Si la pesta\u00f1a Utilidad muestra la proyecci\u00f3n/pron\u00f3stico de utilidad (run-rate + pipeline). Apagado = solo cifras reales al d\u00eda.",
+      "type": "boolean"
     }
   },
   "required": [],
   "rls": {
     "create": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "read": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }

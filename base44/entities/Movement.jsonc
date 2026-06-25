@@ -2,69 +2,69 @@
   "name": "Movement",
   "type": "object",
   "properties": {
+    "business_id": {
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
+    },
+    "cost_price": {
+      "description": "Precio de compra/costo unitario en el momento del movimiento",
+      "type": "number"
+    },
+    "paid": {
+      "default": false,
+      "description": "Pago recibido efectivamente (solo aplica a salidas directas sin cotizaci\u00f3n)",
+      "type": "boolean"
+    },
     "product_id": {
-      "type": "string",
-      "description": "ID del producto"
+      "description": "ID del producto",
+      "type": "string"
     },
     "product_name": {
-      "type": "string",
-      "description": "Nombre del producto (desnormalizado)"
+      "description": "Nombre del producto (desnormalizado)",
+      "type": "string"
+    },
+    "quantity": {
+      "description": "Cantidad",
+      "type": "number"
+    },
+    "quotation_id": {
+      "description": "ID de cotizaci\u00f3n relacionada",
+      "type": "string"
+    },
+    "reason": {
+      "description": "Cliente del movimiento",
+      "type": "string"
+    },
+    "reference": {
+      "description": "Forma de pago",
+      "type": "string"
+    },
+    "stock_after": {
+      "description": "Stock resultante despu\u00e9s del movimiento",
+      "type": "number"
+    },
+    "stock_applied": {
+      "default": false,
+      "description": "Marca si el efecto de este movimiento sobre el stock del producto ya fue aplicado (control de idempotencia, exactamente-una-vez).",
+      "type": "boolean"
+    },
+    "total": {
+      "description": "Total del movimiento (cantidad \u00d7 precio venta)",
+      "type": "number"
     },
     "type": {
-      "type": "string",
+      "description": "Tipo de movimiento",
       "enum": [
         "entry",
         "exit",
         "return",
         "adjustment"
       ],
-      "description": "Tipo de movimiento"
-    },
-    "quantity": {
-      "type": "number",
-      "description": "Cantidad"
+      "type": "string"
     },
     "unit_price": {
-      "type": "number",
-      "description": "Precio unitario de venta en este movimiento"
-    },
-    "cost_price": {
-      "type": "number",
-      "description": "Precio de compra/costo unitario en el momento del movimiento"
-    },
-    "total": {
-      "type": "number",
-      "description": "Total del movimiento (cantidad \u00d7 precio venta)"
-    },
-    "reason": {
-      "type": "string",
-      "description": "Cliente del movimiento"
-    },
-    "reference": {
-      "type": "string",
-      "description": "Forma de pago"
-    },
-    "stock_after": {
-      "type": "number",
-      "description": "Stock resultante despu\u00e9s del movimiento"
-    },
-    "quotation_id": {
-      "type": "string",
-      "description": "ID de cotizaci\u00f3n relacionada"
-    },
-    "paid": {
-      "type": "boolean",
-      "default": false,
-      "description": "Pago recibido efectivamente (solo aplica a salidas directas sin cotizaci\u00f3n)"
-    },
-    "stock_applied": {
-      "type": "boolean",
-      "default": false,
-      "description": "True cuando el efecto de este movimiento sobre Product.stock ya fue aplicado. Garantiza aplicaci\u00f3n exactamente-una-vez e idempotencia (ver applyMovementStock)."
-    },
-    "business_id": {
-      "type": "string",
-      "description": "ID del negocio al que pertenece"
+      "description": "Precio unitario de venta en este movimiento",
+      "type": "number"
     }
   },
   "required": [
@@ -76,26 +76,50 @@
   "rls": {
     "create": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "read": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }
