@@ -4,32 +4,30 @@
   "properties": {
     "version": {
       "type": "string",
-      "description": "Versión de la aplicación a la que pertenece este changelog (ej: 2.13.7)"
+      "description": "N\u00famero de versi\u00f3n (ej: 2.12.0)"
     },
     "released_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Fecha de liberación de la versión"
+      "description": "Fecha de liberaci\u00f3n de la versi\u00f3n"
     },
     "notes": {
       "type": "string",
-      "description": "Notas del changelog (texto plano, una entrada por línea)"
-    },
-    "published": {
-      "type": "boolean",
-      "default": true,
-      "description": "Si es false, el registro es un draft pendiente de publicación. La auditoría nocturna publica los drafts dentro de la versión actual."
+      "description": "Notas del changelog para esta versi\u00f3n"
     },
     "synced_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Última vez que la auditoría nocturna sincronizó este registro"
+      "description": "Timestamp en que el cron registr\u00f3 esta entrada"
     },
     "source": {
       "type": "string",
-      "enum": ["cron", "manual", "draft"],
+      "enum": [
+        "cron",
+        "manual"
+      ],
       "default": "cron",
-      "description": "Origen del registro: generado por cron, capturado manualmente, o creado como draft"
+      "description": "Origen del registro: cron autom\u00e1tico o entrada manual"
     }
   },
   "required": [

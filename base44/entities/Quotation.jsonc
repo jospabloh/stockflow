@@ -2,32 +2,80 @@
   "name": "Quotation",
   "type": "object",
   "properties": {
-    "folio": {
-      "type": "string",
-      "description": "N\u00famero de folio"
+    "amount_paid": {
+      "default": 0,
+      "description": "Suma total de todos los pagos registrados (campo cacheado)",
+      "type": "number"
     },
-    "client_id": {
-      "type": "string",
-      "description": "ID del cliente vinculado"
+    "balance": {
+      "default": 0,
+      "description": "Saldo pendiente: total - amount_paid (campo cacheado)",
+      "type": "number"
     },
-    "client_name": {
-      "type": "string",
-      "description": "Nombre del cliente"
+    "business_id": {
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
+    },
+    "cancellation_reason": {
+      "description": "Raz\u00f3n o motivo de cancelaci\u00f3n",
+      "type": "string"
     },
     "client_email": {
-      "type": "string",
-      "description": "Email del cliente"
+      "description": "Email del cliente",
+      "type": "string"
+    },
+    "client_id": {
+      "description": "ID del cliente vinculado",
+      "type": "string"
+    },
+    "client_name": {
+      "description": "Nombre del cliente",
+      "type": "string"
     },
     "client_phone": {
-      "type": "string",
-      "description": "Tel\u00e9fono del cliente"
+      "description": "Tel\u00e9fono del cliente",
+      "type": "string"
+    },
+    "delivered": {
+      "default": false,
+      "description": "Pedido entregado al cliente",
+      "type": "boolean"
+    },
+    "folio": {
+      "description": "N\u00famero de folio",
+      "type": "string"
+    },
+    "in_route": {
+      "default": false,
+      "description": "Pedido en ruta de entrega",
+      "type": "boolean"
+    },
+    "invoice_status": {
+      "description": "Estado de facturaci\u00f3n",
+      "enum": [
+        "pendiente",
+        "emitida",
+        "no_requerida"
+      ],
+      "type": "string"
     },
     "items": {
-      "type": "array",
       "description": "Productos de la cotizaci\u00f3n",
       "items": {
-        "type": "object",
         "properties": {
+          "is_on_demand": {
+            "default": false,
+            "description": "true si es un producto bajo pedido que no existe en el cat\u00e1logo",
+            "type": "boolean"
+          },
+          "on_demand_status": {
+            "description": "Estado del item bajo pedido: pending | product_created",
+            "type": "string"
+          },
+          "product_description": {
+            "description": "Especificaciones o descripci\u00f3n del producto bajo pedido",
+            "type": "string"
+          },
           "product_id": {
             "type": "string"
           },
@@ -37,53 +85,90 @@
           "quantity": {
             "type": "number"
           },
-          "unit_price": {
+          "supplier_id": {
+            "description": "ID del proveedor sugerido para este producto bajo pedido (opcional)",
+            "type": "string"
+          },
+          "supplier_name": {
+            "description": "Nombre del proveedor (desnormalizado para display)",
+            "type": "string"
+          },
+          "tax_rate": {
             "type": "number"
           },
           "total": {
             "type": "number"
           },
-          "tax_rate": {
+          "unit_price": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "notes": {
+      "description": "Notas o condiciones",
+      "type": "string"
+    },
+    "paid": {
+      "default": false,
+      "description": "Pago recibido efectivamente (balance <= 0)",
+      "type": "boolean"
+    },
+    "payment_method": {
+      "description": "Forma de pago",
+      "type": "string"
+    },
+    "payments": {
+      "default": [],
+      "description": "Historial de pagos registrados contra esta cotizaci\u00f3n",
+      "items": {
+        "properties": {
+          "amount": {
+            "description": "Monto del pago",
             "type": "number"
           },
-          "is_on_demand": {
-            "type": "boolean",
-            "description": "true si es un producto bajo pedido que no existe en el cat\u00e1logo",
-            "default": false
+          "id": {
+            "description": "UUID \u00fanico del pago",
+            "type": "string"
           },
-          "supplier_id": {
-            "type": "string",
-            "description": "ID del proveedor sugerido para este producto bajo pedido (opcional)"
+          "notes": {
+            "description": "Notas opcionales del pago",
+            "type": "string"
           },
-          "supplier_name": {
-            "type": "string",
-            "description": "Nombre del proveedor (desnormalizado para display)"
+          "paid_at": {
+            "description": "Fecha y hora del pago (ISO)",
+            "type": "string"
           },
-          "product_description": {
-            "type": "string",
-            "description": "Especificaciones o descripci\u00f3n del producto bajo pedido"
+          "payment_method": {
+            "description": "Forma de pago (snapshot)",
+            "type": "string"
           },
-          "on_demand_status": {
-            "type": "string",
-            "description": "Estado del item bajo pedido: pending | product_created"
+          "petty_cash_movement_id": {
+            "description": "ID del PettyCashMovement si aplica",
+            "type": "string"
+          },
+          "registered_by": {
+            "description": "user_id quien registr\u00f3",
+            "type": "string"
           }
-        }
-      }
+        },
+        "type": "object"
+      },
+      "type": "array"
     },
-    "subtotal": {
-      "type": "number",
-      "description": "Subtotal"
+    "public_link_enabled": {
+      "default": false,
+      "type": "boolean"
     },
-    "tax": {
-      "type": "number",
-      "description": "IVA"
-    },
-    "total": {
-      "type": "number",
-      "description": "Total"
+    "public_token": {
+      "description": "Token \u00fanico para enlace p\u00fablico",
+      "type": "string"
     },
     "status": {
-      "type": "string",
+      "default": "draft",
+      "description": "Estado de la cotizaci\u00f3n",
       "enum": [
         "draft",
         "sent",
@@ -91,109 +176,24 @@
         "converted",
         "cancelled"
       ],
-      "default": "draft",
-      "description": "Estado de la cotizaci\u00f3n"
+      "type": "string"
     },
-    "invoice_status": {
-      "type": "string",
-      "enum": [
-        "pendiente",
-        "emitida",
-        "no_requerida"
-      ],
-      "description": "Estado de facturaci\u00f3n"
+    "subtotal": {
+      "description": "Subtotal",
+      "type": "number"
     },
-    "notes": {
-      "type": "string",
-      "description": "Notas o condiciones"
+    "tax": {
+      "description": "IVA",
+      "type": "number"
+    },
+    "total": {
+      "description": "Total",
+      "type": "number"
     },
     "valid_until": {
-      "type": "string",
+      "description": "Fecha de vigencia",
       "format": "date",
-      "description": "Fecha de vigencia"
-    },
-    "payment_method": {
-      "type": "string",
-      "description": "Forma de pago"
-    },
-    "in_route": {
-      "type": "boolean",
-      "default": false,
-      "description": "Pedido en ruta de entrega"
-    },
-    "delivered": {
-      "type": "boolean",
-      "default": false,
-      "description": "Pedido entregado al cliente"
-    },
-    "paid": {
-      "type": "boolean",
-      "default": false,
-      "description": "Pago recibido efectivamente (balance <= 0)"
-    },
-    "cancellation_reason": {
-      "type": "string",
-      "description": "Raz\u00f3n o motivo de cancelaci\u00f3n"
-    },
-    "business_id": {
-      "type": "string",
-      "description": "ID del negocio al que pertenece"
-    },
-    "payments": {
-      "type": "array",
-      "description": "Historial de pagos registrados contra esta cotizaci\u00f3n",
-      "default": [],
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "UUID \u00fanico del pago"
-          },
-          "amount": {
-            "type": "number",
-            "description": "Monto del pago"
-          },
-          "payment_method": {
-            "type": "string",
-            "description": "Forma de pago (snapshot)"
-          },
-          "paid_at": {
-            "type": "string",
-            "description": "Fecha y hora del pago (ISO)"
-          },
-          "registered_by": {
-            "type": "string",
-            "description": "user_id quien registr\u00f3"
-          },
-          "petty_cash_movement_id": {
-            "type": "string",
-            "description": "ID del PettyCashMovement si aplica"
-          },
-          "notes": {
-            "type": "string",
-            "description": "Notas opcionales del pago"
-          }
-        }
-      }
-    },
-    "amount_paid": {
-      "type": "number",
-      "description": "Suma total de todos los pagos registrados (campo cacheado)",
-      "default": 0
-    },
-    "balance": {
-      "type": "number",
-      "description": "Saldo pendiente: total - amount_paid (campo cacheado)",
-      "default": 0
-    },
-    "public_token": {
-      "type": "string",
-      "description": "Token único para enlace público"
-    },
-    "public_link_enabled": {
-      "type": "boolean",
-      "default": false
+      "type": "string"
     }
   },
   "required": [
@@ -204,26 +204,50 @@
   "rls": {
     "create": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "read": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }
