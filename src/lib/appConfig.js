@@ -6,6 +6,14 @@ export const APP_VERSION = "2.18.1";
 
 export const RELEASE_DATE = "2026-06-22";
 
+// URL pública de la página comercial donde el cliente contrata o renueva su
+// licencia. Es información pública (NO un secreto): aparece también en el manual
+// de usuario y en los banners. Se centraliza aquí para tener una sola fuente de
+// verdad y poder sobrescribirla por entorno con VITE_STOCKFLOW_UPGRADE_URL sin
+// recompilar literales repartidos por la UI.
+export const STOCKFLOW_UPGRADE_URL =
+  import.meta.env.VITE_STOCKFLOW_UPGRADE_URL || "https://www.acaciaco.com.mx/stockflow";
+
 // Fecha (ISO) de la última revisión manual del Manual de Usuario por un humano.
 // Actualizar al volver a leer y validar el manual end-to-end. La auditoría
 // nocturna alerta si pasan más de 60 días desde esta fecha.

@@ -2,66 +2,66 @@
   "name": "PettyCashMovement",
   "type": "object",
   "properties": {
+    "amount": {
+      "description": "Monto del movimiento",
+      "type": "number"
+    },
     "business_id": {
-      "type": "string",
-      "description": "ID del negocio al que pertenece"
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
+    },
+    "category": {
+      "description": "Categor\u00eda del movimiento",
+      "type": "string"
+    },
+    "description": {
+      "description": "Descripci\u00f3n del movimiento",
+      "type": "string"
+    },
+    "generated_by_system": {
+      "default": false,
+      "description": "Indica si fue generado autom\u00e1ticamente por el sistema (no editable manualmente)",
+      "type": "boolean"
+    },
+    "movement_date": {
+      "description": "Fecha del movimiento",
+      "format": "date",
+      "type": "string"
     },
     "movement_type": {
-      "type": "string",
+      "description": "Tipo: fondo_inicial, ingreso, egreso, ajuste",
       "enum": [
         "initial_fund",
         "income",
         "expense",
         "adjustment"
       ],
-      "description": "Tipo: fondo_inicial, ingreso, egreso, ajuste"
-    },
-    "amount": {
-      "type": "number",
-      "description": "Monto del movimiento"
-    },
-    "description": {
-      "type": "string",
-      "description": "Descripci\u00f3n del movimiento"
-    },
-    "category": {
-      "type": "string",
-      "description": "Categor\u00eda del movimiento"
-    },
-    "movement_date": {
-      "type": "string",
-      "format": "date",
-      "description": "Fecha del movimiento"
-    },
-    "reference": {
-      "type": "string",
-      "description": "Referencia o folio (opcional)"
+      "type": "string"
     },
     "notes": {
-      "type": "string",
-      "description": "Notas adicionales (opcional)"
+      "description": "Notas adicionales (opcional)",
+      "type": "string"
     },
-    "generated_by_system": {
-      "type": "boolean",
-      "default": false,
-      "description": "Indica si fue generado autom\u00e1ticamente por el sistema (no editable manualmente)"
+    "origin_id": {
+      "description": "ID del registro de origen (quotation.id o movement.id)",
+      "type": "string"
     },
     "origin_type": {
-      "type": "string",
+      "description": "Tipo de origen: cotizaci\u00f3n, movimiento de inventario directo o movimiento de utilidad",
       "enum": [
         "quotation",
         "movement",
         "utility"
       ],
-      "description": "Tipo de origen: cotizaci\u00f3n, movimiento de inventario directo o movimiento de utilidad"
-    },
-    "origin_id": {
-      "type": "string",
-      "description": "ID del registro de origen (quotation.id o movement.id)"
+      "type": "string"
     },
     "payment_method_snapshot": {
-      "type": "string",
-      "description": "Forma de pago en el momento de la transacci\u00f3n"
+      "description": "Forma de pago en el momento de la transacci\u00f3n",
+      "type": "string"
+    },
+    "reference": {
+      "description": "Referencia o folio (opcional)",
+      "type": "string"
     }
   },
   "required": [
@@ -74,26 +74,50 @@
   "rls": {
     "create": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "read": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }
