@@ -2,31 +2,42 @@
   "name": "Rubro",
   "type": "object",
   "properties": {
-    "name": {
-      "type": "string",
-      "description": "Nombre del rubro (ej. Renta, Nómina, Ventas)"
+    "active": {
+      "default": true,
+      "description": "Si est\u00e1 disponible para usar",
+      "type": "boolean"
+    },
+    "business_id": {
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
+    },
+    "is_system": {
+      "default": false,
+      "description": "Indica si fue sembrado por el sistema como predeterminado",
+      "type": "boolean"
     },
     "kind": {
-      "type": "string",
+      "description": "Naturaleza del rubro: ingreso o egreso",
       "enum": [
         "income",
         "expense"
       ],
-      "description": "Naturaleza del rubro: ingreso o egreso"
+      "type": "string"
     },
-    "active": {
-      "type": "boolean",
-      "default": true,
-      "description": "Si está disponible para usar"
+    "name": {
+      "description": "Nombre del rubro (ej. Renta, N\u00f3mina, Ventas)",
+      "type": "string"
     },
-    "is_system": {
-      "type": "boolean",
-      "default": false,
-      "description": "Indica si fue sembrado por el sistema como predeterminado"
-    },
-    "business_id": {
-      "type": "string",
-      "description": "ID del negocio al que pertenece"
+    "pl_treatment": {
+      "default": "operating",
+      "description": "Tratamiento en el Estado de Resultados: operating=gasto/ingreso operativo manual que cuenta; auto_sales=ya lo captura el motor de ventas; auto_cogs=ya lo cubren COGS/pagos a proveedores; distribution=retiro de utilidad (no es gasto). Evita doble conteo en el m\u00f3dulo Utilidad.",
+      "enum": [
+        "operating",
+        "auto_sales",
+        "auto_cogs",
+        "distribution"
+      ],
+      "type": "string"
     }
   },
   "required": [
@@ -37,26 +48,50 @@
   "rls": {
     "create": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "read": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }
