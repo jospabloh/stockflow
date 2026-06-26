@@ -2,8 +2,7 @@ import React from "react";
 import { useLicense } from "@/lib/LicenseContext";
 import { Button } from "@/components/ui/button";
 import { Clock, Lock, AlertTriangle, ExternalLink } from "lucide-react";
-
-const STOCKFLOW_UPGRADE_URL = "https://www.acaciaco.com.mx/stockflow";
+import { STOCKFLOW_UPGRADE_URL } from "@/lib/appConfig";
 
 export default function TrialBanner() {
   const { billingStatus, trialDaysLeft, isPlatformAdmin, loading } = useLicense();

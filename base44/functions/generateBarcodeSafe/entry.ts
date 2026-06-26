@@ -61,18 +61,21 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'El producto ya tiene un código de barras' }, { status: 409 });
     }
 
-    // Load all barcodes in this business for collision check
-    const existingProducts = await base44.entities.Product.filter({ business_id: user.business_id });
-    const usedBarcodes = new Set(
-      existingProducts.map(p => p.barcode).filter(b => b && b.trim() !== "")
-    );
-
-    // Try up to 20 deterministic attempts
+    // Try up to 20 deterministic attempts. Probe each candidate with a
+    // targeted filter (business_id + barcode) instead of loading the entire
+    // product catalog into memory: each check returns at most one row, so the
+    // cost is independent of how many products the business has. The seed is
+    // derived from the product id, so attempt 0 succeeds in practically every
+    // case — the common path is a single small query.
     const MAX_ATTEMPTS = 20;
     let barcode = null;
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
       const candidate = generateInternalProductEAN13(product.id, attempt);
-      if (!usedBarcodes.has(candidate)) {
+      const collisions = await base44.entities.Product.filter({
+        business_id: user.business_id,
+        barcode: candidate,
+      });
+      if (!collisions || collisions.length === 0) {
         barcode = candidate;
         break;
       }

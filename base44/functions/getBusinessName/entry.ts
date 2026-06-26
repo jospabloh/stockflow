@@ -14,13 +14,23 @@ Deno.serve(async (req) => {
     }
 
     const { business_id } = await req.json();
-    
+
     if (!business_id) {
       return Response.json({ error: 'business_id required' }, { status: 400 });
     }
 
-    // Use asServiceRole to bypass RLS restrictions
-    // This allows users to see their own business name even if they don't "own" the Business record
+    // CRITICAL: tenant isolation. A user may only look up the name of their OWN
+    // business. Without this check, passing another tenant's business_id would
+    // leak that business's name across tenants (the asServiceRole filter below
+    // bypasses RLS, so the request must be authorized here).
+    if (business_id !== user.business_id) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Use asServiceRole to bypass RLS restrictions.
+    // Access is already constrained to the caller's own business by the check
+    // above; this allows users to see their own business name even if they don't
+    // "own" the Business record.
     const businesses = await base44.asServiceRole.entities.Business.filter({ id: business_id });
     
     if (businesses.length === 0) {

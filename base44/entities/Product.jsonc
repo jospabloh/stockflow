@@ -2,54 +2,76 @@
   "name": "Product",
   "type": "object",
   "properties": {
-    "name": {
-      "type": "string",
-      "description": "Nombre del producto"
-    },
-    "sku": {
-      "type": "string",
-      "description": "C\u00f3digo SKU"
-    },
     "barcode": {
-      "type": "string",
-      "description": "C\u00f3digo de barras"
+      "description": "C\u00f3digo de barras",
+      "type": "string"
     },
-    "description": {
-      "type": "string",
-      "description": "Descripci\u00f3n del producto"
+    "business_id": {
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
     },
     "category": {
-      "type": "string",
-      "description": "ID de la categor\u00eda"
+      "description": "ID de la categor\u00eda",
+      "type": "string"
     },
-    "supplier": {
-      "type": "string",
-      "description": "ID del proveedor"
+    "description": {
+      "description": "Descripci\u00f3n del producto",
+      "type": "string"
     },
-    "purchase_price": {
-      "type": "number",
-      "description": "Precio de compra"
-    },
-    "retail_sale_price": {
-      "type": "number",
-      "description": "Precio de venta al menudeo"
-    },
-    "wholesale_sale_price": {
-      "type": "number",
-      "description": "Precio de venta al mayoreo"
-    },
-    "stock": {
-      "type": "number",
-      "description": "Existencias actuales",
-      "default": 0
+    "image_url": {
+      "description": "URL de imagen del producto",
+      "type": "string"
     },
     "min_stock": {
-      "type": "number",
+      "default": 5,
       "description": "Stock m\u00ednimo para alerta",
-      "default": 5
+      "type": "number"
+    },
+    "name": {
+      "description": "Nombre del producto",
+      "type": "string"
+    },
+    "purchase_price": {
+      "description": "Precio de compra",
+      "type": "number"
+    },
+    "retail_sale_price": {
+      "description": "Precio de venta al menudeo",
+      "type": "number"
+    },
+    "sku": {
+      "description": "C\u00f3digo SKU",
+      "type": "string"
+    },
+    "status": {
+      "default": "active",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "type": "string"
+    },
+    "stock": {
+      "default": 0,
+      "description": "Existencias actuales",
+      "type": "number"
+    },
+    "supplier": {
+      "description": "ID del proveedor",
+      "type": "string"
+    },
+    "tax_rate": {
+      "default": 16,
+      "description": "Tasa de IVA aplicable al producto (0 o 16%)",
+      "enum": [
+        0,
+        16
+      ],
+      "type": "number"
     },
     "unit": {
-      "type": "string",
+      "default": "pieza",
+      "description": "Unidad de medida",
       "enum": [
         "pieza",
         "kg",
@@ -58,33 +80,11 @@
         "caja",
         "paquete"
       ],
-      "default": "pieza",
-      "description": "Unidad de medida"
+      "type": "string"
     },
-    "tax_rate": {
-      "type": "number",
-      "enum": [
-        0,
-        16
-      ],
-      "default": 16,
-      "description": "Tasa de IVA aplicable al producto (0 o 16%)"
-    },
-    "image_url": {
-      "type": "string",
-      "description": "URL de imagen del producto"
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "active",
-        "inactive"
-      ],
-      "default": "active"
-    },
-    "business_id": {
-      "type": "string",
-      "description": "ID del negocio al que pertenece"
+    "wholesale_sale_price": {
+      "description": "Precio de venta al mayoreo",
+      "type": "number"
     }
   },
   "required": [
@@ -95,26 +95,50 @@
   "rls": {
     "create": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "read": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }

@@ -2,41 +2,41 @@
   "name": "InventoryAuditLog",
   "type": "object",
   "properties": {
-    "product_id": {
-      "type": "string",
-      "description": "ID del producto afectado"
-    },
-    "product_name": {
-      "type": "string",
-      "description": "Nombre del producto (desnormalizado)"
-    },
     "business_id": {
-      "type": "string",
-      "description": "ID del negocio al que pertenece"
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
     },
     "event_type": {
-      "type": "string",
+      "description": "Tipo de evento: edici\u00f3n directa sin movimiento o correcci\u00f3n de auditor\u00eda",
       "enum": [
         "direct_edit",
         "system_correction"
       ],
-      "description": "Tipo de evento: edici\u00f3n directa sin movimiento o correcci\u00f3n de auditor\u00eda"
-    },
-    "stock_before": {
-      "type": "number",
-      "description": "Stock antes del cambio"
-    },
-    "stock_after": {
-      "type": "number",
-      "description": "Stock despu\u00e9s del cambio"
+      "type": "string"
     },
     "notes": {
-      "type": "string",
-      "description": "Descripci\u00f3n legible del motivo del cambio"
+      "description": "Descripci\u00f3n legible del motivo del cambio",
+      "type": "string"
     },
     "performed_by": {
-      "type": "string",
-      "description": "Email del usuario que realiz\u00f3 el cambio"
+      "description": "Email del usuario que realiz\u00f3 el cambio",
+      "type": "string"
+    },
+    "product_id": {
+      "description": "ID del producto afectado",
+      "type": "string"
+    },
+    "product_name": {
+      "description": "Nombre del producto (desnormalizado)",
+      "type": "string"
+    },
+    "stock_after": {
+      "description": "Stock despu\u00e9s del cambio",
+      "type": "number"
+    },
+    "stock_before": {
+      "description": "Stock antes del cambio",
+      "type": "number"
     }
   },
   "required": [
@@ -47,26 +47,50 @@
   "rls": {
     "create": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "read": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }
