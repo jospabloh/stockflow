@@ -2,42 +2,42 @@
   "name": "Supplier",
   "type": "object",
   "properties": {
-    "name": {
-      "type": "string",
-      "description": "Nombre del proveedor"
-    },
-    "contact_name": {
-      "type": "string",
-      "description": "Nombre del contacto"
-    },
-    "email": {
-      "type": "string",
-      "description": "Correo electr\u00f3nico"
-    },
-    "phone": {
-      "type": "string",
-      "description": "Tel\u00e9fono"
-    },
     "address": {
-      "type": "string",
-      "description": "Direcci\u00f3n"
-    },
-    "rfc": {
-      "type": "string",
-      "description": "RFC del proveedor"
-    },
-    "notes": {
-      "type": "string",
-      "description": "Notas adicionales"
-    },
-    "extra_contacts": {
-      "type": "string",
-      "description": "Contactos adicionales (JSON: [{name, email, phone}])",
-      "default": "[]"
+      "description": "Direcci\u00f3n",
+      "type": "string"
     },
     "business_id": {
-      "type": "string",
-      "description": "ID del negocio al que pertenece"
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
+    },
+    "contact_name": {
+      "description": "Nombre del contacto",
+      "type": "string"
+    },
+    "email": {
+      "description": "Correo electr\u00f3nico",
+      "type": "string"
+    },
+    "extra_contacts": {
+      "default": "[]",
+      "description": "Contactos adicionales (JSON: [{name, email, phone}])",
+      "type": "string"
+    },
+    "name": {
+      "description": "Nombre del proveedor",
+      "type": "string"
+    },
+    "notes": {
+      "description": "Notas adicionales",
+      "type": "string"
+    },
+    "phone": {
+      "description": "Tel\u00e9fono",
+      "type": "string"
+    },
+    "rfc": {
+      "description": "RFC del proveedor",
+      "type": "string"
     }
   },
   "required": [
@@ -47,26 +47,50 @@
   "rls": {
     "create": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "read": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }
