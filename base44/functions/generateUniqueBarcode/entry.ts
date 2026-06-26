@@ -32,6 +32,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing businessId' }, { status: 400 });
     }
 
+    // Tenant isolation: the caller may only generate barcodes for their own
+    // business. Reject mismatched business IDs so the endpoint can't be driven
+    // with another tenant's id.
+    if (businessId !== user.business_id) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // Generate a random barcode (statistically unique, minimal DB checks)
     const newBarcode = generateRandomBarcode();
 

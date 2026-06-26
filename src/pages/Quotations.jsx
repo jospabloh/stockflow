@@ -142,27 +142,29 @@ export default function Quotations() {
   const activePaymentMethodNames = paymentMethodsCatalog.map((pm) => pm.name);
   const hasActivePaymentCatalog = activePaymentMethodNames.length > 0;
 
-  const handleConvertToSale = async () => {
-    if (!convertQuotation) return;
-    if (!convertPaymentMethod.trim()) {
+  const handleConvertToSale = async (quotationSnapshot, paymentMethodSnapshot) => {
+    // Recibe los datos como parámetros para evitar el race condition con el cierre del dialog
+    const targetQuotation = quotationSnapshot || convertQuotation;
+    const targetPaymentMethod = paymentMethodSnapshot ?? convertPaymentMethod;
+
+    if (!targetQuotation) return;
+    if (!targetPaymentMethod.trim()) {
       setConvertError("Debes seleccionar un método de pago para continuar.");
       return;
     }
-    // Validar que la cotización no esté ya convertida
-    if (convertQuotation.status === "converted") {
+    if (targetQuotation.status === "converted") {
       setConvertError("Esta cotización ya fue convertida en venta.");
       return;
     }
-    if (hasActivePaymentCatalog && !activePaymentMethodNames.includes(convertPaymentMethod.trim())) {
+    if (hasActivePaymentCatalog && !activePaymentMethodNames.includes(targetPaymentMethod.trim())) {
       setConvertError("Debes seleccionar una forma de pago activa del catálogo.");
       return;
     }
 
-    // CRITICAL: Use backend-validated safe function for conversion
     try {
       const response = await base44.functions.invoke('convertQuotationSafe', {
-        quotation_id: convertQuotation.id,
-        payment_method: convertPaymentMethod
+        quotation_id: targetQuotation.id,
+        payment_method: targetPaymentMethod
       });
       
       if (!response.data.success) {
@@ -177,28 +179,29 @@ export default function Quotations() {
       setConvertError("");
       toast.success("✓ Cotización convertida en venta");
       invalidate("Quotation");
-      } catch (error) {
+    } catch (error) {
       const errMsg = error.response?.data?.error || error.message || "Intenta nuevamente";
       setConvertError(`❌ ${errMsg}`);
       toast.error(`Error en conversión: ${errMsg}`);
-      }
+    }
   };
 
-  const handleCancel = async () => {
-    if (!cancelQuotation) return;
+  const handleCancel = async (quotationSnapshot, reasonSnapshot) => {
+    const targetQuotation = quotationSnapshot || cancelQuotation;
+    const targetReason = reasonSnapshot ?? cancelReason;
 
-    // CRITICAL FIX: Validate ownership before cancel
-    if (cancelQuotation.business_id !== businessId) {
+    if (!targetQuotation) return;
+
+    if (targetQuotation.business_id !== businessId) {
       toast.error("No tienes permiso para cancelar esta cotización");
       setCancelQuotation(null);
       return;
     }
 
-    // CRITICAL: Use backend-validated safe function for cancellation
     try {
       const response = await base44.functions.invoke('cancelQuotationSafe', {
-        quotation_id: cancelQuotation.id,
-        cancellation_reason: cancelReason
+        quotation_id: targetQuotation.id,
+        cancellation_reason: targetReason
       });
       
       if (!response.data.success) {
@@ -211,54 +214,55 @@ export default function Quotations() {
       setCancelReason("");
       toast.success("✓ Cotización cancelada");
       invalidate("Quotation");
-      } catch (error) {
+    } catch (error) {
       const errMsg = error.response?.data?.error || error.message || "Error inesperado";
       toast.error(`❌ ${errMsg}`);
-      }
+    }
   };
 
-  const handleConfirmPayment = async () => {
-   if (!payQuotation) return;
-   if (hasActivePaymentCatalog && !activePaymentMethodNames.includes(paymentMethod.trim())) {
-     toast.error("Debes seleccionar una forma de pago activa del catálogo.");
-     return;
-   }
-   // CRITICAL FIX: Validate ownership before payment
-   if (payQuotation.business_id !== businessId) {
-     toast.error("No tienes permiso para confirmar el pago de esta cotización");
-     setPayQuotation(null);
-     return;
-   }
-   // Solo permitir confirmar pago si es cotización convertida
-   if (payQuotation.status !== "converted") {
-     setPayQuotation(null);
-     return;
-   }
-   try {
-     // CRITICAL: Use backend-validated safe function for payment confirmation
-     const updates = { paid: true, payment_method: paymentMethod };
-     if (payMarkDelivered) { updates.delivered = true; updates.in_route = false; }
+  const handleConfirmPayment = async (quotationSnapshot, methodSnapshot, deliveredSnapshot) => {
+    const targetQuotation = quotationSnapshot || payQuotation;
+    const targetMethod = methodSnapshot ?? paymentMethod;
+    const targetDelivered = deliveredSnapshot ?? payMarkDelivered;
 
-     const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
-       quotation_id: payQuotation.id,
-       updates
-     });
+    if (!targetQuotation) return;
+    if (hasActivePaymentCatalog && !activePaymentMethodNames.includes(targetMethod.trim())) {
+      toast.error("Debes seleccionar una forma de pago activa del catálogo.");
+      return;
+    }
+    if (targetQuotation.business_id !== businessId) {
+      toast.error("No tienes permiso para confirmar el pago de esta cotización");
+      setPayQuotation(null);
+      return;
+    }
+    if (targetQuotation.status !== "converted") {
+      setPayQuotation(null);
+      return;
+    }
+    try {
+      const updates = { paid: true, payment_method: targetMethod };
+      if (targetDelivered) { updates.delivered = true; updates.in_route = false; }
 
-     if (!response.data.success) {
-       const errMsg = response.data.error || response.data.message || 'Payment confirmation failed';
-       toast.error(`❌ ${errMsg}`);
-       return;
-     }
+      const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
+        quotation_id: targetQuotation.id,
+        updates
+      });
 
-     setPayQuotation(null);
-     setPaymentMethod("");
-     setPayMarkDelivered(false);
-     toast.success("✓ Pago confirmado");
-     invalidate("Quotation");
-   } catch (error) {
-     const errMsg = error.response?.data?.error || error.message || "Error inesperado";
-     toast.error(`❌ ${errMsg}`);
-   }
+      if (!response.data.success) {
+        const errMsg = response.data.error || response.data.message || 'Payment confirmation failed';
+        toast.error(`❌ ${errMsg}`);
+        return;
+      }
+
+      setPayQuotation(null);
+      setPaymentMethod("");
+      setPayMarkDelivered(false);
+      toast.success("✓ Pago confirmado");
+      invalidate("Quotation");
+    } catch (error) {
+      const errMsg = error.response?.data?.error || error.message || "Error inesperado";
+      toast.error(`❌ ${errMsg}`);
+    }
   };
 
   const handleEdit = (q) => {
@@ -486,6 +490,12 @@ export default function Quotations() {
             <AlertDialogCancel>Volver</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancel}
+              onClick={(e) => {
+                const q = cancelQuotation;
+                const r = cancelReason;
+                e.preventDefault();
+                handleCancel(q, r);
+              }}
               disabled={!cancelReason.trim()}
               className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
             >
@@ -552,7 +562,13 @@ export default function Quotations() {
               <Coins className="h-4 w-4 mr-1.5" /> Ver pagos parciales
             </button>
             <AlertDialogAction
-              onClick={handleConfirmPayment}
+              onClick={(e) => {
+                const q = payQuotation;
+                const m = paymentMethod;
+                const d = payMarkDelivered;
+                e.preventDefault();
+                handleConfirmPayment(q, m, d);
+              }}
               disabled={!paymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(paymentMethod.trim()))}
               className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
             >
@@ -563,7 +579,7 @@ export default function Quotations() {
       </AlertDialog>
 
       {/* Convert confirmation */}
-      <AlertDialog open={!!convertQuotation} onOpenChange={(v) => { if (!v) { setConvertQuotation(null); setConvertPaymentMethod(""); setConvertError(""); } }}>
+      <AlertDialog open={!!convertQuotation} onOpenChange={(v) => { if (!v) { setConvertError(""); setConvertPaymentMethod(""); setConvertQuotation(null); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Convertir en venta?</AlertDialogTitle>
@@ -601,7 +617,17 @@ export default function Quotations() {
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConvertToSale} disabled={!convertPaymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(convertPaymentMethod.trim()))} className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50">
+            <AlertDialogAction
+              onClick={(e) => {
+                // Captura los valores ANTES de que el dialog se cierre (race condition fix)
+                const q = convertQuotation;
+                const pm = convertPaymentMethod;
+                e.preventDefault();
+                handleConvertToSale(q, pm);
+              }}
+              disabled={!convertPaymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(convertPaymentMethod.trim()))}
+              className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50"
+            >
               Confirmar Venta
             </AlertDialogAction>
           </AlertDialogFooter>
