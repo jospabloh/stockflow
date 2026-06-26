@@ -2,84 +2,75 @@
   "name": "UtilityMovement",
   "type": "object",
   "properties": {
-    "business_id": {
-      "type": "string",
-      "description": "ID del negocio al que pertenece"
-    },
-    "movement_type": {
-      "type": "string",
-      "enum": [
-        "income",
-        "expense"
-      ],
-      "description": "Tipo de movimiento: ingreso o egreso"
-    },
-    "amount": {
-      "type": "number",
-      "description": "Monto del movimiento"
-    },
-    "movement_date": {
-      "type": "string",
-      "format": "date",
-      "description": "Fecha del movimiento"
-    },
-    "rubro_id": {
-      "type": "string",
-      "description": "ID del rubro seleccionado"
-    },
-    "rubro_name": {
-      "type": "string",
-      "description": "Nombre del rubro (desnormalizado al momento del registro)"
-    },
-    "rubro_kind": {
-      "type": "string",
-      "enum": [
-        "income",
-        "expense"
-      ],
-      "description": "Naturaleza del rubro al momento del registro"
-    },
     "account_id": {
-      "type": "string",
-      "description": "ID de la cuenta/fuente de dinero"
+      "description": "ID de la cuenta/fuente de dinero",
+      "type": "string"
     },
     "account_name": {
-      "type": "string",
-      "description": "Nombre de la cuenta (desnormalizado al momento del registro)"
+      "description": "Nombre de la cuenta (desnormalizado al momento del registro)",
+      "type": "string"
     },
     "affects_petty_cash": {
-      "type": "boolean",
       "default": false,
-      "description": "Si el movimiento generó un espejo en Caja Chica"
+      "description": "Si el movimiento gener\u00f3 un espejo en Caja Chica",
+      "type": "boolean"
     },
-    "petty_cash_movement_id": {
-      "type": "string",
-      "description": "ID del PettyCashMovement asociado cuando affects_petty_cash=true"
+    "amount": {
+      "description": "Monto del movimiento",
+      "type": "number"
+    },
+    "business_id": {
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
     },
     "description": {
-      "type": "string",
-      "description": "Descripción del movimiento"
+      "description": "Descripci\u00f3n del movimiento",
+      "type": "string"
     },
-    "reference": {
-      "type": "string",
-      "description": "Referencia o folio (opcional)"
+    "movement_date": {
+      "description": "Fecha del movimiento",
+      "format": "date",
+      "type": "string"
+    },
+    "movement_type": {
+      "description": "Tipo de movimiento: ingreso o egreso",
+      "enum": [
+        "income",
+        "expense"
+      ],
+      "type": "string"
     },
     "notes": {
-      "type": "string",
-      "description": "Notas adicionales (opcional)"
+      "description": "Notas adicionales (opcional)",
+      "type": "string"
+    },
+    "petty_cash_movement_id": {
+      "description": "ID del PettyCashMovement asociado cuando affects_petty_cash=true",
+      "type": "string"
+    },
+    "reference": {
+      "description": "Referencia o folio (opcional)",
+      "type": "string"
     },
     "registered_by": {
-      "type": "string",
-      "description": "Usuario que registró el movimiento"
+      "description": "Usuario que registr\u00f3 el movimiento",
+      "type": "string"
     },
-    "taken_by": {
-      "type": "string",
-      "description": "Persona que tomó el retiro de utilidad (quién dispuso del dinero)"
+    "rubro_id": {
+      "description": "ID del rubro seleccionado",
+      "type": "string"
     },
-    "invoiced": {
-      "type": "boolean",
-      "default": false,
-      "description": "Si el retiro está facturado (sí/no)"
+    "rubro_kind": {
+      "description": "Naturaleza del rubro al momento del registro",
+      "enum": [
+        "income",
+        "expense"
+      ],
+      "type": "string"
+    },
+    "rubro_name": {
+      "description": "Nombre del rubro (desnormalizado al momento del registro)",
+      "type": "string"
     }
   },
   "required": [
@@ -91,26 +82,50 @@
   "rls": {
     "create": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "read": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }
