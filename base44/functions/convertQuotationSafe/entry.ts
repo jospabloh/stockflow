@@ -51,12 +51,14 @@ Deno.serve(async (req) => {
     for (const item of (quotation.items || [])) {
       // Skip on-demand items — no stock to validate or deduct
       if (item.is_on_demand) continue;
+      // Skip empty/ghost items (product_id vacío, sin nombre, sin precio)
+      if (!item.product_id || !item.product_id.trim() || !item.product_name) continue;
 
       let prods;
       try {
         prods = await base44.asServiceRole.entities.Product.filter({ id: item.product_id, business_id: user.business_id });
       } catch (err) {
-        return Response.json({ error: `Error fetching product: ${(err as Error).message}` }, { status: 500 });
+        return Response.json({ error: `Error fetching product: ${err.message}` }, { status: 500 });
       }
       if (prods.length === 0) {
         return Response.json({ error: `Product ${item.product_id} not found` }, { status: 404 });
@@ -93,7 +95,7 @@ Deno.serve(async (req) => {
             business_id: user.business_id,
           });
         } catch (e) {
-          console.log(`[convertQuotationSafe] applyMovementStock failed for ${mov.id}: ${(e as Error).message}`);
+          console.log(`[convertQuotationSafe] applyMovementStock failed for ${mov.id}: ${e.message}`);
         }
       }
 
@@ -122,9 +124,9 @@ Deno.serve(async (req) => {
 
       return Response.json({ success: true, quotation_id });
     } catch (error) {
-      return Response.json({ error: (error as Error).message || 'Conversion failed' }, { status: 500 });
+      return Response.json({ error: error.message || 'Conversion failed' }, { status: 500 });
     }
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    return Response.json({ error: error.message }, { status: 500 });
   }
 });
