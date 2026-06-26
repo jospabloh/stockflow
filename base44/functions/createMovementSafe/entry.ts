@@ -38,6 +38,21 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: `Unauthorized: business_id mismatch (expected: ${user.business_id}, got: ${business_id})` }, { status: 403 });
     }
 
+    // Server-side ownership check for the referenced product. The frontend
+    // (validateBusinessOwnership) only pre-validates the first item and is
+    // bypassable; enforce here so a crafted product_id from another tenant
+    // can't be attached to this business's movement.
+    if (product_id) {
+      const products = await base44.asServiceRole.entities.Product.filter({ id: product_id });
+      const product = products[0];
+      if (!product) {
+        return Response.json({ success: false, error: 'Product not found' }, { status: 404 });
+      }
+      if (product.business_id !== user.business_id) {
+        return Response.json({ success: false, error: 'Unauthorized: product belongs to a different business' }, { status: 403 });
+      }
+    }
+
     const businesses = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
     const biz = businesses[0];
     const billingStatus = biz?.billing_status || 'active';
