@@ -2,25 +2,25 @@
   "name": "Category",
   "type": "object",
   "properties": {
-    "name": {
-      "type": "string",
-      "description": "Nombre de la categor\u00eda"
-    },
-    "description": {
-      "type": "string",
-      "description": "Descripci\u00f3n de la categor\u00eda"
+    "business_id": {
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
     },
     "color": {
-      "type": "string",
-      "description": "Color representativo (hex)"
+      "description": "Color representativo (hex)",
+      "type": "string"
+    },
+    "description": {
+      "description": "Descripci\u00f3n de la categor\u00eda",
+      "type": "string"
+    },
+    "name": {
+      "description": "Nombre de la categor\u00eda",
+      "type": "string"
     },
     "wholesale_min_qty": {
-      "type": "number",
-      "description": "Cantidad m\u00ednima por categor\u00eda para activar precio mayoreo (0 o vac\u00edo = no configurado)"
-    },
-    "business_id": {
-      "type": "string",
-      "description": "ID del negocio al que pertenece"
+      "description": "Cantidad m\u00ednima por categor\u00eda para activar precio mayoreo (0 o vac\u00edo = no configurado)",
+      "type": "number"
     }
   },
   "required": [
@@ -30,26 +30,50 @@
   "rls": {
     "create": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "read": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }
