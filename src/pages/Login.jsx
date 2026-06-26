@@ -8,14 +8,24 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/lib/AuthContext';
 import AuthShell from '@/components/auth/AuthShell';
 import SocialButtons from '@/components/auth/SocialButtons';
+import { getRememberedIdentity, clearRememberedIdentity } from '@/lib/lastIdentity';
 
 const Login = () => {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail] = useState('');
+  // Greet a returning user: prefill their email (cosmetic only — they still
+  // enter the password; the remembered identity is never an auth credential).
+  const [remembered, setRemembered] = useState(() => getRememberedIdentity());
+  const [email, setEmail] = useState(remembered?.email || '');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const useOtherAccount = () => {
+    clearRememberedIdentity();
+    setRemembered(null);
+    setEmail('');
+  };
 
   const from = location.state?.from?.pathname || '/';
 
@@ -52,6 +62,21 @@ const Login = () => {
         </>
       }
     >
+      {remembered && (remembered.name || remembered.email) && (
+        <div className="mb-4 flex items-center gap-3 rounded-xl border border-brand-100 bg-brand-50/60 px-3 py-2.5">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-600 text-sm font-semibold text-white">
+            {(remembered.name || remembered.email).trim().charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-slate-800">Bienvenido de nuevo{remembered.name ? `, ${remembered.name.split(' ')[0]}` : ''}</p>
+            {remembered.email && <p className="truncate text-xs text-slate-500">{remembered.email}</p>}
+          </div>
+          <button type="button" onClick={useOtherAccount} className="shrink-0 text-xs font-medium text-brand-600 hover:text-brand-500">
+            Usar otra cuenta
+          </button>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
           <Label htmlFor="email">Correo electrónico</Label>
