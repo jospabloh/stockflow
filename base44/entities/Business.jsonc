@@ -2,62 +2,33 @@
   "name": "Business",
   "type": "object",
   "properties": {
-    "name": {
-      "type": "string",
-      "description": "Nombre del negocio"
+    "activated_by_admin": {
+      "type": "string"
     },
-    "rfc": {
-      "type": "string",
-      "description": "RFC del negocio"
-    },
-    "phone": {
-      "type": "string",
-      "description": "Tel\u00e9fono"
+    "activation_notes": {
+      "type": "string"
     },
     "address": {
-      "type": "string",
-      "description": "Direcci\u00f3n"
-    },
-    "logo_url": {
-      "type": "string",
-      "description": "URL del logotipo"
-    },
-    "invite_code": {
-      "type": "string",
-      "description": "C\u00f3digo \u00fanico de invitaci\u00f3n"
-    },
-    "invite_code_active": {
-      "type": "boolean",
-      "default": true
-    },
-    "tax_rate": {
-      "type": "number",
-      "default": 16
-    },
-    "currency": {
-      "type": "string",
-      "default": "MXN"
-    },
-    "low_stock_email": {
+      "description": "Direcci\u00f3n",
       "type": "string"
     },
-    "quotation_footer": {
+    "archived_at": {
+      "description": "Fecha en que el negocio fue archivado",
+      "format": "date-time",
       "type": "string"
     },
-    "primary_color": {
-      "type": "string",
-      "default": "#4F46E5"
+    "auto_cash_income_to_petty_cash": {
+      "default": false,
+      "description": "Caracter\u00edstica opcional: registrar autom\u00e1ticamente ventas en efectivo cobradas como ingresos en caja chica",
+      "type": "boolean"
     },
-    "status": {
-      "type": "string",
-      "enum": [
-        "active",
-        "suspended"
-      ],
-      "default": "active"
+    "auto_renewal": {
+      "default": false,
+      "description": "Renovaci\u00f3n autom\u00e1tica de licencia activa",
+      "type": "boolean"
     },
     "billing_status": {
-      "type": "string",
+      "default": "trial",
       "enum": [
         "trial",
         "active",
@@ -65,74 +36,115 @@
         "suspended",
         "archived"
       ],
-      "default": "trial"
+      "type": "string"
+    },
+    "currency": {
+      "default": "MXN",
+      "type": "string"
+    },
+    "invite_code": {
+      "description": "C\u00f3digo \u00fanico de invitaci\u00f3n",
+      "type": "string"
+    },
+    "invite_code_active": {
+      "default": true,
+      "type": "boolean"
+    },
+    "license_activated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "license_expires_at": {
+      "format": "date-time",
+      "type": "string"
     },
     "license_plan": {
-      "type": "string",
+      "default": "start",
       "enum": [
         "start",
         "growth",
         "pro"
       ],
-      "default": "start"
+      "type": "string"
     },
     "licensed_user_limit": {
-      "type": "number",
-      "default": 4
+      "default": 4,
+      "type": "number"
     },
-    "trial_start_at": {
-      "type": "string",
-      "format": "date-time"
+    "logo_url": {
+      "description": "URL del logotipo",
+      "type": "string"
     },
-    "trial_end_at": {
-      "type": "string",
-      "format": "date-time"
+    "low_stock_email": {
+      "type": "string"
     },
-    "license_activated_at": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "license_expires_at": {
-      "type": "string",
-      "format": "date-time"
+    "name": {
+      "description": "Nombre del negocio",
+      "type": "string"
     },
     "payment_reference": {
       "type": "string"
     },
-    "activation_notes": {
+    "phone": {
+      "description": "Tel\u00e9fono",
       "type": "string"
     },
-    "activated_by_admin": {
+    "primary_color": {
+      "default": "#4F46E5",
+      "type": "string"
+    },
+    "quotation_footer": {
+      "type": "string"
+    },
+    "referral_bonus_days": {
+      "default": 0,
+      "type": "number"
+    },
+    "referral_code": {
+      "description": "C\u00f3digo de referido \u00fanico (REF-XXXXXX)",
+      "type": "string"
+    },
+    "referred_by": {
+      "description": "ID del negocio que refiri\u00f3",
+      "type": "string"
+    },
+    "rfc": {
+      "description": "RFC del negocio",
+      "type": "string"
+    },
+    "scheduled_delete_at": {
+      "description": "Fecha programada de eliminaci\u00f3n permanente del negocio",
+      "format": "date-time",
+      "type": "string"
+    },
+    "status": {
+      "default": "active",
+      "enum": [
+        "active",
+        "suspended"
+      ],
       "type": "string"
     },
     "support_contacted_at": {
-      "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "type": "string"
     },
-    "auto_cash_income_to_petty_cash": {
-      "type": "boolean",
-      "default": false,
-      "description": "Caracter\u00edstica opcional: registrar autom\u00e1ticamente ventas en efectivo cobradas como ingresos en caja chica"
+    "tax_rate": {
+      "default": 16,
+      "type": "number"
     },
-    "auto_renewal": {
-      "type": "boolean",
-      "default": false,
-      "description": "Renovaci\u00f3n autom\u00e1tica de licencia activa"
+    "trial_end_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "trial_start_at": {
+      "format": "date-time",
+      "type": "string"
     },
     "view_only_since": {
-      "type": "string",
+      "description": "Fecha en que el negocio entr\u00f3 en modo solo lectura",
       "format": "date-time",
-      "description": "Fecha en que el negocio entr\u00f3 en modo solo lectura"
-    },
-    "archived_at": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Fecha en que el negocio fue archivado"
-    },
-    "scheduled_delete_at": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Fecha programada de eliminaci\u00f3n permanente del negocio"
+      "type": "string"
     }
   },
   "required": [
@@ -142,20 +154,38 @@
     "create": {},
     "read": {
       "$or": [
-        { "id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }

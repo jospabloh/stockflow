@@ -2,28 +2,28 @@
   "name": "FundAccount",
   "type": "object",
   "properties": {
-    "name": {
-      "type": "string",
-      "description": "Nombre de la cuenta o fuente de dinero (ej. Efectivo (Caja Chica), Tarjeta AFIRME)"
-    },
     "active": {
-      "type": "boolean",
       "default": true,
-      "description": "Si está disponible para usar"
+      "description": "Si est\u00e1 disponible para usar",
+      "type": "boolean"
     },
     "affects_petty_cash": {
-      "type": "boolean",
       "default": false,
-      "description": "Si los movimientos con esta cuenta descuentan/ingresan a Caja Chica"
-    },
-    "is_system": {
-      "type": "boolean",
-      "default": false,
-      "description": "Indica si fue sembrada por el sistema como predeterminada"
+      "description": "Si los movimientos con esta cuenta descuentan/ingresan a Caja Chica",
+      "type": "boolean"
     },
     "business_id": {
-      "type": "string",
-      "description": "ID del negocio al que pertenece"
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
+    },
+    "is_system": {
+      "default": false,
+      "description": "Indica si fue sembrada por el sistema como predeterminada",
+      "type": "boolean"
+    },
+    "name": {
+      "description": "Nombre de la cuenta o fuente de dinero (ej. Efectivo (Caja Chica), Tarjeta AFIRME)",
+      "type": "string"
     }
   },
   "required": [
@@ -33,26 +33,50 @@
   "rls": {
     "create": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "read": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }

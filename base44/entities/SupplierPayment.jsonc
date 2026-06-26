@@ -2,60 +2,60 @@
   "name": "SupplierPayment",
   "type": "object",
   "properties": {
-    "business_id": {
-      "type": "string",
-      "description": "ID del negocio al que pertenece"
-    },
-    "supplier_id": {
-      "type": "string",
-      "description": "ID del proveedor"
-    },
-    "supplier_name": {
-      "type": "string",
-      "description": "Nombre del proveedor (desnormalizado al momento del pago)"
+    "affects_petty_cash": {
+      "default": false,
+      "description": "Si el pago gener\u00f3 un egreso autom\u00e1tico en caja chica",
+      "type": "boolean"
     },
     "amount": {
-      "type": "number",
-      "description": "Monto pagado"
+      "description": "Monto pagado",
+      "type": "number"
     },
-    "payment_date": {
-      "type": "string",
-      "format": "date",
-      "description": "Fecha del pago (YYYY-MM-DD)"
-    },
-    "payment_method": {
-      "type": "string",
-      "description": "Forma de pago (nombre snapshot de PaymentMethod)"
+    "business_id": {
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
     },
     "concept": {
-      "type": "string",
-      "description": "Concepto o descripci\u00f3n del pago"
-    },
-    "reference": {
-      "type": "string",
-      "description": "Referencia, folio o n\u00famero de transacci\u00f3n (opcional)"
-    },
-    "notes": {
-      "type": "string",
-      "description": "Notas adicionales (opcional)"
+      "description": "Concepto o descripci\u00f3n del pago",
+      "type": "string"
     },
     "invoice_status": {
-      "type": "string",
+      "description": "Estado de la factura del proveedor (pendiente, recibida, no requerida)",
       "enum": [
         "pendiente",
         "recibida",
         "no_requerida"
       ],
-      "description": "Estado de la factura del proveedor (pendiente, recibida, no requerida)"
+      "type": "string"
     },
-    "affects_petty_cash": {
-      "type": "boolean",
-      "default": false,
-      "description": "Si el pago gener\u00f3 un egreso autom\u00e1tico en caja chica"
+    "notes": {
+      "description": "Notas adicionales (opcional)",
+      "type": "string"
+    },
+    "payment_date": {
+      "description": "Fecha del pago (YYYY-MM-DD)",
+      "format": "date",
+      "type": "string"
+    },
+    "payment_method": {
+      "description": "Forma de pago (nombre snapshot de PaymentMethod)",
+      "type": "string"
     },
     "petty_cash_movement_id": {
-      "type": "string",
-      "description": "ID del PettyCashMovement asociado cuando affects_petty_cash=true"
+      "description": "ID del PettyCashMovement asociado cuando affects_petty_cash=true",
+      "type": "string"
+    },
+    "reference": {
+      "description": "Referencia, folio o n\u00famero de transacci\u00f3n (opcional)",
+      "type": "string"
+    },
+    "supplier_id": {
+      "description": "ID del proveedor",
+      "type": "string"
+    },
+    "supplier_name": {
+      "description": "Nombre del proveedor (desnormalizado al momento del pago)",
+      "type": "string"
     }
   },
   "required": [
@@ -67,26 +67,50 @@
   "rls": {
     "create": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "read": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "update": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     },
     "delete": {
       "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
       ]
     }
   }
