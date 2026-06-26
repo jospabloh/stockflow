@@ -86,6 +86,7 @@ const navItems = [
       { name: "Logs de Correos", icon: Shield, page: "SuperAdminLogs" },
     ]
   },
+  { name: "Soporte", icon: HelpCircle, page: "SupportTickets" },
   { name: "Centro de Ayuda", icon: HelpCircle, page: "HelpCenter" },
   { name: "Acerca de", icon: HelpCircle, page: "About" },
 ];

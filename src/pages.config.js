@@ -53,6 +53,7 @@ import Products from './pages/Products';
 import Quotations from './pages/Quotations';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import SupportTickets from './pages/SupportTickets';
 import __Layout from './Layout.jsx';
 
 
@@ -63,6 +64,7 @@ export const PAGES = {
     "Quotations": Quotations,
     "Reports": Reports,
     "Settings": Settings,
+    "SupportTickets": SupportTickets,
 }
 
 export const pagesConfig = {
