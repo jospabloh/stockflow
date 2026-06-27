@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import MessageBubble from './MessageBubble';
 
-const AGENT_NAME = 'helpAssistant';
+const AGENT_NAME = 'help_assistant';
 
 export default function FloatingHelpChat() {
     const [isOpen, setIsOpen] = useState(false);
