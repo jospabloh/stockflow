@@ -21,6 +21,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'business_id y referral_code son requeridos' }, { status: 400 });
     }
 
+    // CRITICAL: Validate user owns this business — prevents IDOR.
+    // The function operates via asServiceRole (bypasses RLS), so the
+    // client-supplied business_id must be tied back to the authenticated user.
+    if (business_id !== user.business_id) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const code = String(referral_code).toUpperCase().trim();
 
     const [referrers, currentList] = await Promise.all([
