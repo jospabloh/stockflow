@@ -17,14 +17,17 @@ export const STOCKFLOW_UPGRADE_URL =
 // Fecha (ISO) de la última revisión manual del Manual de Usuario por un humano.
 // Actualizar al volver a leer y validar el manual end-to-end. La auditoría
 // nocturna alerta si pasan más de 60 días desde esta fecha.
-export const USER_MANUAL_LAST_REVIEWED = "2026-06-22";
+export const USER_MANUAL_LAST_REVIEWED = "2026-06-29";
 
 export const CHANGELOG = [
   {
     version: "2.18.2",
-    date: "2026-06-26",
+    date: "2026-06-29",
     changes: [
-      "Actualización a la versión 2.18.2",
+      "🔧 Backend: eliminada función resolveLicenseState que rompía el deploy — resolución de estado de licencia inlineada en adminGetAllLicenses.",
+      "🔧 Backend: adminGetAllLicenses evalúa correctamente el estado archived como solo-lectura.",
+      "🔒 Seguridad: console.log de depuración eliminado en Settings.jsx (exponía businessId en consola del navegador).",
+      "📦 Dependencias: react-quill removida del package.json (sin uso en código fuente, CVE moderada en Quill ≤1.3.7).",
     ],
   },
   {
