@@ -91,7 +91,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.39.4",
     "@tailwindcss/postcss": "^4.3.0",
     "@types/node": "^26.0.0",
     "@types/react": "^18.2.66",
