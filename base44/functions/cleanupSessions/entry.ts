@@ -12,12 +12,6 @@ Deno.serve(async (req) => {
 
     const base44 = createClientFromRequest(req);
 
-    // Verify authenticated user is admin
-    const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
-
     // Sesiones con last_seen hace más de 30 días
     const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
