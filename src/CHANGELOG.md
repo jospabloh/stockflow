@@ -1,5 +1,40 @@
 # Changelog — StockFlow
 
+## v2.18.2 (2026-06-29)
+
+### 🔒 Auditoría de Seguridad y Calidad
+
+Auditoría automatizada completa del repositorio. Sin hallazgos Críticos ni Altos. Sin cambios en lógica de negocio, datos ni permisos de tenant.
+
+#### Correcciones de backend
+
+- **Función `resolveLicenseState` eliminada** — función de utilidad que rompía el deploy por dependencia circular; la resolución de estado de licencia quedó inlineada directamente en `adminGetAllLicenses` (PR #220).
+- **`adminGetAllLicenses`** — hereda la resolución de estado de licencia inline; el estado `archived` se evalúa correctamente como solo-lectura.
+
+#### Correcciones de frontend
+
+- **`console.log` de depuración eliminado en `Settings.jsx`** — sentencia que registraba `businessId` y `user.business_id` en la consola del navegador durante la carga de la página de Configuración.
+
+#### Dependencias
+
+- **`react-quill` removida** — paquete no utilizado en el código fuente (eliminado en v2.16.15). Su presencia en `package.json` mantenía una vulnerabilidad moderada (CVE en Quill ≤1.3.7). Removido y `package-lock.json` actualizado.
+- **Vulnerabilidades residuales aceptadas** (sin corrección disponible en npm):
+  - `xlsx` — Prototype Pollution (GHSA-4r6h-8v6p-xvw6) y ReDoS (GHSA-5pgg-2g8v-p4x9). Dependencia directa usada en exportación. Riesgo aceptado: la exportación XLS no procesa input externo no controlado; sin fix upstream disponible.
+  - `ws` / `engine.io-client` — alta severidad, transitividad desde `@base44/sdk`. No resoluble sin actualizar el SDK.
+  - `dompurify` ≤3.4.10 — moderada, vía `jspdf` (generación de PDF). No resoluble sin actualizar jspdf.
+  - `js-yaml` ≤4.1.1 — moderada, vía `eslint` (dev-only). Sin riesgo en producción.
+
+#### Validaciones completadas
+
+- Validación RLS: 24 entidades, 17 con alcance de tenant — sin hallazgos.
+- Lint: sin advertencias.
+- Matriz de permisos: 16 módulos, 159 claves — sin brechas nuevas.
+- Aislamiento de tenant: todos los endpoints de backend verificados.
+
+> Nota: ningún cambio modifica entidades de Base44, RLS, lógica de negocio ni permisos.
+
+---
+
 ## v2.18.1 (2026-06-22)
 
 ### 🔒 Auditoría de Seguridad y Calidad

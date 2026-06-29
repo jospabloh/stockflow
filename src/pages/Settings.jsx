@@ -59,7 +59,6 @@ export default function Settings() {
        try {
          const u = await base44.auth.me();
          setDiagnosticBusinessId(businessId);
-         console.log(`[Settings] Loading for businessId: ${businessId}, user.business_id: ${u?.business_id}`);
          setIsAdmin(u?.role === "admin");
          setCurrentUserId(u?.id);
          setCheckingAuth(false);
