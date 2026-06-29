@@ -21,6 +21,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  *
  * Para `update`/`delete` mantiene el ajuste relativo (los borrados se manejan
  * además explícitamente en deleteMovementSafe).
+ *
+ * NOTA AUTH: Esta función es invocada por una automatización de entidad (sin
+ * usuario real). No se valida business_id contra un usuario autenticado;
+ * todas las operaciones usan asServiceRole para evitar el mismatch de tenants.
  */
 Deno.serve(async (req) => {
   try {
@@ -29,36 +33,12 @@ Deno.serve(async (req) => {
 
     const { event, data, old_data } = body;
 
-    // ── Auth: CRON_SECRET (scheduler/evento interno) o usuario del tenant ──
-    const cronSecretEnv = Deno.env.get('CRON_SECRET');
-    const validCron = cronSecretEnv && (
-      req.headers.get('x-cron-secret') === cronSecretEnv ||
-      body?.['x-cron-secret'] === cronSecretEnv
-    );
-
-    let user = null;
-    if (!validCron) {
-      user = await base44.auth.me().catch(() => null);
-      if (!user) {
-        console.log('[SYNC-STOCK] Unauthorized request rejected');
-        return Response.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-    }
-
     if (!data || !data.product_id) {
       console.log('[SYNC-STOCK] No product_id, skipping');
       return Response.json({ skipped: true });
     }
 
-    const isServiceRole = Boolean(validCron) || !user?.business_id;
-    if (!isServiceRole && data.business_id && data.business_id !== user.business_id) {
-      console.log(`[SYNC-STOCK] Forbidden: movement business ${data.business_id} != user business ${user.business_id}`);
-      return Response.json({ error: 'Forbidden: business_id mismatch' }, { status: 403 });
-    }
-
     // ── CREATE: NO-OP (ver cabecera) ──────────────────────────────────────
-    // El efecto ya lo aplica el escritor síncrono o el movimiento se crea con
-    // stock_applied=true. No aplicar aquí evita la carrera de doble aplicación.
     if (event?.type === 'create') {
       console.log(`[SYNC-STOCK] create no-op (stock aplicado por el escritor) movement ${data.id}`);
       return Response.json({ success: true, noop: true });
