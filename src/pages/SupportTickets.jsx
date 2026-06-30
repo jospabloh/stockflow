@@ -82,6 +82,9 @@ export default function SupportTickets() {
         author_id: user?.id, author_email: user?.email, author_name: user?.full_name || user?.email,
         author_role: "tenant", body: form.description.trim(), is_internal_note: false,
       });
+      // Push en tiempo real a ACACIA Mission Control (no bloquea la UI): notifica
+      // al equipo de soporte y refleja el ticket sin sincronización manual.
+      base44.functions.invoke('notifyTicketCreated', { ticketId: ticket.id }).catch(() => {});
       toast.success("Ticket enviado. Te responderemos pronto.");
       setForm({ subject: "", description: "", category: "technical", priority: "normal" });
       setView("list"); await loadTickets();
