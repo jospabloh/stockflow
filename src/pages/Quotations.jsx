@@ -63,6 +63,7 @@ export default function Quotations() {
   const [convertQuotation, setConvertQuotation] = useState(null);
   const [convertPaymentMethod, setConvertPaymentMethod] = useState("");
   const [convertError, setConvertError] = useState("");
+  const [isConverting, setIsConverting] = useState(false);
   const [cancelQuotation, setCancelQuotation] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
   const [payQuotation, setPayQuotation] = useState(null);
@@ -161,12 +162,20 @@ export default function Quotations() {
       return;
     }
 
+    // In-flight guard (P1 — duplicate movements): the conversion takes a few
+    // seconds; without this, an impatient user clicking "Confirmar Venta" again
+    // fires a second convertQuotationSafe, which previously created a duplicate
+    // set of exit movements. Block re-entry while a request is in flight. The
+    // backend also enforces idempotency as the source of truth.
+    if (isConverting) return;
+    setIsConverting(true);
+
     try {
       const response = await base44.functions.invoke('convertQuotationSafe', {
         quotation_id: targetQuotation.id,
         payment_method: targetPaymentMethod
       });
-      
+
       if (!response.data.success) {
         const errMsg = response.data.error || response.data.message || 'Conversion failed';
         setConvertError(`❌ ${errMsg}`);
@@ -183,6 +192,8 @@ export default function Quotations() {
       const errMsg = error.response?.data?.error || error.message || "Intenta nuevamente";
       setConvertError(`❌ ${errMsg}`);
       toast.error(`Error en conversión: ${errMsg}`);
+    } finally {
+      setIsConverting(false);
     }
   };
 
@@ -625,10 +636,10 @@ export default function Quotations() {
                 e.preventDefault();
                 handleConvertToSale(q, pm);
               }}
-              disabled={!convertPaymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(convertPaymentMethod.trim()))}
+              disabled={isConverting || !convertPaymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(convertPaymentMethod.trim()))}
               className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50"
             >
-              Confirmar Venta
+              {isConverting ? "Procesando…" : "Confirmar Venta"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

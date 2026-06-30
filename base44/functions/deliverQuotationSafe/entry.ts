@@ -40,6 +40,17 @@ Deno.serve(async (req) => {
     );
 
     for (const item of onDemandCreated) {
+      // IDEMPOTENCY GUARD (P1 — duplicate movements): deliverQuotationSafe is not
+      // atomic and could be invoked more than once (double-click / retry),
+      // creating a duplicate EXIT movement per on-demand item. Skip any item that
+      // already has an exit movement for this quotation + product.
+      const already = await base44.asServiceRole.entities.Movement.filter({
+        quotation_id: q.id,
+        product_id: item.product_id,
+        type: 'exit',
+      });
+      if (already.length > 0) continue;
+
       // Fetch current product stock
       const prods = await base44.asServiceRole.entities.Product.filter({
         id: item.product_id,
