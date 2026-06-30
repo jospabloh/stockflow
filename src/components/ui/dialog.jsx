@@ -25,7 +25,32 @@ const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => (
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
-const DialogContent = React.forwardRef(({ className, children, ...props }, ref) => (
+// Safety net for a known Radix bug: a modal Dialog locks `pointer-events: none`
+// on <body> while open and restores it on close. When a Dialog unmounts while
+// still open — e.g. a route screen (MovementNew, QuotationNew, ProductNew…)
+// renders it with a hardcoded `open` and then navigates away on save — that
+// restore is skipped, leaving the whole page unclickable until a manual page
+// refresh. This effect restores body pointer-events on unmount, but only once
+// no other modal dialog remains open (so stacked dialogs keep their lock).
+function useRestoreBodyPointerEvents() {
+  React.useEffect(() => {
+    return () => {
+      setTimeout(() => {
+        if (typeof document === "undefined") return;
+        const stillOpen = document.querySelector(
+          '[role="dialog"][data-state="open"],[role="alertdialog"][data-state="open"]'
+        );
+        if (!stillOpen && document.body.style.pointerEvents === "none") {
+          document.body.style.pointerEvents = "";
+        }
+      }, 0);
+    };
+  }, []);
+}
+
+const DialogContent = React.forwardRef(({ className, children, ...props }, ref) => {
+  useRestoreBodyPointerEvents();
+  return (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -43,7 +68,8 @@ const DialogContent = React.forwardRef(({ className, children, ...props }, ref) 
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPortal>
-))
+  );
+})
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({
