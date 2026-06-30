@@ -38,6 +38,25 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Quotation already converted' }, { status: 400 });
     }
 
+    // IDEMPOTENCY GUARD (P1 — duplicate movements):
+    // convertQuotationSafe is NOT atomic and was being invoked multiple times for
+    // the same quotation (impatient double/triple-click while the multi-second
+    // conversion was in flight, or client retries on a slow network). Each call
+    // passed the status check above — which reads a snapshot taken before the
+    // first call finished its status update — and created a FULL extra set of exit
+    // movements, over-deducting stock. Guard: if ANY exit movement already exists
+    // for this quotation, treat the conversion as already done and no-op. This
+    // closes the retry window even when calls are seconds apart. (A frontend
+    // in-flight guard handles the sub-second double-click; this is the
+    // server-side backstop and the source of truth.)
+    const existingMovements = await base44.asServiceRole.entities.Movement.filter({
+      quotation_id: quotation.id,
+      type: 'exit',
+    });
+    if (existingMovements.length > 0) {
+      return Response.json({ error: 'Quotation already converted', already_converted: true }, { status: 400 });
+    }
+
     // LICENSE CHECK
     const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
     const tenantBiz = bizArr[0];

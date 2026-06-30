@@ -52,6 +52,17 @@ Deno.serve(async (req) => {
           business_id: user.business_id,
         });
 
+        // IDEMPOTENCY GUARD (P1 — duplicate movements): like convertQuotationSafe,
+        // this function writes the terminal status ('cancelled') only at the end,
+        // after creating reversal 'entry' movements. A second invocation that
+        // arrives before that write (double-click / retry) would read status
+        // 'converted' and restore stock a SECOND time. If a cancellation reversal
+        // already exists for this quotation, the cancellation was already
+        // processed — skip the stock reversal entirely.
+        const alreadyCancelled = allMovements.some(
+          (mov) => mov.type === 'entry' && (mov.reference || '').startsWith(`Cancelación ${quotation.folio}`),
+        );
+
         // Build net quantity to restore per product
         const netByProduct = {};
         for (const mov of allMovements) {
@@ -63,6 +74,13 @@ Deno.serve(async (req) => {
           } else if (mov.type === 'return') {
             // Already returned — subtract from what needs to be restored
             netByProduct[mov.product_id].quantity -= mov.quantity;
+          }
+        }
+
+        if (alreadyCancelled) {
+          // Reversal already done by a prior call; do not restore stock again.
+          for (const product_id of Object.keys(netByProduct)) {
+            netByProduct[product_id].quantity = 0;
           }
         }
 
