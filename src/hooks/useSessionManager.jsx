@@ -62,7 +62,7 @@ export function useSessionManager(enabled = true) {
   const callSession = useCallback(async () => {
     const device_id = getOrCreateDeviceId();
     const device_name = getDeviceInfo();
-    const res = await base44.functions.invoke('manageSession', { device_id, device_name });
+    const res = await base44.functions.invoke('session', { action: 'manageSession', device_id, device_name });
     const { status, session_id } = res.data;
     setSessionStatus(status);
     if (session_id) localStorage.setItem('sf_session_id', session_id);
@@ -146,7 +146,7 @@ export function useSessionManager(enabled = true) {
       try {
         const session_id = localStorage.getItem('sf_session_id');
         if (!session_id) return;
-        const res = await base44.functions.invoke('sessionHeartbeat', { session_id });
+        const res = await base44.functions.invoke('session', { action: 'sessionHeartbeat', session_id });
         setSessionStatus(res.data.status);
       } catch (e) {
         if (isAuthError(e)) setSessionExpired(true);

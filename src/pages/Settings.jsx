@@ -111,7 +111,7 @@ export default function Settings() {
     setSaving(true);
     try {
       if (settingsId) {
-        const response = await base44.functions.invoke('updateAppSettingsSafe', {
+        const response = await base44.functions.invoke('business', { action: 'updateAppSettingsSafe',
           settings_id: settingsId,
           updates: settings
         });
@@ -143,7 +143,7 @@ export default function Settings() {
 
   const handleToggleInviteCode = async (active) => {
     if (!business) return;
-    const response = await base44.functions.invoke('updateBusinessSafe', {
+    const response = await base44.functions.invoke('business', { action: 'updateBusinessSafe',
       business_id: business.id,
       updates: { invite_code_active: active }
     });
@@ -160,7 +160,7 @@ export default function Settings() {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let code = "BSNS-";
     for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-    const response = await base44.functions.invoke('updateBusinessSafe', {
+    const response = await base44.functions.invoke('business', { action: 'updateBusinessSafe',
       business_id: business.id,
       updates: { invite_code: code }
     });
@@ -470,7 +470,7 @@ export default function Settings() {
                         updateSettings("rfc", "");
                         setSaving(true);
                         if (settingsId) {
-                          const response = await base44.functions.invoke('updateAppSettingsSafe', {
+                          const response = await base44.functions.invoke('business', { action: 'updateAppSettingsSafe',
                             settings_id: settingsId,
                             updates: { ...settings, rfc: "" }
                           });
@@ -727,7 +727,7 @@ export default function Settings() {
                                           onClick={async () => {
                                             setFixingProductId(d.product_id);
                                             try {
-                                              await base44.functions.invoke('applyInventoryAuditCorrection', {
+                                              await base44.functions.invoke('products', { action: 'applyInventoryAuditCorrection',
                                                 product_id: d.product_id,
                                                 action: 'accept_current',
                                                 expected_stock: d.expected_stock,
@@ -751,7 +751,7 @@ export default function Settings() {
                                           onClick={async () => {
                                             setFixingProductId(d.product_id);
                                             try {
-                                              await base44.functions.invoke('applyInventoryAuditCorrection', {
+                                              await base44.functions.invoke('products', { action: 'applyInventoryAuditCorrection',
                                                 product_id: d.product_id,
                                                 action: 'revert_to_calculated',
                                                 expected_stock: d.expected_stock,

@@ -239,7 +239,7 @@ export default function ImportProducts() {
     try {
       // Send raw row data to backend for secure processing
       const rawRows = preview.map(p => p._raw);
-      const response = await base44.functions.invoke('importItemsSafe', {
+      const response = await base44.functions.invoke('products', { action: 'importItemsSafe',
         import_type: activeType,
         rows: rawRows,
       });

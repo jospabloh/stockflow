@@ -19,7 +19,7 @@ export function useActivityTracker(isAuthenticated = true) {
     lastCalledRef.current = now;
 
     try {
-      await base44.functions.invoke('trackUserActivity', {});
+      await base44.functions.invoke('session', { action: 'trackUserActivity',});
     } catch (_) {
       // Never crash the UI — activity tracking is non-critical
     }

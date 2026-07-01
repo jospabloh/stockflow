@@ -84,7 +84,7 @@ export default function PublicQuotation() {
 
   useEffect(() => {
     if (!token) return;
-    base44.functions.invoke("getPublicQuotation", { token })
+    base44.functions.invoke('quotations', { action: 'getPublicQuotation', token })
       .then(res => {
         if (res.data?.error) setError(res.data.error);
         else setQuotation(res.data);
@@ -96,7 +96,7 @@ export default function PublicQuotation() {
   async function handleRespond(action) {
     setResponding(true);
     try {
-      const res = await base44.functions.invoke("respondToPublicQuotation", { token, action });
+      const res = await base44.functions.invoke('quotations', { action: 'respondToPublicQuotation', token, action });
       if (res.data?.success) {
         setQuotation(prev => ({ ...prev, status: res.data.status }));
         setResponded(true);

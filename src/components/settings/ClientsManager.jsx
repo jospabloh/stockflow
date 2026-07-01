@@ -74,7 +74,7 @@ export default function ClientsManager() {
           setFormOpen(false);
           return;
         }
-        const response = await base44.functions.invoke('updateClientSafe', { client_id: editing.id, updates: form });
+        const response = await base44.functions.invoke('clients', { action: 'updateClientSafe', client_id: editing.id, updates: form });
         if (!response.data.success) {
           toast.error(`Error: ${response.data.error}`);
           setSaving(false);
@@ -83,7 +83,7 @@ export default function ClientsManager() {
         confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 }, colors: ["#4F46E5", "#06B6D4", "#10B981"] });
         toast.success("✓ Cliente actualizado");
       } else {
-        const response = await base44.functions.invoke('createClientSafe', { ...form, business_id: businessId });
+        const response = await base44.functions.invoke('clients', { action: 'createClientSafe', ...form, business_id: businessId });
         if (!response.data.success) {
           toast.error(`Error: ${response.data.error}`);
           setSaving(false);
@@ -102,7 +102,7 @@ export default function ClientsManager() {
   };
 
   const handleDelete = async (client) => {
-    const result = await base44.functions.invoke('deleteClientSafe', { client_id: client.id });
+    const result = await base44.functions.invoke('clients', { action: 'deleteClientSafe', client_id: client.id });
     if (!result.success) {
       toast.error(result.error || "No se pudo eliminar el cliente");
       return;

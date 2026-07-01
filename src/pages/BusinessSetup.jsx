@@ -50,12 +50,12 @@ export default function BusinessSetup() {
     });
     await base44.auth.updateMe({ business_id: business.id, role: "admin" });
     // Initialize 30-day trial using server-side time
-    await base44.functions.invoke("initTenantTrial", { business_id: business.id }).catch(() => {});
+    await base44.functions.invoke('licenses', { action: 'initTenantTrial', business_id: business.id }).catch(() => {});
     // Seed default permission profiles (admin + almacenista) for the new business
-    await base44.functions.invoke("seedDefaultPermissionProfiles", {}).catch(() => {});
+    await base44.functions.invoke('permissions', { action: 'seedDefaultPermissionProfiles',}).catch(() => {});
     // Apply referral code if provided (non-fatal)
     if (referralCode.trim()) {
-      const refResult = await base44.functions.invoke("applyReferralCode", {
+      const refResult = await base44.functions.invoke('referrals', { action: 'applyReferralCode',
         business_id: business.id,
         referral_code: referralCode.trim(),
       }).catch(() => null);

@@ -97,7 +97,7 @@ export default function Suppliers() {
 
     try {
       if (editingSup) {
-        const response = await base44.functions.invoke('updateSupplierSafe', {
+        const response = await base44.functions.invoke('suppliers', { action: 'updateSupplierSafe',
           supplier_id: editingSup.id,
           updates: payload,
         });
@@ -107,7 +107,7 @@ export default function Suppliers() {
         }
         toast.success("✓ Proveedor actualizado");
       } else {
-        const response = await base44.functions.invoke('createSupplierSafe', {
+        const response = await base44.functions.invoke('suppliers', { action: 'createSupplierSafe',
           ...payload,
           business_id: businessId,
         });
@@ -128,7 +128,7 @@ export default function Suppliers() {
   };
 
   const handleDeleteSupplier = async (id) => {
-    const response = await base44.functions.invoke('deleteSupplierSafe', { supplier_id: id });
+    const response = await base44.functions.invoke('suppliers', { action: 'deleteSupplierSafe', supplier_id: id });
     if (!response.data.success) {
       toast.error(response.data.error || 'No se pudo eliminar');
       return;

@@ -77,7 +77,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
     if (!globalThis.confirm(`¿Eliminar el pago de $${fmt(p.amount)} (${p.payment_method})?`)) return;
     setDeletingId(p.id);
     try {
-      const res = await base44.functions.invoke("deleteQuotationPayment", {
+      const res = await base44.functions.invoke('quotationPayments', { action: 'deleteQuotationPayment',
         quotation_id: quotation.id,
         payment_id: p.id,
       });
@@ -105,7 +105,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
     try {
       let data;
       if (editingPayment) {
-        const response = await base44.functions.invoke("editQuotationPayment", {
+        const response = await base44.functions.invoke('quotationPayments', { action: 'editQuotationPayment',
           quotation_id: quotation.id,
           payment_id: editingPayment.id,
           amount: amt,
@@ -115,7 +115,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
         });
         data = response.data;
       } else {
-        const response = await base44.functions.invoke("registerQuotationPayment", {
+        const response = await base44.functions.invoke('quotationPayments', { action: 'registerQuotationPayment',
           quotation_id: quotation.id,
           amount: amt,
           payment_method: method,

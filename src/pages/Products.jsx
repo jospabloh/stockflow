@@ -88,7 +88,7 @@ export default function Products() {
   const handleDelete = async () => {
     if (!deleteProduct) return;
     try {
-      const response = await base44.functions.invoke('deleteProductSafe', {
+      const response = await base44.functions.invoke('products', { action: 'deleteProductSafe',
         product_id: deleteProduct.id,
       });
       if (response.data?.success) {

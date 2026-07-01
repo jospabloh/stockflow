@@ -18,7 +18,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
   const handleGenerateBarcode = async (product) => {
     setGeneratingId(product.id);
     try {
-      const response = await base44.functions.invoke('generateBarcodeSafe', { product_id: product.id });
+      const response = await base44.functions.invoke('products', { action: 'generateBarcodeSafe', product_id: product.id });
       if (response.data?.success) {
         toast.success(`Código generado: ${response.data.barcode}`);
         onBarcodeGenerated?.();

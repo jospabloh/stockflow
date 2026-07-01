@@ -47,12 +47,12 @@ export default function TenantRulesAdmin() {
     setLoading(true);
     try {
       const [rulesResp, licensesResp] = await Promise.all([
-        base44.functions.invoke("adminListTenantRules", {
+        base44.functions.invoke('tenantRules', { action: 'adminListTenantRules',
           search,
           rule_key: ruleKeyFilter === "all" ? undefined : ruleKeyFilter,
           enabled: enabledFilter === "all" ? undefined : enabledFilter === "enabled",
         }),
-        base44.functions.invoke("adminGetAllLicenses", {}),
+        base44.functions.invoke('licenses', { action: 'adminGetAllLicenses',}),
       ]);
 
       setRules(rulesResp.data?.rules || []);
@@ -94,7 +94,7 @@ export default function TenantRulesAdmin() {
   const handleActivateBaristop = async () => {
     setActivating(true);
     try {
-      const response = await base44.functions.invoke("activateBaristopCashRule", {});
+      const response = await base44.functions.invoke('tenantRules', { action: 'activateBaristopCashRule',});
       if (!response.data?.success) {
         toast.error(response.data?.error || "No se pudo activar la regla");
         return;
@@ -146,7 +146,7 @@ export default function TenantRulesAdmin() {
         config_json: parsedConfig,
         notes: form.notes || "",
       };
-      const response = await base44.functions.invoke("adminUpsertTenantRule", payload);
+      const response = await base44.functions.invoke('tenantRules', { action: 'adminUpsertTenantRule', ...payload });
       if (!response.data?.success) {
         toast.error(response.data?.error || "No se pudo guardar la regla");
         return;
@@ -165,7 +165,7 @@ export default function TenantRulesAdmin() {
   const handleDelete = async (id) => {
     setDeletingId(id);
     try {
-      const response = await base44.functions.invoke("adminDeleteTenantRule", { tenant_rule_id: id });
+      const response = await base44.functions.invoke('tenantRules', { action: 'adminDeleteTenantRule', tenant_rule_id: id });
       if (!response.data?.success) {
         toast.error(response.data?.error || "No se pudo eliminar la regla");
         return;

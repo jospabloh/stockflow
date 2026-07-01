@@ -68,7 +68,7 @@ export default function Categories() {
           ...catForm,
           wholesale_min_qty: catForm.wholesale_min_qty !== "" ? Number(catForm.wholesale_min_qty) : null,
         };
-        const response = await base44.functions.invoke('updateCategorySafe', {
+        const response = await base44.functions.invoke('categories', { action: 'updateCategorySafe',
           category_id: editingCat.id,
           updates: catUpdates
         });
@@ -102,7 +102,7 @@ export default function Categories() {
       toast.error("Debes proporcionar una razón para eliminar");
       return;
     }
-    const response = await base44.functions.invoke('deleteCategorySafe', { 
+    const response = await base44.functions.invoke('categories', { action: 'deleteCategorySafe', 
       category_id: id,
       deletion_reason: deleteCatReason || undefined
     });

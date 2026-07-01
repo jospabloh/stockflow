@@ -11,7 +11,7 @@ export function LicenseProvider({ children }) {
     async function load() {
       try {
         // Use server-side function for single source of truth
-        const response = await base44.functions.invoke('getCurrentTenantLicenseState', {});
+        const response = await base44.functions.invoke('licenses', { action: 'getCurrentTenantLicenseState',});
         setLicense(response.data);
       } catch (_) {
         // Fallback for errors
