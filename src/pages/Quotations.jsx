@@ -171,7 +171,7 @@ export default function Quotations() {
     setIsConverting(true);
 
     try {
-      const response = await base44.functions.invoke('convertQuotationSafe', {
+      const response = await base44.functions.invoke('quotations', { action: 'convertQuotationSafe',
         quotation_id: targetQuotation.id,
         payment_method: targetPaymentMethod
       });
@@ -210,7 +210,7 @@ export default function Quotations() {
     }
 
     try {
-      const response = await base44.functions.invoke('cancelQuotationSafe', {
+      const response = await base44.functions.invoke('quotations', { action: 'cancelQuotationSafe',
         quotation_id: targetQuotation.id,
         cancellation_reason: targetReason
       });
@@ -254,7 +254,7 @@ export default function Quotations() {
       const updates = { paid: true, payment_method: targetMethod };
       if (targetDelivered) { updates.delivered = true; updates.in_route = false; }
 
-      const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
+      const response = await base44.functions.invoke('quotations', { action: 'updateQuotationFlagsSafe',
         quotation_id: targetQuotation.id,
         updates
       });
@@ -284,7 +284,7 @@ export default function Quotations() {
     if (q.status !== "draft") return;
     
     try {
-      const response = await base44.functions.invoke('regenerateQuotation', {
+      const response = await base44.functions.invoke('quotations', { action: 'regenerateQuotation',
         quotation_id: q.id
       });
 
@@ -382,7 +382,7 @@ export default function Quotations() {
         onRegenerate={handleRegenerate}
         onInvoiceStatusChange={async (q, val) => {
           try {
-            const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
+            const response = await base44.functions.invoke('quotations', { action: 'updateQuotationFlagsSafe',
               quotation_id: q.id,
               updates: { invoice_status: val }
             });
@@ -398,7 +398,7 @@ export default function Quotations() {
         onInRouteChange={async (q, action) => {
           if (action === "delivered") {
             // Use deliverQuotationSafe to handle on-demand EXIT movements
-            const response = await base44.functions.invoke('deliverQuotationSafe', {
+            const response = await base44.functions.invoke('quotations', { action: 'deliverQuotationSafe',
               quotation_id: q.id,
             });
             if (response.data?.warning) {
@@ -419,7 +419,7 @@ export default function Quotations() {
               updates = { in_route: false, delivered: false };
             }
             try {
-              const response = await base44.functions.invoke('updateQuotationFlagsSafe', {
+              const response = await base44.functions.invoke('quotations', { action: 'updateQuotationFlagsSafe',
                 quotation_id: q.id,
                 updates
               });

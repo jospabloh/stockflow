@@ -240,7 +240,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       return;
     }
     const controller = new AbortController();
-    base44.functions.invoke('calculateQuotationWithTransport', {
+    base44.functions.invoke('quotations', { action: 'calculateQuotationWithTransport',
       items: form.items,
       client_id: selectedClient?.id || null
     }).then(res => {
@@ -298,14 +298,14 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       const data = { ...form, subtotal: saveSubtotal, tax: saveTax, total: saveTotal, folio };
       let response;
       if (quotation) {
-        response = await base44.functions.invoke('updateQuotationSafe', { quotation_id: quotation.id, updates: data });
+        response = await base44.functions.invoke('quotations', { action: 'updateQuotationSafe', quotation_id: quotation.id, updates: data });
         if (!response.data.success) {
           toast.error(`⚠️ No se pudo guardar: ${response.data.error || "Error desconocido"}`);
           setSaving(false);
           return;
         }
       } else {
-        response = await base44.functions.invoke('createQuotationSafe', { ...data, business_id: businessId });
+        response = await base44.functions.invoke('quotations', { action: 'createQuotationSafe', ...data, business_id: businessId });
         if (!response.data.success) {
           const errMsg = response.data.error || response.data.message || "Error desconocido";
           toast.error(`❌ No se pudo guardar: ${errMsg}`);

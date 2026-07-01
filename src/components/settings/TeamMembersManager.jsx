@@ -16,7 +16,7 @@ export default function TeamMembersManager({ businessId, currentUserId }) {
   const loadMembers = async () => {
     setLoading(true);
     try {
-      const resp = await base44.functions.invoke("getTeamMembers", {});
+      const resp = await base44.functions.invoke('permissions', { action: 'getTeamMembers',});
       const users = resp.data?.members || [];
       setMembers(users.sort((a, b) => {
         if (a.id === currentUserId) return -1;
@@ -41,7 +41,7 @@ export default function TeamMembersManager({ businessId, currentUserId }) {
     }
     setChangingRole(member.id);
     try {
-      const resp = await base44.functions.invoke("changeUserRole", {
+      const resp = await base44.functions.invoke('permissions', { action: 'changeUserRole',
         target_user_id: member.id,
         new_role: newRole,
       });

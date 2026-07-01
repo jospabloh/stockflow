@@ -69,8 +69,8 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       Promise.all([
         base44.entities.Product.filter({ status: "active", business_id: businessId }),
         base44.entities.Category.filter({ business_id: businessId }),
-        base44.functions.invoke('getBusinessCatalogs', {}),
-        base44.functions.invoke('getCurrentTenantRuleMap', {}).catch(() => ({ data: { rules: {} } })),
+        base44.functions.invoke('business', { action: 'getBusinessCatalogs',}),
+        base44.functions.invoke('tenantRules', { action: 'getCurrentTenantRuleMap',}).catch(() => ({ data: { rules: {} } })),
       ]).then(([prods, cats, catalogsRes, ruleMapRes]) => {
         setProducts(prods);
         setCategories(cats);
@@ -200,7 +200,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
 
     try {
       // Validar ownership del primer producto (representativo)
-      const validResult = await base44.functions.invoke('validateBusinessOwnership', {
+      const validResult = await base44.functions.invoke('business', { action: 'validateBusinessOwnership',
         entity_name: 'Product',
         record_id: validItems[0].product.id,
         operation: 'update',
@@ -233,7 +233,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           newStock = qty;
         }
 
-        const movResp = await base44.functions.invoke('createMovementSafe', {
+        const movResp = await base44.functions.invoke('movements', { action: 'createMovementSafe',
           product_id: product.id,
           product_name: product.name,
           type: movType,

@@ -39,7 +39,7 @@ export default function LicenseAdmin() {
 
   const load = async () => {
     setLoading(true);
-    const r = await base44.functions.invoke("adminGetAllLicenses", {});
+    const r = await base44.functions.invoke('licenses', { action: 'adminGetAllLicenses',});
     setBusinesses(r.data.businesses || []);
     setLoading(false);
   };
@@ -54,7 +54,7 @@ export default function LicenseAdmin() {
   const handleSendTestEmails = async () => {
     setSendingTestEmails(true);
     try {
-      const r = await base44.functions.invoke("sendTestLifecycleEmails", {});
+      const r = await base44.functions.invoke('business', { action: 'sendTestLifecycleEmails',});
       const { sent, failed, recipient, error, results } = r.data || {};
       if (error) {
         toast.error(`Error en la función: ${error}`);
@@ -78,7 +78,7 @@ export default function LicenseAdmin() {
     if (!globalThis.confirm(`Confirmar que recibiste el pago de MP para ${biz.name}? Se enviará correo de pago recibido a los admins.`)) return;
     setConfirmingPayment(biz.id);
     try {
-      const r = await base44.functions.invoke("confirmRenewalPayment", { business_id: biz.id });
+      const r = await base44.functions.invoke('licenses', { action: 'confirmRenewalPayment', business_id: biz.id });
       toast.success(`Correo de pago recibido enviado a ${r.data.recipients} admins`);
     } catch (err) {
       toast.error(`Error al confirmar pago: ${err?.message || err}`);
@@ -110,7 +110,7 @@ export default function LicenseAdmin() {
       delete updates.license_expires_at;
     }
     try {
-      const r = await base44.functions.invoke("adminUpdateTenantLicense", {
+      const r = await base44.functions.invoke('licenses', { action: 'adminUpdateTenantLicense',
         business_id: editTarget.id,
         updates,
       });

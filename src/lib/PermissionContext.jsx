@@ -26,7 +26,7 @@ export function PermissionProvider({ children }) {
     try {
       const [meResult, response] = await Promise.all([
         base44.auth.me(),
-        base44.functions.invoke('getPermissionProfiles', {}),
+        base44.functions.invoke('permissions', { action: 'getPermissionProfiles',}),
       ]);
       setUserEmail(meResult?.email || null);
       setUserRole(meResult?.role || null);

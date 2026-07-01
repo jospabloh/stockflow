@@ -13,7 +13,7 @@ export default function ReferralPanel() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.functions.invoke("getReferralStats", {})
+    base44.functions.invoke('referrals', { action: 'getReferralStats',})
       .then((resp) => setStats(resp.data))
       .catch(() => toast.error("Error al cargar estadísticas de referidos"))
       .finally(() => setLoading(false));

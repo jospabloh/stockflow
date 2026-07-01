@@ -47,7 +47,7 @@ export default function PermissionAdmin() {
   const loadProfiles = async () => {
     setLoading(true);
     try {
-      const response = await base44.functions.invoke('getPermissionProfiles', {});
+      const response = await base44.functions.invoke('permissions', { action: 'getPermissionProfiles',});
       const data = response.data;
       setProfiles(data?.profiles || {});
       setFeatureEnabled(data?.featureEnabled === true);
@@ -80,7 +80,7 @@ export default function PermissionAdmin() {
   const seedProfiles = async () => {
     if (!businessId && !isPlatformAdmin) return;
     try {
-      await base44.functions.invoke('seedDefaultPermissionProfiles', {});
+      await base44.functions.invoke('permissions', { action: 'seedDefaultPermissionProfiles',});
       setSeeded(true);
     } catch (_) {}
   };
@@ -104,7 +104,7 @@ export default function PermissionAdmin() {
   const handleSave = async (role) => {
     setSaving(true);
     try {
-      const response = await base44.functions.invoke('upsertPermissionProfile', {
+      const response = await base44.functions.invoke('permissions', { action: 'upsertPermissionProfile',
         role_key: role,
         permissions: perms[role],
       });
@@ -129,7 +129,7 @@ export default function PermissionAdmin() {
     }
     setTogglingFeature(true);
     try {
-      const response = await base44.functions.invoke('adminUpsertTenantRule', {
+      const response = await base44.functions.invoke('tenantRules', { action: 'adminUpsertTenantRule',
         business_id: businessId,
         rule_key: 'enable_granular_permissions',
         enabled: checked,
@@ -183,7 +183,7 @@ export default function PermissionAdmin() {
               onClick={async () => {
                 setBackfilling(true);
                 try {
-                  const res = await base44.functions.invoke('backfillPermissionDefaults', {});
+                  const res = await base44.functions.invoke('permissions', { action: 'backfillPermissionDefaults',});
                   if (res.data?.success) {
                     toast.success(`Backfill completado: ${res.data.profilesUpdated} perfiles, ${res.data.keysAdded} claves nuevas`);
                     await loadProfiles();

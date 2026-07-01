@@ -135,12 +135,12 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
       let response;
       
       if (product) {
-        response = await base44.functions.invoke('updateProductSafe', {
+        response = await base44.functions.invoke('products', { action: 'updateProductSafe',
           product_id: product.id,
           updates: payload
         });
       } else {
-        response = await base44.functions.invoke('createProductSafe', { 
+        response = await base44.functions.invoke('products', { action: 'createProductSafe', 
           ...payload, 
           business_id: businessId 
         });
@@ -198,7 +198,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
 
   const handleCreateCategory = async () => {
     if (!newCatName.trim()) return;
-    const response = await base44.functions.invoke('createCategorySafe', { name: newCatName.trim(), color: "#6366f1", business_id: businessId });
+    const response = await base44.functions.invoke('categories', { action: 'createCategorySafe', name: newCatName.trim(), color: "#6366f1", business_id: businessId });
     if (!response.data.success) { toast.error(`Error: ${response.data.error}`); return; }
     const cats = await base44.entities.Category.filter({ business_id: businessId });
     setCategories(cats);
@@ -209,7 +209,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
 
   const handleCreateSupplier = async () => {
     if (!newSupName.trim()) return;
-    const response = await base44.functions.invoke('createSupplierSafe', { name: newSupName.trim(), business_id: businessId });
+    const response = await base44.functions.invoke('suppliers', { action: 'createSupplierSafe', name: newSupName.trim(), business_id: businessId });
     if (!response.data.success) { toast.error(`Error: ${response.data.error}`); return; }
     const sups = await base44.entities.Supplier.filter({ business_id: businessId });
     setSuppliers(sups);
@@ -235,7 +235,7 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
     }
     setGeneratingBarcode(true);
     try {
-      const response = await base44.functions.invoke('generateBarcodeSafe', { product_id: product.id });
+      const response = await base44.functions.invoke('products', { action: 'generateBarcodeSafe', product_id: product.id });
       if (response.data?.success) {
         updateField("barcode", response.data.barcode);
         toast.success(`Código generado: ${response.data.barcode}`);

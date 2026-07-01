@@ -30,7 +30,7 @@ export default function OnboardingWizard({ inviteCode, onClose }) {
     if (!product.name.trim()) { setStep(3); return; }
     setSaving(true);
     try {
-      await base44.functions.invoke("createProductSafe", {
+      await base44.functions.invoke('products', { action: 'createProductSafe',
         name: product.name.trim(),
         price: parseFloat(product.price) || 0,
         stock: parseInt(product.stock) || 0,

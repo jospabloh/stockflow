@@ -34,7 +34,7 @@ export default function PartialReturnDialog({ open, onOpenChange, quotation, onS
       // Solo verificamos la regla si la venta fue pagada en efectivo
       if (quotation?.paid && isCashPayment(quotation?.payment_method)) {
         base44.functions
-          .invoke("getCurrentTenantRuleMap", {})
+          .invoke('tenantRules', { action: 'getCurrentTenantRuleMap',})
           .then((res) => {
             const rules = res?.data?.rules || {};
             setCashRuleEnabled(rules?.cash_sales_to_petty_cash?.enabled === true);
@@ -91,7 +91,7 @@ export default function PartialReturnDialog({ open, onOpenChange, quotation, onS
         tax_rate: i.tax_rate ?? 16,
       }));
 
-      const res = await base44.functions.invoke('partialReturnQuotation', {
+      const res = await base44.functions.invoke('quotations', { action: 'partialReturnQuotation',
         quotation_id: quotation.id,
         returned_items,
         reason,

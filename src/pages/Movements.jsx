@@ -113,7 +113,7 @@ export default function Movements() {
     if (!deletingMovement) return;
     setDeleteLoading(true);
     try {
-      const res = await base44.functions.invoke('deleteMovementSafe', { movement_id: deletingMovement.id });
+      const res = await base44.functions.invoke('movements', { action: 'deleteMovementSafe', movement_id: deletingMovement.id });
       if (!res.data?.success) {
         toast.error(`Error: ${res.data?.error || "No se pudo eliminar"}`);
         return;
@@ -131,7 +131,7 @@ export default function Movements() {
   const handleConfirmPayment = async () => {
     if (!confirmingPayment) return;
     try {
-      const res = await base44.functions.invoke('confirmMovementPaymentSafe', {
+      const res = await base44.functions.invoke('movements', { action: 'confirmMovementPaymentSafe',
         movement_id: confirmingPayment.id,
         business_id: businessId,
       });

@@ -150,7 +150,7 @@ export default function HelpCenter() {
       try {
         const [{ localHelpData }, ruleMapResult] = await Promise.all([
           import("@/lib/helpData"),
-          base44.functions.invoke("getCurrentTenantRuleMap", {}).catch(() => ({ data: { rules: {} } })),
+          base44.functions.invoke('tenantRules', { action: 'getCurrentTenantRuleMap',}).catch(() => ({ data: { rules: {} } })),
         ]);
 
         const allArticles = (localHelpData && localHelpData.articles) || [];
