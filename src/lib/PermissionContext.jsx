@@ -23,20 +23,30 @@ export function PermissionProvider({ children }) {
 
   const load = useCallback(async () => {
     setLoading(true);
+    // User identity (role/email) is loaded independently of the permissions
+    // function. If that function is unavailable, we must still know the user's
+    // role so navigation and access checks keep working via legacy defaults —
+    // otherwise a single failed backend call blanks the entire app.
     try {
-      const [meResult, response] = await Promise.all([
-        base44.auth.me(),
-        base44.functions.invoke('permissions', { action: 'getPermissionProfiles',}),
-      ]);
+      const meResult = await base44.auth.me();
       setUserEmail(meResult?.email || null);
       setUserRole(meResult?.role || null);
+    } catch (_) {
+      setUserEmail(null);
+      setUserRole(null);
+    }
+
+    try {
+      const response = await base44.functions.invoke('permissions', { action: 'getPermissionProfiles',});
       const data = response.data;
       setProfiles(data?.profiles || {});
       setFeatureEnabled(data?.featureEnabled === true);
       setIsPlatformAdmin(data?.is_platform_admin === true);
     } catch (_) {
+      // Permissions service unavailable → fall back to legacy role defaults.
       setProfiles({});
       setFeatureEnabled(false);
+      setIsPlatformAdmin(false);
     } finally {
       setLoading(false);
     }
