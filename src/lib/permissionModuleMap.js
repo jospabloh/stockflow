@@ -8,6 +8,7 @@ export const PAGE_TO_MODULE_MAP = {
   Contacts: 'Contactos',
   Courses: 'Cursos',
   CourseCalendar: 'Cursos',
+  Enrollments: 'Inscripciones',
   PaymentMethods: 'Tipo de Pago',
   Movements: 'Movimientos',
   Quotations: 'Cotizaciones',

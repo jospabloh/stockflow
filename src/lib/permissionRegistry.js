@@ -103,6 +103,15 @@ export const PERMISSION_REGISTRY = {
       { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar cursos del sistema" },
     ]
   },
+  Inscripciones: {
+    label: "Inscripciones",
+    actions: [
+      { id: "view", label: "Ver lista", category: "visual", icon: "👁️", description: "Acceso a las inscripciones de cursos" },
+      { id: "create", label: "Crear", category: "actionable", icon: "➕", description: "Inscribir contactos a cursos" },
+      { id: "edit", label: "Editar", category: "actionable", icon: "✏️", description: "Cambiar estatus, pago y detalles de la inscripción" },
+      { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar inscripciones" },
+    ]
+  },
   Contactos: {
     label: "Contactos",
     actions: [
