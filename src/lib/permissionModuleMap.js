@@ -5,6 +5,7 @@ export const PAGE_TO_MODULE_MAP = {
   Categories: 'Categorías',
   Suppliers: 'Proveedores',
   Clients: 'Clientes',
+  Contacts: 'Contactos',
   PaymentMethods: 'Tipo de Pago',
   Movements: 'Movimientos',
   Quotations: 'Cotizaciones',
