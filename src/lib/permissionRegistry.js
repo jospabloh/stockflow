@@ -112,6 +112,13 @@ export const PERMISSION_REGISTRY = {
       { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar inscripciones" },
     ]
   },
+  "Campañas": {
+    label: "Campañas",
+    actions: [
+      { id: "view", label: "Ver campañas", category: "visual", icon: "👁️", description: "Acceso a campañas y avisos y su historial" },
+      { id: "send", label: "Enviar", category: "actionable", icon: "📣", sensitive: true, description: "Enviar campañas/avisos por correo o WhatsApp a contactos e inscritos" },
+    ]
+  },
   Contactos: {
     label: "Contactos",
     actions: [

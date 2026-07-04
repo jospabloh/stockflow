@@ -52,7 +52,8 @@ import {
   Contact,
   BookOpen,
   CalendarDays,
-  ClipboardList
+  ClipboardList,
+  Megaphone
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,7 @@ const navItems = [
       { name: "Calendario", icon: CalendarDays, page: "CourseCalendar" },
       { name: "Inscripciones", icon: ClipboardList, page: "Enrollments" },
       { name: "Contactos", icon: Contact, page: "Contacts" },
+      { name: "Campañas", icon: Megaphone, page: "Campaigns" },
     ]
   },
   { name: "Caja Chica", icon: PiggyBank, page: "PettyCash" },
