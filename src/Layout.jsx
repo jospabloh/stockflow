@@ -47,7 +47,9 @@ import {
   HandCoins,
   Wallet,
   Tag,
-  CreditCard
+  CreditCard,
+  GraduationCap,
+  Contact
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -70,6 +72,13 @@ const navItems = [
   },
   { name: "Movimientos", icon: ArrowLeftRight, page: "Movements" },
   { name: "Cotizaciones", icon: FileText, page: "Quotations" },
+  {
+    name: "Cursos",
+    icon: GraduationCap,
+    submenu: [
+      { name: "Contactos", icon: Contact, page: "Contacts" },
+    ]
+  },
   { name: "Caja Chica", icon: PiggyBank, page: "PettyCash" },
   { name: "Utilidad", icon: Wallet, page: "Utility" },
   { name: "Pagos a Proveedores", icon: HandCoins, page: "SupplierPayments" },
@@ -137,7 +146,7 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     const current = getPageFromNavItems(currentPageName);
     const parentName = current?.parent?.name;
-    if (parentName === "Catálogos" || parentName === "Sistema") {
+    if (parentName === "Catálogos" || parentName === "Sistema" || parentName === "Cursos") {
       setExpandedSubmenu(parentName);
     }
   }, [currentPageName]);

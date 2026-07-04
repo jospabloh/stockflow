@@ -94,6 +94,15 @@ export const PERMISSION_REGISTRY = {
       { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar clientes del sistema" },
     ]
   },
+  Contactos: {
+    label: "Contactos",
+    actions: [
+      { id: "view", label: "Ver lista", category: "visual", icon: "👁️", description: "Acceso a la lista de contactos" },
+      { id: "create", label: "Crear", category: "actionable", icon: "➕", description: "Registrar nuevos contactos" },
+      { id: "edit", label: "Editar", category: "actionable", icon: "✏️", description: "Modificar datos, etiquetas y estado del contacto" },
+      { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar contactos del sistema" },
+    ]
+  },
   "Tipo de Pago": {
     label: "Tipo de Pago",
     actions: [

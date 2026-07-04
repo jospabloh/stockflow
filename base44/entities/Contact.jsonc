@@ -1,0 +1,46 @@
+{
+  "name": "Contact",
+  "type": "object",
+  "description": "Contacto individual (lead/asistente) del negocio, usado para cursos, campañas y avisos. Distinto de Client (cliente B2B del inventario).",
+  "properties": {
+    "business_id": { "type": "string", "description": "ID del negocio (tenant) al que pertenece" },
+    "name": { "type": "string", "description": "Nombre completo del contacto" },
+    "phone": { "type": "string", "description": "Teléfono (se usa para el botón de WhatsApp precargado)" },
+    "email": { "type": "string", "description": "Correo electrónico (confirmaciones y campañas)" },
+    "tags": { "type": "array", "items": { "type": "string" }, "description": "Etiquetas/intereses para segmentar campañas y avisos (ej. matcha, barista, cultura cafetera)" },
+    "source": { "type": "string", "enum": ["instagram", "whatsapp", "curso", "referido", "cliente", "otro"], "description": "Origen del contacto (de dónde salió)" },
+    "status": { "type": "string", "enum": ["active", "inactive"], "default": "active", "description": "Estado del contacto" },
+    "city": { "type": "string", "description": "Ciudad (útil para cursos presenciales locales)" },
+    "instagram": { "type": "string", "description": "Usuario de Instagram" },
+    "notes": { "type": "string", "description": "Notas adicionales" },
+    "client_id": { "type": "string", "description": "Vínculo opcional a un Client existente (si el contacto también es una cafetería que ya compra)" },
+    "client_name": { "type": "string", "description": "Nombre del Client vinculado (denormalizado)" }
+  },
+  "required": ["name", "business_id"],
+  "rls": {
+    "create": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "read": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "update": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "delete": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    }
+  }
+}
