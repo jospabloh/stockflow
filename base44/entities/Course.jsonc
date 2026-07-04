@@ -1,0 +1,71 @@
+{
+  "name": "Course",
+  "type": "object",
+  "description": "Curso o taller que imparte el negocio (ej. Curso para Barista, Taller de Matcha). Puede tener una o varias sesiones con fecha/hora, precios por modalidad y cupo.",
+  "properties": {
+    "business_id": { "type": "string", "description": "ID del negocio (tenant) al que pertenece" },
+    "title": { "type": "string", "description": "Nombre del curso/taller" },
+    "description": { "type": "string", "description": "Descripción general del curso" },
+    "topics": { "type": "array", "items": { "type": "string" }, "description": "Temario: lista de temas que cubre el curso" },
+    "includes": { "type": "array", "items": { "type": "string" }, "description": "Qué incluye (insumos, manual, kit de regalo, degustación, etc.)" },
+    "location": { "type": "string", "description": "Ubicación o modalidad (ej. Baristop, En tu cafetería)" },
+    "price_options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string", "description": "Etiqueta de la modalidad (ej. En tu cafetería)" },
+          "amount": { "type": "number", "description": "Precio en MXN" }
+        }
+      },
+      "description": "Opciones de precio (1 = precio único; 2 = por modalidad)"
+    },
+    "extra_person_price": { "type": "number", "description": "Costo por persona extra (opcional)" },
+    "capacity": { "type": "number", "description": "Cupo máximo de asistentes (opcional)" },
+    "instructor_name": { "type": "string", "description": "Nombre del instructor" },
+    "instructor_note": { "type": "string", "description": "Marca/invitado del instructor (ej. Prado Café, Alex Barista)" },
+    "sessions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string", "description": "Fecha de la sesión (YYYY-MM-DD)" },
+          "start_time": { "type": "string", "description": "Hora de inicio (HH:MM)" },
+          "end_time": { "type": "string", "description": "Hora de fin (HH:MM)" },
+          "note": { "type": "string", "description": "Nota de la sesión (ej. Sábado, Módulo 1)" }
+        }
+      },
+      "description": "Sesiones programadas del curso (una o varias fechas)"
+    },
+    "flyer_url": { "type": "string", "description": "URL del flyer/imagen promocional (opcional)" },
+    "status": { "type": "string", "enum": ["draft", "published", "completed", "cancelled"], "default": "draft", "description": "Estado del curso" },
+    "notes": { "type": "string", "description": "Notas internas" }
+  },
+  "required": ["title", "business_id"],
+  "rls": {
+    "create": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "read": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "update": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "delete": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    }
+  }
+}

@@ -6,6 +6,8 @@ export const PAGE_TO_MODULE_MAP = {
   Suppliers: 'Proveedores',
   Clients: 'Clientes',
   Contacts: 'Contactos',
+  Courses: 'Cursos',
+  CourseCalendar: 'Cursos',
   PaymentMethods: 'Tipo de Pago',
   Movements: 'Movimientos',
   Quotations: 'Cotizaciones',
