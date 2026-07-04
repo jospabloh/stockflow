@@ -10,9 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Users, ClipboardList } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Plus, Trash2, Users, ClipboardList, Send, Mail, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { waLink, enrollmentWhatsAppMessage } from "@/lib/courseComms";
 
 const STATUS = [
   { v: "interesado", l: "Interesado", c: "bg-slate-100 text-slate-600" },
@@ -35,7 +37,7 @@ const emptyForm = {
 };
 
 export default function EnrollmentsManager() {
-  const { businessId } = useBusinessContext();
+  const { businessId, businessName } = useBusinessContext();
   const { can } = usePermissions();
   const [enrollments, setEnrollments] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -144,6 +146,24 @@ export default function EnrollmentsManager() {
     toast.success("Inscripción eliminada");
   };
 
+  const sendEmail = async (enrollment, kind) => {
+    if (!enrollment.contact_email) { toast.error("El contacto no tiene correo registrado"); return; }
+    const tid = toast.loading("Enviando correo…");
+    const response = await base44.functions.invoke('courseComms', { action: 'sendEnrollmentEmail', enrollment_id: enrollment.id, kind }).catch(() => null);
+    toast.dismiss(tid);
+    if (!response?.data?.success) { toast.error(response?.data?.error || "No se pudo enviar el correo"); return; }
+    toast.success(kind === 'reminder' ? "✓ Recordatorio enviado por correo" : "✓ Confirmación enviada por correo");
+    const field = kind === 'reminder' ? 'reminder_sent_at' : 'confirmation_sent_at';
+    setEnrollments(rows => rows.map(r => r.id === enrollment.id ? { ...r, [field]: new Date().toISOString() } : r));
+  };
+
+  const openWhatsApp = (enrollment, kind) => {
+    if (!enrollment.contact_phone) { toast.error("El contacto no tiene teléfono"); return; }
+    const course = courseById[enrollment.course_id];
+    const msg = enrollmentWhatsAppMessage(kind, { contactName: enrollment.contact_name, courseTitle: enrollment.course_title, course, businessName });
+    window.open(waLink(enrollment.contact_phone, msg), "_blank");
+  };
+
   const filtered = enrollments
     .filter(e => filterCourse === "all" || e.course_id === filterCourse)
     .filter(e => filterStatus === "all" || e.status === filterStatus);
@@ -239,12 +259,30 @@ export default function EnrollmentsManager() {
                 </TableCell>
                 <TableCell className="text-slate-500">{money(e.amount_paid)}</TableCell>
                 <TableCell className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                  {can('Inscripciones', 'edit') && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Enviar confirmación / recordatorio"><Send className="h-4 w-4 text-slate-400" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Confirmación</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => sendEmail(e, 'confirmation')}><Mail className="h-4 w-4 mr-2" /> Por correo</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openWhatsApp(e, 'confirmation')}><MessageCircle className="h-4 w-4 mr-2" /> Por WhatsApp</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel>Recordatorio</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => sendEmail(e, 'reminder')}><Mail className="h-4 w-4 mr-2" /> Por correo</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openWhatsApp(e, 'reminder')}><MessageCircle className="h-4 w-4 mr-2" /> Por WhatsApp</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                   {can('Inscripciones', 'edit') && (
                     <Button variant="ghost" size="sm" className="h-8" onClick={() => openEdit(e)}>Detalle</Button>
                   )}
                   {can('Inscripciones', 'delete') && (
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(e)}><Trash2 className="h-4 w-4 text-slate-400" /></Button>
                   )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

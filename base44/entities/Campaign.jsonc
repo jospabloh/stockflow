@@ -1,0 +1,46 @@
+{
+  "name": "Campaign",
+  "type": "object",
+  "description": "Registro de una campaña o aviso enviado a un segmento de Contactos o a los inscritos de un curso (correo o WhatsApp).",
+  "properties": {
+    "business_id": { "type": "string", "description": "ID del negocio (tenant) al que pertenece" },
+    "title": { "type": "string", "description": "Nombre interno de la campaña/aviso" },
+    "channel": { "type": "string", "enum": ["email", "whatsapp"], "description": "Canal de envío" },
+    "audience_type": { "type": "string", "enum": ["contacts", "course"], "description": "Audiencia: segmento de contactos o inscritos de un curso" },
+    "audience_desc": { "type": "string", "description": "Descripción legible de la audiencia" },
+    "course_id": { "type": "string", "description": "ID del curso (si la audiencia es 'course')" },
+    "subject": { "type": "string", "description": "Asunto (correo)" },
+    "body": { "type": "string", "description": "Mensaje enviado" },
+    "recipients_count": { "type": "number", "default": 0, "description": "Destinatarios en la audiencia" },
+    "sent_count": { "type": "number", "default": 0, "description": "Envíos exitosos" },
+    "failed_count": { "type": "number", "default": 0, "description": "Envíos fallidos" },
+    "sent_at": { "type": "string", "format": "date-time", "description": "Cuándo se envió" }
+  },
+  "required": ["business_id", "title"],
+  "rls": {
+    "create": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "read": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "update": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "delete": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    }
+  }
+}

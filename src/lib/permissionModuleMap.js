@@ -9,6 +9,7 @@ export const PAGE_TO_MODULE_MAP = {
   Courses: 'Cursos',
   CourseCalendar: 'Cursos',
   Enrollments: 'Inscripciones',
+  Campaigns: 'Campañas',
   PaymentMethods: 'Tipo de Pago',
   Movements: 'Movimientos',
   Quotations: 'Cotizaciones',
