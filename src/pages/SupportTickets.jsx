@@ -20,8 +20,13 @@ const STATUS_STYLE = {
 };
 const CATEGORIES = [
   { v: "technical", l: "Técnico" }, { v: "billing", l: "Facturación" }, { v: "account", l: "Cuenta" },
-  { v: "inventory", l: "Inventario" }, { v: "sales", l: "Ventas" }, { v: "other", l: "Otro" },
+  { v: "inventory", l: "Inventario" }, { v: "sales", l: "Ventas" },
+  { v: "feature_request", l: "Solicitud de función / Mejora" }, { v: "other", l: "Otro" },
 ];
+const SLA_NOTE = {
+  feature_request: "Las solicitudes de nuevas funciones o mejoras se atienden en un plazo estimado de 3 a 5 días hábiles.",
+  default: "Los incidentes y problemas se atienden en un plazo estimado de 24 a 48 horas.",
+};
 const PRIORITIES = [{ v: "low", l: "Baja" }, { v: "normal", l: "Normal" }, { v: "high", l: "Alta" }, { v: "urgent", l: "Urgente" }];
 
 function fmt(v) {
@@ -141,6 +146,9 @@ export default function SupportTickets() {
               </select>
             </div>
           </div>
+          <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+            {SLA_NOTE[form.category] || SLA_NOTE.default}
+          </p>
           <div><Label>Descripción</Label><Textarea rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Cuéntanos qué ocurre…" /></div>
           <div className="flex justify-end"><Button onClick={createTicket} disabled={busy}>{busy ? "Enviando…" : "Enviar ticket"}</Button></div>
         </Card>
