@@ -7,7 +7,7 @@
     "business_name": { "type": "string", "description": "Nombre del negocio (denormalizado)" },
     "subject": { "type": "string", "description": "Asunto del ticket" },
     "description": { "type": "string", "description": "Descripción inicial del problema" },
-    "category": { "type": "string", "enum": ["billing", "technical", "account", "inventory", "sales", "other"], "default": "other", "description": "Categoría" },
+    "category": { "type": "string", "enum": ["billing", "technical", "account", "inventory", "sales", "feature_request", "other"], "default": "other", "description": "Categoría. 'feature_request' = solicitud de función/mejora (SLA 3-5 días hábiles); el resto son incidentes/problemas (SLA 24-48 hrs)." },
     "priority": { "type": "string", "enum": ["low", "normal", "high", "urgent"], "default": "normal", "description": "Prioridad" },
     "status": { "type": "string", "enum": ["open", "in_progress", "waiting_customer", "resolved", "closed"], "default": "open", "description": "Estado del ticket" },
     "created_by_id": { "type": "string", "description": "ID del usuario que lo creó" },
