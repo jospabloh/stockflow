@@ -1,0 +1,50 @@
+{
+  "name": "Enrollment",
+  "type": "object",
+  "description": "Inscripción de un Contacto a un Course. Lleva el estatus del asistente (interesado→confirmado→pagado→asistió), la modalidad/precio elegido, número de personas y lo pagado.",
+  "properties": {
+    "business_id": { "type": "string", "description": "ID del negocio (tenant) al que pertenece" },
+    "course_id": { "type": "string", "description": "ID del curso (Course)" },
+    "course_title": { "type": "string", "description": "Nombre del curso (denormalizado)" },
+    "contact_id": { "type": "string", "description": "ID del contacto (Contact)" },
+    "contact_name": { "type": "string", "description": "Nombre del contacto (denormalizado)" },
+    "contact_phone": { "type": "string", "description": "Teléfono del contacto (denormalizado, para WhatsApp)" },
+    "contact_email": { "type": "string", "description": "Email del contacto (denormalizado, para confirmaciones)" },
+    "status": { "type": "string", "enum": ["interesado", "confirmado", "pagado", "asistio", "no_show", "cancelado"], "default": "interesado", "description": "Estatus de la inscripción" },
+    "price_option_label": { "type": "string", "description": "Modalidad/precio elegido (etiqueta)" },
+    "price_amount": { "type": "number", "description": "Precio acordado en MXN" },
+    "people_count": { "type": "number", "default": 1, "description": "Número de personas (para persona extra)" },
+    "amount_paid": { "type": "number", "default": 0, "description": "Monto pagado en MXN" },
+    "payment_method": { "type": "string", "description": "Forma de pago" },
+    "notes": { "type": "string", "description": "Notas de la inscripción" },
+    "confirmation_sent_at": { "type": "string", "format": "date-time", "description": "Cuándo se envió la confirmación (fase de recordatorios)" },
+    "reminder_sent_at": { "type": "string", "format": "date-time", "description": "Cuándo se envió el recordatorio (fase de recordatorios)" }
+  },
+  "required": ["business_id", "course_id", "contact_id"],
+  "rls": {
+    "create": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "read": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "update": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "delete": {
+      "$or": [
+        { "data.business_id": "{{user.data.business_id}}" },
+        { "user_condition": { "role": "admin" } }
+      ]
+    }
+  }
+}

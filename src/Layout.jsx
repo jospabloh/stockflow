@@ -51,7 +51,8 @@ import {
   GraduationCap,
   Contact,
   BookOpen,
-  CalendarDays
+  CalendarDays,
+  ClipboardList
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,7 @@ const navItems = [
     submenu: [
       { name: "Cursos", icon: BookOpen, page: "Courses" },
       { name: "Calendario", icon: CalendarDays, page: "CourseCalendar" },
+      { name: "Inscripciones", icon: ClipboardList, page: "Enrollments" },
       { name: "Contactos", icon: Contact, page: "Contacts" },
     ]
   },
