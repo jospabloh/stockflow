@@ -49,7 +49,9 @@ import {
   Tag,
   CreditCard,
   GraduationCap,
-  Contact
+  Contact,
+  BookOpen,
+  CalendarDays
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -76,6 +78,8 @@ const navItems = [
     name: "Cursos",
     icon: GraduationCap,
     submenu: [
+      { name: "Cursos", icon: BookOpen, page: "Courses" },
+      { name: "Calendario", icon: CalendarDays, page: "CourseCalendar" },
       { name: "Contactos", icon: Contact, page: "Contacts" },
     ]
   },

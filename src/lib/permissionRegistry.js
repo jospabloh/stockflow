@@ -94,6 +94,15 @@ export const PERMISSION_REGISTRY = {
       { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar clientes del sistema" },
     ]
   },
+  Cursos: {
+    label: "Cursos",
+    actions: [
+      { id: "view", label: "Ver cursos y calendario", category: "visual", icon: "👁️", description: "Acceso al catálogo de cursos y al calendario" },
+      { id: "create", label: "Crear", category: "actionable", icon: "➕", description: "Crear nuevos cursos y talleres" },
+      { id: "edit", label: "Editar", category: "actionable", icon: "✏️", description: "Modificar datos, sesiones, precios y estado del curso" },
+      { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar cursos del sistema" },
+    ]
+  },
   Contactos: {
     label: "Contactos",
     actions: [
