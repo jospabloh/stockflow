@@ -203,20 +203,68 @@ export default function ContactsManager() {
     return enr.created_date ? `Inscrito ${fmtDate(enr.created_date)}` : "Sin fecha";
   };
 
-  const history = useMemo(() => {
-    if (!historyContact) return [];
-    return (enrollmentsByContact[historyContact.id] || [])
-      .slice()
-      .sort((a, b) => String(courseStart(a)).localeCompare(String(courseStart(b))));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [historyContact, enrollmentsByContact, courseById]);
+  const historyFor = (contactId) => (enrollmentsByContact[contactId] || [])
+    .slice()
+    .sort((a, b) => String(courseStart(a)).localeCompare(String(courseStart(b))));
 
-  const ageSummary = useMemo(() => {
-    const ages = history.map(e => e.age).filter(a => typeof a === "number");
+  const ageSummaryOf = (items) => {
+    const ages = items.map(e => e.age).filter(a => typeof a === "number");
     if (!ages.length) return null;
     const min = Math.min(...ages), max = Math.max(...ages);
     return min === max ? `${min} años` : `de ${min} a ${max} años`;
-  }, [history]);
+  };
+
+  const history = useMemo(
+    () => (historyContact ? historyFor(historyContact.id) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [historyContact, enrollmentsByContact, courseById]
+  );
+  const ageSummary = ageSummaryOf(history);
+
+  // Historial del contacto que se está editando (se muestra dentro del detalle)
+  const editHistory = editing ? historyFor(editing.id) : [];
+
+  // Línea de tiempo reutilizable: cada medallón muestra la edad en ese curso
+  const renderCourseTimeline = (items) => (
+    <ol className="relative ml-3 border-l border-dashed border-border">
+      {items.map((enr, i) => {
+        const st = ENR_STATUS[enr.status] || ENR_STATUS.interesado;
+        const hasAge = typeof enr.age === "number";
+        const paid = money(enr.amount_paid);
+        return (
+          <li key={enr.id} className={`ml-10 ${i === items.length - 1 ? "" : "mb-7"}`}>
+            {/* Medallón sobre el riel: el número es la edad en ese curso */}
+            <span className={`absolute -left-5 flex h-10 w-10 flex-col items-center justify-center rounded-full ring-4 ring-background ${hasAge ? "bg-gradient-to-br from-brand-600 to-accent-500 text-white" : "bg-muted text-muted-foreground"}`}>
+              {hasAge ? (
+                <>
+                  <span className="text-sm font-bold leading-none">{enr.age}</span>
+                  <span className="text-[8px] leading-none mt-0.5 opacity-90">años</span>
+                </>
+              ) : (
+                <GraduationCap className="h-4 w-4" />
+              )}
+            </span>
+            <div className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-semibold text-sm leading-tight">{enr.course_title || courseById[enr.course_id]?.title || "Curso"}</p>
+                <Badge className={`${st.c} shrink-0 text-[10px]`}>{st.l}</Badge>
+              </div>
+              <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                <Calendar className="h-3 w-3" /> {coursePeriod(enr)}
+              </p>
+              {(!hasAge || paid) && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  {!hasAge && <span>Edad no registrada</span>}
+                  {!hasAge && paid && <span> · </span>}
+                  {paid && <span>{paid} pagado</span>}
+                </p>
+              )}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
 
   return (
     <div>
@@ -433,6 +481,28 @@ export default function ContactsManager() {
               <Label>Notas</Label>
               <Input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
             </div>
+
+            {/* Cursos y edades — visible directamente desde el contacto */}
+            {editing && (
+              <div className="pt-3 mt-1 border-t border-border">
+                <Label className="flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4 text-brand-600" /> Cursos y edades
+                </Label>
+                {editHistory.length === 0 ? (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Este contacto aún no está inscrito en ningún curso. Inscríbelo desde <span className="font-medium">Inscripciones</span> para registrar su edad por curso.
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-xs text-muted-foreground mt-1 mb-3">
+                      {editHistory.length} {editHistory.length === 1 ? "curso" : "cursos"}
+                      {ageSummaryOf(editHistory) ? ` · ${ageSummaryOf(editHistory)}` : ""}
+                    </p>
+                    {renderCourseTimeline(editHistory)}
+                  </>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex justify-end gap-3 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-border shrink-0 bg-card">
             <Button variant="outline" onClick={() => setFormOpen(false)} disabled={saving}>Cancelar</Button>
@@ -471,44 +541,7 @@ export default function ContactsManager() {
                 <p className="text-xs mt-1">Inscríbelo desde <span className="font-medium">Inscripciones</span> para registrar su edad por curso.</p>
               </div>
             ) : (
-              <ol className="relative ml-3 border-l border-dashed border-border">
-                {history.map((enr, i) => {
-                  const st = ENR_STATUS[enr.status] || ENR_STATUS.interesado;
-                  const hasAge = typeof enr.age === "number";
-                  const paid = money(enr.amount_paid);
-                  return (
-                    <li key={enr.id} className={`ml-10 ${i === history.length - 1 ? "" : "mb-7"}`}>
-                      {/* Medallón sobre el riel: el número es la edad en ese curso */}
-                      <span className={`absolute -left-5 flex h-10 w-10 flex-col items-center justify-center rounded-full ring-4 ring-background ${hasAge ? "bg-gradient-to-br from-brand-600 to-accent-500 text-white" : "bg-muted text-muted-foreground"}`}>
-                        {hasAge ? (
-                          <>
-                            <span className="text-sm font-bold leading-none">{enr.age}</span>
-                            <span className="text-[8px] leading-none mt-0.5 opacity-90">años</span>
-                          </>
-                        ) : (
-                          <GraduationCap className="h-4 w-4" />
-                        )}
-                      </span>
-                      <div className="rounded-lg border border-border bg-card p-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="font-semibold text-sm leading-tight">{enr.course_title || courseById[enr.course_id]?.title || "Curso"}</p>
-                          <Badge className={`${st.c} shrink-0 text-[10px]`}>{st.l}</Badge>
-                        </div>
-                        <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                          <Calendar className="h-3 w-3" /> {coursePeriod(enr)}
-                        </p>
-                        {(!hasAge || paid) && (
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {!hasAge && <span>Edad no registrada</span>}
-                            {!hasAge && paid && <span> · </span>}
-                            {paid && <span>{paid} pagado</span>}
-                          </p>
-                        )}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ol>
+              renderCourseTimeline(history)
             )}
           </div>
           <div className="flex justify-end px-6 py-4 border-t border-border shrink-0 bg-card">
