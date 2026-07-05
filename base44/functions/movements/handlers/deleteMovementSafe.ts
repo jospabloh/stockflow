@@ -105,6 +105,7 @@ export async function handle(req: Request): Promise<Response> {
     // Only relevant if this was a paid direct exit (not linked to a quotation)
     if (movement.type === 'exit' && !movement.quotation_id && movement.paid) {
       base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+        'x-cron-secret': Deno.env.get('CRON_SECRET'),
         action: 'reverse',
         origin_type: 'movement',
         origin_id: movement_id,

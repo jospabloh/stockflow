@@ -73,6 +73,7 @@ export async function handle(req: Request): Promise<Response> {
         if (effectivePaid && isCashPayment) {
           // Use quotation.id as origin_id so this single "full payment confirmed" entry is idempotent
           await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+            'x-cron-secret': Deno.env.get('CRON_SECRET'),
             action: 'reconcile',
             origin_type: 'quotation',
             origin_id: quotation.id,
@@ -86,6 +87,7 @@ export async function handle(req: Request): Promise<Response> {
         } else if (!effectivePaid || !isCashPayment) {
           // Reverse: payment undone or method changed away from cash
           await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+            'x-cron-secret': Deno.env.get('CRON_SECRET'),
             action: 'reverse',
             origin_type: 'quotation',
             origin_id: quotation.id,

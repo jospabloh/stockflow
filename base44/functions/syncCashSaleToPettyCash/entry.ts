@@ -53,11 +53,6 @@ function isAllowedPaymentMethod(paymentMethod: string, allowedMethods: string[])
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const body = await req.json();
     const {
@@ -72,9 +67,27 @@ Deno.serve(async (req) => {
       business_id,
     } = body;
 
-    // Allow service role calls (no business_id on user) or direct user calls
-    const isServiceRole = !user.business_id;
-    if (!business_id || (!isServiceRole && business_id !== user.business_id)) {
+    // Auth de tenant. Los llamadores internos (createMovementSafe, convert,
+    // cancel, register-payment, etc.) invocan con asServiceRole y pasan
+    // CRON_SECRET; SÓLO ese secreto marca la llamada como service-role.
+    // La ausencia de business_id en el usuario ya NO se trata como service-role
+    // (era un bypass de aislamiento: un usuario recién registrado sin negocio
+    // podía operar sobre CUALQUIER tenant pasando un business_id ajeno). Una
+    // llamada directa de usuario sólo puede tocar su propio negocio.
+    const cronSecretEnv = Deno.env.get('CRON_SECRET');
+    const isServiceRole = Boolean(cronSecretEnv) && (
+      req.headers.get('x-cron-secret') === cronSecretEnv ||
+      body?.['x-cron-secret'] === cronSecretEnv
+    );
+
+    const user = isServiceRole ? null : await base44.auth.me().catch(() => null);
+    if (!isServiceRole && !user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!business_id) {
+      return Response.json({ error: 'business_id is required' }, { status: 400 });
+    }
+    if (!isServiceRole && business_id !== user.business_id) {
       return Response.json({ error: 'Forbidden: business_id mismatch' }, { status: 403 });
     }
 

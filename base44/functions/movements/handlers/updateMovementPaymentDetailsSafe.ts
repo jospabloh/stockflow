@@ -29,6 +29,7 @@ export async function handle(req: Request): Promise<Response> {
     // Reconcile for paid direct exits when payment method changes
     if (updated.type === 'exit' && !updated.quotation_id && updated.paid) {
       base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+        'x-cron-secret': Deno.env.get('CRON_SECRET'),
         action: 'reconcile',
         origin_type: 'movement',
         origin_id: updated.id,
