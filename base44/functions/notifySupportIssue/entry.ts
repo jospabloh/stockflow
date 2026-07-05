@@ -10,6 +10,17 @@ Deno.serve(async (req) => {
         const reporter_name = user_name || user?.full_name || 'Desconocido';
         const reporter_email = user_email || user?.email || 'No disponible';
 
+        const escapeHtml = (str) => String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+        const safe_name = escapeHtml(reporter_name);
+        const safe_email = escapeHtml(reporter_email);
+        const safe_type = escapeHtml(issue_type);
+        const safe_description = escapeHtml(description || '');
+
         const subjectMap = {
             bug: '🐛 Bug reportado por usuario',
             mejora: '💡 Sugerencia de mejora de usuario',
@@ -27,19 +38,19 @@ Deno.serve(async (req) => {
   <table style="width:100%; border-collapse:collapse; margin-top:16px;">
     <tr>
       <td style="padding:8px; font-weight:bold; color:#64748b;">Usuario:</td>
-      <td style="padding:8px;">${reporter_name}</td>
+      <td style="padding:8px;">${safe_name}</td>
     </tr>
     <tr style="background:#f8fafc;">
       <td style="padding:8px; font-weight:bold; color:#64748b;">Email:</td>
-      <td style="padding:8px;">${reporter_email}</td>
+      <td style="padding:8px;">${safe_email}</td>
     </tr>
     <tr>
       <td style="padding:8px; font-weight:bold; color:#64748b;">Tipo:</td>
-      <td style="padding:8px; text-transform:capitalize;">${issue_type}</td>
+      <td style="padding:8px; text-transform:capitalize;">${safe_type}</td>
     </tr>
     <tr style="background:#f8fafc;">
       <td style="padding:8px; font-weight:bold; color:#64748b; vertical-align:top;">Descripción:</td>
-      <td style="padding:8px;">${description}</td>
+      <td style="padding:8px; white-space:pre-wrap;">${safe_description}</td>
     </tr>
   </table>
   <p style="margin-top:24px; color:#64748b; font-size:12px;">
