@@ -12,7 +12,8 @@ export async function handle(req: Request): Promise<Response> {
     const body = await req.json();
     const {
       business_id, course_id, contact_id,
-      status, price_option_label, price_amount, people_count, amount_paid, payment_method, notes
+      status, price_option_label, price_amount, people_count, amount_paid, payment_method, notes,
+      deposit_amount, invoice_status, reason, reason_other, age
     } = body;
 
     if (!business_id) {
@@ -59,6 +60,11 @@ export async function handle(req: Request): Promise<Response> {
       people_count: typeof people_count === 'number' && people_count > 0 ? people_count : 1,
       amount_paid: typeof amount_paid === 'number' ? amount_paid : 0,
       payment_method: payment_method || "",
+      deposit_amount: typeof deposit_amount === 'number' ? deposit_amount : 0,
+      invoice_status: invoice_status || "no_requiere",
+      reason: reason || "",
+      reason_other: reason_other || "",
+      age: typeof age === 'number' ? age : null,
       notes: notes || ""
     });
 
