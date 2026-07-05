@@ -27,7 +27,7 @@ function getAllKeysSet() {
     const keys = new Set();
 
     // Simpler: extract module names then action ids
-    const moduleBlockRegex = /^\s{2}["']?([\w\s]+)["']?\s*:\s*\{/gm;
+    const moduleBlockRegex = /^\s{2}["']?([^"':{}\n]+?)["']?\s*:\s*\{/gm;
     const modules = [];
     let mm;
     while ((mm = moduleBlockRegex.exec(src)) !== null) {
@@ -36,7 +36,7 @@ function getAllKeysSet() {
     }
 
     // Extract all action ids per module block
-    const fullModuleRegex = /^\s{2}["']?([\w\s]+)["']?\s*:\s*\{[\s\S]*?actions:\s*\[([\s\S]*?)\]/gm;
+    const fullModuleRegex = /^\s{2}["']?([^"':{}\n]+?)["']?\s*:\s*\{[\s\S]*?actions:\s*\[([\s\S]*?)\]/gm;
     let fm;
     while ((fm = fullModuleRegex.exec(src)) !== null) {
       const modName = fm[1].trim();

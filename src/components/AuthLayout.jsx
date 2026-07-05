@@ -1,5 +1,4 @@
 import React from "react";
-import { Package } from "lucide-react";
 
 const LOGO_URL = "https://media.base44.com/images/public/69af971d0fdb362c9ae52ed3/5032b5555_StockFlow_logo.png";
 const APP_NAME = "StockFlow";
@@ -39,11 +38,11 @@ export default function AuthLayout({ title, subtitle, footer, children, showSpli
       {/* ── RIGHT PANEL: visual ── */}
       {showSplitPanel && (
         <div className="relative hidden lg:flex lg:w-[40%] items-center justify-center overflow-hidden
-          bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100
-          dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950">
+          bg-gradient-to-br from-slate-100 via-blue-50 to-brand-100
+          dark:from-slate-900 dark:via-blue-950 dark:to-brand-950">
           {/* Blurred depth circles */}
           <div className="absolute top-1/4 left-1/4 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-200/50 blur-3xl dark:bg-blue-700/30" />
-          <div className="absolute bottom-1/4 right-1/4 h-56 w-56 translate-x-1/2 translate-y-1/2 rounded-full bg-indigo-200/40 blur-3xl dark:bg-indigo-700/25" />
+          <div className="absolute bottom-1/4 right-1/4 h-56 w-56 translate-x-1/2 translate-y-1/2 rounded-full bg-brand-200/40 blur-3xl dark:bg-brand-700/25" />
 
           {/* Centered content */}
           <div className="relative z-10 flex flex-col items-center gap-6 px-10 text-center">
