@@ -20,6 +20,7 @@ const LicenseAdmin = lazy(() => import('./pages/LicenseAdmin'));
 const TenantRulesAdmin = lazy(() => import('./pages/TenantRulesAdmin'));
 const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
 import { NavigationProvider } from '@/lib/NavigationContext';
+import SessionHeartbeat from '@/lib/SessionHeartbeat';
 
 import BusinessSetup from './pages/BusinessSetup';
 
@@ -161,6 +162,7 @@ function App() {
           <BusinessProvider>
             <Router>
               <NavigationProvider>
+                <SessionHeartbeat />
                 <AuthenticatedApp />
               </NavigationProvider>
             </Router>
