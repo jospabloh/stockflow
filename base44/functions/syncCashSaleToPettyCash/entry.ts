@@ -84,6 +84,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'origin_type and origin_id are required' }, { status: 400 });
     }
 
+    // Defensa en profundidad (igual que applyMovementStock): el business_id del
+    // body alimenta filtros asServiceRole (que ignoran RLS), así que lo anclamos
+    // al registro de ORIGEN real. Si el origen existe y pertenece a otro tenant,
+    // rechazamos — así un llamador sin business_id no puede crear/borrar caja
+    // chica de otro negocio pasando un business_id ajeno. Si el origen no existe
+    // (p. ej. 'reverse' tras un borrado), se continúa con el flujo normal.
+    const ORIGIN_ENTITY: Record<string, string> = { movement: 'Movement', quotation: 'Quotation' };
+    const originEntity = ORIGIN_ENTITY[normalizeText(origin_type)];
+    if (originEntity) {
+      try {
+        const originRows = await base44.asServiceRole.entities[originEntity].filter({ id: origin_id });
+        const origin = originRows[0];
+        if (origin && origin.business_id && origin.business_id !== business_id) {
+          return Response.json({ error: 'Forbidden: origin/business tenant mismatch' }, { status: 403 });
+        }
+      } catch (_) { /* si no se puede verificar el origen, continúan las validaciones normales */ }
+    }
+
     const [ruleRows, allExisting] = await Promise.all([
       base44.asServiceRole.entities.TenantRule.filter({ business_id, rule_key: RULE_KEY }),
       base44.asServiceRole.entities.PettyCashMovement.filter({ business_id, origin_id }),
