@@ -51,7 +51,12 @@ Deno.serve(async (req) => {
 
     const now = new Date();
     const nowISO = now.toISOString();
-    const businesses = await base44.asServiceRole.entities.Business.list();
+    // Tope defensivo explícito: Base44 ya limita list a 5,000, pero lo fijamos
+    // aquí para acotar el trabajo por corrida (evita barridos no acotados si el
+    // número de negocios creciera). El recorrido siguiente son bucles finitos
+    // sobre este arreglo — no hay recursión ni bucles no terminantes.
+    const BUSINESS_SCAN_CAP = 5000;
+    const businesses = await base44.asServiceRole.entities.Business.list('-created_date', BUSINESS_SCAN_CAP);
 
     const emailJobs = [];
     const seen = new Set();

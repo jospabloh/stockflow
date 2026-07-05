@@ -30,10 +30,16 @@ async function hmacHex(secret: string, msg: string): Promise<string> {
   return Array.from(new Uint8Array(mac), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Comparación en tiempo constante SIN corto-circuito por longitud: la diferencia
+// de longitud se pliega en el acumulador y el bucle recorre siempre el máximo, de
+// modo que el tiempo de ejecución no depende de en qué carácter difieren ni del
+// largo del valor recibido. (Las firmas son hex HMAC-SHA256 de 64 chars.)
 function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let out = 0;
-  for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  const len = Math.max(a.length, b.length);
+  let out = a.length ^ b.length;
+  for (let i = 0; i < len; i++) {
+    out |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
   return out === 0;
 }
 
