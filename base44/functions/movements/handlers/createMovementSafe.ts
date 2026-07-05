@@ -95,6 +95,7 @@ export async function handle(req: Request): Promise<Response> {
     const movementTotal = (movement.quantity || 0) * (movement.unit_price || 0);
     if (movement.type === 'exit' && !movement.quotation_id && movement.paid && movementTotal > 0) {
       base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+        'x-cron-secret': Deno.env.get('CRON_SECRET'),
         action: 'reconcile',
         origin_type: 'movement',
         origin_id: movement.id,

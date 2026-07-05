@@ -61,6 +61,7 @@ export async function handle(req: Request): Promise<Response> {
     // TENANT-SCOPED: Trigger petty cash income for cash payments
     // Fire-and-forget — failure must NOT block the payment confirmation
     base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+      'x-cron-secret': Deno.env.get('CRON_SECRET'),
       action: 'reconcile',
       origin_type: 'movement',
       origin_id: movement_id,

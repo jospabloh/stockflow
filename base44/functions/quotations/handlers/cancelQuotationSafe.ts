@@ -174,6 +174,7 @@ export async function handle(req: Request): Promise<Response> {
         if (quotation.paid) {
           try {
             await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+              'x-cron-secret': Deno.env.get('CRON_SECRET'),
               action: 'reverse',
               origin_type: 'quotation',
               origin_id: quotation.id,
