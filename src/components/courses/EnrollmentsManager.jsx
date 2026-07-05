@@ -11,10 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, Trash2, Users, ClipboardList, Send, Mail, MessageCircle } from "lucide-react";
+import { Plus, Trash2, Users, ClipboardList, Send, Mail, MessageCircle, CheckCircle2, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { waLink, enrollmentWhatsAppMessage } from "@/lib/courseComms";
+import SectionHeader from "@/components/courses/SectionHeader";
+import StatCard from "@/components/dashboard/StatCard";
 
 const STATUS = [
   { v: "interesado", l: "Interesado", c: "bg-slate-100 text-slate-600" },
@@ -183,17 +185,35 @@ export default function EnrollmentsManager() {
     .filter(c => (c.name || "").toLowerCase().includes(contactSearch.toLowerCase()) || (c.phone || "").includes(contactSearch))
     .slice(0, 20);
 
+  const stats = useMemo(() => {
+    const total = enrollments.length;
+    const confirmed = enrollments.filter(e => e.status === "confirmado" || e.status === "pagado" || e.status === "asistio").length;
+    const attended = enrollments.filter(e => e.status === "asistio").length;
+    const income = enrollments.reduce((sum, e) => sum + (Number(e.amount_paid) || 0), 0);
+    return { total, confirmed, attended, income };
+  }, [enrollments]);
+
   return (
-    <Card className="border-0 shadow-sm p-6">
-      <div className="flex items-center justify-between mb-1">
-        <h3 className="font-semibold text-slate-700 text-lg flex items-center gap-2"><ClipboardList className="h-5 w-5" /> Inscripciones</h3>
-        {can('Inscripciones', 'create') && (
-          <Button size="sm" className="bg-brand-600 hover:bg-brand-700" onClick={openNew}>
-            <Plus className="h-4 w-4 mr-1" /> Nueva inscripción
+    <div>
+      <SectionHeader
+        icon={ClipboardList}
+        title="Inscripciones"
+        subtitle="Asistentes por curso y su estatus (interesado → confirmado → pagado → asistió)."
+        action={can('Inscripciones', 'create') && (
+          <Button className="bg-brand-600 hover:bg-brand-700" onClick={openNew}>
+            <Plus className="h-4 w-4 mr-1.5" /> Nueva inscripción
           </Button>
         )}
+      />
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+        <StatCard title="Inscripciones" value={String(stats.total)} subtitle="en total" icon={ClipboardList} color="indigo" />
+        <StatCard title="Confirmadas" value={String(stats.confirmed)} subtitle="confirmado o más" icon={CheckCircle2} color="emerald" />
+        <StatCard title="Asistieron" value={String(stats.attended)} subtitle="completado" icon={Users} color="cyan" />
+        <StatCard title="Cobrado" value={money(stats.income)} subtitle="total pagado" icon={DollarSign} color="amber" />
       </div>
-      <p className="text-sm text-muted-foreground mb-4">Asistentes por curso y su estatus (interesado → confirmado → pagado → asistió).</p>
+
+      <Card className="border-0 shadow-sm p-6">
 
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="min-w-[220px]">
@@ -287,7 +307,10 @@ export default function EnrollmentsManager() {
               </TableRow>
             ))}
             {filtered.length === 0 && (
-              <TableRow><TableCell colSpan={7} className="text-center text-slate-400 py-8">No hay inscripciones</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">
+                <ClipboardList className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
+                Sin inscripciones. Inscribe a un contacto en un curso para empezar el seguimiento.
+              </TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -394,6 +417,7 @@ export default function EnrollmentsManager() {
           </div>
         </DialogContent>
       </Dialog>
-    </Card>
+      </Card>
+    </div>
   );
 }

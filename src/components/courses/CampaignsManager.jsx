@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Megaphone, Mail, MessageCircle, Users, Send, History } from "lucide-react";
 import { toast } from "sonner";
 import { waLink } from "@/lib/courseComms";
+import SectionHeader from "@/components/courses/SectionHeader";
 
 const ENROLL_STATUS = [
   { v: "", l: "Todos los inscritos" },
@@ -137,9 +138,12 @@ export default function CampaignsManager() {
 
   return (
     <div className="space-y-6">
+      <SectionHeader
+        icon={Megaphone}
+        title="Campañas y avisos"
+        subtitle="Manda un mensaje por correo o WhatsApp a un segmento de contactos o a los inscritos de un curso."
+      />
       <Card className="border-0 shadow-sm p-6">
-        <h3 className="font-semibold text-slate-700 text-lg flex items-center gap-2 mb-1"><Megaphone className="h-5 w-5" /> Campañas y avisos</h3>
-        <p className="text-sm text-muted-foreground mb-4">Manda un mensaje por correo o WhatsApp a un segmento de contactos o a los inscritos de un curso.</p>
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Left: compose */}

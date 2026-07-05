@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Pencil, Trash2, UserCheck, UserX, X } from "lucide-react";
+import { Plus, Pencil, Trash2, UserCheck, UserX, X, Contact, Tag, GraduationCap } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useBusinessContext } from "@/components/BusinessContext";
 import {
@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import SectionHeader from "@/components/courses/SectionHeader";
+import StatCard from "@/components/dashboard/StatCard";
 import confetti from "canvas-confetti";
 
 const SOURCES = [
@@ -145,17 +147,36 @@ export default function ContactsManager() {
     )
     .sort((a, b) => (a.name || "").localeCompare(b.name || "", "es"));
 
+  const stats = useMemo(() => {
+    const total = contacts.length;
+    const active = contacts.filter(c => c.status !== "inactive").length;
+    const tagSet = new Set();
+    contacts.forEach(c => (c.tags || []).forEach(t => tagSet.add(t)));
+    const fromCourse = contacts.filter(c => c.source === "curso").length;
+    return { total, active, tags: tagSet.size, fromCourse };
+  }, [contacts]);
+
   return (
-    <Card className="border-0 shadow-sm p-6">
-      <div className="flex items-center justify-between mb-1">
-        <h3 className="font-semibold text-slate-700 text-lg">Contactos</h3>
-        {can('Contactos', 'create') && (
-          <Button size="sm" className="bg-brand-600 hover:bg-brand-700" onClick={openNew}>
-            <Plus className="h-4 w-4 mr-1" /> Nuevo contacto
+    <div>
+      <SectionHeader
+        icon={Contact}
+        title="Contactos"
+        subtitle="Personas interesadas en tus cursos, campañas y avisos."
+        action={can('Contactos', 'create') && (
+          <Button className="bg-brand-600 hover:bg-brand-700" onClick={openNew}>
+            <Plus className="h-4 w-4 mr-1.5" /> Nuevo contacto
           </Button>
         )}
+      />
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+        <StatCard title="Contactos" value={String(stats.total)} subtitle="en total" icon={Contact} color="indigo" />
+        <StatCard title="Activos" value={String(stats.active)} subtitle="disponibles" icon={UserCheck} color="emerald" />
+        <StatCard title="Etiquetas" value={String(stats.tags)} subtitle="distintas" icon={Tag} color="cyan" />
+        <StatCard title="Desde cursos" value={String(stats.fromCourse)} subtitle="origen curso" icon={GraduationCap} color="amber" />
       </div>
-      <p className="text-sm text-muted-foreground mb-4">Personas interesadas en tus cursos, campañas y avisos.</p>
+
+      <Card className="border-0 shadow-sm p-6">
       <Input
         placeholder="Buscar por nombre, email, teléfono o etiqueta..."
         value={search}
@@ -211,7 +232,10 @@ export default function ContactsManager() {
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-slate-400 py-8">No hay contactos registrados</TableCell>
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
+                  <Contact className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
+                  Aún no tienes contactos. Agrégalos para inscribirlos y hacerles campañas.
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -337,6 +361,7 @@ export default function ContactsManager() {
           </div>
         </DialogContent>
       </Dialog>
-    </Card>
+      </Card>
+    </div>
   );
 }

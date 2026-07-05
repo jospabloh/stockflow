@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, CalendarDays, MapPin, User, Clock } from "lucide-react";
+import SectionHeader from "@/components/courses/SectionHeader";
 
 const WEEKDAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -71,16 +72,21 @@ export default function CoursesCalendar() {
   const selectedEvents = selected ? (eventsByDate[selected] || []) : [];
 
   return (
-    <Card className="border-0 shadow-sm p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-slate-700 text-lg flex items-center gap-2"><CalendarDays className="h-5 w-5" /> Calendario de cursos</h3>
-        <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => move(-1)}><ChevronLeft className="h-4 w-4" /></Button>
-          <Button variant="outline" size="sm" onClick={goToday}>Hoy</Button>
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => move(1)}><ChevronRight className="h-4 w-4" /></Button>
-        </div>
-      </div>
-      <p className="text-center font-medium text-slate-600 mb-3 capitalize">{MONTHS[cursor.m]} {cursor.y}</p>
+    <div>
+      <SectionHeader
+        icon={CalendarDays}
+        title="Calendario"
+        subtitle="Sesiones de todos tus cursos. Toca un día para ver el detalle."
+        action={
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => move(-1)} aria-label="Mes anterior"><ChevronLeft className="h-4 w-4" /></Button>
+            <Button variant="outline" size="sm" onClick={goToday}>Hoy</Button>
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => move(1)} aria-label="Mes siguiente"><ChevronRight className="h-4 w-4" /></Button>
+          </div>
+        }
+      />
+      <Card className="border-0 shadow-sm p-6">
+      <p className="text-center font-medium text-slate-600 dark:text-slate-300 mb-3 capitalize">{MONTHS[cursor.m]} {cursor.y}</p>
 
       <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-muted-foreground mb-1">
         {WEEKDAYS.map(d => <div key={d} className="py-1">{d}</div>)}
@@ -140,6 +146,7 @@ export default function CoursesCalendar() {
           )}
         </div>
       )}
-    </Card>
+      </Card>
+    </div>
   );
 }

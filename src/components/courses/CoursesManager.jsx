@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
 import { useBusinessContext } from "@/components/BusinessContext";
@@ -10,16 +10,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, X, GraduationCap, CalendarDays, Clock } from "lucide-react";
+import { Plus, Pencil, Trash2, X, GraduationCap, CalendarDays, Clock, Users, Tag, MapPin, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import SectionHeader from "@/components/courses/SectionHeader";
+import StatCard from "@/components/dashboard/StatCard";
 
 const STATUS = [
-  { v: "draft", l: "Borrador", c: "bg-slate-100 text-slate-600" },
-  { v: "published", l: "Publicado", c: "bg-green-100 text-green-700" },
-  { v: "completed", l: "Completado", c: "bg-blue-100 text-blue-700" },
-  { v: "cancelled", l: "Cancelado", c: "bg-red-100 text-red-700" },
+  { v: "draft", l: "Borrador", c: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300" },
+  { v: "published", l: "Publicado", c: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" },
+  { v: "completed", l: "Completado", c: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
+  { v: "cancelled", l: "Cancelado", c: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
 ];
 const STATUS_MAP = STATUS.reduce((a, s) => ({ ...a, [s.v]: s }), {});
 
@@ -32,25 +33,29 @@ const fmtDate = (d) => {
   const dt = new Date(`${d}T00:00:00`);
   return Number.isNaN(dt.getTime()) ? d : dt.toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" });
 };
+const fmtShort = (d) => {
+  if (!d) return "—";
+  const dt = new Date(`${d}T00:00:00`);
+  return Number.isNaN(dt.getTime()) ? d : dt.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+};
 
 const todayStr = () => {
   const n = new Date();
   return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
 };
 
-// Next upcoming session date (>= today), else the earliest session, else null
 function nextSession(sessions) {
-  const list = (sessions || []).filter(s => s?.date).slice().sort((a, b) => a.date.localeCompare(b.date));
+  const list = (sessions || []).filter((s) => s?.date).slice().sort((a, b) => a.date.localeCompare(b.date));
   if (list.length === 0) return null;
   const t = todayStr();
-  return list.find(s => s.date >= t) || list[list.length - 1];
+  return list.find((s) => s.date >= t) || list[list.length - 1];
 }
 
 function priceLabel(opts) {
-  const list = (opts || []).filter(o => typeof o?.amount === "number");
-  if (list.length === 0) return "—";
+  const list = (opts || []).filter((o) => typeof o?.amount === "number");
+  if (list.length === 0) return null;
   if (list.length === 1) return money(list[0].amount);
-  const amounts = list.map(o => o.amount).sort((a, b) => a - b);
+  const amounts = list.map((o) => o.amount).sort((a, b) => a - b);
   return `${money(amounts[0])} – ${money(amounts[amounts.length - 1])}`;
 }
 
@@ -60,7 +65,7 @@ const emptyForm = {
   topics: [], includes: [], price_options: [], sessions: [], flyer_url: "", notes: "",
 };
 
-// ── Small reusable list editor for arrays of strings ──
+// Editor reutilizable de listas de texto (temario, incluye)
 function StringListEditor({ items, onChange, placeholder }) {
   const [val, setVal] = useState("");
   const add = () => { const t = val.trim(); if (!t) return; onChange([...(items || []), t]); setVal(""); };
@@ -77,7 +82,7 @@ function StringListEditor({ items, onChange, placeholder }) {
         ))}
       </div>
       <div className="flex gap-2">
-        <Input value={val} onChange={e => setVal(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); add(); } }} placeholder={placeholder} />
+        <Input value={val} onChange={(e) => setVal(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }} placeholder={placeholder} />
         <Button type="button" variant="outline" size="sm" onClick={add}>Agregar</Button>
       </div>
     </div>
@@ -115,15 +120,13 @@ export default function CoursesManager() {
     setNameError(false); setFormOpen(true);
   };
 
-  // Price options editing
-  const setPrice = (i, key, value) => setForm(f => ({ ...f, price_options: f.price_options.map((p, idx) => idx === i ? { ...p, [key]: value } : p) }));
-  const addPrice = () => setForm(f => ({ ...f, price_options: [...f.price_options, { label: "", amount: 0 }] }));
-  const removePrice = (i) => setForm(f => ({ ...f, price_options: f.price_options.filter((_, idx) => idx !== i) }));
+  const setPrice = (i, key, value) => setForm((f) => ({ ...f, price_options: f.price_options.map((p, idx) => idx === i ? { ...p, [key]: value } : p) }));
+  const addPrice = () => setForm((f) => ({ ...f, price_options: [...f.price_options, { label: "", amount: 0 }] }));
+  const removePrice = (i) => setForm((f) => ({ ...f, price_options: f.price_options.filter((_, idx) => idx !== i) }));
 
-  // Sessions editing
-  const setSession = (i, key, value) => setForm(f => ({ ...f, sessions: f.sessions.map((s, idx) => idx === i ? { ...s, [key]: value } : s) }));
-  const addSession = () => setForm(f => ({ ...f, sessions: [...f.sessions, { date: "", start_time: "", end_time: "", note: "" }] }));
-  const removeSession = (i) => setForm(f => ({ ...f, sessions: f.sessions.filter((_, idx) => idx !== i) }));
+  const setSession = (i, key, value) => setForm((f) => ({ ...f, sessions: f.sessions.map((s, idx) => idx === i ? { ...s, [key]: value } : s) }));
+  const addSession = () => setForm((f) => ({ ...f, sessions: [...f.sessions, { date: "", start_time: "", end_time: "", note: "" }] }));
+  const removeSession = (i) => setForm((f) => ({ ...f, sessions: f.sessions.filter((_, idx) => idx !== i) }));
 
   const buildPayload = () => ({
     title: form.title.trim(),
@@ -137,11 +140,11 @@ export default function CoursesManager() {
     topics: form.topics,
     includes: form.includes,
     price_options: form.price_options
-      .filter(p => (p.label || "").trim() || p.amount)
-      .map(p => ({ label: (p.label || "").trim(), amount: Number(p.amount) || 0 })),
+      .filter((p) => (p.label || "").trim() || p.amount)
+      .map((p) => ({ label: (p.label || "").trim(), amount: Number(p.amount) || 0 })),
     sessions: form.sessions
-      .filter(s => s.date)
-      .map(s => ({ date: s.date, start_time: s.start_time || "", end_time: s.end_time || "", note: (s.note || "").trim() })),
+      .filter((s) => s.date)
+      .map((s) => ({ date: s.date, start_time: s.start_time || "", end_time: s.end_time || "", note: (s.note || "").trim() })),
     flyer_url: form.flyer_url,
     notes: form.notes,
   });
@@ -175,69 +178,116 @@ export default function CoursesManager() {
   const handleDelete = async (course) => {
     const response = await base44.functions.invoke('courses', { action: 'deleteCourseSafe', course_id: course.id });
     if (!response.data?.success) { toast.error(response.data?.error || "No se pudo eliminar el curso"); return; }
-    setCourses(courses.filter(c => c.id !== course.id));
+    setCourses(courses.filter((c) => c.id !== course.id));
     toast.success("Curso eliminado");
   };
 
   const filtered = courses
-    .filter(c => (c.title || "").toLowerCase().includes(search.toLowerCase()) || (c.instructor_name || "").toLowerCase().includes(search.toLowerCase()))
+    .filter((c) => (c.title || "").toLowerCase().includes(search.toLowerCase()) || (c.instructor_name || "").toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => (a.title || "").localeCompare(b.title || "", "es"));
 
+  const stats = useMemo(() => {
+    const total = courses.length;
+    const published = courses.filter((c) => c.status === "published").length;
+    const t = todayStr();
+    let next = null;
+    for (const c of courses) {
+      if (c.status === "cancelled") continue;
+      for (const s of (c.sessions || [])) {
+        if (s?.date && s.date >= t && (!next || s.date < next)) next = s.date;
+      }
+    }
+    return { total, published, next };
+  }, [courses]);
+
   return (
-    <Card className="border-0 shadow-sm p-6">
-      <div className="flex items-center justify-between mb-1">
-        <h3 className="font-semibold text-slate-700 text-lg flex items-center gap-2"><GraduationCap className="h-5 w-5" /> Cursos</h3>
-        {can('Cursos', 'create') && (
-          <Button size="sm" className="bg-brand-600 hover:bg-brand-700" onClick={openNew}>
-            <Plus className="h-4 w-4 mr-1" /> Nuevo curso
+    <div>
+      <SectionHeader
+        icon={GraduationCap}
+        title="Cursos"
+        subtitle="Tus cursos y talleres, con sus sesiones, precios y cupo."
+        action={can('Cursos', 'create') && (
+          <Button className="bg-brand-600 hover:bg-brand-700" onClick={openNew}>
+            <Plus className="h-4 w-4 mr-1.5" /> Nuevo curso
           </Button>
         )}
+      />
+
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
+        <StatCard title="Cursos" value={String(stats.total)} subtitle="en total" icon={GraduationCap} color="indigo" />
+        <StatCard title="Publicados" value={String(stats.published)} subtitle="visibles" icon={CheckCircle2} color="emerald" />
+        <StatCard title="Próxima sesión" value={fmtShort(stats.next)} subtitle={stats.next ? "agenda" : "sin agendar"} icon={CalendarDays} color="cyan" />
       </div>
-      <p className="text-sm text-muted-foreground mb-4">Tus cursos y talleres, con sus sesiones, precios y cupo.</p>
-      <Input placeholder="Buscar por curso o instructor..." value={search} onChange={e => setSearch(e.target.value)} className="mb-4" />
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Curso</TableHead>
-              <TableHead>Próxima sesión</TableHead>
-              <TableHead>Precio</TableHead>
-              <TableHead>Cupo</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="text-center">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map(c => {
-              const ns = nextSession(c.sessions);
-              const st = STATUS_MAP[c.status] || STATUS_MAP.draft;
-              return (
-                <TableRow key={c.id}>
-                  <TableCell className="font-medium">
-                    {c.title}
-                    {c.instructor_name && <span className="block text-xs text-slate-400">{c.instructor_name}{c.instructor_note ? ` · ${c.instructor_note}` : ""}</span>}
-                  </TableCell>
-                  <TableCell className="text-slate-500">{ns ? `${fmtDate(ns.date)}${ns.start_time ? ` · ${ns.start_time}` : ""}` : "—"}</TableCell>
-                  <TableCell className="text-slate-500">{priceLabel(c.price_options)}</TableCell>
-                  <TableCell className="text-slate-500">{c.capacity ? `${c.capacity}` : "—"}</TableCell>
-                  <TableCell><Badge className={st.c}>{st.l}</Badge></TableCell>
-                  <TableCell className="text-center">
+
+      <Input placeholder="Buscar por curso o instructor…" value={search} onChange={(e) => setSearch(e.target.value)} className="mb-4 max-w-md" />
+
+      {filtered.length === 0 ? (
+        <Card className="border-dashed shadow-none p-10 text-center">
+          <GraduationCap className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+          <p className="font-medium text-foreground">Aún no tienes cursos</p>
+          <p className="text-sm text-muted-foreground mt-1 mb-4">Crea tu primer curso o taller con sus sesiones y precios.</p>
+          {can('Cursos', 'create') && <Button className="bg-brand-600 hover:bg-brand-700" onClick={openNew}><Plus className="h-4 w-4 mr-1.5" /> Nuevo curso</Button>}
+        </Card>
+      ) : (
+        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filtered.map((c) => {
+            const ns = nextSession(c.sessions);
+            const st = STATUS_MAP[c.status] || STATUS_MAP.draft;
+            const price = priceLabel(c.price_options);
+            return (
+              <Card key={c.id} className="group relative overflow-hidden shadow-sm hover:shadow-md hover:border-brand-500/30 transition-all duration-300 flex flex-col">
+                <div className="h-1 bg-gradient-to-r from-brand-500 to-accent-500" />
+                <div className="p-5 flex flex-col flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-foreground leading-snug">{c.title}</h3>
+                      {c.instructor_name && (
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          {c.instructor_name}{c.instructor_note ? ` · ${c.instructor_note}` : ""}
+                        </p>
+                      )}
+                    </div>
+                    <Badge className={`${st.c} border-0 shrink-0`}>{st.l}</Badge>
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-2 text-sm">
+                    <CalendarDays className="h-4 w-4 text-brand-600 shrink-0" />
+                    {ns ? (
+                      <span className="text-foreground font-medium">{fmtDate(ns.date)}{ns.start_time ? ` · ${ns.start_time}` : ""}</span>
+                    ) : (
+                      <span className="text-muted-foreground">Sin sesión programada</span>
+                    )}
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {price && (
+                      <span className="inline-flex items-center rounded-full bg-brand-500/10 text-brand-700 dark:text-brand-300 px-2.5 py-0.5 text-xs font-semibold">{price}</span>
+                    )}
+                    {c.capacity ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground"><Users className="h-3 w-3" /> {c.capacity} lugares</span>
+                    ) : null}
+                    {(c.topics || []).length > 0 && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground"><Tag className="h-3 w-3" /> {c.topics.length} temas</span>
+                    )}
+                    {c.location && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground"><MapPin className="h-3 w-3" /> {c.location}</span>
+                    )}
+                  </div>
+
+                  <div className="mt-auto pt-4 flex justify-end gap-1">
                     {can('Cursos', 'edit') && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(c)}><Pencil className="h-4 w-4 text-slate-400" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(c)} aria-label="Editar curso"><Pencil className="h-4 w-4 text-slate-400" /></Button>
                     )}
                     {can('Cursos', 'delete') && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(c)}><Trash2 className="h-4 w-4 text-slate-400" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(c)} aria-label="Eliminar curso"><Trash2 className="h-4 w-4 text-slate-400" /></Button>
                     )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-            {filtered.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="text-center text-slate-400 py-8">No hay cursos registrados</TableCell></TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-w-2xl flex flex-col max-h-[min(92dvh,760px)] p-0">
@@ -247,58 +297,57 @@ export default function CoursesManager() {
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
             <div>
               <Label>Nombre del curso *</Label>
-              <Input value={form.title} onChange={e => { setForm({ ...form, title: e.target.value }); if (nameError) setNameError(false); }} className={nameError ? "border-red-500 focus-visible:ring-red-500" : ""} placeholder="Ej. Curso para Barista" />
+              <Input value={form.title} onChange={(e) => { setForm({ ...form, title: e.target.value }); if (nameError) setNameError(false); }} className={nameError ? "border-red-500 focus-visible:ring-red-500" : ""} placeholder="Ej. Curso para Barista" />
               {nameError && <p className="text-xs text-red-500 mt-1">Campo requerido</p>}
             </div>
             <div>
               <Label>Descripción</Label>
-              <Textarea rows={2} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Módulo teórico-práctico…" />
+              <Textarea rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Módulo teórico-práctico…" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Ubicación / modalidad</Label>
-                <Input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} placeholder="Ej. Baristop / En tu cafetería" />
+                <Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Ej. Baristop / En tu cafetería" />
               </div>
               <div>
                 <Label>Estado</Label>
-                <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{STATUS.map(s => <SelectItem key={s.v} value={s.v}>{s.l}</SelectItem>)}</SelectContent>
+                  <SelectContent>{STATUS.map((s) => <SelectItem key={s.v} value={s.v}>{s.l}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Instructor</Label>
-                <Input value={form.instructor_name} onChange={e => setForm({ ...form, instructor_name: e.target.value })} placeholder="Nombre" />
+                <Input value={form.instructor_name} onChange={(e) => setForm({ ...form, instructor_name: e.target.value })} placeholder="Nombre" />
               </div>
               <div>
                 <Label>Marca / invitado</Label>
-                <Input value={form.instructor_note} onChange={e => setForm({ ...form, instructor_note: e.target.value })} placeholder="Ej. Prado Café" />
+                <Input value={form.instructor_note} onChange={(e) => setForm({ ...form, instructor_note: e.target.value })} placeholder="Ej. Prado Café" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Cupo máximo</Label>
-                <Input type="number" min="0" value={form.capacity} onChange={e => setForm({ ...form, capacity: e.target.value })} placeholder="Ej. 4" />
+                <Input type="number" min="0" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="Ej. 4" />
               </div>
               <div>
                 <Label>Precio persona extra (MXN)</Label>
-                <Input type="number" min="0" value={form.extra_person_price} onChange={e => setForm({ ...form, extra_person_price: e.target.value })} placeholder="Ej. 500" />
+                <Input type="number" min="0" value={form.extra_person_price} onChange={(e) => setForm({ ...form, extra_person_price: e.target.value })} placeholder="Ej. 500" />
               </div>
             </div>
 
             <div>
               <Label>Temario</Label>
-              <StringListEditor items={form.topics} onChange={topics => setForm(f => ({ ...f, topics }))} placeholder="Ej. Métodos de extracción" />
+              <StringListEditor items={form.topics} onChange={(topics) => setForm((f) => ({ ...f, topics }))} placeholder="Ej. Métodos de extracción" />
             </div>
 
             <div>
               <Label>Incluye</Label>
-              <StringListEditor items={form.includes} onChange={includes => setForm(f => ({ ...f, includes }))} placeholder="Ej. Manual y libreta" />
+              <StringListEditor items={form.includes} onChange={(includes) => setForm((f) => ({ ...f, includes }))} placeholder="Ej. Manual y libreta" />
             </div>
 
-            {/* Precios por modalidad */}
             <div>
               <div className="flex items-center justify-between">
                 <Label>Precios</Label>
@@ -308,8 +357,8 @@ export default function CoursesManager() {
               <div className="space-y-2">
                 {form.price_options.map((p, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <Input value={p.label} onChange={e => setPrice(i, "label", e.target.value)} placeholder="Etiqueta (ej. En nuestra cafetería)" className="flex-1" />
-                    <Input type="number" min="0" value={p.amount} onChange={e => setPrice(i, "amount", e.target.value)} placeholder="MXN" className="w-28" />
+                    <Input value={p.label} onChange={(e) => setPrice(i, "label", e.target.value)} placeholder="Etiqueta (ej. En nuestra cafetería)" className="flex-1" />
+                    <Input type="number" min="0" value={p.amount} onChange={(e) => setPrice(i, "amount", e.target.value)} placeholder="MXN" className="w-28" />
                     <button type="button" onClick={() => removePrice(i)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
                   </div>
                 ))}
@@ -317,7 +366,6 @@ export default function CoursesManager() {
               </div>
             </div>
 
-            {/* Sesiones */}
             <div>
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-1"><CalendarDays className="h-4 w-4" /> Sesiones</Label>
@@ -328,15 +376,15 @@ export default function CoursesManager() {
                 {form.sessions.map((s, i) => (
                   <div key={i} className="rounded-md border border-border p-2 space-y-2">
                     <div className="flex items-center gap-2">
-                      <Input type="date" value={s.date} onChange={e => setSession(i, "date", e.target.value)} className="flex-1" />
+                      <Input type="date" value={s.date} onChange={(e) => setSession(i, "date", e.target.value)} className="flex-1" />
                       <button type="button" onClick={() => removeSession(i)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1 flex-1"><Clock className="h-3.5 w-3.5 text-muted-foreground" /><Input type="time" value={s.start_time} onChange={e => setSession(i, "start_time", e.target.value)} /></div>
+                      <div className="flex items-center gap-1 flex-1"><Clock className="h-3.5 w-3.5 text-muted-foreground" /><Input type="time" value={s.start_time} onChange={(e) => setSession(i, "start_time", e.target.value)} /></div>
                       <span className="text-muted-foreground text-sm">a</span>
-                      <Input type="time" value={s.end_time} onChange={e => setSession(i, "end_time", e.target.value)} className="flex-1" />
+                      <Input type="time" value={s.end_time} onChange={(e) => setSession(i, "end_time", e.target.value)} className="flex-1" />
                     </div>
-                    <Input value={s.note} onChange={e => setSession(i, "note", e.target.value)} placeholder="Nota (ej. Sábado · Módulo 1)" />
+                    <Input value={s.note} onChange={(e) => setSession(i, "note", e.target.value)} placeholder="Nota (ej. Sábado · Módulo 1)" />
                   </div>
                 ))}
                 {form.sessions.length === 0 && <p className="text-xs text-slate-400">Sin sesiones programadas.</p>}
@@ -345,11 +393,11 @@ export default function CoursesManager() {
 
             <div>
               <Label>URL del flyer (opcional)</Label>
-              <Input value={form.flyer_url} onChange={e => setForm({ ...form, flyer_url: e.target.value })} placeholder="https://…" />
+              <Input value={form.flyer_url} onChange={(e) => setForm({ ...form, flyer_url: e.target.value })} placeholder="https://…" />
             </div>
             <div>
               <Label>Notas internas</Label>
-              <Textarea rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
+              <Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </div>
           </div>
           <div className="flex justify-end gap-3 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-border shrink-0 bg-card">
@@ -358,6 +406,6 @@ export default function CoursesManager() {
           </div>
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   );
 }
