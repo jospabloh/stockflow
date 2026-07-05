@@ -1,5 +1,6 @@
 import { getHandler } from './handlers/index.ts';
 
+// v2 (2026-07-05): seguimiento de inscripción — deposit_amount, invoice_status, reason, reason_other, age.
 Deno.serve(async (req) => {
   let action = '';
   try {

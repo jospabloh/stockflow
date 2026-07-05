@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Pencil, Trash2, UserCheck, UserX, X, Contact, Tag, GraduationCap } from "lucide-react";
+import { Plus, Pencil, Trash2, UserCheck, UserX, X, Contact, Tag, GraduationCap, Calendar } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useBusinessContext } from "@/components/BusinessContext";
 import {
@@ -31,6 +31,27 @@ const SOURCES = [
 const SOURCE_LABEL = SOURCES.reduce((acc, s) => ({ ...acc, [s.v]: s.l }), {});
 const TAG_SUGGESTIONS = ["matcha", "barista", "cultura cafetera", "cafetería", "mayoreo"];
 
+// Estatus de inscripción (para el historial de cursos por contacto)
+const ENR_STATUS = {
+  interesado: { l: "Interesado", c: "bg-slate-100 text-slate-600" },
+  confirmado: { l: "Confirmado", c: "bg-amber-100 text-amber-700" },
+  pagado: { l: "Pagado", c: "bg-emerald-100 text-emerald-700" },
+  asistio: { l: "Asistió", c: "bg-blue-100 text-blue-700" },
+  no_show: { l: "No asistió", c: "bg-red-100 text-red-700" },
+  cancelado: { l: "Cancelado", c: "bg-gray-100 text-gray-500" },
+};
+
+const money = (n) => (typeof n === "number" && !Number.isNaN(n))
+  ? new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n)
+  : null;
+
+const fmtDate = (d) => {
+  if (!d) return "";
+  const parsed = new Date(d);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return new Intl.DateTimeFormat("es-MX", { day: "2-digit", month: "short", year: "numeric" }).format(parsed);
+};
+
 const emptyForm = {
   name: "", phone: "", email: "", tags: [], source: "", status: "active",
   city: "", instagram: "", notes: "", client_id: "", client_name: "",
@@ -48,6 +69,9 @@ export default function ContactsManager() {
   const [tagInput, setTagInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [enrollments, setEnrollments] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [historyContact, setHistoryContact] = useState(null);
 
   const load = () => businessId
     ? base44.entities.Contact.filter({ business_id: businessId }, "-created_date").then(setContacts)
@@ -57,6 +81,8 @@ export default function ContactsManager() {
     load();
     if (businessId) {
       base44.entities.Client.filter({ business_id: businessId }, "-created_date").then(setClients).catch(() => setClients([]));
+      base44.entities.Enrollment.filter({ business_id: businessId }, "-created_date", 1000).then(setEnrollments).catch(() => setEnrollments([]));
+      base44.entities.Course.filter({ business_id: businessId }, "-created_date", 500).then(setCourses).catch(() => setCourses([]));
     }
   }, [businessId]);
 
@@ -156,6 +182,42 @@ export default function ContactsManager() {
     return { total, active, tags: tagSet.size, fromCourse };
   }, [contacts]);
 
+  // --- Historial de cursos por contacto (edad por curso) ---
+  const courseById = useMemo(() => courses.reduce((a, c) => ({ ...a, [c.id]: c }), {}), [courses]);
+  const enrollmentsByContact = useMemo(() => {
+    const m = {};
+    for (const e of enrollments) (m[e.contact_id] ||= []).push(e);
+    return m;
+  }, [enrollments]);
+
+  const courseStart = (enr) => {
+    const c = courseById[enr.course_id];
+    const dates = (c?.sessions || []).map(s => s.date).filter(Boolean).sort();
+    return dates[0] || enr.created_date || "";
+  };
+  const coursePeriod = (enr) => {
+    const c = courseById[enr.course_id];
+    const dates = (c?.sessions || []).map(s => s.date).filter(Boolean).sort();
+    if (dates.length === 1) return fmtDate(dates[0]);
+    if (dates.length > 1) return `${fmtDate(dates[0])} – ${fmtDate(dates[dates.length - 1])}`;
+    return enr.created_date ? `Inscrito ${fmtDate(enr.created_date)}` : "Sin fecha";
+  };
+
+  const history = useMemo(() => {
+    if (!historyContact) return [];
+    return (enrollmentsByContact[historyContact.id] || [])
+      .slice()
+      .sort((a, b) => String(courseStart(a)).localeCompare(String(courseStart(b))));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyContact, enrollmentsByContact, courseById]);
+
+  const ageSummary = useMemo(() => {
+    const ages = history.map(e => e.age).filter(a => typeof a === "number");
+    if (!ages.length) return null;
+    const min = Math.min(...ages), max = Math.max(...ages);
+    return min === max ? `${min} años` : `de ${min} a ${max} años`;
+  }, [history]);
+
   return (
     <div>
       <SectionHeader
@@ -217,6 +279,25 @@ export default function ContactsManager() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-center">
+                  {(() => {
+                    const courseCount = (enrollmentsByContact[c.id] || []).length;
+                    return (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 relative"
+                        title="Historial de cursos"
+                        onClick={() => setHistoryContact(c)}
+                      >
+                        <GraduationCap className="h-4 w-4 text-slate-400" />
+                        {courseCount > 0 && (
+                          <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-brand-600 px-1 text-[9px] font-semibold text-white">
+                            {courseCount}
+                          </span>
+                        )}
+                      </Button>
+                    );
+                  })()}
                   {can('Contactos', 'edit') && (
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(c)}>
                       <Pencil className="h-4 w-4 text-slate-400" />
@@ -358,6 +439,80 @@ export default function ContactsManager() {
             <Button onClick={handleSave} disabled={!form.name?.trim() || saving} className="bg-brand-600 hover:bg-brand-700">
               {saving ? "Guardando..." : "Guardar"}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Historial de cursos por contacto — edad registrada en cada inscripción */}
+      <Dialog open={!!historyContact} onOpenChange={(o) => { if (!o) setHistoryContact(null); }}>
+        <DialogContent className="max-w-lg flex flex-col max-h-[min(90dvh,720px)] p-0">
+          <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b border-border">
+            <DialogTitle className="flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 text-brand-600" />
+              Historial de cursos
+            </DialogTitle>
+            {historyContact && (
+              <p className="text-sm">
+                <span className="font-medium text-foreground">{historyContact.name}</span>
+                {history.length > 0 && (
+                  <span className="text-muted-foreground">
+                    {" · "}{history.length} {history.length === 1 ? "curso" : "cursos"}
+                    {ageSummary ? ` · ${ageSummary}` : ""}
+                  </span>
+                )}
+              </p>
+            )}
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto px-6 py-5">
+            {history.length === 0 ? (
+              <div className="text-center text-muted-foreground py-12">
+                <GraduationCap className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
+                <p className="text-sm">Este contacto aún no está inscrito en ningún curso.</p>
+                <p className="text-xs mt-1">Inscríbelo desde <span className="font-medium">Inscripciones</span> para registrar su edad por curso.</p>
+              </div>
+            ) : (
+              <ol className="relative ml-3 border-l border-dashed border-border">
+                {history.map((enr, i) => {
+                  const st = ENR_STATUS[enr.status] || ENR_STATUS.interesado;
+                  const hasAge = typeof enr.age === "number";
+                  const paid = money(enr.amount_paid);
+                  return (
+                    <li key={enr.id} className={`ml-10 ${i === history.length - 1 ? "" : "mb-7"}`}>
+                      {/* Medallón sobre el riel: el número es la edad en ese curso */}
+                      <span className={`absolute -left-5 flex h-10 w-10 flex-col items-center justify-center rounded-full ring-4 ring-background ${hasAge ? "bg-gradient-to-br from-brand-600 to-accent-500 text-white" : "bg-muted text-muted-foreground"}`}>
+                        {hasAge ? (
+                          <>
+                            <span className="text-sm font-bold leading-none">{enr.age}</span>
+                            <span className="text-[8px] leading-none mt-0.5 opacity-90">años</span>
+                          </>
+                        ) : (
+                          <GraduationCap className="h-4 w-4" />
+                        )}
+                      </span>
+                      <div className="rounded-lg border border-border bg-card p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="font-semibold text-sm leading-tight">{enr.course_title || courseById[enr.course_id]?.title || "Curso"}</p>
+                          <Badge className={`${st.c} shrink-0 text-[10px]`}>{st.l}</Badge>
+                        </div>
+                        <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                          <Calendar className="h-3 w-3" /> {coursePeriod(enr)}
+                        </p>
+                        {(!hasAge || paid) && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {!hasAge && <span>Edad no registrada</span>}
+                            {!hasAge && paid && <span> · </span>}
+                            {paid && <span>{paid} pagado</span>}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </div>
+          <div className="flex justify-end px-6 py-4 border-t border-border shrink-0 bg-card">
+            <Button variant="outline" onClick={() => setHistoryContact(null)}>Cerrar</Button>
           </div>
         </DialogContent>
       </Dialog>
