@@ -42,6 +42,11 @@ const SupplierPayments = lazy(() => import('./pages/SupplierPayments'));
 const Utility = lazy(() => import('./pages/Utility'));
 const Rubros = lazy(() => import('./pages/Rubros'));
 const FundAccounts = lazy(() => import('./pages/FundAccounts'));
+const Contacts = lazy(() => import('./pages/Contacts'));
+const Courses = lazy(() => import('./pages/Courses'));
+const CourseCalendar = lazy(() => import('./pages/CourseCalendar'));
+const Enrollments = lazy(() => import('./pages/Enrollments'));
+const Campaigns = lazy(() => import('./pages/Campaigns'));
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center">
@@ -131,6 +136,11 @@ const AuthenticatedApp = () => {
       <Route path="/Utility" element={<LayoutWrapper currentPageName="Utility"><Suspense fallback={<PageLoader />}><Utility /></Suspense></LayoutWrapper>} />
       <Route path="/Rubros" element={<LayoutWrapper currentPageName="Rubros"><Suspense fallback={<PageLoader />}><Rubros /></Suspense></LayoutWrapper>} />
       <Route path="/FundAccounts" element={<LayoutWrapper currentPageName="FundAccounts"><Suspense fallback={<PageLoader />}><FundAccounts /></Suspense></LayoutWrapper>} />
+      <Route path="/Contacts" element={<LayoutWrapper currentPageName="Contacts"><Suspense fallback={<PageLoader />}><Contacts /></Suspense></LayoutWrapper>} />
+      <Route path="/Courses" element={<LayoutWrapper currentPageName="Courses"><Suspense fallback={<PageLoader />}><Courses /></Suspense></LayoutWrapper>} />
+      <Route path="/CourseCalendar" element={<LayoutWrapper currentPageName="CourseCalendar"><Suspense fallback={<PageLoader />}><CourseCalendar /></Suspense></LayoutWrapper>} />
+      <Route path="/Enrollments" element={<LayoutWrapper currentPageName="Enrollments"><Suspense fallback={<PageLoader />}><Enrollments /></Suspense></LayoutWrapper>} />
+      <Route path="/Campaigns" element={<LayoutWrapper currentPageName="Campaigns"><Suspense fallback={<PageLoader />}><Campaigns /></Suspense></LayoutWrapper>} />
       <Route path="/LicenseAdmin" element={<LayoutWrapper currentPageName="LicenseAdmin"><Suspense fallback={<PageLoader />}><LicenseAdmin /></Suspense></LayoutWrapper>} />
       <Route path="/TenantRulesAdmin" element={<LayoutWrapper currentPageName="TenantRulesAdmin"><Suspense fallback={<PageLoader />}><TenantRulesAdmin /></Suspense></LayoutWrapper>} />
       <Route path="/PermissionAdmin" element={<LayoutWrapper currentPageName="PermissionAdmin"><Suspense fallback={<PageLoader />}><PermissionAdmin /></Suspense></LayoutWrapper>} />
