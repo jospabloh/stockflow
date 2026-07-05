@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-07-02T16:30:00.239Z
+// Generado: 2026-07-05T15:33:22.063Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -70,6 +70,20 @@ export const ALL_PERMISSION_KEYS = [
   "Clientes:edit_force_wholesale",
   "Clientes:edit_force_purchase",
   "Clientes:delete",
+  "Cursos:view",
+  "Cursos:create",
+  "Cursos:edit",
+  "Cursos:delete",
+  "Inscripciones:view",
+  "Inscripciones:create",
+  "Inscripciones:edit",
+  "Inscripciones:delete",
+  "Campañas:view",
+  "Campañas:send",
+  "Contactos:view",
+  "Contactos:create",
+  "Contactos:edit",
+  "Contactos:delete",
   "Tipo de Pago:view",
   "Tipo de Pago:create",
   "Tipo de Pago:edit_name",
@@ -255,6 +269,40 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "edit_status", label: "Cambiar estado", category: "actionable" },
     { id: "edit_force_wholesale", label: "Forzar mayoreo", category: "actionable" },
     { id: "edit_force_purchase", label: "Forzar precio compra", category: "actionable", sensitive: true },
+    { id: "delete", label: "Eliminar", category: "actionable" }
+    ]
+  },
+  "Cursos": {
+    label: "Cursos",
+    actions: [
+    { id: "view", label: "Ver cursos y calendario", category: "visual" },
+    { id: "create", label: "Crear", category: "actionable" },
+    { id: "edit", label: "Editar", category: "actionable" },
+    { id: "delete", label: "Eliminar", category: "actionable" }
+    ]
+  },
+  "Inscripciones": {
+    label: "Inscripciones",
+    actions: [
+    { id: "view", label: "Ver lista", category: "visual" },
+    { id: "create", label: "Crear", category: "actionable" },
+    { id: "edit", label: "Editar", category: "actionable" },
+    { id: "delete", label: "Eliminar", category: "actionable" }
+    ]
+  },
+  "Campañas": {
+    label: "Campañas",
+    actions: [
+    { id: "view", label: "Ver campañas", category: "visual" },
+    { id: "send", label: "Enviar", category: "actionable", sensitive: true }
+    ]
+  },
+  "Contactos": {
+    label: "Contactos",
+    actions: [
+    { id: "view", label: "Ver lista", category: "visual" },
+    { id: "create", label: "Crear", category: "actionable" },
+    { id: "edit", label: "Editar", category: "actionable" },
     { id: "delete", label: "Eliminar", category: "actionable" }
     ]
   },
@@ -467,6 +515,20 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Clientes:edit_force_wholesale": true,
   "Clientes:edit_force_purchase": true,
   "Clientes:delete": true,
+  "Cursos:view": true,
+  "Cursos:create": true,
+  "Cursos:edit": true,
+  "Cursos:delete": true,
+  "Inscripciones:view": true,
+  "Inscripciones:create": true,
+  "Inscripciones:edit": true,
+  "Inscripciones:delete": true,
+  "Campañas:view": true,
+  "Campañas:send": true,
+  "Contactos:view": true,
+  "Contactos:create": true,
+  "Contactos:edit": true,
+  "Contactos:delete": true,
   "Tipo de Pago:view": true,
   "Tipo de Pago:create": true,
   "Tipo de Pago:edit_name": true,
@@ -624,6 +686,20 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Clientes:edit_force_wholesale": false,
   "Clientes:edit_force_purchase": false,
   "Clientes:delete": true,
+  "Cursos:view": true,
+  "Cursos:create": true,
+  "Cursos:edit": true,
+  "Cursos:delete": true,
+  "Inscripciones:view": true,
+  "Inscripciones:create": true,
+  "Inscripciones:edit": true,
+  "Inscripciones:delete": true,
+  "Campañas:view": true,
+  "Campañas:send": false,
+  "Contactos:view": true,
+  "Contactos:create": true,
+  "Contactos:edit": true,
+  "Contactos:delete": true,
   "Tipo de Pago:view": true,
   "Tipo de Pago:create": true,
   "Tipo de Pago:edit_name": true,
