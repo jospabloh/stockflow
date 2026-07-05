@@ -1,5 +1,6 @@
 import { getHandler } from './handlers/index.ts';
 
+// v2 (2026-07-05): incluye campo cost del curso (createCourseSafe/updateCourseSafe).
 Deno.serve(async (req) => {
   let action = '';
   try {
