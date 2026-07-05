@@ -12,7 +12,7 @@ export async function handle(req: Request): Promise<Response> {
     const body = await req.json();
     const {
       title, business_id,
-      description, topics, includes, location, price_options, extra_person_price,
+      description, topics, includes, location, price_options, extra_person_price, cost,
       capacity, instructor_name, instructor_note, sessions, flyer_url, status, notes
     } = body;
 
@@ -45,6 +45,7 @@ export async function handle(req: Request): Promise<Response> {
       location: location || "",
       price_options: Array.isArray(price_options) ? price_options : [],
       extra_person_price: typeof extra_person_price === 'number' ? extra_person_price : null,
+      cost: typeof cost === 'number' ? cost : null,
       capacity: typeof capacity === 'number' ? capacity : null,
       instructor_name: instructor_name || "",
       instructor_note: instructor_note || "",

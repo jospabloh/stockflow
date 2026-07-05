@@ -9,6 +9,11 @@ const ALLOWED_UPDATE_FIELDS = new Set([
   'people_count',
   'amount_paid',
   'payment_method',
+  'deposit_amount',
+  'invoice_status',
+  'reason',
+  'reason_other',
+  'age',
   'notes',
   'confirmation_sent_at',
   'reminder_sent_at'

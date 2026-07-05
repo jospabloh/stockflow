@@ -28,6 +28,22 @@ const STATUS = [
 ];
 const STATUS_MAP = STATUS.reduce((a, s) => ({ ...a, [s.v]: s }), {});
 
+const REASONS = [
+  { v: "crecer_profesional", l: "Crecer profesionalmente" },
+  { v: "montar_mejorar_negocio", l: "Montar o mejorar un negocio" },
+  { v: "gusto_hobby", l: "Gusto / hobby" },
+  { v: "regalo", l: "Regalo" },
+  { v: "recomendacion", l: "Recomendación" },
+  { v: "otro", l: "Otro" },
+];
+const REASON_LABEL = REASONS.reduce((a, r) => ({ ...a, [r.v]: r.l }), {});
+const INVOICE = [
+  { v: "no_requiere", l: "No requiere", c: "bg-slate-100 text-slate-500" },
+  { v: "requiere", l: "Requiere factura", c: "bg-amber-100 text-amber-700" },
+  { v: "facturada", l: "Facturada", c: "bg-emerald-100 text-emerald-700" },
+];
+const INVOICE_MAP = INVOICE.reduce((a, i) => ({ ...a, [i.v]: i }), {});
+
 const money = (n) => (typeof n === "number" && !Number.isNaN(n))
   ? new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n)
   : "—";
@@ -36,6 +52,7 @@ const emptyForm = {
   course_id: "", contact_id: "", contact_label: "",
   price_option_label: "", price_amount: "", people_count: "1",
   status: "interesado", amount_paid: "", payment_method: "", notes: "",
+  deposit_amount: "", invoice_status: "no_requiere", reason: "", reason_other: "", age: "",
 };
 
 export default function EnrollmentsManager() {
@@ -79,6 +96,8 @@ export default function EnrollmentsManager() {
       price_option_label: e.price_option_label || "", price_amount: e.price_amount ?? "",
       people_count: String(e.people_count || 1), status: e.status || "interesado",
       amount_paid: e.amount_paid ?? "", payment_method: e.payment_method || "", notes: e.notes || "",
+      deposit_amount: e.deposit_amount ?? "", invoice_status: e.invoice_status || "no_requiere",
+      reason: e.reason || "", reason_other: e.reason_other || "", age: e.age ?? "",
     });
     setContactSearch(""); setFormOpen(true);
   };
@@ -105,6 +124,11 @@ export default function EnrollmentsManager() {
     status: form.status,
     amount_paid: form.amount_paid === "" ? 0 : Number(form.amount_paid),
     payment_method: form.payment_method,
+    deposit_amount: form.deposit_amount === "" ? 0 : Number(form.deposit_amount),
+    invoice_status: form.invoice_status,
+    reason: form.reason,
+    reason_other: form.reason === "otro" ? form.reason_other : "",
+    age: form.age === "" ? null : Number(form.age),
     notes: form.notes,
   });
 
@@ -277,7 +301,13 @@ export default function EnrollmentsManager() {
                     <Badge className={(STATUS_MAP[e.status] || STATUS_MAP.interesado).c}>{(STATUS_MAP[e.status] || STATUS_MAP.interesado).l}</Badge>
                   )}
                 </TableCell>
-                <TableCell className="text-slate-500">{money(e.amount_paid)}</TableCell>
+                <TableCell className="text-slate-500">
+                  {money(e.amount_paid)}
+                  {e.deposit_amount ? <span className="block text-xs text-amber-600">Apartado {money(e.deposit_amount)}</span> : null}
+                  {e.invoice_status && e.invoice_status !== "no_requiere" && (
+                    <Badge className={`${(INVOICE_MAP[e.invoice_status] || {}).c || ""} mt-1 text-[10px]`}>{(INVOICE_MAP[e.invoice_status] || {}).l}</Badge>
+                  )}
+                </TableCell>
                 <TableCell className="text-center">
                   <div className="flex items-center justify-center gap-1">
                   {can('Inscripciones', 'edit') && (
@@ -406,6 +436,41 @@ export default function EnrollmentsManager() {
                 <Input value={form.payment_method} onChange={e => setForm({ ...form, payment_method: e.target.value })} placeholder="Efectivo, transferencia…" />
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Apartado / anticipo (MXN)</Label>
+                <Input type="number" min="0" value={form.deposit_amount} onChange={e => setForm({ ...form, deposit_amount: e.target.value })} placeholder="Ej. 500" />
+              </div>
+              <div>
+                <Label>Factura</Label>
+                <Select value={form.invoice_status} onValueChange={v => setForm({ ...form, invoice_status: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{INVOICE.map(i => <SelectItem key={i.v} value={i.v}>{i.l}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Motivo de asistencia</Label>
+                <Select value={form.reason || "none"} onValueChange={v => setForm({ ...form, reason: v === "none" ? "" : v })}>
+                  <SelectTrigger><SelectValue placeholder="Sin especificar" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sin especificar</SelectItem>
+                    {REASONS.map(r => <SelectItem key={r.v} value={r.v}>{r.l}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Edad</Label>
+                <Input type="number" min="0" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} placeholder="Ej. 28" />
+              </div>
+            </div>
+            {form.reason === "otro" && (
+              <div>
+                <Label>¿Cuál motivo?</Label>
+                <Input value={form.reason_other} onChange={e => setForm({ ...form, reason_other: e.target.value })} placeholder="Especifica el motivo" />
+              </div>
+            )}
             <div>
               <Label>Notas</Label>
               <Input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />

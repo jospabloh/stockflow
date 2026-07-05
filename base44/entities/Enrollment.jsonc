@@ -16,6 +16,11 @@
     "people_count": { "type": "number", "default": 1, "description": "Número de personas (para persona extra)" },
     "amount_paid": { "type": "number", "default": 0, "description": "Monto pagado en MXN" },
     "payment_method": { "type": "string", "description": "Forma de pago" },
+    "deposit_amount": { "type": "number", "default": 0, "description": "Monto apartado / anticipo en MXN" },
+    "invoice_status": { "type": "string", "enum": ["no_requiere", "requiere", "facturada"], "default": "no_requiere", "description": "Estado de facturación" },
+    "reason": { "type": "string", "enum": ["crecer_profesional", "montar_mejorar_negocio", "gusto_hobby", "regalo", "recomendacion", "otro"], "description": "Motivo por el que asistió al curso" },
+    "reason_other": { "type": "string", "description": "Detalle del motivo cuando es 'otro'" },
+    "age": { "type": "number", "description": "Edad del participante" },
     "notes": { "type": "string", "description": "Notas de la inscripción" },
     "confirmation_sent_at": { "type": "string", "format": "date-time", "description": "Cuándo se envió la confirmación (fase de recordatorios)" },
     "reminder_sent_at": { "type": "string", "format": "date-time", "description": "Cuándo se envió el recordatorio (fase de recordatorios)" }

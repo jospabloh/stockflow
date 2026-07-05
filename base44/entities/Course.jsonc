@@ -21,6 +21,7 @@
       "description": "Opciones de precio (1 = precio único; 2 = por modalidad)"
     },
     "extra_person_price": { "type": "number", "description": "Costo por persona extra (opcional)" },
+    "cost": { "type": "number", "description": "Costo de impartir el curso en MXN (para calcular margen vs. precio de venta)" },
     "capacity": { "type": "number", "description": "Cupo máximo de asistentes (opcional)" },
     "instructor_name": { "type": "string", "description": "Nombre del instructor" },
     "instructor_note": { "type": "string", "description": "Marca/invitado del instructor (ej. Prado Café, Alex Barista)" },
