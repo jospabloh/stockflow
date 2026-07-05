@@ -2,9 +2,9 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.18.4";
+export const APP_VERSION = "2.18.5";
 
-export const RELEASE_DATE = "2026-07-02";
+export const RELEASE_DATE = "2026-07-05";
 
 // URL pública de la página comercial donde el cliente contrata o renueva su
 // licencia. Es información pública (NO un secreto): aparece también en el manual
@@ -20,6 +20,13 @@ export const STOCKFLOW_UPGRADE_URL =
 export const USER_MANUAL_LAST_REVIEWED = "2026-06-29";
 
 export const CHANGELOG = [
+  {
+    version: "2.18.5",
+    date: "2026-07-05",
+    changes: [
+      "Actualización a la versión 2.18.5",
+    ],
+  },
   {
     version: "2.18.4",
     date: "2026-07-02",

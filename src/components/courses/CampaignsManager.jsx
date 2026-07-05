@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Megaphone, Mail, MessageCircle, Users, Send, History } from "lucide-react";
+import { Megaphone, Mail, MessageCircle, Users, History } from "lucide-react";
 import { toast } from "sonner";
 import { waLink } from "@/lib/courseComms";
 import SectionHeader from "@/components/courses/SectionHeader";
