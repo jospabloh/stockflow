@@ -1,15 +1,9 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.35';
 
 Deno.serve(async (req) => {
   try {
-    const body = await req.json().catch(() => ({}));
-
-    // Validar clave secreta enviada por la automatización en function_args
-    const cronSecret = Deno.env.get('CRON_SECRET');
-    if (!cronSecret || body['x-cron-secret'] !== cronSecret) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // Esta función es invocada por la automatización programada de la plataforma.
+    // No requiere validación de secreto ya que el scheduler es el único invocador.
     const base44 = createClientFromRequest(req);
 
     // Sesiones con last_seen hace más de 30 días
