@@ -9,6 +9,7 @@ const ALLOWED_UPDATE_FIELDS = new Set([
   'location',
   'price_options',
   'extra_person_price',
+  'cost',
   'capacity',
   'instructor_name',
   'instructor_note',

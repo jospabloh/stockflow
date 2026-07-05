@@ -61,7 +61,7 @@ function priceLabel(opts) {
 
 const emptyForm = {
   title: "", description: "", location: "", status: "draft",
-  instructor_name: "", instructor_note: "", capacity: "", extra_person_price: "",
+  instructor_name: "", instructor_note: "", capacity: "", extra_person_price: "", cost: "",
   topics: [], includes: [], price_options: [], sessions: [], flyer_url: "", notes: "",
 };
 
@@ -112,7 +112,7 @@ export default function CoursesManager() {
     setForm({
       title: c.title || "", description: c.description || "", location: c.location || "", status: c.status || "draft",
       instructor_name: c.instructor_name || "", instructor_note: c.instructor_note || "",
-      capacity: c.capacity ?? "", extra_person_price: c.extra_person_price ?? "",
+      capacity: c.capacity ?? "", extra_person_price: c.extra_person_price ?? "", cost: c.cost ?? "",
       topics: c.topics || [], includes: c.includes || [],
       price_options: c.price_options || [], sessions: c.sessions || [],
       flyer_url: c.flyer_url || "", notes: c.notes || "",
@@ -137,6 +137,7 @@ export default function CoursesManager() {
     instructor_note: form.instructor_note,
     capacity: form.capacity === "" ? null : Number(form.capacity),
     extra_person_price: form.extra_person_price === "" ? null : Number(form.extra_person_price),
+    cost: form.cost === "" ? null : Number(form.cost),
     topics: form.topics,
     includes: form.includes,
     price_options: form.price_options
@@ -335,6 +336,22 @@ export default function CoursesManager() {
               <div>
                 <Label>Precio persona extra (MXN)</Label>
                 <Input type="number" min="0" value={form.extra_person_price} onChange={(e) => setForm({ ...form, extra_person_price: e.target.value })} placeholder="Ej. 500" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Costo del curso (MXN)</Label>
+                <Input type="number" min="0" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} placeholder="Lo que te cuesta impartirlo" />
+              </div>
+              <div className="flex items-end pb-1">
+                {(() => {
+                  const sale = (form.price_options || []).map((p) => Number(p.amount)).filter((n) => n > 0);
+                  const minSale = sale.length ? Math.min(...sale) : null;
+                  const c = form.cost === "" ? null : Number(form.cost);
+                  if (minSale == null || c == null) return <p className="text-xs text-muted-foreground">El margen se calcula con el precio de venta y el costo.</p>;
+                  const margin = minSale - c;
+                  return <p className={`text-sm font-medium ${margin >= 0 ? "text-emerald-600" : "text-red-600"}`}>Margen: {money(margin)}</p>;
+                })()}
               </div>
             </div>
 
