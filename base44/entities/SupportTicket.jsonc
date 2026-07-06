@@ -21,7 +21,8 @@
     "messages_count": { "type": "number", "default": 0, "description": "Número de mensajes en el hilo" },
     "unread_for_owner": { "type": "boolean", "default": true, "description": "Hay mensajes sin leer para el soporte" },
     "unread_for_tenant": { "type": "boolean", "default": false, "description": "Hay mensajes sin leer para el negocio" },
-    "metadata": { "type": "object", "description": "Datos adicionales" }
+    "metadata": { "type": "object", "description": "Datos adicionales" },
+    "ai_brief": { "type": "object", "description": "Brief estructurado generado por el asistente BA/PO durante el intake (features: historia de usuario + criterios de aceptación + alcance; incidencias: pasos de reproducción + esperado/actual + severidad + impacto). El mismo contenido también viaja en Markdown dentro de description/body, así que el ticket es legible aunque este campo no esté desplegado." }
   },
   "required": ["business_id", "subject"],
   "rls": {
