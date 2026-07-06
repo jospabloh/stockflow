@@ -1,5 +1,12 @@
-// Artículos de ayuda — última versión: v2.18.1
+// Artículos de ayuda — última versión: v2.18.8
 // Solo contiene notas de versión (release notes). Los artículos de manual permanente están en helpDataExtension.js
+// v2.18.8: Auditoría de seguridad y liberación — matriz de permisos 169 claves, appConfig Node-compatible, AppVersion sincronizada
+// v2.18.7: Cursos — 'Cursos y edades' en detalle de contacto
+// v2.18.6: Contactos — historial de cursos en ficha de contacto
+// v2.18.5: Cursos — historial por contacto con age_at_enrollment, manual actualizado
+// v2.18.4: Lint + actualización de paquetes base44
+// v2.18.3: Sesiones activas — AppSession + latido + force-logout + bridge sessions
+// v2.18.2: Auditoría de seguridad — función resolveLicenseState eliminada, console.log debug eliminado, react-quill removida
 // v2.18.1: Auditoría de seguridad y calidad — 0 hallazgos Críticos/Altos, corrección de debug logs
 // v2.18.0: Identidad visual — nueva tipografía, cifras tabulares, paleta de marca, cotización pública profesional
 // v2.17.0: Auditoría de permisos — módulo Cuentas de Fondos registrado en la matriz de permisos granulares
@@ -16,6 +23,112 @@
 // v2.9.0: Auditoría de inventario, ciclo de vida de cuentas + emails automáticos, múltiples contactos por proveedor
 
 export const newHelpArticles = [
+    {
+      id: "release-2-18-8",
+      category: "Novedades",
+      role: "admin",
+      title: "🔒 v2.18.8 — Auditoría de Seguridad y Calidad",
+      keywords: ["versión", "2.18.8", "seguridad", "auditoría", "permisos", "matriz", "sesiones", "cursos"],
+      related_ids: ["release-2-18-7", "permissions-overview"],
+      content: `## 🔒 Versión 2.18.8 — 6 de julio de 2026
+
+### ✅ Novedades de esta versión
+
+Auditoría de seguridad, calidad y liberación automatizada completa. Sin hallazgos Críticos ni Altos. Sin cambios en lógica de negocio, datos ni permisos de tenant.
+
+---
+
+### 🔍 Resultados de la Auditoría
+
+| Severidad | Hallazgos | Estado |
+|---|---|---|
+| Crítico | 0 | — |
+| Alto | 0 | — |
+| Medio | 0 | — |
+| Bajo | 0 | — |
+
+---
+
+### 🔧 Correcciones técnicas
+
+#### Compatibilidad Node.js en appConfig.js
+
+El campo \`STOCKFLOW_UPGRADE_URL\` usaba \`import.meta.env\` sin protección de entorno, lo que causaba que el script de generación de snapshots de versión fallara al ejecutarse en Node.js.
+
+**Corrección:** El acceso a \`import.meta.env\` fue protegido con optional chaining (\`import.meta.env?.VITE_...\`), eliminando el error en scripts de generación.
+
+---
+
+### 📋 Matriz de permisos actualizada
+
+La matriz de permisos fue extendida de **155 a 169 claves canónicas** (+14 nuevas correspondientes a los módulos Cursos, Inscripciones, Campañas y Contactos agregados en versiones anteriores).
+
+Los manifiestos generados (\`src/generated/permissionManifests.ts\`) y la auditoría nocturna de permisos (\`dailyPermissionAudit/entry.ts\`) fueron regenerados para reflejar las 169 claves.
+
+---
+
+### 🔄 Sincronización de versión
+
+La versión en base de datos (\`AppVersion\`) fue actualizada a **2.18.8** para coincidir con la versión en código. La auditoría nocturna de documentación ahora reportará la versión correcta.
+
+---
+
+### ✅ Validaciones completadas
+
+- **RLS**: 29 entidades revisadas, 21 con alcance de tenant — todas pasan la validación.
+- **Lint**: sin advertencias (exit 0).
+- **Build**: sin errores (exit 0).
+- **Matriz de permisos**: 169 claves canónicas — sin brechas nuevas.
+- **Aislamiento de tenant**: todos los módulos verificados.
+`,
+    },
+    {
+      id: "release-2-18-7",
+      category: "Novedades",
+      role: "admin",
+      title: "📇 v2.18.7 — Cursos y edades en detalle de contacto",
+      keywords: ["versión", "2.18.7", "cursos", "contactos", "historial", "edad", "inscripciones"],
+      related_ids: ["release-2-18-6", "release-2-18-5"],
+      content: `## 📇 Versión 2.18.7 — 5 de julio de 2026
+
+### ✅ Novedades de esta versión
+
+- **Cursos y edades por contacto**: La vista de detalle de un contacto ahora incluye una sección "Cursos y edades" que muestra cada curso en el que estuvo inscrito, junto con la edad que tenía al momento de la inscripción (\`age_at_enrollment\`).
+- Presentación clara y ordenada del historial de cursos directamente en el perfil de contacto, sin necesidad de navegar a Inscripciones.
+`,
+    },
+    {
+      id: "release-2-18-5",
+      category: "Novedades",
+      role: "admin",
+      title: "🎓 v2.18.5 — Historial de cursos por contacto",
+      keywords: ["versión", "2.18.5", "cursos", "historial", "edad", "inscripciones", "contactos"],
+      related_ids: ["release-2-18-4", "release-2-18-7"],
+      content: `## 🎓 Versión 2.18.5 — 5 de julio de 2026
+
+### ✅ Novedades de esta versión
+
+- **age_at_enrollment**: Al inscribir un contacto a un curso, el sistema calcula y almacena automáticamente la edad que tenía al momento de la inscripción.
+- El historial de cursos por contacto queda disponible en el perfil del contacto.
+- Manual de usuario actualizado con artículos de Cursos, Inscripciones y Contactos.
+`,
+    },
+    {
+      id: "release-2-18-3",
+      category: "Novedades",
+      role: "admin",
+      title: "🔒 v2.18.3 — Sesiones activas con force-logout",
+      keywords: ["versión", "2.18.3", "sesiones", "seguridad", "force-logout", "AppSession"],
+      related_ids: ["release-2-18-2"],
+      content: `## 🔒 Versión 2.18.3 — 29 de junio de 2026
+
+### ✅ Novedades de esta versión
+
+- **Sesiones activas (AppSession)**: Nuevo módulo que registra y monitorea las sesiones activas de usuarios mediante un latido periódico.
+- **Force-logout**: El administrador puede cerrar la sesión de cualquier usuario de forma remota desde el panel de sesiones.
+- **Bridge sessions.list/revoke**: API interna para listar sesiones activas y revocarlas, integrada con el panel de administración.
+`,
+    },
     {
       id: "release-2-18-1",
       category: "Novedades",
