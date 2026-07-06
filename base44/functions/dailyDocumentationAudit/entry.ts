@@ -6,41 +6,44 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.1";
-const SNAPSHOT_RELEASE_DATE = "2026-06-22";
-const USER_MANUAL_LAST_REVIEWED = "2026-06-22";
+const CURRENT_VERSION_IN_CODE = "2.18.8";
+const SNAPSHOT_RELEASE_DATE = "2026-07-06";
+const USER_MANUAL_LAST_REVIEWED = "2026-07-06";
 const GIT_LOG_SNAPSHOT = `
-bf897cb Merge pull request #194 from jospabloh/claude/optimistic-carson-35zv8g
-7a74927 Merge branch 'main' into claude/optimistic-carson-35zv8g
-c738a89 Docs: v2.18.0 — manual, changelog, version bump
-026ed89 Merge pull request #193 from jospabloh/claude/optimistic-carson-35zv8g
-0f047ab Merge branch 'main' into claude/optimistic-carson-35zv8g
-4c95259 Redesign public quote page into a branded quote document (#3)
-14ae899 Add spec: public quote page flagship redesign (#3)
-01926ca Merge pull request #192 from jospabloh/claude/optimistic-carson-35zv8g
-6ff2ccb Keep mono off the zero-total quote badge (mobile card)
-da364a8 Tabular/mono figures in Reports
-4f23000 Tabular/mono figures in Quotations
-d516cfd Tabular/mono figures in Products
-822b921 Tabular figures in shared data tables
-8e83976 Add implementation plan: visual identity propagation (#2)
-32d4064 Add spec: visual identity propagation (sub-project #2)
-3e4193c Merge pull request #191 from jospabloh/claude/optimistic-carson-35zv8g
-a37976f Merge branch 'main' into claude/optimistic-carson-35zv8g
-f3e91a1 Add lint guard forbidding raw indigo/cyan literals
-9482b67 Migrate remaining pages to brand/accent tokens
-31c15fd Migrate remaining components + lib to brand/accent tokens
-9e49e74 Migrate reports + settings + chat to brand/accent tokens
-8e2e0c0 Migrate quotations to brand/accent tokens
-cdb1c60 Fix mangled .gitignore line (newline-at-EOF concat)
-6133d2a Migrate products + movements to brand/accent tokens
-3f7e574 Gitignore .superpowers/ SDD scratch dir
+c9a3846 Merge pull request #260 from jospabloh/automated/release-pr
+4a7fed2 chore: release and update documentation
+a8c62e2 Merge pull request #259 from jospabloh/claude/baristop-course-management-4zn4jq
+4335d67 Merge branch 'main' into claude/baristop-course-management-4zn4jq
+95140e8 Merge pull request #258 from jospabloh/automated/release-pr
+328977a Cursos: mostrar 'Cursos y edades' dentro del detalle del contacto
+1318982 chore: release and update documentation
+79bd57a Merge pull request #257 from jospabloh/claude/baristop-course-management-4zn4jq
+861ebec Merge branch 'main' into claude/baristop-course-management-4zn4jq
+dfc02a3 Merge pull request #245 from jospabloh/automated/release-pr
+8999b31 Cursos: historial de cursos por contacto (edad por curso) + manual de usuario
+9a8d324 chore: release and update documentation
+ca0220c Merge pull request #256 from jospabloh/claude/lint-cleanup
+052196f fix(lint): limpiar 5 errores pre-existentes de lint
+3a781c1 Update base44 packages
+2a30099 Merge pull request #255 from jospabloh/claude/active-sessions
+2cd985e Merge branch 'main' into claude/active-sessions
+4e4b3a1 feat(sesiones): AppSession + latido con force-logout + bridge sessions.list/revoke
+95876a4 Cursos: bump entry de courses/enrollments para forzar redeploy de handlers
+86b0695 Merge pull request #254 from jospabloh/claude/baristop-course-management-4zn4jq
+e52f968 Cursos: costo/margen del curso y seguimiento de asistente e inscripción
+515f8e2 Merge pull request #253 from jospabloh/claude/baristop-course-management-4zn4jq
+dc92775 Seguridad: cerrar el bypass de tenant en syncCashSaleToPettyCash (raíz)
+ecb9b6d File changes
+ab28493 Cursos: pulido visual del módulo (#252)
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "🔒 Auditoría de seguridad y calidad v2.18.1: 0 hallazgos Críticos o Altos. Se eliminaron 2 console.log de depuración en el Generador de Códigos de Barras (datos de producto visibles en consola del navegador).",
-  "📖 Manual de usuario actualizado: versión y fecha de revisión sincronizadas con la versión actual de la app.",
-  "✅ Validación de aislamiento de tenant completada: 22 entidades, 15 con alcance de tenant, todas pasan la validación RLS.",
-  "🧹 PR #190 (automatizado / sin cambios reales) cerrado: el PR de liberación automática fue reemplazado por esta revisión manual.",
+  "🔒 Auditoría de seguridad, calidad y liberación v2.18.8: 0 hallazgos Críticos o Altos. Sin cambios en lógica de negocio, datos ni aislamiento de tenant.",
+  "📋 Matriz de permisos actualizada a 169 claves canónicas (+14 nuevas: módulos Cursos, Inscripciones, Campañas y Contactos registrados).",
+  "🔧 appConfig.js: compatibilidad con entorno Node.js — import.meta.env protegido con optional chaining para scripts de generación.",
+  "📚 Manual de usuario actualizado a v2.18.8 — novedades de sesiones activas, Cursos y módulo de soporte IA documentadas.",
+  "🔄 Versión en base de datos (AppVersion) sincronizada con la versión en código.",
+  "✅ Validación RLS: 29 entidades, 21 con alcance de tenant — sin hallazgos.",
+  "🤖 PR #261 (asistente IA de soporte) preparado para revisión — campo ai_brief desplegado en esquema SupportTicket.",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

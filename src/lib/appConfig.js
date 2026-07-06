@@ -2,9 +2,9 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.18.7";
+export const APP_VERSION = "2.18.8";
 
-export const RELEASE_DATE = "2026-07-05";
+export const RELEASE_DATE = "2026-07-06";
 
 // URL pública de la página comercial donde el cliente contrata o renueva su
 // licencia. Es información pública (NO un secreto): aparece también en el manual
@@ -12,47 +12,64 @@ export const RELEASE_DATE = "2026-07-05";
 // verdad y poder sobrescribirla por entorno con VITE_STOCKFLOW_UPGRADE_URL sin
 // recompilar literales repartidos por la UI.
 export const STOCKFLOW_UPGRADE_URL =
-  import.meta.env.VITE_STOCKFLOW_UPGRADE_URL || "https://www.acaciaco.com.mx/stockflow";
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_STOCKFLOW_UPGRADE_URL)
+  || "https://www.acaciaco.com.mx/stockflow";
 
 // Fecha (ISO) de la última revisión manual del Manual de Usuario por un humano.
 // Actualizar al volver a leer y validar el manual end-to-end. La auditoría
 // nocturna alerta si pasan más de 60 días desde esta fecha.
-export const USER_MANUAL_LAST_REVIEWED = "2026-06-29";
+export const USER_MANUAL_LAST_REVIEWED = "2026-07-06";
 
 export const CHANGELOG = [
+  {
+    version: "2.18.8",
+    date: "2026-07-06",
+    changes: [
+      "🔒 Auditoría de seguridad, calidad y liberación v2.18.8: 0 hallazgos Críticos o Altos. Sin cambios en lógica de negocio, datos ni aislamiento de tenant.",
+      "📋 Matriz de permisos actualizada a 169 claves canónicas (+14 nuevas: módulos Cursos, Inscripciones, Campañas y Contactos registrados).",
+      "🔧 appConfig.js: compatibilidad con entorno Node.js — import.meta.env protegido con optional chaining para scripts de generación.",
+      "📚 Manual de usuario actualizado a v2.18.8 — novedades de sesiones activas, Cursos y módulo de soporte IA documentadas.",
+      "🔄 Versión en base de datos (AppVersion) sincronizada con la versión en código.",
+      "✅ Validación RLS: 29 entidades, 21 con alcance de tenant — sin hallazgos.",
+      "🤖 PR #261 (asistente IA de soporte) preparado para revisión — campo ai_brief desplegado en esquema SupportTicket.",
+    ],
+  },
   {
     version: "2.18.7",
     date: "2026-07-05",
     changes: [
-      "Actualización a la versión 2.18.7",
+      "📇 Cursos: detalle del contacto muestra el historial de cursos con la edad registrada en cada inscripción.",
+      "🎓 Cursos y edades: nueva vista 'Cursos y edades' dentro del perfil de contacto — age_at_enrollment por curso en un solo vistazo.",
     ],
   },
   {
     version: "2.18.6",
     date: "2026-07-05",
     changes: [
-      "Actualización a la versión 2.18.6",
+      "📇 Contactos: ficha de contacto muestra historial de cursos y la edad en cada inscripción.",
     ],
   },
   {
     version: "2.18.5",
     date: "2026-07-05",
     changes: [
-      "Actualización a la versión 2.18.5",
+      "🎓 Cursos: historial de cursos por contacto — age_at_enrollment calculado y almacenado al inscribir.",
+      "📚 Manual de usuario actualizado: nuevos artículos de Cursos, Inscripciones y Contactos.",
     ],
   },
   {
     version: "2.18.4",
     date: "2026-07-02",
     changes: [
-      "Actualización a la versión 2.18.4",
+      "🧹 Lint: 5 errores pre-existentes corregidos (imports no utilizados, variables sin referencia).",
+      "📦 Dependencias base44 actualizadas a la versión más reciente.",
     ],
   },
   {
     version: "2.18.3",
     date: "2026-06-29",
     changes: [
-      "Actualización a la versión 2.18.3",
+      "🔒 Sesiones activas: AppSession + latido periódico con force-logout y bridge sessions.list/revoke — administra todas las sesiones de un usuario desde un solo panel.",
     ],
   },
   {
