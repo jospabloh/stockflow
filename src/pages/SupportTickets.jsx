@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, ArrowLeft, LifeBuoy, Send } from "lucide-react";
+import { Plus, ArrowLeft, LifeBuoy, Send, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import AiIntakeChat from "@/components/support/AiIntakeChat";
+import { composeTicketBody } from "@/lib/aiIntake";
 
 const STATUS_LABEL = {
   open: "Abierto", in_progress: "En proceso", waiting_customer: "Esperando tu respuesta",
@@ -29,6 +31,10 @@ const SLA_NOTE = {
 };
 const PRIORITIES = [{ v: "low", l: "Baja" }, { v: "normal", l: "Normal" }, { v: "high", l: "Alta" }, { v: "urgent", l: "Urgente" }];
 
+// Categorías donde entra el asistente BA/PO experto: solicitud de función/mejora
+// (feature) e incidencias técnicas (bug). El resto conserva el flujo directo.
+const AI_CATEGORY_KIND = { feature_request: "feature", technical: "bug" };
+
 function fmt(v) {
   if (!v) return "";
   const d = new Date(v);
@@ -43,8 +49,11 @@ export default function SupportTickets() {
   const [active, setActive] = useState(null);
   const [messages, setMessages] = useState(null);
   const [form, setForm] = useState({ subject: "", description: "", category: "technical", priority: "normal" });
+  const [newStep, setNewStep] = useState("form"); // 'form' | 'ai' (dentro de la vista 'new')
   const [reply, setReply] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const aiKind = AI_CATEGORY_KIND[form.category] || null;
 
   useEffect(() => { base44.auth.me().then(setUser).catch(() => {}); }, []);
 
@@ -69,23 +78,43 @@ export default function SupportTickets() {
     } catch (e) { toast.error(e.message); setMessages([]); }
   }
 
-  async function createTicket() {
+  // Punto de entrada del botón principal del formulario: valida y decide si
+  // arranca la entrevista con el asistente (feature/incidencia) o crea directo.
+  function startOrCreate() {
+    if (!form.subject.trim() || !form.description.trim()) { toast.error("Asunto y descripción son obligatorios."); return; }
+    if (aiKind) { setNewStep("ai"); return; }
+    createTicket();
+  }
+
+  /**
+   * Crea el ticket. Si viene un `brief` de la IA, el cuerpo (descripción + primer
+   * mensaje) se enriquece con la especificación en Markdown vía `composeTicketBody`
+   * (para que llegue a Mission Control, al owner y al correo sin depender de un
+   * deploy de esquema) y se adjunta el brief estructurado en `ai_brief`.
+   * @param {import('@/lib/aiIntake').IntakeBrief | null} [brief]
+   */
+  async function createTicket(brief) {
     if (!form.subject.trim() || !form.description.trim()) { toast.error("Asunto y descripción son obligatorios."); return; }
     setBusy(true);
     const now = new Date().toISOString();
+    const original = form.description.trim();
+    const body = brief ? composeTicketBody(original, brief) : original;
     try {
-      const ticket = await base44.entities.SupportTicket.create({
+      /** @type {Record<string, any>} */
+      const ticketPayload = {
         business_id: businessId, business_name: businessName || "",
-        subject: form.subject.trim(), description: form.description.trim(),
+        subject: form.subject.trim(), description: body,
         category: form.category, priority: form.priority, status: "open",
         created_by_id: user?.id, created_by_email: user?.email,
         unread_for_owner: true, unread_for_tenant: false,
         last_message_at: now, last_message_by_role: "tenant", messages_count: 1,
-      });
+      };
+      if (brief) ticketPayload.ai_brief = brief;
+      const ticket = await base44.entities.SupportTicket.create(ticketPayload);
       await base44.entities.SupportTicketMessage.create({
         ticket_id: ticket.id, business_id: businessId,
         author_id: user?.id, author_email: user?.email, author_name: user?.full_name || user?.email,
-        author_role: "tenant", body: form.description.trim(), is_internal_note: false,
+        author_role: "tenant", body, is_internal_note: false,
       });
       // Push en tiempo real a ACACIA Mission Control (no bloquea la UI). StockFlow
       // no puede alojar una función nueva (tope de 50 funciones de Base44), así que
@@ -97,6 +126,7 @@ export default function SupportTickets() {
       }).catch(() => {});
       toast.success("Ticket enviado. Te responderemos pronto.");
       setForm({ subject: "", description: "", category: "technical", priority: "normal" });
+      setNewStep("form");
       setView("list"); await loadTickets();
     } catch (e) { toast.error(e.message); } finally { setBusy(false); }
   }
@@ -130,28 +160,53 @@ export default function SupportTickets() {
   if (view === "new") {
     return (
       <div className="max-w-2xl mx-auto p-4 space-y-4">
-        <button onClick={() => setView("list")} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Volver</button>
-        <h1 className="text-xl font-semibold flex items-center gap-2"><LifeBuoy className="h-5 w-5" /> Nuevo ticket de soporte</h1>
-        <Card className="p-5 space-y-4">
-          <div><Label>Asunto</Label><Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Resumen del problema" /></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label>Categoría</Label>
-              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                {CATEGORIES.map((c) => <option key={c.v} value={c.v}>{c.l}</option>)}
-              </select>
+        <button onClick={() => { if (newStep === "ai") { setNewStep("form"); } else { setView("list"); } }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Volver</button>
+        <h1 className="text-xl font-semibold flex items-center gap-2">
+          <LifeBuoy className="h-5 w-5" /> {newStep === "ai" ? (aiKind === "bug" ? "Reporte de incidencia" : "Nueva funcionalidad") : "Nuevo ticket de soporte"}
+        </h1>
+        {newStep === "ai" && aiKind ? (
+          <Card className="p-5">
+            <AiIntakeChat
+              kind={aiKind}
+              subject={form.subject}
+              description={form.description}
+              saving={busy}
+              onBack={() => setNewStep("form")}
+              onComplete={(brief) => createTicket(brief)}
+            />
+          </Card>
+        ) : (
+          <Card className="p-5 space-y-4">
+            <div><Label>Asunto</Label><Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Resumen del problema" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Categoría</Label>
+                <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                  {CATEGORIES.map((c) => <option key={c.v} value={c.v}>{c.l}</option>)}
+                </select>
+              </div>
+              <div><Label>Prioridad</Label>
+                <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                  {PRIORITIES.map((p) => <option key={p.v} value={p.v}>{p.l}</option>)}
+                </select>
+              </div>
             </div>
-            <div><Label>Prioridad</Label>
-              <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                {PRIORITIES.map((p) => <option key={p.v} value={p.v}>{p.l}</option>)}
-              </select>
+            <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+              {SLA_NOTE[form.category] || SLA_NOTE.default}
+            </p>
+            <div><Label>Descripción</Label><Textarea rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Cuéntanos qué ocurre…" /></div>
+            {aiKind && (
+              <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                <Sparkles className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+                Un asistente experto te hará unas preguntas para dejar tu solicitud lista para el equipo.
+              </p>
+            )}
+            <div className="flex justify-end">
+              <Button onClick={startOrCreate} disabled={busy} className="gap-2">
+                {aiKind ? <><Sparkles className="h-4 w-4" /> Continuar con el asistente</> : (busy ? "Enviando…" : "Enviar ticket")}
+              </Button>
             </div>
-          </div>
-          <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
-            {SLA_NOTE[form.category] || SLA_NOTE.default}
-          </p>
-          <div><Label>Descripción</Label><Textarea rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Cuéntanos qué ocurre…" /></div>
-          <div className="flex justify-end"><Button onClick={createTicket} disabled={busy}>{busy ? "Enviando…" : "Enviar ticket"}</Button></div>
-        </Card>
+          </Card>
+        )}
       </div>
     );
   }
@@ -193,7 +248,7 @@ export default function SupportTickets() {
     <div className="max-w-2xl mx-auto p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold flex items-center gap-2"><LifeBuoy className="h-5 w-5" /> Soporte</h1>
-        <Button onClick={() => setView("new")}><Plus className="mr-1 h-4 w-4" /> Nuevo ticket</Button>
+        <Button onClick={() => { setNewStep("form"); setView("new"); }}><Plus className="mr-1 h-4 w-4" /> Nuevo ticket</Button>
       </div>
       {tickets === null ? <p className="text-sm text-muted-foreground">Cargando…</p>
         : tickets.length === 0 ? (
