@@ -6,10 +6,18 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.8";
-const SNAPSHOT_RELEASE_DATE = "2026-07-06";
+const CURRENT_VERSION_IN_CODE = "2.18.9";
+const SNAPSHOT_RELEASE_DATE = "2026-07-07";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-06";
 const GIT_LOG_SNAPSHOT = `
+b41ea54 Merge pull request #274 from jospabloh/claude/base44-welcome-screen-dafw15
+5ed3bdb style(auth): match ACACIA welcome-screen structure in AuthLayout
+cdb157b Merge pull request #261 from jospabloh/claude/support-ai-questionnaire-vsc0lc
+4c52944 Merge branch 'main' into claude/support-ai-questionnaire-vsc0lc
+22868fb fix(soporte): desactiva los chips de sugerencia de turnos anteriores
+4dbc6af Update base44 packages
+5d01312 chore(audit): v2.18.8 — Auditoría de Seguridad, Permisos y Documentación
+47f0274 feat(soporte): asistente IA (BA/PO) entrevista features e incidencias
 c9a3846 Merge pull request #260 from jospabloh/automated/release-pr
 4a7fed2 chore: release and update documentation
 a8c62e2 Merge pull request #259 from jospabloh/claude/baristop-course-management-4zn4jq
@@ -27,23 +35,9 @@ ca0220c Merge pull request #256 from jospabloh/claude/lint-cleanup
 3a781c1 Update base44 packages
 2a30099 Merge pull request #255 from jospabloh/claude/active-sessions
 2cd985e Merge branch 'main' into claude/active-sessions
-4e4b3a1 feat(sesiones): AppSession + latido con force-logout + bridge sessions.list/revoke
-95876a4 Cursos: bump entry de courses/enrollments para forzar redeploy de handlers
-86b0695 Merge pull request #254 from jospabloh/claude/baristop-course-management-4zn4jq
-e52f968 Cursos: costo/margen del curso y seguimiento de asistente e inscripción
-515f8e2 Merge pull request #253 from jospabloh/claude/baristop-course-management-4zn4jq
-dc92775 Seguridad: cerrar el bypass de tenant en syncCashSaleToPettyCash (raíz)
-ecb9b6d File changes
-ab28493 Cursos: pulido visual del módulo (#252)
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "🔒 Auditoría de seguridad, calidad y liberación v2.18.8: 0 hallazgos Críticos o Altos. Sin cambios en lógica de negocio, datos ni aislamiento de tenant.",
-  "📋 Matriz de permisos actualizada a 169 claves canónicas (+14 nuevas: módulos Cursos, Inscripciones, Campañas y Contactos registrados).",
-  "🔧 appConfig.js: compatibilidad con entorno Node.js — import.meta.env protegido con optional chaining para scripts de generación.",
-  "📚 Manual de usuario actualizado a v2.18.8 — novedades de sesiones activas, Cursos y módulo de soporte IA documentadas.",
-  "🔄 Versión en base de datos (AppVersion) sincronizada con la versión en código.",
-  "✅ Validación RLS: 29 entidades, 21 con alcance de tenant — sin hallazgos.",
-  "🤖 PR #261 (asistente IA de soporte) preparado para revisión — campo ai_brief desplegado en esquema SupportTicket.",
+  "Actualización a la versión 2.18.9",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
