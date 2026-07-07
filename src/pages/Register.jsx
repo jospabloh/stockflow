@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Loader2, Mail, Lock } from 'lucide-react';
+import { Loader2, Mail, Lock, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,6 +46,7 @@ const Register = () => {
 
   return (
     <AuthLayout
+      icon={UserPlus}
       title="Crea tu cuenta"
       subtitle="Empieza a usar StockFlow gratis"
       footer={

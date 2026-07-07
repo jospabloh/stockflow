@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Loader2, Mail, Lock } from 'lucide-react';
+import { Loader2, Mail, Lock, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -49,6 +49,7 @@ const Login = () => {
 
   return (
     <AuthLayout
+      icon={LogIn}
       title="Bienvenido a StockFlow"
       subtitle="Accede a tu cuenta para continuar"
       footer={
