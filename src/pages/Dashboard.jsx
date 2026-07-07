@@ -525,14 +525,14 @@ export default function Dashboard() {
                         <span className="font-bold text-slate-700 dark:text-slate-200">${salesData.salesCost.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                       </div>
                       )}
-                      {can('Dashboard', 'sales_actual_profit') && (<div className={`flex justify-between items-center rounded-lg px-4 py-2.5 ${salesData.actualMargin >= 0 ? "bg-emerald-50 dark:bg-emerald-950/40" : "bg-red-50 dark:bg-red-950/40"}`}>
-                        <span className={`text-sm font-semibold ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>Utilidad Real</span>
+                      {can('Dashboard', 'sales_actual_profit') && (<div className={`flex justify-between items-center rounded-lg px-4 py-2.5 ${salesData.actualProfit >= 0 ? "bg-emerald-50 dark:bg-emerald-950/40" : "bg-red-50 dark:bg-red-950/40"}`}>
+                        <span className={`text-sm font-semibold ${salesData.actualProfit >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>Utilidad Real</span>
                         <div className="flex items-center gap-2">
-                          <span className={`font-bold text-lg ${salesData.actualMargin >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
-                            {salesData.actualMargin >= 0 ? "+" : ""}{salesData.actualProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                          <span className={`font-bold text-lg ${salesData.actualProfit >= 0 ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
+                            {salesData.actualProfit >= 0 ? "+" : ""}{salesData.actualProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                           </span>
-                          <Badge className={`border-0 text-xs font-semibold ${salesData.actualMargin >= 0 ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300" : "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"}`}>
-                            {salesData.actualMargin >= 0 ? "+" : ""}{salesData.actualMargin.toFixed(1)}%
+                          <Badge className={`border-0 text-xs font-semibold ${salesData.actualProfit >= 0 ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300" : "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"}`}>
+                            {salesData.actualProfit >= 0 ? "+" : ""}{salesData.actualMargin.toFixed(1)}%
                           </Badge>
                         </div>
                       </div>
@@ -552,13 +552,13 @@ export default function Dashboard() {
                       </div>
                       )}
                       {/* Utilidad Neta */}
-                      <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 border-t-2 ${salesData.netMargin >= 0 ? "bg-emerald-100/70 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800" : "bg-red-100/70 dark:bg-red-950/60 border-red-300 dark:border-red-800"}`}>
-                        <span className={`text-sm font-bold ${salesData.netMargin >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
+                      <div className={`flex justify-between items-center rounded-lg px-4 py-2.5 border-t-2 ${salesData.netProfit >= 0 ? "bg-emerald-100/70 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800" : "bg-red-100/70 dark:bg-red-950/60 border-red-300 dark:border-red-800"}`}>
+                        <span className={`text-sm font-bold ${salesData.netProfit >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
                           Utilidad Neta <span className="text-[10px] font-normal opacity-70">(− prov.)</span>
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className={`font-bold text-lg ${salesData.netMargin >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
-                            {salesData.netMargin >= 0 ? "+" : ""}{salesData.netProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                          <span className={`font-bold text-lg ${salesData.netProfit >= 0 ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
+                            {salesData.netProfit >= 0 ? "+" : ""}{salesData.netProfit.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                           </span>
                           {salesData.supplierPaymentsTotal > 0 && salesData.actualProfit > 0 && (
                             <Badge className={`border-0 text-xs font-semibold ${
