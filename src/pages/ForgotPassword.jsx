@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Loader2, Mail, MailCheck } from 'lucide-react';
+import { Loader2, Mail, MailCheck, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,6 +30,7 @@ const ForgotPassword = () => {
 
   return (
     <AuthLayout
+      icon={sent ? undefined : KeyRound}
       title="Recuperar contraseña"
       subtitle={sent ? undefined : 'Te enviaremos un enlace para restablecerla'}
       footer={
