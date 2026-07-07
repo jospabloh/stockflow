@@ -36,11 +36,20 @@ Deno.serve(async (req) => {
       body?.['x-cron-secret'] === cronSecretEnv
     );
 
+    // Aislamiento por tenant: SÓLO el CRON_SECRET marca la llamada como
+    // service-role. Un usuario sin business_id (recién registrado, sin
+    // negocio aún) ya NO se trata como service-role — eso era un bypass que
+    // permitía aplicar movimientos de CUALQUIER tenant.
+    const isServiceRole = Boolean(validCron);
+
     let user = null;
-    if (!validCron) {
+    if (!isServiceRole) {
       user = await base44.auth.me().catch(() => null);
       if (!user) {
         return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      }
+      if (!user.business_id) {
+        return Response.json({ success: false, error: 'Forbidden: no business_id' }, { status: 403 });
       }
     }
 
@@ -49,9 +58,6 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'Movement not found' }, { status: 404 });
     }
 
-    // Aislamiento por tenant: un usuario no service-role solo puede aplicar
-    // movimientos de su propio negocio.
-    const isServiceRole = Boolean(validCron) || !user?.business_id;
     if (!isServiceRole && movement.business_id && movement.business_id !== user.business_id) {
       return Response.json({ success: false, error: 'Forbidden: business_id mismatch' }, { status: 403 });
     }

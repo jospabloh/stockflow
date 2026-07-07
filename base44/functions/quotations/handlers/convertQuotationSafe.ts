@@ -112,6 +112,7 @@ export async function handle(req: Request): Promise<Response> {
           await base44.asServiceRole.functions.invoke('applyMovementStock', {
             movement_id: mov.id,
             business_id: user.business_id,
+            'x-cron-secret': Deno.env.get('CRON_SECRET'),
           });
         } catch (e) {
           console.log(`[convertQuotationSafe] applyMovementStock failed for ${mov.id}: ${e.message}`);
