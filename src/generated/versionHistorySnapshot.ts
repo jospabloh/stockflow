@@ -1,23 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-07-06T08:10:11.912Z
+// Generado: 2026-07-07T00:08:05.317Z
 
-export const SNAPSHOT_VERSION = "2.18.8";
+export const SNAPSHOT_VERSION = "2.18.9";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-07-06";
+export const SNAPSHOT_RELEASE_DATE = "2026-07-07";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-06";
 
-export const SNAPSHOT_GIT_LOG = "c9a3846 Merge pull request #260 from jospabloh/automated/release-pr\n4a7fed2 chore: release and update documentation\na8c62e2 Merge pull request #259 from jospabloh/claude/baristop-course-management-4zn4jq\n4335d67 Merge branch 'main' into claude/baristop-course-management-4zn4jq\n95140e8 Merge pull request #258 from jospabloh/automated/release-pr\n328977a Cursos: mostrar 'Cursos y edades' dentro del detalle del contacto\n1318982 chore: release and update documentation\n79bd57a Merge pull request #257 from jospabloh/claude/baristop-course-management-4zn4jq\n861ebec Merge branch 'main' into claude/baristop-course-management-4zn4jq\ndfc02a3 Merge pull request #245 from jospabloh/automated/release-pr\n8999b31 Cursos: historial de cursos por contacto (edad por curso) + manual de usuario\n9a8d324 chore: release and update documentation\nca0220c Merge pull request #256 from jospabloh/claude/lint-cleanup\n052196f fix(lint): limpiar 5 errores pre-existentes de lint\n3a781c1 Update base44 packages\n2a30099 Merge pull request #255 from jospabloh/claude/active-sessions\n2cd985e Merge branch 'main' into claude/active-sessions\n4e4b3a1 feat(sesiones): AppSession + latido con force-logout + bridge sessions.list/revoke\n95876a4 Cursos: bump entry de courses/enrollments para forzar redeploy de handlers\n86b0695 Merge pull request #254 from jospabloh/claude/baristop-course-management-4zn4jq\ne52f968 Cursos: costo/margen del curso y seguimiento de asistente e inscripción\n515f8e2 Merge pull request #253 from jospabloh/claude/baristop-course-management-4zn4jq\ndc92775 Seguridad: cerrar el bypass de tenant en syncCashSaleToPettyCash (raíz)\necb9b6d File changes\nab28493 Cursos: pulido visual del módulo (#252)";
+export const SNAPSHOT_GIT_LOG = "b41ea54 Merge pull request #274 from jospabloh/claude/base44-welcome-screen-dafw15\n5ed3bdb style(auth): match ACACIA welcome-screen structure in AuthLayout\ncdb157b Merge pull request #261 from jospabloh/claude/support-ai-questionnaire-vsc0lc\n4c52944 Merge branch 'main' into claude/support-ai-questionnaire-vsc0lc\n22868fb fix(soporte): desactiva los chips de sugerencia de turnos anteriores\n4dbc6af Update base44 packages\n5d01312 chore(audit): v2.18.8 — Auditoría de Seguridad, Permisos y Documentación\n47f0274 feat(soporte): asistente IA (BA/PO) entrevista features e incidencias\nc9a3846 Merge pull request #260 from jospabloh/automated/release-pr\n4a7fed2 chore: release and update documentation\na8c62e2 Merge pull request #259 from jospabloh/claude/baristop-course-management-4zn4jq\n4335d67 Merge branch 'main' into claude/baristop-course-management-4zn4jq\n95140e8 Merge pull request #258 from jospabloh/automated/release-pr\n328977a Cursos: mostrar 'Cursos y edades' dentro del detalle del contacto\n1318982 chore: release and update documentation\n79bd57a Merge pull request #257 from jospabloh/claude/baristop-course-management-4zn4jq\n861ebec Merge branch 'main' into claude/baristop-course-management-4zn4jq\ndfc02a3 Merge pull request #245 from jospabloh/automated/release-pr\n8999b31 Cursos: historial de cursos por contacto (edad por curso) + manual de usuario\n9a8d324 chore: release and update documentation\nca0220c Merge pull request #256 from jospabloh/claude/lint-cleanup\n052196f fix(lint): limpiar 5 errores pre-existentes de lint\n3a781c1 Update base44 packages\n2a30099 Merge pull request #255 from jospabloh/claude/active-sessions\n2cd985e Merge branch 'main' into claude/active-sessions";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "🔒 Auditoría de seguridad, calidad y liberación v2.18.8: 0 hallazgos Críticos o Altos. Sin cambios en lógica de negocio, datos ni aislamiento de tenant.",
-  "📋 Matriz de permisos actualizada a 169 claves canónicas (+14 nuevas: módulos Cursos, Inscripciones, Campañas y Contactos registrados).",
-  "🔧 appConfig.js: compatibilidad con entorno Node.js — import.meta.env protegido con optional chaining para scripts de generación.",
-  "📚 Manual de usuario actualizado a v2.18.8 — novedades de sesiones activas, Cursos y módulo de soporte IA documentadas.",
-  "🔄 Versión en base de datos (AppVersion) sincronizada con la versión en código.",
-  "✅ Validación RLS: 29 entidades, 21 con alcance de tenant — sin hallazgos.",
-  "🤖 PR #261 (asistente IA de soporte) preparado para revisión — campo ai_brief desplegado en esquema SupportTicket.",
+  "Actualización a la versión 2.18.9",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -25,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.9",
+    date: "2026-07-07",
+    changes: [
+    "Actualización a la versión 2.18.9"
+    ]
+  },
   {
     version: "2.18.8",
     date: "2026-07-06",
