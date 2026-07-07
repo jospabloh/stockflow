@@ -85,6 +85,7 @@ export async function handle(req: Request): Promise<Response> {
       await base44.asServiceRole.functions.invoke('applyMovementStock', {
         movement_id: movement.id,
         business_id,
+        'x-cron-secret': Deno.env.get('CRON_SECRET'),
       });
     } catch (e) {
       console.log(`[createMovementSafe] applyMovementStock failed for ${movement.id}: ${(e as Error).message}`);
