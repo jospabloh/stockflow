@@ -13,12 +13,15 @@ Deno.serve(async (req) => {
 
     console.log(`[UPGRADE] Current user: ${user.email}, role: ${user.role}`);
 
-    // Try to upgrade using auth.updateMe
+    // `role` is locked to admin-only writes via field-level RLS, so a plain
+    // user-scoped auth.updateMe() would be rejected (or silently dropped) once
+    // the caller isn't already role:admin. Use the service role instead — this
+    // endpoint is already gated to PLATFORM_OWNER_EMAIL above.
     try {
-      await base44.auth.updateMe({ role: "admin" });
-      console.log(`[UPGRADE] Attempted upgrade via auth.updateMe`);
+      await base44.asServiceRole.entities.User.update(user.id, { role: "admin" });
+      console.log(`[UPGRADE] Attempted upgrade via asServiceRole.entities.User.update`);
     } catch (e) {
-      console.log(`[UPGRADE] auth.updateMe failed: ${(e as Error).message}`);
+      console.log(`[UPGRADE] asServiceRole update failed: ${(e as Error).message}`);
     }
 
     // Verify current state

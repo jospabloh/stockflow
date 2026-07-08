@@ -1,4 +1,21 @@
 {
+  // SECURITY: role/business_id carry FIELD-LEVEL write RLS locking them to
+  // role `admin` — the tier the service role evaluates as. Without this lock,
+  // ANY authenticated user could call auth.updateMe({role:"admin"}) directly
+  // to become platform-wide admin (28 business entities carry an unscoped
+  // user_condition:{role:"admin"} RLS branch), or updateMe({business_id:"<any
+  // id>"}) to take over any tenant's data without its invite code (the
+  // data.business_id RLS branch on those same entities grants full read/write
+  // regardless of role). All legitimate changes now flow through the
+  // service-role backend functions business:createBusinessSafe (new business
+  // owner), business:joinBusinessSafe (invite-code join), and
+  // permissions:changeUserRole (promote/demote an existing team member —
+  // already service-role, unaffected by this lock).
+  //
+  // DEPLOY ORDER: deploy createBusinessSafe/joinBusinessSafe FIRST, then this
+  // schema. If the lock lands before those functions are live, onboarding
+  // silently no-ops (Base44 drops disallowed field writes from the old
+  // client-side updateMe calls) and new users get stuck on BusinessSetup.
   "name": "User",
   "type": "object",
   "properties": {
@@ -9,11 +26,13 @@
         "almacenista"
       ],
       "default": "almacenista",
-      "description": "Rol del usuario: admin (acceso total), almacenista (productos, movimientos, cotizaciones y clientes)"
+      "description": "Rol del usuario: admin (acceso total), almacenista (productos, movimientos, cotizaciones y clientes)",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "business_id": {
       "type": "string",
-      "description": "ID del negocio al que pertenece el usuario"
+      "description": "ID del negocio al que pertenece el usuario",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "last_active_at": {
       "type": "string",
