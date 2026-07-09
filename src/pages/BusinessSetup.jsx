@@ -9,13 +9,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useBusinessContext } from "@/components/BusinessContext";
 
-const generateInviteCode = () => {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "BSNS-";
-  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
-};
-
 export default function BusinessSetup() {
   const navigate = useNavigate();
   const { businessId, refreshBusiness } = useBusinessContext();
@@ -40,33 +33,44 @@ export default function BusinessSetup() {
   const handleCreate = async () => {
     if (!createForm.name.trim()) return;
     setLoading(true);
-    const code = generateInviteCode();
-    const business = await base44.entities.Business.create({
-      ...createForm,
-      invite_code: code,
-      status: "active",
-      tax_rate: 16,
-      currency: "MXN",
-    });
-    await base44.auth.updateMe({ business_id: business.id, role: "admin" });
-    // Initialize 30-day trial using server-side time
-    await base44.functions.invoke('licenses', { action: 'initTenantTrial', business_id: business.id }).catch(() => {});
-    // Seed default permission profiles (admin + almacenista) for the new business
-    await base44.functions.invoke('permissions', { action: 'seedDefaultPermissionProfiles',}).catch(() => {});
-    // Apply referral code if provided (non-fatal)
-    if (referralCode.trim()) {
-      const refResult = await base44.functions.invoke('referrals', { action: 'applyReferralCode',
-        business_id: business.id,
-        referral_code: referralCode.trim(),
-      }).catch(() => null);
-      if (refResult?.data?.success) {
-        toast.success(`¡Código aplicado! +15 días de prueba extra de parte de ${refResult.data.referrer_name}.`);
+    try {
+      // business_id/role are privileged fields (locked to admin-only writes via
+      // field-level RLS on the User entity) — the server-side function
+      // validates the caller has no existing business before granting them,
+      // instead of the client setting them on itself via updateMe.
+      const createResp = await base44.functions.invoke('business', {
+        action: 'createBusinessSafe',
+        name: createForm.name,
+        phone: createForm.phone,
+        address: createForm.address,
+      });
+      if (!createResp?.data?.success) {
+        throw new Error(createResp?.data?.error || 'No se pudo crear el negocio');
       }
+      const business = createResp.data.business;
+      // Initialize 30-day trial using server-side time
+      await base44.functions.invoke('licenses', { action: 'initTenantTrial', business_id: business.id }).catch(() => {});
+      // Seed default permission profiles (admin + almacenista) for the new business
+      await base44.functions.invoke('permissions', { action: 'seedDefaultPermissionProfiles',}).catch(() => {});
+      // Apply referral code if provided (non-fatal)
+      if (referralCode.trim()) {
+        const refResult = await base44.functions.invoke('referrals', { action: 'applyReferralCode',
+          business_id: business.id,
+          referral_code: referralCode.trim(),
+        }).catch(() => null);
+        if (refResult?.data?.success) {
+          toast.success(`¡Código aplicado! +15 días de prueba extra de parte de ${refResult.data.referrer_name}.`);
+        }
+      }
+      await refreshBusiness();
+      toast.success("¡Negocio creado! Bienvenido a StockFlow. Tienes 30 días de prueba.");
+      navigate("/Dashboard");
+    } catch (error) {
+      console.error("Create business error:", error);
+      toast.error(`Error: ${error.message || 'Algo salió mal'}`);
+    } finally {
+      setLoading(false);
     }
-    await refreshBusiness();
-    toast.success("¡Negocio creado! Bienvenido a StockFlow. Tienes 30 días de prueba.");
-    navigate("/Dashboard");
-    setLoading(false);
   };
 
   const handleJoin = async () => {
@@ -80,11 +84,25 @@ export default function BusinessSetup() {
      }
      setLoading(true);
      try {
-       const businesses = await base44.entities.Business.filter({ invite_code: code });
-       if (businesses.length === 0) {
+       // business_id/role are privileged fields (locked to admin-only writes via
+       // field-level RLS on the User entity) — the server-side function
+       // authoritatively re-validates the invite code (active, business active)
+       // instead of trusting the client's own filter()+updateMe sequence, which
+       // could otherwise be skipped entirely to self-assign business_id to any
+       // tenant without ever knowing its invite code.
+       const joinResp = await base44.functions.invoke('business', {
+         action: 'joinBusinessSafe',
+         invite_code: code,
+       });
+       const data = joinResp?.data;
+       if (!data?.success) {
          const attempts = joinAttempts + 1;
          setJoinAttempts(attempts);
-         if (attempts >= 5) {
+         if (data?.error === 'code_disabled') {
+           toast.error("Este código de invitación está desactivado. Contacta al administrador.");
+         } else if (data?.error === 'business_inactive') {
+           toast.error("Este negocio no está activo. Contacta al administrador.");
+         } else if (attempts >= 5) {
            setJoinCooldown(60);
            toast.error("5 intentos fallidos. Bloqueado por 60 segundos.");
          } else {
@@ -93,19 +111,7 @@ export default function BusinessSetup() {
          setLoading(false);
          return;
        }
-       const business = businesses[0];
-       if (business.invite_code_active === false) {
-         toast.error("Este código de invitación está desactivado. Contacta al administrador.");
-         setLoading(false);
-         return;
-       }
-       if (business.status !== "active") {
-         toast.error("Este negocio no está activo. Contacta al administrador.");
-         setLoading(false);
-         return;
-       }
-       // Update user with business assignment
-       await base44.auth.updateMe({ business_id: business.id, role: "almacenista" });
+       const business = data.business;
        // Wait for business context to refresh and verify business_id is updated
        await refreshBusiness();
        // Verify the user's business_id was updated before navigating

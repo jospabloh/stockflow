@@ -27,9 +27,14 @@ Deno.serve(async (req) => {
       body?.['x-cron-secret'] === cronSecretEnv
     );
     if (!validCron) {
-      // Permitir también a un admin autenticado para diagnóstico manual.
+      // Cross-tenant read (scans Movement across every business) — manual
+      // trigger for diagnostics is platform-owner only, NOT any tenant's
+      // role:admin user (every self-service business owner legitimately has
+      // role:admin for their own tenant, which must not extend to reading
+      // other tenants' movement data).
+      const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
       const user = await base44.auth.me().catch(() => null);
-      if (!user || user.role !== 'admin') {
+      if (!user || !PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }

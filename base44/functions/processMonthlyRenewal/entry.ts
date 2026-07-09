@@ -11,8 +11,12 @@ Deno.serve(async (req) => {
       body?.['x-cron-secret'] === cronSecretEnv
     );
     if (!validCron) {
+      // Platform-wide cron (renews license_expires_at for every auto-renewal
+      // tenant) — manual trigger is platform-owner only, NOT any tenant's
+      // role:admin user.
+      const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
       const user = await base44.auth.me().catch(() => null);
-      if (!user || user.role !== 'admin') {
+      if (!user || !PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }

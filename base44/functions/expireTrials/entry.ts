@@ -13,8 +13,13 @@ Deno.serve(async (req) => {
     const validCron = cronSecret && cronSecret === Deno.env.get('CRON_SECRET');
 
     if (!validCron) {
+      // Platform-wide cron (touches every tenant's billing lifecycle) — manual
+      // trigger is platform-owner only, NOT any tenant's role:admin user (every
+      // self-service business owner legitimately has role:admin for their own
+      // tenant, which must not extend to triggering cross-tenant billing jobs).
+      const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
       const user = await base44.auth.me().catch(() => null);
-      if (!user || user.role !== 'admin') {
+      if (!user || !PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }

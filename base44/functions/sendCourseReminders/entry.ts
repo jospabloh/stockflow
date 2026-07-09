@@ -21,8 +21,13 @@ Deno.serve(async (req) => {
       body?.['x-cron-secret'] === cronSecretEnv
     );
     if (!validCron) {
+      // Platform-wide cron (sends course reminders across every tenant) —
+      // manual trigger is platform-owner only, NOT any tenant's role:admin
+      // user (every self-service business owner legitimately has role:admin
+      // for their own tenant, which must not extend to triggering cross-tenant
+      // email jobs).
       const user = await base44.auth.me().catch(() => null);
-      if (!user || (!PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) && user.role !== 'admin') {
+      if (!user || !PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
