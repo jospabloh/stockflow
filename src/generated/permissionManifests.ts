@@ -111,6 +111,7 @@ export const ALL_PERMISSION_KEYS = [
   "Cotizaciones:edit_validity",
   "Cotizaciones:edit_payment_method",
   "Cotizaciones:confirm_payment",
+  "Cotizaciones:revert_payment",
   "Cotizaciones:convert",
   "Cotizaciones:cancel",
   "Cotizaciones:return",
