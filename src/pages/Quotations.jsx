@@ -280,6 +280,36 @@ export default function Quotations() {
     navigate(`/Quotations/edit/${q.id}`);
   };
 
+  // Admin-only: revert a mistaken payment confirmation without cancelling the sale.
+  const [revertPayQuotation, setRevertPayQuotation] = useState(null);
+  const [isRevertingPayment, setIsRevertingPayment] = useState(false);
+
+  const handleRevertPayment = async (quotationSnapshot) => {
+    const target = quotationSnapshot || revertPayQuotation;
+    if (!target) return;
+    if (isRevertingPayment) return;
+    setIsRevertingPayment(true);
+    try {
+      const response = await base44.functions.invoke('quotations', {
+        action: 'revertPaymentConfirmationSafe',
+        quotation_id: target.id,
+      });
+      if (!response.data.success) {
+        const errMsg = response.data.error || response.data.message || 'No se pudo revertir el pago';
+        toast.error(`❌ ${errMsg}`);
+        return;
+      }
+      setRevertPayQuotation(null);
+      toast.success('✓ Pago revertido. La venta sigue siendo válida.');
+      invalidate("Quotation");
+    } catch (error) {
+      const errMsg = error.response?.data?.error || error.message || "Error inesperado";
+      toast.error(`❌ ${errMsg}`);
+    } finally {
+      setIsRevertingPayment(false);
+    }
+  };
+
   const handleRegenerate = async (q) => {
     if (q.status !== "draft") return;
     
@@ -347,6 +377,8 @@ export default function Quotations() {
         canSend={can('Cotizaciones', 'send')}
         canExport={can('Cotizaciones', 'export')}
         canDelete={can('Cotizaciones', 'delete')}
+        canRevertPayment={userRole === 'admin'}
+        onRevertPayment={(q) => setRevertPayQuotation(q)}
         onEdit={handleEdit}
         onPreview={async (q) => {
           setPreviewQuotation(q);
@@ -584,6 +616,37 @@ export default function Quotations() {
               className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
             >
               Confirmar Pago Total
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Revert payment confirmation dialog — admin only */}
+      <AlertDialog open={!!revertPayQuotation} onOpenChange={(v) => { if (!v) setRevertPayQuotation(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Revertir pago — {revertPayQuotation?.folio}</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  La venta sigue siendo <strong>válida</strong> (el stock ya fue descontado). Solo se revertirá la
+                  confirmación de pago: la cotización quedará como <strong>pendiente de cobro</strong> y cualquier
+                  ingreso registrado en caja chica se eliminará.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Cliente: {revertPayQuotation?.client_name} · Total: <span className="font-mono tabular">${revertPayQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleRevertPayment(revertPayQuotation); }}
+              disabled={isRevertingPayment}
+              className="bg-amber-600 hover:bg-amber-700 disabled:opacity-50"
+            >
+              {isRevertingPayment ? "Revirtiendo…" : "Revertir pago"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
