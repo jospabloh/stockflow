@@ -7,11 +7,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2, ChevronDown, RotateCcw } from "lucide-react";
+import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2, ChevronDown, RotateCcw, Undo2 } from "lucide-react";
 import moment from "moment";
 import ColumnFilterPopover from "@/components/tables/ColumnFilterPopover";
 
-function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInRouteChange, isExpired, onRegenerate }) {
+function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment }) {
   const status = statusConfig[q.status] || statusConfig.draft;
 
   return (
@@ -232,6 +232,11 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
                 <DollarSign className="h-3 w-3 mr-2" /> Pago
               </DropdownMenuItem>
             )}
+            {canRevertPayment && q.status === "converted" && q.paid && q.total > 0 && (
+              <DropdownMenuItem onClick={() => onRevertPayment(q)} className="text-amber-600 focus:text-amber-600">
+                <Undo2 className="h-3 w-3 mr-2" /> Revertir pago
+              </DropdownMenuItem>
+            )}
             {q.status === "converted" && onPartialReturn && (
               <DropdownMenuItem onClick={() => onPartialReturn(q)} className="text-orange-600 focus:text-orange-600">
                 <RotateCcw className="h-3 w-3 mr-2" /> Devolución parcial
@@ -249,7 +254,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
   );
 }
 
-function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInRouteChange, isExpired, onRegenerate }) {
+function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment }) {
   const status = statusConfig[q.status] || statusConfig.draft;
   const expired = isExpired(q);
 
@@ -306,6 +311,11 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
               {q.status === "converted" && !q.paid && q.total > 0 && (
                 <DropdownMenuItem onClick={() => onPay(q)}>
                   <DollarSign className="h-3.5 w-3.5 mr-2" /> Confirmar pago
+                </DropdownMenuItem>
+              )}
+              {canRevertPayment && q.status === "converted" && q.paid && q.total > 0 && (
+                <DropdownMenuItem onClick={() => onRevertPayment(q)} className="text-amber-600">
+                  <Undo2 className="h-3.5 w-3.5 mr-2" /> Revertir pago
                 </DropdownMenuItem>
               )}
               {q.status === "converted" && onPartialReturn && (
@@ -429,12 +439,14 @@ export default function VirtualizedQuotationTable({
   onInRouteChange,
   isExpired,
   onRegenerate,
+  canRevertPayment,
+  onRevertPayment,
   // Filtros tipo Excel
   filters,
   onFiltersChange,
   paymentMethodOptions,
 }) {
-  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInRouteChange, isExpired, onRegenerate };
+  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment };
 
   const statusOptions = Object.entries(statusConfig).map(([value, cfg]) => ({
     value,

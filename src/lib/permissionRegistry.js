@@ -168,6 +168,7 @@ export const PERMISSION_REGISTRY = {
       { id: "edit_validity", label: "Editar vigencia", category: "actionable", icon: "📅", description: "Cambiar fecha de validez" },
       { id: "edit_payment_method", label: "Editar pago", category: "actionable", icon: "💳", description: "Modificar forma de pago" },
       { id: "confirm_payment", label: "Confirmar pago", category: "actionable", icon: "✓", description: "Marcar cotización como pagada" },
+      { id: "revert_payment", label: "Revertir pago", category: "actionable", icon: "↩️", sensitive: true, description: "Revertir confirmación de pago en ventas concretadas (reabre el cobro sin anular la venta). Requiere admin en backend." },
       { id: "convert", label: "Convertir a venta", category: "actionable", icon: "✓", description: "Convertir cotización a venta confirmada" },
       { id: "cancel", label: "Cancelar", category: "actionable", icon: "❌", description: "Cancelar cotizaciones" },
       { id: "return", label: "Procesar devolución", category: "actionable", icon: "↩️", description: "Procesar devoluciones parciales de ventas" },
