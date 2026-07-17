@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-07-15T19:24:44.371Z
+// Generado: 2026-07-17T15:32:29.603Z
 
-export const SNAPSHOT_VERSION = "2.18.11";
+export const SNAPSHOT_VERSION = "2.18.12";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-07-15";
+export const SNAPSHOT_RELEASE_DATE = "2026-07-17";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-06";
 
-export const SNAPSHOT_GIT_LOG = "f2afe17 File changes\nb7a5477 File changes\n500d300 chore: stop committing base44/.app.jsonc; use `base44 link` [base44-migration:app-jsonc-ignored]\nc046f79 Update base44 packages\nfdc2a78 Merge pull request #282 from jospabloh/claude/apps-rls-security-audit-xhfvtr\ne878f84 Merge branch 'main' into claude/apps-rls-security-audit-xhfvtr\nff41f87 fix(security): close self-service role/business_id self-escalation on User\n1f66a4d Update base44 packages\na337a54 Merge pull request #280 from jospabloh/claude/apps-rls-security-audit-xhfvtr\n3037090 fix(rls): restore Business create self-serve branch reverted by bot\n3554a58 Merge pull request #276 from jospabloh/automated/release-pr\ne2de583 chore: release and update documentation\nf5e1e8b Merge pull request #279 from jospabloh/claude/tenant-isolation-bypass-fix-hvzwdk\n7922223 Fix tenant isolation bypass in applyMovementStock\n313d605 Merge pull request #277 from jospabloh/claude/unauthenticated-cleanup-endpoint-e9ae6a\na353cdf Merge branch 'main' into claude/unauthenticated-cleanup-endpoint-e9ae6a\na02bd5d Merge pull request #278 from jospabloh/claude/plus-minus-operator-2q04zk\n1353a8f fix(dashboard): base Utilidad Real/Neta sign on profit, not margin\ndd4f885 Require CRON_SECRET (or authenticated admin) for cleanupSessions\ncab6420 Merge pull request #275 from jospabloh/fix/eslint-version-mismatch\nefb615c fix(deps): align @eslint/js to the eslint 9.x line, unblock builds\n6244bca Installed npm packages: eslint@^9.39.4\nf5b25ab Merge pull request #273 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-separator-1.1.11\n4385723 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-separator-1.1.11\n9727770 Merge pull request #272 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-aspect-ratio-1.1.11";
+export const SNAPSHOT_GIT_LOG = "d10efa1 Merge pull request #290 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-select-2.3.3\nc35e325 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-select-2.3.3\nff867b3 Merge pull request #289 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.3\nbcd9184 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.3\nccf8234 Merge pull request #288 from jospabloh/dependabot/npm_and_yarn/typescript-7.0.2\nb10a1df Merge branch 'main' into dependabot/npm_and_yarn/typescript-7.0.2\n9ec53a1 Merge pull request #287 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-popover-1.1.19\nc1f4fb3 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-popover-1.1.19\nb969a81 Merge pull request #286 from jospabloh/dependabot/npm_and_yarn/recharts-3.9.2\n4b02d93 Merge branch 'main' into dependabot/npm_and_yarn/recharts-3.9.2\n991f3df Merge pull request #285 from jospabloh/dependabot/npm_and_yarn/stripe/stripe-js-9.9.0\nf714626 Merge branch 'main' into dependabot/npm_and_yarn/stripe/stripe-js-9.9.0\n9b916f8 Merge pull request #284 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.3\n2f27b82 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.3\n15a9113 Merge pull request #283 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-alert-dialog-1.1.19\n7f6ff37 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-alert-dialog-1.1.19\n73a1446 Merge pull request #281 from jospabloh/automated/release-pr\n5a51249 chore: release and update documentation\nf2afe17 File changes\nb7a5477 File changes\n500d300 chore: stop committing base44/.app.jsonc; use `base44 link` [base44-migration:app-jsonc-ignored]\nc046f79 Update base44 packages\nfa5a981 chore(deps): bump @radix-ui/react-select from 2.3.1 to 2.3.3\nce99dd7 chore(deps): bump @radix-ui/react-radio-group from 1.4.0 to 1.4.3\n5ea6184 chore(deps-dev): bump typescript from 6.0.3 to 7.0.2";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.18.11",
+  "Actualización a la versión 2.18.12",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.12",
+    date: "2026-07-17",
+    changes: [
+    "Actualización a la versión 2.18.12"
+    ]
+  },
   {
     version: "2.18.11",
     date: "2026-07-15",
