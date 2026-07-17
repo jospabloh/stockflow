@@ -50,6 +50,7 @@ function Divider() {
 export default function Utility() {
   const { businessId } = useBusinessContext();
   const { can } = usePermissions();
+  const canViewWithdrawals = can('Utilidad', 'view_withdrawals');
   const [movements, setMovements] = useState([]);
   const [rubros, setRubros] = useState([]);
   const [accounts, setAccounts] = useState([]);
@@ -121,7 +122,10 @@ export default function Utility() {
     return d >= monthStart && d <= monthEnd;
   };
 
-  const monthMovements = useMemo(() => movements.filter(inMonth), [movements, monthStart, monthEnd]);
+  const monthMovements = useMemo(
+    () => movements.filter(inMonth).filter((m) => canViewWithdrawals || m.movement_type !== "expense"),
+    [movements, monthStart, monthEnd, canViewWithdrawals]
+  );
 
   // Desglose por rubro (del mes)
   const byRubro = useMemo(() => {
@@ -342,7 +346,7 @@ export default function Utility() {
       </div>
 
       {/* Summary cards — las tres cifras contables: Total, Retirada y Disponible */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className={`grid grid-cols-1 ${canViewWithdrawals ? "sm:grid-cols-3" : ""} gap-4`}>
         <Card className="border-0 shadow-sm p-5">
           <div className="flex items-center justify-between mb-2">
             <span className="text-muted-foreground text-sm">Utilidad total</span>
@@ -352,23 +356,27 @@ export default function Utility() {
           <p className="text-muted-foreground text-xs mt-1">Generada · provisional al cierre</p>
         </Card>
 
-        <Card className="border-0 shadow-sm p-5">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-muted-foreground text-sm">Utilidad retirada</span>
-            <Minus className="h-5 w-5 text-rose-500" />
-          </div>
-          <p className="text-2xl font-bold text-rose-600">{fmt(incomeStatement.withdrawals)}</p>
-          <p className="text-muted-foreground text-xs mt-1">Efectivo + tarjeta dispuestos</p>
-        </Card>
+        {canViewWithdrawals && (
+          <Card className="border-0 shadow-sm p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-muted-foreground text-sm">Utilidad retirada</span>
+              <Minus className="h-5 w-5 text-rose-500" />
+            </div>
+            <p className="text-2xl font-bold text-rose-600">{fmt(incomeStatement.withdrawals)}</p>
+            <p className="text-muted-foreground text-xs mt-1">Efectivo + tarjeta dispuestos</p>
+          </Card>
+        )}
 
-        <Card className={`border-0 shadow-sm p-5 text-white bg-gradient-to-br ${incomeStatement.availableProfit < 0 ? "from-rose-500 to-rose-600" : "from-brand-500 to-brand-600"}`}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-brand-100 text-sm font-medium">Utilidad disponible</span>
-            <Wallet className="h-5 w-5 text-brand-200" />
-          </div>
-          <p className="text-3xl font-bold">{fmt(incomeStatement.availableProfit)}</p>
-          <p className="text-brand-100 text-xs mt-1">Dinero sonante para gastar</p>
-        </Card>
+        {canViewWithdrawals && (
+          <Card className={`border-0 shadow-sm p-5 text-white bg-gradient-to-br ${incomeStatement.availableProfit < 0 ? "from-rose-500 to-rose-600" : "from-brand-500 to-brand-600"}`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-brand-100 text-sm font-medium">Utilidad disponible</span>
+              <Wallet className="h-5 w-5 text-brand-200" />
+            </div>
+            <p className="text-3xl font-bold">{fmt(incomeStatement.availableProfit)}</p>
+            <p className="text-brand-100 text-xs mt-1">Dinero sonante para gastar</p>
+          </Card>
+        )}
       </div>
 
       {/* Estado de Resultados — cascada */}
@@ -387,9 +395,13 @@ export default function Utility() {
             <Row label="Pagos a proveedores" value={incomeStatement.supplierPaymentsTotal} sign="−" muted />
             <Divider />
             <Row label="Utilidad Total" value={incomeStatement.totalProfit} bold highlight />
-            <Row label="Retiros de utilidad" value={incomeStatement.withdrawals} sign="−" muted />
-            <Divider />
-            <Row label="Utilidad Disponible" value={incomeStatement.availableProfit} bold highlight />
+            {canViewWithdrawals && (
+              <>
+                <Row label="Retiros de utilidad" value={incomeStatement.withdrawals} sign="−" muted />
+                <Divider />
+                <Row label="Utilidad Disponible" value={incomeStatement.availableProfit} bold highlight />
+              </>
+            )}
             {incomeStatement.pendingCollection > 0 && (
               <p className="text-xs text-amber-600 pt-2 flex items-center gap-1">
                 <Clock className="h-3 w-3" /> Pendiente de cobrar (no afecta la utilidad devengada): {fmt(incomeStatement.pendingCollection)}
@@ -488,7 +500,7 @@ export default function Utility() {
               options={[
                 { value: "all", label: "Todos" },
                 { value: "income", label: "Ingresos" },
-                { value: "expense", label: "Egresos" },
+                ...(canViewWithdrawals ? [{ value: "expense", label: "Egresos" }] : []),
               ]}
             />
           </div>
