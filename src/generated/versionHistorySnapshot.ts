@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-07-07T05:54:26.363Z
+// Generado: 2026-07-15T19:24:44.371Z
 
-export const SNAPSHOT_VERSION = "2.18.10";
+export const SNAPSHOT_VERSION = "2.18.11";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-07-07";
+export const SNAPSHOT_RELEASE_DATE = "2026-07-15";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-06";
 
-export const SNAPSHOT_GIT_LOG = "f5e1e8b Merge pull request #279 from jospabloh/claude/tenant-isolation-bypass-fix-hvzwdk\n7922223 Fix tenant isolation bypass in applyMovementStock\n313d605 Merge pull request #277 from jospabloh/claude/unauthenticated-cleanup-endpoint-e9ae6a\na353cdf Merge branch 'main' into claude/unauthenticated-cleanup-endpoint-e9ae6a\na02bd5d Merge pull request #278 from jospabloh/claude/plus-minus-operator-2q04zk\n1353a8f fix(dashboard): base Utilidad Real/Neta sign on profit, not margin\ndd4f885 Require CRON_SECRET (or authenticated admin) for cleanupSessions\ncab6420 Merge pull request #275 from jospabloh/fix/eslint-version-mismatch\nefb615c fix(deps): align @eslint/js to the eslint 9.x line, unblock builds\n6244bca Installed npm packages: eslint@^9.39.4\nf5b25ab Merge pull request #273 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-separator-1.1.11\n4385723 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-separator-1.1.11\n9727770 Merge pull request #272 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-aspect-ratio-1.1.11\na3d37b9 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-aspect-ratio-1.1.11\n38477da Merge pull request #271 from jospabloh/dependabot/npm_and_yarn/react-hook-form-7.81.0\na3d5698 Merge branch 'main' into dependabot/npm_and_yarn/react-hook-form-7.81.0\n82c307a Merge pull request #270 from jospabloh/dependabot/npm_and_yarn/postcss-8.5.16\n7beb479 Merge branch 'main' into dependabot/npm_and_yarn/postcss-8.5.16\n5d5c8a2 Merge pull request #269 from jospabloh/dependabot/npm_and_yarn/hello-pangea/dnd-18.0.1\nd32ed0b chore(deps): bump @radix-ui/react-aspect-ratio from 1.1.10 to 1.1.11\n6122e9c chore(deps): bump @hello-pangea/dnd from 17.0.0 to 18.0.1\n7dcbc4d Merge pull request #268 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-alert-dialog-1.1.18\n7a3d146 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-alert-dialog-1.1.18\n46dc76c Merge pull request #267 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-menubar-1.1.19\n4d80959 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-menubar-1.1.19";
+export const SNAPSHOT_GIT_LOG = "f2afe17 File changes\nb7a5477 File changes\n500d300 chore: stop committing base44/.app.jsonc; use `base44 link` [base44-migration:app-jsonc-ignored]\nc046f79 Update base44 packages\nfdc2a78 Merge pull request #282 from jospabloh/claude/apps-rls-security-audit-xhfvtr\ne878f84 Merge branch 'main' into claude/apps-rls-security-audit-xhfvtr\nff41f87 fix(security): close self-service role/business_id self-escalation on User\n1f66a4d Update base44 packages\na337a54 Merge pull request #280 from jospabloh/claude/apps-rls-security-audit-xhfvtr\n3037090 fix(rls): restore Business create self-serve branch reverted by bot\n3554a58 Merge pull request #276 from jospabloh/automated/release-pr\ne2de583 chore: release and update documentation\nf5e1e8b Merge pull request #279 from jospabloh/claude/tenant-isolation-bypass-fix-hvzwdk\n7922223 Fix tenant isolation bypass in applyMovementStock\n313d605 Merge pull request #277 from jospabloh/claude/unauthenticated-cleanup-endpoint-e9ae6a\na353cdf Merge branch 'main' into claude/unauthenticated-cleanup-endpoint-e9ae6a\na02bd5d Merge pull request #278 from jospabloh/claude/plus-minus-operator-2q04zk\n1353a8f fix(dashboard): base Utilidad Real/Neta sign on profit, not margin\ndd4f885 Require CRON_SECRET (or authenticated admin) for cleanupSessions\ncab6420 Merge pull request #275 from jospabloh/fix/eslint-version-mismatch\nefb615c fix(deps): align @eslint/js to the eslint 9.x line, unblock builds\n6244bca Installed npm packages: eslint@^9.39.4\nf5b25ab Merge pull request #273 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-separator-1.1.11\n4385723 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-separator-1.1.11\n9727770 Merge pull request #272 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-aspect-ratio-1.1.11";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.18.10",
+  "Actualización a la versión 2.18.11",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.11",
+    date: "2026-07-15",
+    changes: [
+    "Actualización a la versión 2.18.11"
+    ]
+  },
   {
     version: "2.18.10",
     date: "2026-07-07",
