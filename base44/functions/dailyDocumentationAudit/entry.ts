@@ -6,38 +6,38 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.11";
-const SNAPSHOT_RELEASE_DATE = "2026-07-15";
+const CURRENT_VERSION_IN_CODE = "2.18.12";
+const SNAPSHOT_RELEASE_DATE = "2026-07-17";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-06";
 const GIT_LOG_SNAPSHOT = `
+d10efa1 Merge pull request #290 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-select-2.3.3
+c35e325 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-select-2.3.3
+ff867b3 Merge pull request #289 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.3
+bcd9184 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.3
+ccf8234 Merge pull request #288 from jospabloh/dependabot/npm_and_yarn/typescript-7.0.2
+b10a1df Merge branch 'main' into dependabot/npm_and_yarn/typescript-7.0.2
+9ec53a1 Merge pull request #287 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-popover-1.1.19
+c1f4fb3 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-popover-1.1.19
+b969a81 Merge pull request #286 from jospabloh/dependabot/npm_and_yarn/recharts-3.9.2
+4b02d93 Merge branch 'main' into dependabot/npm_and_yarn/recharts-3.9.2
+991f3df Merge pull request #285 from jospabloh/dependabot/npm_and_yarn/stripe/stripe-js-9.9.0
+f714626 Merge branch 'main' into dependabot/npm_and_yarn/stripe/stripe-js-9.9.0
+9b916f8 Merge pull request #284 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.3
+2f27b82 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.3
+15a9113 Merge pull request #283 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-alert-dialog-1.1.19
+7f6ff37 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-alert-dialog-1.1.19
+73a1446 Merge pull request #281 from jospabloh/automated/release-pr
+5a51249 chore: release and update documentation
 f2afe17 File changes
 b7a5477 File changes
 500d300 chore: stop committing base44/.app.jsonc; use \`base44 link\` [base44-migration:app-jsonc-ignored]
 c046f79 Update base44 packages
-fdc2a78 Merge pull request #282 from jospabloh/claude/apps-rls-security-audit-xhfvtr
-e878f84 Merge branch 'main' into claude/apps-rls-security-audit-xhfvtr
-ff41f87 fix(security): close self-service role/business_id self-escalation on User
-1f66a4d Update base44 packages
-a337a54 Merge pull request #280 from jospabloh/claude/apps-rls-security-audit-xhfvtr
-3037090 fix(rls): restore Business create self-serve branch reverted by bot
-3554a58 Merge pull request #276 from jospabloh/automated/release-pr
-e2de583 chore: release and update documentation
-f5e1e8b Merge pull request #279 from jospabloh/claude/tenant-isolation-bypass-fix-hvzwdk
-7922223 Fix tenant isolation bypass in applyMovementStock
-313d605 Merge pull request #277 from jospabloh/claude/unauthenticated-cleanup-endpoint-e9ae6a
-a353cdf Merge branch 'main' into claude/unauthenticated-cleanup-endpoint-e9ae6a
-a02bd5d Merge pull request #278 from jospabloh/claude/plus-minus-operator-2q04zk
-1353a8f fix(dashboard): base Utilidad Real/Neta sign on profit, not margin
-dd4f885 Require CRON_SECRET (or authenticated admin) for cleanupSessions
-cab6420 Merge pull request #275 from jospabloh/fix/eslint-version-mismatch
-efb615c fix(deps): align @eslint/js to the eslint 9.x line, unblock builds
-6244bca Installed npm packages: eslint@^9.39.4
-f5b25ab Merge pull request #273 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-separator-1.1.11
-4385723 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-separator-1.1.11
-9727770 Merge pull request #272 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-aspect-ratio-1.1.11
+fa5a981 chore(deps): bump @radix-ui/react-select from 2.3.1 to 2.3.3
+ce99dd7 chore(deps): bump @radix-ui/react-radio-group from 1.4.0 to 1.4.3
+5ea6184 chore(deps-dev): bump typescript from 6.0.3 to 7.0.2
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.18.11",
+  "Actualización a la versión 2.18.12",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
