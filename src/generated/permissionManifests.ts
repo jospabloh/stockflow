@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-07-17T15:32:29.432Z
+// Generado: 2026-07-17T15:52:04.873Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -163,6 +163,7 @@ export const ALL_PERMISSION_KEYS = [
   "Configuracion:manage_referral",
   "Configuracion:delete_account",
   "Utilidad:view",
+  "Utilidad:view_withdrawals",
   "Utilidad:add_withdrawal",
   "Utilidad:manage_forecast",
   "Rubros:view",
@@ -424,6 +425,7 @@ export const PERMISSION_REGISTRY: Record<string, {
     label: "Utilidad",
     actions: [
     { id: "view", label: "Ver Estado de Resultados", category: "report", sensitive: true },
+    { id: "view_withdrawals", label: "Ver retiros de utilidad", category: "report", sensitive: true },
     { id: "add_withdrawal", label: "Registrar Retiro de Utilidad", category: "actionable" },
     { id: "manage_forecast", label: "Gestionar proyección", category: "actionable", sensitive: true }
     ]
@@ -610,6 +612,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Configuracion:manage_referral": true,
   "Configuracion:delete_account": true,
   "Utilidad:view": true,
+  "Utilidad:view_withdrawals": true,
   "Utilidad:add_withdrawal": true,
   "Utilidad:manage_forecast": true,
   "Rubros:view": true,
@@ -782,6 +785,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Configuracion:manage_referral": true,
   "Configuracion:delete_account": false,
   "Utilidad:view": false,
+  "Utilidad:view_withdrawals": false,
   "Utilidad:add_withdrawal": false,
   "Utilidad:manage_forecast": false,
   "Rubros:view": true,
