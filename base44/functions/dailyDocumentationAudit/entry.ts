@@ -6,10 +6,22 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.10";
-const SNAPSHOT_RELEASE_DATE = "2026-07-07";
+const CURRENT_VERSION_IN_CODE = "2.18.11";
+const SNAPSHOT_RELEASE_DATE = "2026-07-15";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-06";
 const GIT_LOG_SNAPSHOT = `
+f2afe17 File changes
+b7a5477 File changes
+500d300 chore: stop committing base44/.app.jsonc; use \`base44 link\` [base44-migration:app-jsonc-ignored]
+c046f79 Update base44 packages
+fdc2a78 Merge pull request #282 from jospabloh/claude/apps-rls-security-audit-xhfvtr
+e878f84 Merge branch 'main' into claude/apps-rls-security-audit-xhfvtr
+ff41f87 fix(security): close self-service role/business_id self-escalation on User
+1f66a4d Update base44 packages
+a337a54 Merge pull request #280 from jospabloh/claude/apps-rls-security-audit-xhfvtr
+3037090 fix(rls): restore Business create self-serve branch reverted by bot
+3554a58 Merge pull request #276 from jospabloh/automated/release-pr
+e2de583 chore: release and update documentation
 f5e1e8b Merge pull request #279 from jospabloh/claude/tenant-isolation-bypass-fix-hvzwdk
 7922223 Fix tenant isolation bypass in applyMovementStock
 313d605 Merge pull request #277 from jospabloh/claude/unauthenticated-cleanup-endpoint-e9ae6a
@@ -23,21 +35,9 @@ efb615c fix(deps): align @eslint/js to the eslint 9.x line, unblock builds
 f5b25ab Merge pull request #273 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-separator-1.1.11
 4385723 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-separator-1.1.11
 9727770 Merge pull request #272 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-aspect-ratio-1.1.11
-a3d37b9 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-aspect-ratio-1.1.11
-38477da Merge pull request #271 from jospabloh/dependabot/npm_and_yarn/react-hook-form-7.81.0
-a3d5698 Merge branch 'main' into dependabot/npm_and_yarn/react-hook-form-7.81.0
-82c307a Merge pull request #270 from jospabloh/dependabot/npm_and_yarn/postcss-8.5.16
-7beb479 Merge branch 'main' into dependabot/npm_and_yarn/postcss-8.5.16
-5d5c8a2 Merge pull request #269 from jospabloh/dependabot/npm_and_yarn/hello-pangea/dnd-18.0.1
-d32ed0b chore(deps): bump @radix-ui/react-aspect-ratio from 1.1.10 to 1.1.11
-6122e9c chore(deps): bump @hello-pangea/dnd from 17.0.0 to 18.0.1
-7dcbc4d Merge pull request #268 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-alert-dialog-1.1.18
-7a3d146 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-alert-dialog-1.1.18
-46dc76c Merge pull request #267 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-menubar-1.1.19
-4d80959 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-menubar-1.1.19
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.18.10",
+  "Actualización a la versión 2.18.11",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
