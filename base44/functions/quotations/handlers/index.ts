@@ -9,6 +9,7 @@ import { handle as partialReturnQuotation } from './partialReturnQuotation.ts';
 import { handle as calculateQuotationWithTransport } from './calculateQuotationWithTransport.ts';
 import { handle as respondToPublicQuotation } from './respondToPublicQuotation.ts';
 import { handle as getPublicQuotation } from './getPublicQuotation.ts';
+import { handle as revertPaymentConfirmationSafe } from './revertPaymentConfirmationSafe.ts';
 
 type Handler = (req: Request) => Promise<Response>;
 
@@ -24,6 +25,7 @@ const HANDLERS: Record<string, Handler> = {
   calculateQuotationWithTransport,
   respondToPublicQuotation,
   getPublicQuotation,
+  revertPaymentConfirmationSafe,
 };
 
 export function getHandler(action: string): Handler | undefined {
