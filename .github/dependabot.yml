@@ -8,6 +8,10 @@ updates:
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
     ignore:
       - dependency-name: "moment"
         update-types: ["version-update:semver-major"]
@@ -20,3 +24,7 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
