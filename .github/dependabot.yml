@@ -1,1 +1,30 @@
-dmVyc2lvbjogMgp1cGRhdGVzOgogIC0gcGFja2FnZS1lY29zeXN0ZW06ICJucG0iCiAgICBkaXJlY3Rvcnk6ICIvIgogICAgc2NoZWR1bGU6CiAgICAgIGludGVydmFsOiAid2Vla2x5IgogICAgICBkYXk6ICJtb25kYXkiCiAgICBvcGVuLXB1bGwtcmVxdWVzdHMtbGltaXQ6IDEwCiAgICBsYWJlbHM6CiAgICAgIC0gImRlcGVuZGVuY2llcyIKICAgIGdyb3VwczoKICAgICAgbnBtLWRlcGVuZGVuY2llczoKICAgICAgICBwYXR0ZXJuczoKICAgICAgICAgIC0gIioiCiAgICBpZ25vcmU6CiAgICAgIC0gZGVwZW5kZW5jeS1uYW1lOiAibW9tZW50IgogICAgICAgIHVwZGF0ZS10eXBlczogWyJ2ZXJzaW9uLXVwZGF0ZTpzZW12ZXItbWFqb3IiXQoKICAtIHBhY2thZ2UtZWNvc3lzdGVtOiAiZ2l0aHViLWFjdGlvbnMiCiAgICBkaXJlY3Rvcnk6ICIvIgogICAgc2NoZWR1bGU6CiAgICAgIGludGVydmFsOiAid2Vla2x5IgogICAgICBkYXk6ICJtb25kYXkiCiAgICBsYWJlbHM6CiAgICAgIC0gImRlcGVuZGVuY2llcyIKICAgICAgLSAiZ2l0aHViLWFjdGlvbnMiCiAgICBncm91cHM6CiAgICAgIGdpdGh1Yi1hY3Rpb25zOgogICAgICAgIHBhdHRlcm5zOgogICAgICAgICAgLSAiKiIK
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "moment"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
