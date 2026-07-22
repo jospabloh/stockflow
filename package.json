@@ -19,7 +19,7 @@
     "release": "node scripts/publish-release.mjs"
   },
   "dependencies": {
-    "@base44/sdk": "^0.8.39",
+    "@base44/sdk": "^0.8.40",
     "@base44/vite-plugin": "^1.0.30",
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^4.1.2",
