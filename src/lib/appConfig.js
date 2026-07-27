@@ -2,9 +2,9 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.18.12";
+export const APP_VERSION = "2.18.13";
 
-export const RELEASE_DATE = "2026-07-17";
+export const RELEASE_DATE = "2026-07-27";
 
 // URL pública de la página comercial donde el cliente contrata o renueva su
 // licencia. Es información pública (NO un secreto): aparece también en el manual
@@ -18,9 +18,24 @@ export const STOCKFLOW_UPGRADE_URL =
 // Fecha (ISO) de la última revisión manual del Manual de Usuario por un humano.
 // Actualizar al volver a leer y validar el manual end-to-end. La auditoría
 // nocturna alerta si pasan más de 60 días desde esta fecha.
-export const USER_MANUAL_LAST_REVIEWED = "2026-07-06";
+export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 
 export const CHANGELOG = [
+  {
+    version: "2.18.13",
+    date: "2026-07-27",
+    changes: [
+      "🔒 Auditoría de seguridad y calidad v2.18.13: 0 hallazgos Críticos o Altos sin resolver o clasificados. Sin cambios en lógica de negocio, precios, impuestos ni datos.",
+      "🛠️ CI: eliminada dependencia no utilizada react-leaflet — causaba fallo de npm ci (conflicto de peer dependency con React 19) en el workflow de liberación automática desde el 17 de julio.",
+      "🔧 jsconfig.json: corregida opción de compilador obsoleta (baseUrl) que impedía ejecutar la verificación de tipos.",
+      "🛡️ Caja Chica: el botón 'Fondo Inicial' ahora respeta el permiso granular Caja Chica:add_fund (ya definido en la matriz, no aplicado en la UI) — almacenista sin el permiso ya no ve la acción, igual que 'Ajuste'.",
+      "📦 Dependencias: 4 vulnerabilidades resueltas sin cambios de compatibilidad (dompurify, engine.io-client, postcss, ws).",
+      "📦 Vulnerabilidades residuales aceptadas (requieren actualización mayor, evaluación aparte): react-router (CSRF en modo RSC, no usado por esta app), toolchain de eslint (solo desarrollo, no se distribuye a producción). xlsx sigue sin fix upstream disponible (riesgo ya aceptado).",
+      "✅ Validación RLS: 29 entidades, 21 con alcance de tenant — sin hallazgos.",
+      "📋 Matriz de permisos: 171 claves canónicas — sin brechas nuevas tras cerrar el hallazgo de Caja Chica.",
+      "📚 Manual de usuario: nota de permiso agregada al artículo de Caja Chica para reflejar la restricción de 'Fondo Inicial'.",
+    ],
+  },
   {
     version: "2.18.12",
     date: "2026-07-17",

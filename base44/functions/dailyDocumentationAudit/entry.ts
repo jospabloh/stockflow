@@ -6,38 +6,46 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.12";
-const SNAPSHOT_RELEASE_DATE = "2026-07-17";
-const USER_MANUAL_LAST_REVIEWED = "2026-07-06";
+const CURRENT_VERSION_IN_CODE = "2.18.13";
+const SNAPSHOT_RELEASE_DATE = "2026-07-27";
+const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 const GIT_LOG_SNAPSHOT = `
+cded2ff Update base44 packages
+6936e49 Merge pull request #310 from jospabloh/claude/unmerged-branches-cleanup-xwtflm
+43f5776 chore(deps): remove unused dependencies
+5b3642f Merge pull request #308 from jospabloh/dependabot/github_actions/github-actions-eefdb6dedd
+97b8eae chore(deps): bump actions/setup-node in the github-actions group
+ab6eefe Merge pull request #307 from jospabloh/claude/unmerged-branches-cleanup-xwtflm
+f13d2f5 fix(deps): correct dependabot.yml content (was accidentally base64-encoded)
+ae406d9 chore(deps): group dependabot updates into a single weekly PR per ecosystem
+2694c98 Merge pull request #293 from jospabloh/automated/release-pr
+22a8e83 Merge remote-tracking branch 'origin/main' into automated/release-pr
+9e7bbd6 Merge pull request #294 from jospabloh/claude/utility-withdrawals-admin-visibility-99f8g4
+01ee5b8 Merge remote-tracking branch 'origin/main' into claude/utility-withdrawals-admin-visibility-99f8g4
+c5f2297 Merge pull request #295 from jospabloh/claude/react-deps-merge-conflict-p8c82n
+48a8ef9 chore(deps): bump react and @types/react to 19.2.7 / 19.2.17
+974e991 Restrict profit withdrawals visibility to admin by default
+c15b926 chore: release and update documentation
+2934e0f Merge pull request #291 from jospabloh/dependabot/npm_and_yarn/multi-3d3f0671f1
+72cfe50 Merge branch 'main' into dependabot/npm_and_yarn/multi-3d3f0671f1
 d10efa1 Merge pull request #290 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-select-2.3.3
 c35e325 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-select-2.3.3
+e927940 chore(deps): bump react-dom and @types/react-dom
 ff867b3 Merge pull request #289 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.3
 bcd9184 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.3
 ccf8234 Merge pull request #288 from jospabloh/dependabot/npm_and_yarn/typescript-7.0.2
 b10a1df Merge branch 'main' into dependabot/npm_and_yarn/typescript-7.0.2
-9ec53a1 Merge pull request #287 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-popover-1.1.19
-c1f4fb3 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-popover-1.1.19
-b969a81 Merge pull request #286 from jospabloh/dependabot/npm_and_yarn/recharts-3.9.2
-4b02d93 Merge branch 'main' into dependabot/npm_and_yarn/recharts-3.9.2
-991f3df Merge pull request #285 from jospabloh/dependabot/npm_and_yarn/stripe/stripe-js-9.9.0
-f714626 Merge branch 'main' into dependabot/npm_and_yarn/stripe/stripe-js-9.9.0
-9b916f8 Merge pull request #284 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.3
-2f27b82 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-context-menu-2.3.3
-15a9113 Merge pull request #283 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-alert-dialog-1.1.19
-7f6ff37 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-alert-dialog-1.1.19
-73a1446 Merge pull request #281 from jospabloh/automated/release-pr
-5a51249 chore: release and update documentation
-f2afe17 File changes
-b7a5477 File changes
-500d300 chore: stop committing base44/.app.jsonc; use \`base44 link\` [base44-migration:app-jsonc-ignored]
-c046f79 Update base44 packages
-fa5a981 chore(deps): bump @radix-ui/react-select from 2.3.1 to 2.3.3
-ce99dd7 chore(deps): bump @radix-ui/react-radio-group from 1.4.0 to 1.4.3
-5ea6184 chore(deps-dev): bump typescript from 6.0.3 to 7.0.2
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.18.12",
+  "🔒 Auditoría de seguridad y calidad v2.18.13: 0 hallazgos Críticos o Altos sin resolver o clasificados. Sin cambios en lógica de negocio, precios, impuestos ni datos.",
+  "🛠️ CI: eliminada dependencia no utilizada react-leaflet — causaba fallo de npm ci (conflicto de peer dependency con React 19) en el workflow de liberación automática desde el 17 de julio.",
+  "🔧 jsconfig.json: corregida opción de compilador obsoleta (baseUrl) que impedía ejecutar la verificación de tipos.",
+  "🛡️ Caja Chica: el botón 'Fondo Inicial' ahora respeta el permiso granular Caja Chica:add_fund (ya definido en la matriz, no aplicado en la UI) — almacenista sin el permiso ya no ve la acción, igual que 'Ajuste'.",
+  "📦 Dependencias: 4 vulnerabilidades resueltas sin cambios de compatibilidad (dompurify, engine.io-client, postcss, ws).",
+  "📦 Vulnerabilidades residuales aceptadas (requieren actualización mayor, evaluación aparte): react-router (CSRF en modo RSC, no usado por esta app), toolchain de eslint (solo desarrollo, no se distribuye a producción). xlsx sigue sin fix upstream disponible (riesgo ya aceptado).",
+  "✅ Validación RLS: 29 entidades, 21 con alcance de tenant — sin hallazgos.",
+  "📋 Matriz de permisos: 171 claves canónicas — sin brechas nuevas tras cerrar el hallazgo de Caja Chica.",
+  "📚 Manual de usuario: nota de permiso agregada al artículo de Caja Chica para reflejar la restricción de 'Fondo Inicial'.",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

@@ -1656,7 +1656,7 @@ Es un fondo de dinero físico que se usa para cubrir gastos pequeños del día a
 
 | Función | Descripción |
 |---|---|
-| **Fondo Inicial** | Registra el dinero con el que empieza la caja |
+| **Fondo Inicial** | Registra el dinero con el que empieza la caja (solo Admin, salvo permiso otorgado) |
 | **Ingreso** | Cuando entra dinero a la caja (reposición, reintegro) |
 | **Egreso** | Cuando sale dinero por un gasto menor |
 | **Ajuste** | Corrección manual del saldo (solo Admin) |
