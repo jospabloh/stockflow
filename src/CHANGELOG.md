@@ -1,5 +1,33 @@
 # Changelog — StockFlow
 
+## v2.18.13 (2026-07-27)
+
+### 🔒 Auditoría de Seguridad y Calidad
+
+Auditoría automatizada completa del repositorio. Sin hallazgos Críticos ni Altos sin resolver. Sin cambios en lógica de negocio, precios, impuestos ni datos.
+
+#### Correcciones de CI/CD y dependencias
+
+- **`react-leaflet` eliminada** — dependencia no utilizada en el código fuente; su requisito de peer `react@^18` entraba en conflicto con React 19 y rompía `npm ci` en el workflow de liberación automática desde el 17 de julio (todas las corridas fallaban con `ERESOLVE`).
+- **`jsconfig.json`** — opción de compilador `baseUrl` (removida en versiones recientes de TypeScript) reemplazada por la forma equivalente en `paths`.
+- **4 vulnerabilidades de dependencias resueltas** sin cambios de compatibilidad: `dompurify`, `engine.io-client`, `postcss`, `ws`.
+- **Vulnerabilidades residuales aceptadas** (requieren actualización mayor, evaluación aparte): `react-router` (CSRF en modo RSC — la app no usa ese modo), toolchain de `eslint` (solo desarrollo). `xlsx` sigue sin fix upstream (riesgo ya aceptado en versiones previas).
+
+#### Correcciones de permisos
+
+- **Caja Chica → "Fondo Inicial"** — el botón no verificaba el permiso granular `Caja Chica:add_fund` (ya definido en la matriz con `almacenista=false`, pero no aplicado en la interfaz). Ahora sigue el mismo patrón que el botón "Ajuste".
+
+#### Validaciones completadas
+
+- Validación RLS: 29 entidades, 21 con alcance de tenant — sin hallazgos.
+- Matriz de permisos: 171 claves canónicas — sin brechas nuevas tras el cierre anterior.
+- Lint: sin advertencias. Build: sin errores.
+- Aislamiento de tenant: entidades y funciones backend de negocio verificadas (spot-check de Product, Quotation, PettyCashMovement, Session + funciones deliver/convert/registerPayment).
+
+> Nota: ningún cambio modifica entidades de Base44, RLS, lógica de negocio ni permisos más allá del cierre del hallazgo de Caja Chica descrito arriba.
+
+---
+
 ## v2.18.2 (2026-06-29)
 
 ### 🔒 Auditoría de Seguridad y Calidad

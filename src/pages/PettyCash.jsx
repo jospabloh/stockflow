@@ -136,7 +136,7 @@ export default function PettyCash() {
         </div>
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2">
-          {!hasInitialFund && (
+          {!hasInitialFund && can('Caja Chica', 'add_fund') && (
             <Button onClick={() => openForm("initial_fund")} variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50" {...createButtonProps('add')}>
               <Plus className="h-4 w-4 mr-1" /> Fondo Inicial
             </Button>
