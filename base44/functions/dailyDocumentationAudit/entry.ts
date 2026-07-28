@@ -6,11 +6,20 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.14";
+const CURRENT_VERSION_IN_CODE = "2.18.15";
 const SNAPSHOT_RELEASE_DATE = "2026-07-28";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 const GIT_LOG_SNAPSHOT = `
+fc3e54a Merge pull request #318 from jospabloh/dependabot/npm_and_yarn/npm-dependencies-651debc960
+ad43cf7 chore(deps): bump the npm-dependencies group with 4 updates
+bf5712c fix: curated dependency bump, unbreak Auto Release PR CI trigger (v2.18.14)
+5293298 Merge origin/main: resolve conflicts with the now-merged #314/#315
 9b85fa9 fix: curated dependency bump, unbreak Auto Release PR CI trigger, v2.18.14
+2ce780c Merge pull request #314 from jospabloh/automated/release-pr
+d6f52b1 Merge branch 'main' into automated/release-pr
+5be80c0 Merge pull request #315 from jospabloh/dependabot/npm_and_yarn/npm-dependencies-4a5fd31b2f
+fb8bf52 chore(deps): bump the npm-dependencies group across 1 directory with 47 updates
+6a6246c chore: release and update documentation
 cf5e62c Merge pull request #313 from jospabloh/claude/gifted-turing-7puf7q
 cfcd736 chore: automated security, quality and permissions audit v2.18.13
 cded2ff Update base44 packages
@@ -26,22 +35,9 @@ ae406d9 chore(deps): group dependabot updates into a single weekly PR per ecosys
 9e7bbd6 Merge pull request #294 from jospabloh/claude/utility-withdrawals-admin-visibility-99f8g4
 01ee5b8 Merge remote-tracking branch 'origin/main' into claude/utility-withdrawals-admin-visibility-99f8g4
 c5f2297 Merge pull request #295 from jospabloh/claude/react-deps-merge-conflict-p8c82n
-48a8ef9 chore(deps): bump react and @types/react to 19.2.7 / 19.2.17
-974e991 Restrict profit withdrawals visibility to admin by default
-c15b926 chore: release and update documentation
-2934e0f Merge pull request #291 from jospabloh/dependabot/npm_and_yarn/multi-3d3f0671f1
-72cfe50 Merge branch 'main' into dependabot/npm_and_yarn/multi-3d3f0671f1
-d10efa1 Merge pull request #290 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-select-2.3.3
-c35e325 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-select-2.3.3
-e927940 chore(deps): bump react-dom and @types/react-dom
-ff867b3 Merge pull request #289 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.3
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "🔒 Re-auditoría de seguridad, calidad, permisos y CI: repo sin cambios desde v2.18.13, todas las correcciones previas siguen vigentes (react-leaflet, jsconfig, permiso Caja Chica:add_fund).",
-  "📦 Dependencias: aplicado el subconjunto seguro del bump agrupado de dependabot (#315) — Radix UI, React 19.2.8, @tanstack/react-query, vite, etc. Excluidos de este bump: eslint 10.x (sin release de eslint-plugin-react compatible aún — habría roto `npm ci` igual que react-leaflet) y react-window 2.x (cambio de API rompe el build de VirtualizedProductTable.jsx, que usa `FixedSizeList`).",
-  "🛠️ dependabot.yml: agregadas reglas ignore para los mayors de eslint y react-window hasta que el ecosistema/código lo soporte, para no repetir el mismo bump roto cada semana.",
-  "🛠️ CI: corregido el workflow 'Auto Release PR' — usaba GITHUB_TOKEN por defecto para abrir su PR, y GitHub no dispara otros workflows sobre eventos autenticados con GITHUB_TOKEN, así que Deno CI nunca corría en esa PR (quedaba 'unstable' para siempre). Ahora usa el secret RELEASE_PR_PAT si existe (fallback a GITHUB_TOKEN mientras no se configure).",
-  "🧹 Cerradas PR #314 (release automático, superseded por este cambio de versión) y #315 (bump de dependabot, habría roto el build) con explicación — ver comentarios en cada una.",
+  "Actualización a la versión 2.18.15",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
