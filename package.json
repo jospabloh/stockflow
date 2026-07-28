@@ -73,7 +73,7 @@
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^4.12.2",
     "react-router-dom": "^7.18.1",
-    "react-window": "^2.3.0",
+    "react-window": "^1.8.11",
     "recharts": "^3.10.1",
     "remark-gfm": "^4.0.0",
     "sonner": "^2.0.1",
@@ -84,7 +84,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.39.4",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
@@ -92,7 +92,7 @@
     "@vitejs/plugin-react": "^6.0.4",
     "autoprefixer": "^10.5.4",
     "baseline-browser-mapping": "^2.10.34",
-    "eslint": "^10.8.0",
+    "eslint": "^9.39.4",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",

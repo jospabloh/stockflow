@@ -7,9 +7,10 @@ const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
 const CURRENT_VERSION_IN_CODE = "2.18.14";
-const SNAPSHOT_RELEASE_DATE = "2026-07-27";
+const SNAPSHOT_RELEASE_DATE = "2026-07-28";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 const GIT_LOG_SNAPSHOT = `
+9b85fa9 fix: curated dependency bump, unbreak Auto Release PR CI trigger, v2.18.14
 cf5e62c Merge pull request #313 from jospabloh/claude/gifted-turing-7puf7q
 cfcd736 chore: automated security, quality and permissions audit v2.18.13
 cded2ff Update base44 packages
@@ -34,10 +35,13 @@ d10efa1 Merge pull request #290 from jospabloh/dependabot/npm_and_yarn/radix-ui/
 c35e325 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-select-2.3.3
 e927940 chore(deps): bump react-dom and @types/react-dom
 ff867b3 Merge pull request #289 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.3
-bcd9184 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.3
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.18.14",
+  "🔒 Re-auditoría de seguridad, calidad, permisos y CI: repo sin cambios desde v2.18.13, todas las correcciones previas siguen vigentes (react-leaflet, jsconfig, permiso Caja Chica:add_fund).",
+  "📦 Dependencias: aplicado el subconjunto seguro del bump agrupado de dependabot (#315) — Radix UI, React 19.2.8, @tanstack/react-query, vite, etc. Excluidos de este bump: eslint 10.x (sin release de eslint-plugin-react compatible aún — habría roto `npm ci` igual que react-leaflet) y react-window 2.x (cambio de API rompe el build de VirtualizedProductTable.jsx, que usa `FixedSizeList`).",
+  "🛠️ dependabot.yml: agregadas reglas ignore para los mayors de eslint y react-window hasta que el ecosistema/código lo soporte, para no repetir el mismo bump roto cada semana.",
+  "🛠️ CI: corregido el workflow 'Auto Release PR' — usaba GITHUB_TOKEN por defecto para abrir su PR, y GitHub no dispara otros workflows sobre eventos autenticados con GITHUB_TOKEN, así que Deno CI nunca corría en esa PR (quedaba 'unstable' para siempre). Ahora usa el secret RELEASE_PR_PAT si existe (fallback a GITHUB_TOKEN mientras no se configure).",
+  "🧹 Cerradas PR #314 (release automático, superseded por este cambio de versión) y #315 (bump de dependabot, habría roto el build) con explicación — ver comentarios en cada una.",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

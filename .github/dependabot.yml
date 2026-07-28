@@ -15,6 +15,16 @@ updates:
     ignore:
       - dependency-name: "moment"
         update-types: ["version-update:semver-major"]
+      # eslint 10 has no eslint-plugin-react release supporting it yet (peer range
+      # caps at ^9.7) — bumping breaks `npm ci` with an ERESOLVE conflict.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@eslint/js"
+        update-types: ["version-update:semver-major"]
+      # react-window 2.x renamed FixedSizeList's export — breaks the build in
+      # VirtualizedProductTable.jsx until that component is migrated.
+      - dependency-name: "react-window"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"

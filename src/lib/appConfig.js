@@ -4,7 +4,7 @@
  */
 export const APP_VERSION = "2.18.14";
 
-export const RELEASE_DATE = "2026-07-27";
+export const RELEASE_DATE = "2026-07-28";
 
 // URL pública de la página comercial donde el cliente contrata o renueva su
 // licencia. Es información pública (NO un secreto): aparece también en el manual
@@ -23,9 +23,13 @@ export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 export const CHANGELOG = [
   {
     version: "2.18.14",
-    date: "2026-07-27",
+    date: "2026-07-28",
     changes: [
-      "Actualización a la versión 2.18.14",
+      "🔒 Re-auditoría de seguridad, calidad, permisos y CI: repo sin cambios desde v2.18.13, todas las correcciones previas siguen vigentes (react-leaflet, jsconfig, permiso Caja Chica:add_fund).",
+      "📦 Dependencias: aplicado el subconjunto seguro del bump agrupado de dependabot (#315) — Radix UI, React 19.2.8, @tanstack/react-query, vite, etc. Excluidos de este bump: eslint 10.x (sin release de eslint-plugin-react compatible aún — habría roto `npm ci` igual que react-leaflet) y react-window 2.x (cambio de API rompe el build de VirtualizedProductTable.jsx, que usa `FixedSizeList`).",
+      "🛠️ dependabot.yml: agregadas reglas ignore para los mayors de eslint y react-window hasta que el ecosistema/código lo soporte, para no repetir el mismo bump roto cada semana.",
+      "🛠️ CI: corregido el workflow 'Auto Release PR' — usaba GITHUB_TOKEN por defecto para abrir su PR, y GitHub no dispara otros workflows sobre eventos autenticados con GITHUB_TOKEN, así que Deno CI nunca corría en esa PR (quedaba 'unstable' para siempre). Ahora usa el secret RELEASE_PR_PAT si existe (fallback a GITHUB_TOKEN mientras no se configure).",
+      "🧹 Cerradas PR #314 (release automático, superseded por este cambio de versión) y #315 (bump de dependabot, habría roto el build) con explicación — ver comentarios en cada una.",
     ],
   },
   {

@@ -1,5 +1,33 @@
 # Changelog — StockFlow
 
+## v2.18.14 (2026-07-28)
+
+### 🔒 Re-auditoría de seguridad, calidad, permisos y CI
+
+Repositorio sin commits nuevos desde v2.18.13 — se reconfirmó que las correcciones de esa versión siguen vigentes (react-leaflet fuera, `jsconfig.json` corregido, permiso `Caja Chica:add_fund` aplicado en la UI). Los dos hallazgos de esta pasada están en el estado de las PRs automatizadas abiertas, no en el código de la aplicación.
+
+#### Dependencias (subconjunto seguro del bump agrupado de dependabot, PR #315)
+
+- Aplicadas las actualizaciones seguras del grupo `npm-dependencies`: Radix UI (varios paquetes), React/`@types/react` 19.2.8, `@tanstack/react-query`, `date-fns` 4.x, `framer-motion`, `vite` 8.1.5, `@vitejs/plugin-react`, etc.
+- **Excluido `eslint` 10.x** — `eslint-plugin-react` aún no publica una versión con peer range compatible (tope actual `^9.7`); mezclarlos rompe `npm ci` con `ERESOLVE`, la misma clase de fallo que causó el incidente de `react-leaflet` en v2.18.13.
+- **Excluido `react-window` 2.x** — su v2 renombró el export `FixedSizeList` (usado en `VirtualizedProductTable.jsx`); el build (`vite build`) falla con `MISSING_EXPORT` si se aplica. `ci.yml` no corre `npm run build`, así que esto no lo habría detectado ningún check automático.
+- `.github/dependabot.yml`: agregadas reglas `ignore` para los mayors de `eslint`, `@eslint/js` y `react-window` para que el bot deje de proponer esta combinación rota cada semana.
+
+#### CI/CD
+
+- **`auto-release-pr.yml`** — la PR que este workflow genera (#314) usaba el `GITHUB_TOKEN` por defecto de Actions para el push; por diseño de GitHub, un evento autenticado con `GITHUB_TOKEN` no dispara otros workflows, así que `Deno CI` nunca corría sobre esa PR y quedaba en estado `unstable` de forma permanente. Cambiado a usar el secret `RELEASE_PR_PAT` si existe (con fallback a `GITHUB_TOKEN` mientras no se configure) — **acción pendiente del owner:** crear un PAT con permisos de `contents` + `pull-requests` y guardarlo como secret `RELEASE_PR_PAT` para que el fix tome efecto.
+- PR #314 (release automático v2.18.14 sin contenido real, generado antes de este fix) y PR #315 (bump de dependabot que habría roto el build) cerradas con comentario explicativo — superseded por este release.
+
+#### Validaciones completadas
+
+- `npm ci`, `npm run build`, `npm run lint`, `npm run validate:rls` (29 entidades, 21 con alcance de tenant): sin hallazgos, con el set de dependencias curado.
+- `npm audit`: mismas 9 vulnerabilidades de alta severidad ya aceptadas en v2.18.13 (react-router RSC CSRF, toolchain eslint, xlsx) — ningún CVE nuevo introducido por el bump.
+- Reconfirmado el guard de licencia (`getCurrentTenantLicenseState`) y el scoping explícito por `business_id` en `deliverQuotationSafe` / `convertQuotationSafe` — sin regresión.
+
+> Nota: ningún cambio modifica entidades de Base44, RLS, lógica de negocio ni permisos.
+
+---
+
 ## v2.18.13 (2026-07-27)
 
 ### 🔒 Auditoría de Seguridad y Calidad
