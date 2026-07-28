@@ -40,7 +40,12 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # A PR pushed with the default GITHUB_TOKEN does not trigger other
+          # workflows (GitHub's anti-recursion rule for Actions-authored events),
+          # so Deno CI never runs on this PR and it sits "unstable" forever.
+          # RELEASE_PR_PAT (a repo-scoped PAT with contents+PRs write) fixes that;
+          # falls back to GITHUB_TOKEN so the workflow still runs before it's set.
+          token: ${{ secrets.RELEASE_PR_PAT || secrets.GITHUB_TOKEN }}
           commit-message: "chore: release and update documentation"
           branch: "automated/release-pr"
           title: "🚀 Automated Release & Documentation Update"
