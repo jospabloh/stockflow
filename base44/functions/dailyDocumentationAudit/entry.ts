@@ -10,6 +10,7 @@ const CURRENT_VERSION_IN_CODE = "2.18.14";
 const SNAPSHOT_RELEASE_DATE = "2026-07-28";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 const GIT_LOG_SNAPSHOT = `
+9b85fa9 fix: curated dependency bump, unbreak Auto Release PR CI trigger, v2.18.14
 cf5e62c Merge pull request #313 from jospabloh/claude/gifted-turing-7puf7q
 cfcd736 chore: automated security, quality and permissions audit v2.18.13
 cded2ff Update base44 packages
@@ -34,7 +35,6 @@ d10efa1 Merge pull request #290 from jospabloh/dependabot/npm_and_yarn/radix-ui/
 c35e325 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-select-2.3.3
 e927940 chore(deps): bump react-dom and @types/react-dom
 ff867b3 Merge pull request #289 from jospabloh/dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.3
-bcd9184 Merge branch 'main' into dependabot/npm_and_yarn/radix-ui/react-radio-group-1.4.3
 `;
 const SNAPSHOT_LATEST_CHANGES = [
   "🔒 Re-auditoría de seguridad, calidad, permisos y CI: repo sin cambios desde v2.18.13, todas las correcciones previas siguen vigentes (react-leaflet, jsconfig, permiso Caja Chica:add_fund).",
