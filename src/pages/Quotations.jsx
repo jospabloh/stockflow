@@ -32,6 +32,7 @@ import PartialReturnDialog from "@/components/quotations/PartialReturnDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import VirtualizedQuotationTable, { derivePaymentState } from "@/components/tables/VirtualizedQuotationTable";
 import OnDemandPendingPanel from "@/components/quotations/OnDemandPendingPanel";
+import QuotationsFinancialSummaryBar from "@/components/quotations/QuotationsFinancialSummaryBar";
 
 const statusConfig = {
   draft: { label: "Borrador", color: "bg-slate-100 text-slate-700", dot: "bg-slate-400", desc: "Cotización en edición" },
@@ -360,6 +361,10 @@ export default function Quotations() {
           </Button>
         )}
       </div>
+
+      {can('Cotizaciones', 'pricing') && (
+        <QuotationsFinancialSummaryBar quotations={quotations} />
+      )}
 
       {can('Cotizaciones', 'view') && (
       <div className="relative">
