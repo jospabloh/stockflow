@@ -38,7 +38,7 @@ export function PaymentProportionBar({ cashPaid, otherPaid, size = "md" }) {
   if (paidTotal <= 0) return null;
   const cashPct = Math.round((cashPaid / paidTotal) * 100);
   return (
-    <div className={`hidden sm:flex flex-col justify-center gap-1 shrink-0 ${size === "sm" ? "w-16" : "w-24"}`}>
+    <div className={`hidden sm:flex flex-col justify-center gap-1 shrink-0 ${size === "sm" ? "w-16" : "w-20"}`}>
       <div
         className={`${size === "sm" ? "h-1" : "h-1.5"} rounded-full bg-blue-200 dark:bg-blue-900/40 overflow-hidden`}
         role="img"

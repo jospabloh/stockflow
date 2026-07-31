@@ -55,7 +55,7 @@ export function useQuotations(businessId) {
   return useQuery({
     queryKey: ["Quotation", businessId],
     queryFn: () =>
-      base44.entities.Quotation.filter({ business_id: businessId }, "-created_date", 100),
+      base44.entities.Quotation.filter({ business_id: businessId }, "-created_date", 2000),
     enabled: !!businessId,
   });
 }

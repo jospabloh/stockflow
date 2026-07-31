@@ -368,7 +368,10 @@ export default function Quotations() {
       </div>
 
       {can('Cotizaciones', 'pricing') && (
-        <QuotationsFinancialSummaryBar quotations={filtered} totalVisible={filtered.length} />
+        <QuotationsFinancialSummaryBar
+          quotations={filtered}
+          totalVisible={filtered.filter((q) => q.status !== "cancelled").length}
+        />
       )}
 
       {can('Cotizaciones', 'view') && (

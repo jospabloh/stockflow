@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2, ChevronDown, ChevronRight, RotateCcw, Undo2 } from "lucide-react";
+import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, RotateCcw, Undo2 } from "lucide-react";
 import moment from "moment";
 import ColumnFilterPopover from "@/components/tables/ColumnFilterPopover";
 import QuotationFiscalDetail from "@/components/quotations/QuotationFiscalDetail";
@@ -68,15 +68,15 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
       </div>
 
       {/* Client */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-[160px]">
         <p className="font-medium text-foreground text-sm truncate">{q.client_name}</p>
       </div>
 
       {/* Date */}
-      <div className="w-20 text-muted-foreground text-xs">{moment(q.created_date).format("DD/MM/YY")}</div>
+      <div className="w-20 shrink-0 text-muted-foreground text-xs">{moment(q.created_date).format("DD/MM/YY")}</div>
 
       {/* Total */}
-      <div className="w-28 text-right font-semibold text-foreground text-xs tabular">
+      <div className="w-28 shrink-0 text-right font-semibold text-foreground text-xs tabular">
         {q.total === 0 ? (
           <span className="inline-flex items-center gap-1 text-[10px] bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-2 py-0.5 rounded-full font-medium">
             Muestra / Interno
@@ -87,7 +87,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
       </div>
 
       {/* Status */}
-      <div className="w-28">
+      <div className="w-28 shrink-0">
         {isExpired(q) ? (
           <Badge className="bg-red-100 text-red-700 border-0 flex items-center gap-1 w-fit text-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-red-500 inline-block" />
@@ -102,7 +102,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
       </div>
 
       {/* Invoice Status */}
-      <div className="w-24 text-center flex gap-0.5 justify-center flex-wrap">
+      <div className="w-20 shrink-0 text-center flex gap-0.5 justify-center flex-wrap">
         {["pendiente", "emitida", "no_requerida"].map((opt) => (
           <button type="button"
             key={opt}
@@ -127,7 +127,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
       </div>
 
       {/* Invoice Number */}
-      <div className="w-24 px-1">
+      <div className="w-20 shrink-0 px-1">
         <InvoiceNumberCell
           value={q.invoice_number}
           onSave={(val) => onInvoiceNumberChange(q, val)}
@@ -135,7 +135,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
       </div>
 
       {/* Tracking (converted only) */}
-      <div className="w-32">
+      <div className="w-28 shrink-0">
         {q.status === "converted" && (
           <div className="flex items-center justify-center">
             <DropdownMenu>
@@ -183,7 +183,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
       </div>
 
       {/* Payment (converted only) */}
-      <div className="w-24">
+      <div className="w-24 shrink-0">
         {q.status === "converted" && (
           q.total === 0 ? (
             <span className="inline-flex items-center gap-1 text-[10px] bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 px-2 py-0.5 rounded-full font-medium">
@@ -236,7 +236,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
       </div>
 
       {/* Actions */}
-      <div className="w-12 text-center">
+      <div className="w-12 shrink-0 text-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-7 w-7">
@@ -524,6 +524,16 @@ export default function VirtualizedQuotationTable({
     });
   };
 
+  // Paginación — todas las cotizaciones filtradas están cargadas (el resumen
+  // fiscal de arriba se calcula sobre el total), esto solo limita cuántas
+  // filas se renderizan a la vez para que la tabla siga siendo manejable.
+  const [pageSize, setPageSize] = React.useState(50);
+  const [page, setPage] = React.useState(1);
+  const totalPages = Math.max(1, Math.ceil(quotations.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pageStart = (currentPage - 1) * pageSize;
+  const pagedQuotations = quotations.slice(pageStart, pageStart + pageSize);
+
   const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing };
 
   const statusOptions = Object.entries(statusConfig).map(([value, cfg]) => ({
@@ -540,17 +550,31 @@ export default function VirtualizedQuotationTable({
     );
   }
 
+  const pagination = (
+    <PaginationBar
+      total={quotations.length}
+      pageStart={pageStart}
+      pageSize={pageSize}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      onPageChange={setPage}
+      onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+    />
+  );
+
   return (
     <>
       {/* Mobile: card list */}
       <div className="flex flex-col gap-3 lg:hidden">
-        {quotations.map((q) => (
+        {pagedQuotations.map((q) => (
           <QuotationCard key={q.id} q={q} {...commonProps} expanded={expandedIds.has(q.id)} onToggleExpand={() => toggleExpand(q.id)} />
         ))}
+        {pagination}
       </div>
 
       {/* Desktop: table */}
       <div className="hidden lg:block bg-card rounded-2xl shadow-sm border border-border">
+        <div className="overflow-x-auto">
         {/* Header con filtros por columna */}
         <div className="flex items-center px-4 py-2.5 bg-muted/40 border-b border-border sticky top-0 z-10">
           <div className="w-5 shrink-0" aria-hidden="true" />
@@ -565,7 +589,7 @@ export default function VirtualizedQuotationTable({
             />
           </div>
 
-          <div className="flex-1">
+          <div className="flex-1 min-w-[160px]">
             <ColumnFilterPopover
               label="Cliente"
               type="search"
@@ -575,7 +599,7 @@ export default function VirtualizedQuotationTable({
             />
           </div>
 
-          <div className="w-20">
+          <div className="w-20 shrink-0">
             <ColumnFilterPopover
               label="Fecha"
               type="daterange"
@@ -584,11 +608,11 @@ export default function VirtualizedQuotationTable({
             />
           </div>
 
-          <div className="w-28 text-right pr-2">
+          <div className="w-28 shrink-0 text-right pr-2">
             <span className="text-[11px] font-semibold text-muted-foreground">Total</span>
           </div>
 
-          <div className="w-28">
+          <div className="w-28 shrink-0">
             <ColumnFilterPopover
               label="Estado"
               type="multiselect"
@@ -598,7 +622,7 @@ export default function VirtualizedQuotationTable({
             />
           </div>
 
-          <div className="w-24 text-center">
+          <div className="w-20 shrink-0 text-center">
             <ColumnFilterPopover
               label="Factura"
               type="multiselect"
@@ -608,15 +632,15 @@ export default function VirtualizedQuotationTable({
             />
           </div>
 
-          <div className="w-24 text-center">
+          <div className="w-20 shrink-0 text-center">
             <span className="text-[11px] font-semibold text-muted-foreground">N° Factura</span>
           </div>
 
-          <div className="w-32 text-center">
+          <div className="w-28 shrink-0 text-center">
             <span className="text-[11px] font-semibold text-muted-foreground">Seguimiento</span>
           </div>
 
-          <div className="w-24">
+          <div className="w-24 shrink-0">
             <ColumnFilterPopover
               label="Pago"
               type="multiselect"
@@ -626,18 +650,65 @@ export default function VirtualizedQuotationTable({
             />
           </div>
 
-          <div className="w-12 text-center">
+          <div className="w-12 shrink-0 text-center">
             <span className="text-[11px] font-semibold text-muted-foreground">···</span>
           </div>
         </div>
 
         {/* Rows */}
         <div>
-          {quotations.map((q) => (
+          {pagedQuotations.map((q) => (
             <QuotationRow key={q.id} q={q} {...commonProps} expanded={expandedIds.has(q.id)} onToggleExpand={() => toggleExpand(q.id)} />
           ))}
         </div>
+        </div>
+
+        {pagination}
       </div>
     </>
+  );
+}
+
+function PaginationBar({ total, pageStart, pageSize, currentPage, totalPages, onPageChange, onPageSizeChange }) {
+  const rangeEnd = Math.min(pageStart + pageSize, total);
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-border">
+      <span className="text-xs text-muted-foreground whitespace-nowrap">
+        Mostrando <strong className="font-semibold text-foreground">{pageStart + 1}–{rangeEnd}</strong> de <strong className="font-semibold text-foreground">{total}</strong>
+      </span>
+
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">Ver</span>
+          {[10, 50, 100].map((size) => (
+            <button
+              key={size}
+              type="button"
+              onClick={() => onPageSizeChange(size)}
+              className={`text-xs font-medium px-2 py-1 rounded-md transition-colors ${
+                pageSize === size ? "bg-brand-600 text-white" : "text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {size}
+            </button>
+          ))}
+        </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="icon" className="h-7 w-7" disabled={currentPage <= 1} onClick={() => onPageChange(currentPage - 1)} aria-label="Página anterior">
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </Button>
+            <span className="text-xs text-muted-foreground px-1 whitespace-nowrap font-mono tabular-nums">
+              {currentPage} / {totalPages}
+            </span>
+            <Button variant="outline" size="icon" className="h-7 w-7" disabled={currentPage >= totalPages} onClick={() => onPageChange(currentPage + 1)} aria-label="Página siguiente">
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
