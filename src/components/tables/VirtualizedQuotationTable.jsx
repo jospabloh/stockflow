@@ -47,7 +47,7 @@ function InvoiceNumberCell({ value, onSave, disabled }) {
   );
 }
 
-function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, canEditInvoiceStatus, canEdit, canConvert, canCancel, canConfirmPayment, canReturn, canExport, expanded, onToggleExpand, forceExpandAll }) {
+function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onRequestInvoiceNumber, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, canEditInvoiceStatus, canEdit, canConvert, canCancel, canConfirmPayment, canReturn, canExport, expanded, onToggleExpand, forceExpandAll }) {
   const status = statusConfig[q.status] || statusConfig.draft;
 
   return (
@@ -121,6 +121,12 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
             disabled={!canEditInvoiceStatus}
             onClick={() => {
               const newVal = q.invoice_status === opt ? null : opt;
+              // Emitida sin N° de factura todavía: pide el número en vez de
+              // dejar el estado "Emitida" sin su valor correspondiente.
+              if (newVal === "emitida" && !q.invoice_number) {
+                onRequestInvoiceNumber(q);
+                return;
+              }
               onInvoiceStatusChange(q, newVal);
               if (newVal === "na" && q.invoice_number) onInvoiceNumberChange(q, "");
             }}
@@ -513,6 +519,7 @@ export default function VirtualizedQuotationTable({
   onPartialReturn,
   onInvoiceStatusChange,
   onInvoiceNumberChange,
+  onRequestInvoiceNumber,
   onInRouteChange,
   isExpired,
   onRegenerate,
@@ -554,7 +561,7 @@ export default function VirtualizedQuotationTable({
   const pageStart = (currentPage - 1) * pageSize;
   const pagedQuotations = quotations.slice(pageStart, pageStart + pageSize);
 
-  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, canEditInvoiceStatus, canEdit, canConvert, canCancel, canConfirmPayment, canReturn, canExport };
+  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onRequestInvoiceNumber, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, canEditInvoiceStatus, canEdit, canConvert, canCancel, canConfirmPayment, canReturn, canExport };
 
   const statusOptions = Object.entries(statusConfig).map(([value, cfg]) => ({
     value,
