@@ -11,7 +11,30 @@ import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, Al
 import moment from "moment";
 import ColumnFilterPopover from "@/components/tables/ColumnFilterPopover";
 
-function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment }) {
+function InvoiceNumberCell({ value, onSave }) {
+  const [draft, setDraft] = React.useState(value || "");
+  React.useEffect(() => { setDraft(value || ""); }, [value]);
+  const commit = () => {
+    const trimmed = draft.trim();
+    if (trimmed !== (value || "")) {
+      onSave(trimmed);
+    }
+  };
+  return (
+    <input
+      type="text"
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
+      placeholder="—"
+      title="Número de factura"
+      className="w-full text-[10px] text-center bg-transparent border border-transparent hover:border-slate-200 focus:border-brand-400 focus:bg-white rounded px-1 py-0.5 outline-none"
+    />
+  );
+}
+
+function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment }) {
   const status = statusConfig[q.status] || statusConfig.draft;
 
   return (
@@ -84,6 +107,14 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
             {opt === "pendiente" ? "Pte" : opt === "emitida" ? "Emit" : "N/R"}
           </button>
         ))}
+      </div>
+
+      {/* Invoice Number */}
+      <div className="w-24 px-1">
+        <InvoiceNumberCell
+          value={q.invoice_number}
+          onSave={(val) => onInvoiceNumberChange(q, val)}
+        />
       </div>
 
       {/* Tracking (converted only) */}
@@ -436,6 +467,7 @@ export default function VirtualizedQuotationTable({
   onPay,
   onPartialReturn,
   onInvoiceStatusChange,
+  onInvoiceNumberChange,
   onInRouteChange,
   isExpired,
   onRegenerate,
@@ -446,7 +478,7 @@ export default function VirtualizedQuotationTable({
   onFiltersChange,
   paymentMethodOptions,
 }) {
-  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment };
+  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment };
 
   const statusOptions = Object.entries(statusConfig).map(([value, cfg]) => ({
     value,
@@ -519,6 +551,10 @@ export default function VirtualizedQuotationTable({
               selected={filters?.invoiceStatuses || new Set()}
               onChange={(val) => onFiltersChange({ ...filters, invoiceStatuses: val })}
             />
+          </div>
+
+          <div className="w-24 text-center">
+            <span className="text-[11px] font-semibold text-muted-foreground">N° Factura</span>
           </div>
 
           <div className="w-32 text-center">
