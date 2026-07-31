@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
@@ -99,35 +99,40 @@ export default function Quotations() {
     if (status) setTableFilters(f => ({ ...f, statuses: new Set([status]) }));
   }, [location.search]);
 
-  const filtered = quotations.filter((q) => {
-    // Filtro folio por columna
-    const folioQ = tableFilters.folioSearch?.trim().toLowerCase();
-    const matchFolio = !folioQ || q.folio?.toLowerCase().includes(folioQ);
-
-    // Filtro cliente por columna
-    const clientQ = tableFilters.clientSearch?.trim().toLowerCase();
-    const matchClient = !clientQ || q.client_name?.toLowerCase().includes(clientQ);
-
-    // Filtro multi-estado
-    const matchStatus = tableFilters.statuses.size === 0 || tableFilters.statuses.has(q.status);
-
-    // Filtro estado de factura
-    const matchInvoiceStatus = tableFilters.invoiceStatuses.size === 0 || tableFilters.invoiceStatuses.has(q.invoice_status || "");
-
-    // Filtro estado de pago (derivado igual que en la columna visual)
-    const matchPaymentState = tableFilters.paymentStates.size === 0 || tableFilters.paymentStates.has(derivePaymentState(q));
-
-    // Filtro rango de fechas (sobre created_date)
-    let matchDate = true;
+  // Cada filtro es una función independiente para poder componer "todos menos uno"
+  // al calcular las sugerencias de autocompletar (ver folioSuggestions/clientSuggestions).
+  const folioQ = tableFilters.folioSearch?.trim().toLowerCase();
+  const clientQ = tableFilters.clientSearch?.trim().toLowerCase();
+  const matchFolio = (q) => !folioQ || q.folio?.toLowerCase().includes(folioQ);
+  const matchClient = (q) => !clientQ || q.client_name?.toLowerCase().includes(clientQ);
+  const matchStatus = (q) => tableFilters.statuses.size === 0 || tableFilters.statuses.has(q.status);
+  const matchInvoiceStatus = (q) => tableFilters.invoiceStatuses.size === 0 || tableFilters.invoiceStatuses.has(q.invoice_status || "");
+  const matchPaymentState = (q) => tableFilters.paymentStates.size === 0 || tableFilters.paymentStates.has(derivePaymentState(q));
+  const matchDate = (q) => {
     const { from, to } = tableFilters.dateRange;
-    if (from || to) {
-      const dateStr = q.created_date ? q.created_date.substring(0, 10) : "";
-      if (from && dateStr < from) matchDate = false;
-      if (to && dateStr > to) matchDate = false;
-    }
+    if (!from && !to) return true;
+    const dateStr = q.created_date ? q.created_date.substring(0, 10) : "";
+    if (from && dateStr < from) return false;
+    if (to && dateStr > to) return false;
+    return true;
+  };
 
-    return matchFolio && matchClient && matchStatus && matchInvoiceStatus && matchPaymentState && matchDate;
-  });
+  const filtered = quotations.filter((q) =>
+    matchFolio(q) && matchClient(q) && matchStatus(q) && matchInvoiceStatus(q) && matchPaymentState(q) && matchDate(q)
+  );
+
+  // Sugerencias de autocompletar: opciones visibles si ignoramos solo el propio
+  // campo de texto que se está escribiendo — reflejan "lo que se ve en la lista"
+  // respetando los demás filtros activos (estado, fecha, factura, pago).
+  const folioSuggestions = useMemo(() => {
+    const pool = quotations.filter((q) => matchClient(q) && matchStatus(q) && matchInvoiceStatus(q) && matchPaymentState(q) && matchDate(q));
+    return [...new Set(pool.map((q) => q.folio).filter(Boolean))].sort();
+  }, [quotations, clientQ, tableFilters.statuses, tableFilters.invoiceStatuses, tableFilters.paymentStates, tableFilters.dateRange]);
+
+  const clientSuggestions = useMemo(() => {
+    const pool = quotations.filter((q) => matchFolio(q) && matchStatus(q) && matchInvoiceStatus(q) && matchPaymentState(q) && matchDate(q));
+    return [...new Set(pool.map((q) => q.client_name).filter(Boolean))].sort();
+  }, [quotations, folioQ, tableFilters.statuses, tableFilters.invoiceStatuses, tableFilters.paymentStates, tableFilters.dateRange]);
 
   const activeFiltersCount = [
     tableFilters.folioSearch?.trim(),
@@ -363,7 +368,7 @@ export default function Quotations() {
       </div>
 
       {can('Cotizaciones', 'pricing') && (
-        <QuotationsFinancialSummaryBar quotations={quotations} />
+        <QuotationsFinancialSummaryBar quotations={filtered} totalVisible={filtered.length} />
       )}
 
       {can('Cotizaciones', 'view') && (
@@ -375,6 +380,8 @@ export default function Quotations() {
         filters={tableFilters}
         onFiltersChange={setTableFilters}
         paymentMethodOptions={paymentMethodsCatalog.map(pm => ({ value: pm.name, label: pm.name }))}
+        folioSuggestions={folioSuggestions}
+        clientSuggestions={clientSuggestions}
         canShowPricing={can('Cotizaciones', 'pricing')}
         canConvert={can('Cotizaciones', 'convert')}
         canCancel={can('Cotizaciones', 'cancel')}

@@ -7,9 +7,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2, ChevronDown, RotateCcw, Undo2 } from "lucide-react";
+import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, AlertTriangle, Truck, CheckCircle2, ChevronDown, ChevronRight, RotateCcw, Undo2 } from "lucide-react";
 import moment from "moment";
 import ColumnFilterPopover from "@/components/tables/ColumnFilterPopover";
+import QuotationFiscalDetail from "@/components/quotations/QuotationFiscalDetail";
 
 function InvoiceNumberCell({ value, onSave }) {
   const [draft, setDraft] = React.useState(value || "");
@@ -34,19 +35,35 @@ function InvoiceNumberCell({ value, onSave }) {
   );
 }
 
-function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment }) {
+function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, expanded, onToggleExpand }) {
   const status = statusConfig[q.status] || statusConfig.draft;
 
   return (
-    <div className="flex items-center border-b border-border hover:bg-muted/40 transition-colors px-4 py-3">
+    <div className="border-b border-border">
+    <div className="flex items-center hover:bg-muted/40 transition-colors px-4 py-3">
+      {/* Expand toggle — desglose fiscal por cotización */}
+      <div className="w-5 shrink-0">
+        {canShowPricing && (
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            className="text-muted-foreground hover:text-brand-600 transition-colors p-0.5 -ml-0.5"
+            title={expanded ? "Ocultar desglose fiscal" : "Ver desglose fiscal"}
+            aria-expanded={expanded}
+          >
+            <ChevronRight className={`h-3.5 w-3.5 transition-transform ${expanded ? "rotate-90" : ""}`} />
+          </button>
+        )}
+      </div>
+
       {/* Folio */}
-      <div className="w-24">
+      <div className="w-32 shrink-0">
         <button type="button"
           onClick={() => onPreview(q)}
-          className="font-mono text-xs text-brand-600 cursor-pointer hover:underline flex items-center gap-1"
+          className="font-mono text-xs text-brand-600 cursor-pointer hover:underline flex items-center gap-1 whitespace-nowrap"
         >
           {q.folio}
-          {q.delivered && !q.paid && <AlertTriangle className="h-3 w-3 text-amber-500" />}
+          {q.delivered && !q.paid && <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />}
         </button>
       </div>
 
@@ -282,10 +299,12 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
         </DropdownMenu>
       </div>
     </div>
+    {canShowPricing && expanded && <QuotationFiscalDetail q={q} />}
+    </div>
   );
 }
 
-function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment }) {
+function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, expanded, onToggleExpand }) {
   const status = statusConfig[q.status] || statusConfig.draft;
   const expired = isExpired(q);
 
@@ -422,6 +441,21 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
           </div>
         )}
       </div>
+
+      {/* Desglose fiscal por cotización */}
+      {canShowPricing && (
+        <div className="-mx-4 -mb-4">
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            className="w-full flex items-center justify-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-brand-600 transition-colors px-4 py-2 border-t border-border"
+          >
+            <ChevronRight className={`h-3 w-3 transition-transform ${expanded ? "rotate-90" : ""}`} />
+            {expanded ? "Ocultar desglose fiscal" : "Ver desglose fiscal"}
+          </button>
+          {expanded && <QuotationFiscalDetail q={q} className="rounded-b-xl" />}
+        </div>
+      )}
     </div>
   );
 }
@@ -477,8 +511,20 @@ export default function VirtualizedQuotationTable({
   filters,
   onFiltersChange,
   paymentMethodOptions,
+  folioSuggestions,
+  clientSuggestions,
+  canShowPricing,
 }) {
-  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment };
+  const [expandedIds, setExpandedIds] = React.useState(() => new Set());
+  const toggleExpand = (id) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing };
 
   const statusOptions = Object.entries(statusConfig).map(([value, cfg]) => ({
     value,
@@ -499,7 +545,7 @@ export default function VirtualizedQuotationTable({
       {/* Mobile: card list */}
       <div className="flex flex-col gap-3 lg:hidden">
         {quotations.map((q) => (
-          <QuotationCard key={q.id} q={q} {...commonProps} />
+          <QuotationCard key={q.id} q={q} {...commonProps} expanded={expandedIds.has(q.id)} onToggleExpand={() => toggleExpand(q.id)} />
         ))}
       </div>
 
@@ -507,8 +553,16 @@ export default function VirtualizedQuotationTable({
       <div className="hidden lg:block bg-card rounded-2xl shadow-sm border border-border">
         {/* Header con filtros por columna */}
         <div className="flex items-center px-4 py-2.5 bg-muted/40 border-b border-border sticky top-0 z-10">
-          <div className="w-24">
-            <span className="text-[11px] font-semibold text-muted-foreground">Folio</span>
+          <div className="w-5 shrink-0" aria-hidden="true" />
+
+          <div className="w-32 shrink-0">
+            <ColumnFilterPopover
+              label="Folio"
+              type="search"
+              selected={filters?.folioSearch || ""}
+              onChange={(val) => onFiltersChange({ ...filters, folioSearch: val })}
+              suggestions={folioSuggestions}
+            />
           </div>
 
           <div className="flex-1">
@@ -517,6 +571,7 @@ export default function VirtualizedQuotationTable({
               type="search"
               selected={filters?.clientSearch || ""}
               onChange={(val) => onFiltersChange({ ...filters, clientSearch: val })}
+              suggestions={clientSuggestions}
             />
           </div>
 
@@ -579,7 +634,7 @@ export default function VirtualizedQuotationTable({
         {/* Rows */}
         <div>
           {quotations.map((q) => (
-            <QuotationRow key={q.id} q={q} {...commonProps} />
+            <QuotationRow key={q.id} q={q} {...commonProps} expanded={expandedIds.has(q.id)} onToggleExpand={() => toggleExpand(q.id)} />
           ))}
         </div>
       </div>
