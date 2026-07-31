@@ -1,5 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
+// Intentionally unauthenticated: the customer accepting/rejecting a shared
+// quotation has no Base44 account. Same public_token + public_link_enabled
+// gate as getPublicQuotation.ts — see that file for the token's origin.
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);

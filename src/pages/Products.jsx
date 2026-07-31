@@ -4,7 +4,6 @@ import { usePermissions } from "@/lib/PermissionContext";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { useProducts, useCategories, useInvalidateEntities } from "@/hooks/queries";
 import { LoadingOverlay } from "@/components/ui/spinner";
-import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
@@ -28,7 +27,6 @@ import { useNavigate } from "react-router-dom";
 export default function Products() {
   const navigate = useNavigate();
   const { can } = usePermissions();
-  const { canSee } = useFieldVisibility("Productos");
   const { businessId, user } = useBusinessContext();
   const isAdmin = user?.role === "admin";
   const invalidate = useInvalidateEntities();
@@ -181,7 +179,7 @@ export default function Products() {
       </div>
 
       {/* Products table */}
-       {canSee("view") && (
+       {can('Productos', 'view') && (
        <div className="relative">
          <LoadingOverlay show={refreshing} />
          <ProductTable
@@ -190,10 +188,10 @@ export default function Products() {
            onEdit={handleEdit}
            onDelete={setDeleteProduct}
            isAdmin={isAdmin}
-           canShowCost={canSee("cost_price")}
+           canShowCost={can('Productos', 'cost_price')}
            onBarcodeGenerated={() => invalidate("Product")}
-           canEdit={can('Productos', 'edit_name') && canSee("edit_name")}
-           canDelete={can('Productos', 'delete') && canSee("delete")}
+           canEdit={can('Productos', 'edit_name')}
+           canDelete={can('Productos', 'delete')}
          />
        </div>
        )}

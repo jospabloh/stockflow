@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Receipt } from "lucide-react";
 import { summarizeQuotationsFinancials } from "@/lib/quotationsFinancialSummary";
-import { StatPill, StatDivider, PaymentPills, FISCAL_COLORS } from "@/components/quotations/FiscalStatPills";
+import { StatPill, StatDivider, PaymentPills, FISCAL_COLORS, FISCAL_HINTS } from "@/components/quotations/FiscalStatPills";
 
 export default function QuotationsFinancialSummaryBar({ quotations, totalVisible }) {
   const s = useMemo(() => summarizeQuotationsFinancials(quotations), [quotations]);
@@ -25,22 +25,22 @@ export default function QuotationsFinancialSummaryBar({ quotations, totalVisible
         </div>
 
         <div className="flex items-center gap-3 px-3 shrink-0">
-          <StatPill label="Base 16%" value={s.base16} valueClassName={FISCAL_COLORS.base16} />
-          <StatPill label="IVA 16%" value={s.iva16} valueClassName={FISCAL_COLORS.iva16} />
-          <StatPill label="Base 0%" value={s.base0} valueClassName={FISCAL_COLORS.base0} />
+          <StatPill label="Base 16%" value={s.base16} valueClassName={FISCAL_COLORS.base16} hint={FISCAL_HINTS.base16} />
+          <StatPill label="IVA 16%" value={s.iva16} valueClassName={FISCAL_COLORS.iva16} hint={FISCAL_HINTS.iva16} />
+          <StatPill label="Base 0%" value={s.base0} valueClassName={FISCAL_COLORS.base0} hint={FISCAL_HINTS.base0} />
         </div>
 
         <StatDivider />
 
         <div className="flex items-center gap-3 px-3 shrink-0">
-          <StatPill label="Subtotal" value={s.subtotal} valueClassName={FISCAL_COLORS.subtotal} />
-          <StatPill label="Total" value={s.total} valueClassName={`${FISCAL_COLORS.total} text-base`} />
+          <StatPill label="Subtotal" value={s.subtotal} valueClassName={FISCAL_COLORS.subtotal} hint={FISCAL_HINTS.subtotal} />
+          <StatPill label="Total" value={s.total} valueClassName={`${FISCAL_COLORS.total} text-base`} hint={FISCAL_HINTS.total} />
         </div>
 
         <StatDivider />
 
         <div className="flex items-center gap-3 px-3 shrink-0">
-          <PaymentPills cashPaid={s.cashPaid} otherPaid={s.otherPaid} />
+          <PaymentPills cashPaid={s.cashPaid} otherPaid={s.otherPaid} cashHint={FISCAL_HINTS.cash} otherHint={FISCAL_HINTS.other} />
         </div>
       </div>
 

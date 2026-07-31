@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Banknote, CreditCard } from "lucide-react";
 import { formatMXN } from "@/lib/vatCalculator";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 // Shared color language so the per-row detail always reads as "part of" the
 // summary bar above it, not a separate, unrelated widget.
@@ -14,18 +15,64 @@ export const FISCAL_COLORS = {
   other: "text-blue-700 dark:text-blue-400",
 };
 
-export function StatPill({ label, value, valueClassName = "", size = "md" }) {
+// Explicación de cada campo — mismo texto en la barra resumen y en el
+// detalle por fila, para que "Base 16%" signifique lo mismo en ambos lados.
+export const FISCAL_HINTS = {
+  base16: "Base gravable (sin IVA) de las líneas con IVA 16%. Se calcula dividiendo el total de cada línea entre 1.16.",
+  iva16: "IVA (16%) de esas mismas líneas: el total de línea menos su base gravable.",
+  base0: "Importe de las líneas exentas de IVA (tasa 0%). Aquí el total de línea completo es la base, sin restar nada.",
+  subtotal: "Base 16% + Base 0%: el valor de la venta antes de sumar el IVA.",
+  total: "Subtotal + IVA 16%: el monto total de la venta.",
+  cash: "Suma de los pagos registrados en efectivo. Usa el detalle de pagos parciales si existe; si la cotización se pagó de una sola vez, cuenta el total completo cuando el método fue efectivo.",
+  other: "Igual que Efectivo, pero para cualquier pago con un método distinto (tarjeta, transferencia, etc.).",
+};
+
+// Explica un campo al pasar el mouse (desktop) o al tocarlo (móvil, sin hover).
+// Controlado a mano en vez de dejar el Popover en modo no-controlado: así el
+// mismo trigger sirve para hover-to-show en desktop y tap-to-toggle en móvil
+// sin que un evento pise al otro.
+function InfoPopover({ hint, children }) {
+  const [open, setOpen] = useState(false);
+  if (!hint) return children;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="text-left rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          onMouseEnter={() => setOpen(true)}
+          onMouseLeave={() => setOpen(false)}
+          onClick={() => setOpen((v) => !v)}
+        >
+          {children}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-64 p-3 text-xs leading-relaxed text-muted-foreground"
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+      >
+        {hint}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+export function StatPill({ label, value, valueClassName = "", size = "md", hint }) {
   const labelCls = size === "sm" ? "text-[9px]" : "text-[10px]";
   const valueCls = size === "sm" ? "text-xs" : "text-sm";
   return (
-    <div className="flex flex-col justify-center shrink-0">
-      <span className={`${labelCls} font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap`}>
-        {label}
-      </span>
-      <span className={`font-mono tabular-nums ${valueCls} font-semibold whitespace-nowrap ${valueClassName}`}>
-        ${formatMXN(value)}
-      </span>
-    </div>
+    <InfoPopover hint={hint}>
+      <div className="flex flex-col justify-center shrink-0">
+        <span className={`${labelCls} font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap`}>
+          {label}
+        </span>
+        <span className={`font-mono tabular-nums ${valueCls} font-semibold whitespace-nowrap ${valueClassName}`}>
+          ${formatMXN(value)}
+        </span>
+      </div>
+    </InfoPopover>
   );
 }
 
@@ -51,7 +98,7 @@ export function PaymentProportionBar({ cashPaid, otherPaid, size = "md" }) {
   );
 }
 
-export function PaymentPills({ cashPaid, otherPaid, size = "md" }) {
+export function PaymentPills({ cashPaid, otherPaid, size = "md", cashHint, otherHint }) {
   const paidTotal = cashPaid + otherPaid;
   const labelCls = size === "sm" ? "text-[9px]" : "text-[10px]";
   const valueCls = size === "sm" ? "text-xs" : "text-sm";
@@ -63,22 +110,26 @@ export function PaymentPills({ cashPaid, otherPaid, size = "md" }) {
 
   return (
     <>
-      <div className="flex flex-col justify-center shrink-0">
-        <span className={`flex items-center gap-1 ${labelCls} font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap`}>
-          <Banknote className={`${iconCls} ${FISCAL_COLORS.cash}`} /> Efectivo
-        </span>
-        <span className={`font-mono tabular-nums ${valueCls} font-semibold ${FISCAL_COLORS.cash} whitespace-nowrap`}>
-          ${formatMXN(cashPaid)}
-        </span>
-      </div>
-      <div className="flex flex-col justify-center shrink-0">
-        <span className={`flex items-center gap-1 ${labelCls} font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap`}>
-          <CreditCard className={`${iconCls} ${FISCAL_COLORS.other}`} /> Otro método
-        </span>
-        <span className={`font-mono tabular-nums ${valueCls} font-semibold ${FISCAL_COLORS.other} whitespace-nowrap`}>
-          ${formatMXN(otherPaid)}
-        </span>
-      </div>
+      <InfoPopover hint={cashHint}>
+        <div className="flex flex-col justify-center shrink-0">
+          <span className={`flex items-center gap-1 ${labelCls} font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap`}>
+            <Banknote className={`${iconCls} ${FISCAL_COLORS.cash}`} /> Efectivo
+          </span>
+          <span className={`font-mono tabular-nums ${valueCls} font-semibold ${FISCAL_COLORS.cash} whitespace-nowrap`}>
+            ${formatMXN(cashPaid)}
+          </span>
+        </div>
+      </InfoPopover>
+      <InfoPopover hint={otherHint}>
+        <div className="flex flex-col justify-center shrink-0">
+          <span className={`flex items-center gap-1 ${labelCls} font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap`}>
+            <CreditCard className={`${iconCls} ${FISCAL_COLORS.other}`} /> Otro método
+          </span>
+          <span className={`font-mono tabular-nums ${valueCls} font-semibold ${FISCAL_COLORS.other} whitespace-nowrap`}>
+            ${formatMXN(otherPaid)}
+          </span>
+        </div>
+      </InfoPopover>
       <PaymentProportionBar cashPaid={cashPaid} otherPaid={otherPaid} size={size} />
     </>
   );

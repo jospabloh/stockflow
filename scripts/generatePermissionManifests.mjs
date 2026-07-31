@@ -72,14 +72,13 @@ const generatedDir = join(ROOT, 'src', 'generated');
 writeFileSync(join(generatedDir, 'permissionManifests.ts'), manifestContent);
 console.log(`✅  src/generated/permissionManifests.ts generado (${ALL_PERMISSION_KEYS.length} claves)`);
 
-// --- 3. Actualizar bloque AUTOGEN en dailyPermissionAudit/entry.ts ---
-const fnPath = join(ROOT, 'base44', 'functions', 'dailyPermissionAudit', 'entry.ts');
-let fnSource = readFileSync(fnPath, 'utf8');
-
+// --- 3. Actualizar el bloque AUTOGEN:CANONICAL_KEYS en cada función Base44 que
+// lo declare. Deno no puede importar desde src/, así que cada función mantiene
+// su propia copia — pero esa copia SIEMPRE se regenera desde aquí, nunca a mano.
 const canonicalKeysTs = ALL_PERMISSION_KEYS.map(k => `  "${k}"`).join(',\n');
 const deniedTs = almacenistaDenied.map(k => `  "${k}"`).join(',\n');
 
-const newBlock = `// AUTOGEN:CANONICAL_KEYS:BEGIN — regenerado por scripts/generatePermissionManifests.mjs
+const blockWithDenied = `// AUTOGEN:CANONICAL_KEYS:BEGIN — regenerado por scripts/generatePermissionManifests.mjs
 const CANONICAL_KEYS: string[] = [
 ${canonicalKeysTs},
 ];
@@ -89,12 +88,31 @@ ${deniedTs},
 ]);
 // AUTOGEN:CANONICAL_KEYS:END`;
 
-fnSource = fnSource.replace(
-  /\/\/ AUTOGEN:CANONICAL_KEYS:BEGIN[\s\S]*?\/\/ AUTOGEN:CANONICAL_KEYS:END/,
-  newBlock,
-);
+const blockKeysOnly = `// AUTOGEN:CANONICAL_KEYS:BEGIN — regenerado por scripts/generatePermissionManifests.mjs
+const CANONICAL_KEYS: string[] = [
+${canonicalKeysTs},
+];
+// AUTOGEN:CANONICAL_KEYS:END`;
 
-writeFileSync(fnPath, fnSource);
-console.log(`✅  base44/functions/dailyPermissionAudit/entry.ts actualizado`);
+const AUTOGEN_TARGETS = [
+  { path: ['base44', 'functions', 'dailyPermissionAudit', 'entry.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'permissions', 'handlers', 'backfillPermissionDefaults.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'permissions', 'handlers', 'getPermissionProfiles.ts'], block: blockKeysOnly },
+];
+
+for (const { path, block } of AUTOGEN_TARGETS) {
+  const fnPath = join(ROOT, ...path);
+  let fnSource = readFileSync(fnPath, 'utf8');
+  if (!/\/\/ AUTOGEN:CANONICAL_KEYS:BEGIN[\s\S]*?\/\/ AUTOGEN:CANONICAL_KEYS:END/.test(fnSource)) {
+    console.error(`❌  ${path.join('/')} no tiene un bloque AUTOGEN:CANONICAL_KEYS — agrégalo manualmente una vez.`);
+    continue;
+  }
+  fnSource = fnSource.replace(
+    /\/\/ AUTOGEN:CANONICAL_KEYS:BEGIN[\s\S]*?\/\/ AUTOGEN:CANONICAL_KEYS:END/,
+    block,
+  );
+  writeFileSync(fnPath, fnSource);
+  console.log(`✅  ${path.join('/')} actualizado`);
+}
 console.log(`   Claves canónicas: ${ALL_PERMISSION_KEYS.length}`);
 console.log(`   Denegadas para almacenista: ${almacenistaDenied.length}`);

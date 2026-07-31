@@ -1,17 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { LEGACY_DEFAULTS } from "./permissionArtifacts";
+import { getDefaultsForRole } from "./permissionRegistry";
 import { getPermissionModule } from "./permissionModuleMap";
 
 const PermissionContext = createContext(null);
-
-function legacyCheck(artifact, action, role) {
-  const roleDefaults = LEGACY_DEFAULTS[role];
-  if (!roleDefaults) return false;
-  const artifactDefaults = roleDefaults[artifact];
-  if (!artifactDefaults) return false;
-  return artifactDefaults[action] === true;
-}
 
 export function PermissionProvider({ children }) {
   const [profiles, setProfiles] = useState({});
@@ -25,8 +17,8 @@ export function PermissionProvider({ children }) {
     setLoading(true);
     // User identity (role/email) is loaded independently of the permissions
     // function. If that function is unavailable, we must still know the user's
-    // role so navigation and access checks keep working via legacy defaults —
-    // otherwise a single failed backend call blanks the entire app.
+    // role so navigation and access checks keep working via the registry's
+    // role defaults — otherwise a single failed backend call blanks the app.
     try {
       const meResult = await base44.auth.me();
       setUserEmail(meResult?.email || null);
@@ -43,7 +35,7 @@ export function PermissionProvider({ children }) {
       setFeatureEnabled(data?.featureEnabled === true);
       setIsPlatformAdmin(data?.is_platform_admin === true);
     } catch (_) {
-      // Permissions service unavailable → fall back to legacy role defaults.
+      // Permissions service unavailable → fall back to the registry's role defaults.
       setProfiles({});
       setFeatureEnabled(false);
       setIsPlatformAdmin(false);
@@ -56,7 +48,14 @@ export function PermissionProvider({ children }) {
     load();
   }, [load]);
 
-  const can = useCallback((pageName, action = 'ver') => {
+  // Defaults del rol actual según el registro (única fuente de verdad —
+  // src/lib/permissionRegistry.js). El mismo cálculo que usa el backend para
+  // sembrar/backfillear perfiles (ver base44/functions/permissions), así que
+  // un perfil guardado que aún no tiene una clave puntual cae en el default
+  // correcto en vez de en una copia aparte que puede desincronizarse.
+  const roleDefaults = useMemo(() => getDefaultsForRole(userRole), [userRole]);
+
+  const can = useCallback((pageName, action = 'view') => {
     if (isPlatformAdmin) return true;
 
     // Admin siempre tiene acceso completo
@@ -64,62 +63,15 @@ export function PermissionProvider({ children }) {
 
     // Mapear nombre de página a módulo de permisos (ej: "Products" -> "Productos")
     const moduleName = getPermissionModule(pageName);
-
-    if (!featureEnabled) return legacyCheck(moduleName, action, userRole);
+    const key = `${moduleName}:${action}`;
 
     const roleProfile = profiles[userRole];
-    if (!roleProfile) return legacyCheck(moduleName, action, userRole);
+    const storedPerm = roleProfile?.[key];
+    if (storedPerm === true) return true;
+    if (storedPerm === false) return false;
 
-    // Nuevo formato: claves como "Productos:view" o "Productos:create"
-    const newFormatKey = `${moduleName}:${action}`;
-    const newFormatPerm = roleProfile[newFormatKey];
-    if (newFormatPerm === true) return true;
-    if (newFormatPerm === false) return false;
-
-    // Formato legacy: el perfil guardado en BD usa nombre de página en inglés
-    // y acciones en español (ver, escribir, modificar, eliminar)
-    const legacyRoleObj = roleProfile[pageName] || roleProfile[moduleName] || {};
-
-    // Mapa de acciones nuevas -> acciones legacy
-    const ACTION_MAP = {
-      view: 'ver',
-      create: 'escribir',
-      edit_name: 'modificar',
-      edit_description: 'modificar',
-      edit_stock_quantity: 'modificar',
-      edit_min_stock: 'modificar',
-      edit_sku: 'modificar',
-      edit_retail_price: 'modificar',
-      edit_wholesale_price: 'modificar',
-      edit_cost_price: 'modificar',
-      delete: 'eliminar',
-      entry: 'escribir',
-      exit: 'escribir',
-      return: 'modificar',
-      adjustment: 'modificar',
-      confirm_payment: 'modificar',
-      convert: 'escribir',
-      cancel: 'eliminar',
-      send: 'modificar',
-      export: 'leer',
-      pricing: 'leer',
-      edit_items: 'modificar',
-      edit_quantities: 'modificar',
-      edit_prices: 'modificar',
-      edit_client: 'modificar',
-      edit_notes: 'modificar',
-      edit_payment_method: 'modificar',
-    };
-
-    const legacyAction = ACTION_MAP[action] || action;
-    const legacyPerm = legacyRoleObj[legacyAction] ?? legacyRoleObj[action];
-
-    if (legacyPerm === true) return true;
-    if (legacyPerm === false) return false;
-
-    // Fallback final
-    return legacyCheck(moduleName, action, userRole);
-  }, [isPlatformAdmin, featureEnabled, profiles, userRole]);
+    return roleDefaults[key] === true;
+  }, [isPlatformAdmin, profiles, userRole, roleDefaults]);
 
   const canSee = useCallback((pageName) => can(pageName, 'view'), [can]);
 
