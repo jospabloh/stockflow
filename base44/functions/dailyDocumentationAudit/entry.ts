@@ -6,10 +6,26 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.18";
+const CURRENT_VERSION_IN_CODE = "2.18.19";
 const SNAPSHOT_RELEASE_DATE = "2026-07-31";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 const GIT_LOG_SNAPSHOT = `
+e2694a3 Merge pull request #336 from jospabloh/claude/factura-emision-seleccion-2avzs7
+382171e Fix: almacenista couldn't toggle invoice status on Pagos a Proveedores
+62ba0ad Merge pull request #333 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
+e9f7802 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck
+a4a921e Merge pull request #334 from jospabloh/claude/stockflow-monthly-visual-changes-kdaf0b
+e55e07d Add monthly decorative theme (palette + icon)
+516554a Merge main into permission-audit branch
+34aa42a Permission audit fix (6/N): Campañas, Tipo de Pago, Utilidad
+06747eb Permission audit fix (5/N): Productos
+515c5cd Permission audit fix (4/N): SupportTickets module, Reportes
+a4dcf19 Permission audit fix (3/N): Pagos a Proveedores, Caja Chica
+95ff8d1 Permission audit fix (2/N): Configuración, Movimientos
+cbd7d7e Permission audit fix (1/N): registry keys, Clientes, Categorías, Cotizaciones
+dc353b1 Add design spec for the permission-registry coverage audit
+f93f3eb Merge pull request #330 from jospabloh/automated/release-pr
+842c3f7 chore: release and update documentation
 63d8b64 Merge pull request #332 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
 77490a5 Document why the public-quotation-link functions are intentionally unauthenticated
 35ad67c Add hover/tap explanations to the quotations fiscal stat pills
@@ -19,25 +35,9 @@ d0ef04a Add missing Cotizaciones invoice-status permission, consolidate legacy p
 956293d Persist Cotizaciones filters per browser session, default to current month
 139f513 Merge pull request #326 from jospabloh/automated/release-pr
 db49030 Merge branch 'main' into automated/release-pr
-9b0864b Merge pull request #329 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
-a47aad6 Add "N/A" invoice status — locks N° Factura when a quotation never invoices
-14750df chore: release and update documentation
-54c82bc Merge pull request #328 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
-34996be Add N° Factura filter, clarify pricing-permission scope, update docs
-730ec76 Merge pull request #327 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
-d8c53e0 Fix picker overflow, clarify invoicing report, add period filter + per-quotation view
-4e3f204 Merge pull request #325 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
-1a77cff Fix page-wide horizontal scroll, remove the 100-quotation cap, add pagination
-d8820d9 Merge pull request #319 from jospabloh/automated/release-pr
-24272e1 chore: release and update documentation
-36b5709 Merge pull request #324 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
-e4b7902 Replace native month input with a custom MonthYearPicker
-ca7e9de Merge pull request #323 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
-50b8a28 Per-quotation fiscal detail, filter-aware summary bar, and search typeahead
-e7265df Merge pull request #322 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.18.18",
+  "Actualización a la versión 2.18.19",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

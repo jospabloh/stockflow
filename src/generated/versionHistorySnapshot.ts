@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-07-31T16:06:35.897Z
+// Generado: 2026-07-31T21:33:34.728Z
 
-export const SNAPSHOT_VERSION = "2.18.18";
+export const SNAPSHOT_VERSION = "2.18.19";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-07-31";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 
-export const SNAPSHOT_GIT_LOG = "63d8b64 Merge pull request #332 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n77490a5 Document why the public-quotation-link functions are intentionally unauthenticated\n35ad67c Add hover/tap explanations to the quotations fiscal stat pills\n20b4959 Fix accented permission-module keys, remove dead field-visibility system\nd0ef04a Add missing Cotizaciones invoice-status permission, consolidate legacy permission fallbacks\n7398c96 Merge pull request #331 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n956293d Persist Cotizaciones filters per browser session, default to current month\n139f513 Merge pull request #326 from jospabloh/automated/release-pr\ndb49030 Merge branch 'main' into automated/release-pr\n9b0864b Merge pull request #329 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\na47aad6 Add \"N/A\" invoice status — locks N° Factura when a quotation never invoices\n14750df chore: release and update documentation\n54c82bc Merge pull request #328 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n34996be Add N° Factura filter, clarify pricing-permission scope, update docs\n730ec76 Merge pull request #327 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\nd8c53e0 Fix picker overflow, clarify invoicing report, add period filter + per-quotation view\n4e3f204 Merge pull request #325 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n1a77cff Fix page-wide horizontal scroll, remove the 100-quotation cap, add pagination\nd8820d9 Merge pull request #319 from jospabloh/automated/release-pr\n24272e1 chore: release and update documentation\n36b5709 Merge pull request #324 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\ne4b7902 Replace native month input with a custom MonthYearPicker\nca7e9de Merge pull request #323 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n50b8a28 Per-quotation fiscal detail, filter-aware summary bar, and search typeahead\ne7265df Merge pull request #322 from jospabloh/claude/stockflow-iva-invoicing-sht1ck";
+export const SNAPSHOT_GIT_LOG = "e2694a3 Merge pull request #336 from jospabloh/claude/factura-emision-seleccion-2avzs7\n382171e Fix: almacenista couldn't toggle invoice status on Pagos a Proveedores\n62ba0ad Merge pull request #333 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\ne9f7802 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck\na4a921e Merge pull request #334 from jospabloh/claude/stockflow-monthly-visual-changes-kdaf0b\ne55e07d Add monthly decorative theme (palette + icon)\n516554a Merge main into permission-audit branch\n34aa42a Permission audit fix (6/N): Campañas, Tipo de Pago, Utilidad\n06747eb Permission audit fix (5/N): Productos\n515c5cd Permission audit fix (4/N): SupportTickets module, Reportes\na4dcf19 Permission audit fix (3/N): Pagos a Proveedores, Caja Chica\n95ff8d1 Permission audit fix (2/N): Configuración, Movimientos\ncbd7d7e Permission audit fix (1/N): registry keys, Clientes, Categorías, Cotizaciones\ndc353b1 Add design spec for the permission-registry coverage audit\nf93f3eb Merge pull request #330 from jospabloh/automated/release-pr\n842c3f7 chore: release and update documentation\n63d8b64 Merge pull request #332 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n77490a5 Document why the public-quotation-link functions are intentionally unauthenticated\n35ad67c Add hover/tap explanations to the quotations fiscal stat pills\n20b4959 Fix accented permission-module keys, remove dead field-visibility system\nd0ef04a Add missing Cotizaciones invoice-status permission, consolidate legacy permission fallbacks\n7398c96 Merge pull request #331 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n956293d Persist Cotizaciones filters per browser session, default to current month\n139f513 Merge pull request #326 from jospabloh/automated/release-pr\ndb49030 Merge branch 'main' into automated/release-pr";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.18.18",
+  "Actualización a la versión 2.18.19",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.19",
+    date: "2026-07-31",
+    changes: [
+    "Actualización a la versión 2.18.19"
+    ]
+  },
   {
     version: "2.18.18",
     date: "2026-07-31",
