@@ -20,7 +20,6 @@ import { toast } from "sonner";
 export default function Settings() {
   const { businessId } = useBusinessContext();
   const { can } = usePermissions();
-  const [isAdmin, setIsAdmin] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [settings, setSettings] = useState(null);
@@ -59,7 +58,6 @@ export default function Settings() {
        try {
          const u = await base44.auth.me();
          setDiagnosticBusinessId(businessId);
-         setIsAdmin(u?.role === "admin");
          setCurrentUserId(u?.id);
          setCheckingAuth(false);
 
@@ -190,32 +188,36 @@ export default function Settings() {
     );
   }
 
-  // Almacenistas solo ven: Clientes, Categorías, Productos, Proveedores, Formas de Pago
-  const defaultTab = isAdmin ? 'business' : 'clients';
+  const canBusiness = can('Configuracion', 'edit_company_name');
+  const canSat = can('Configuracion', 'edit_company_rfc');
+  const canTeam = can('Configuracion', 'manage_team');
+  const canImport = can('Configuracion', 'import_products');
+  const canDeleteAccount = can('Configuracion', 'delete_account');
+  const canAuditInventory = can('Configuracion', 'audit_inventory');
+  const canReferrals = can('Configuracion', 'manage_referral');
+  const canViewConfig = can('Configuracion', 'view');
+  const anyConfigTab = canBusiness || canSat || canTeam || canImport || canDeleteAccount || canAuditInventory || canReferrals;
+  const defaultTab = canBusiness ? 'business' : (canSat ? 'sat' : (canTeam ? 'team' : (canImport ? 'import' : (canDeleteAccount ? 'account' : (canAuditInventory ? 'inventario' : (canReferrals ? 'referidos' : 'clients'))))));
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList className="bg-white shadow-sm border flex-wrap h-auto gap-1 p-1 select-none">
-          {/* Admin: todas las pestañas */}
-          {isAdmin && (
+          {canViewConfig && anyConfigTab && (
             <>
-              {can('Configuracion', 'edit_company_name') && <TabsTrigger value="business"><Building2 className="h-4 w-4 mr-1" /> Negocio</TabsTrigger>}
-              <TabsTrigger value="sat"><FileText className="h-4 w-4 mr-1" /> Facturación</TabsTrigger>
-              {can('Configuracion', 'manage_team') && <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>}
-              {can('Configuracion', 'import_products') && <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>}
-              {can('Configuracion', 'delete_account') && <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>}
-              <TabsTrigger value="inventario"><PackageSearch className="h-4 w-4 mr-1" /> Audit Inventario</TabsTrigger>
-              <TabsTrigger value="referidos"><Gift className="h-4 w-4 mr-1" /> Referidos</TabsTrigger>
+              {canBusiness && <TabsTrigger value="business"><Building2 className="h-4 w-4 mr-1" /> Negocio</TabsTrigger>}
+              {canSat && <TabsTrigger value="sat"><FileText className="h-4 w-4 mr-1" /> Facturación</TabsTrigger>}
+              {canTeam && <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>}
+              {canImport && <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>}
+              {canDeleteAccount && <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>}
+              {canAuditInventory && <TabsTrigger value="inventario"><PackageSearch className="h-4 w-4 mr-1" /> Audit Inventario</TabsTrigger>}
+              {canReferrals && <TabsTrigger value="referidos"><Gift className="h-4 w-4 mr-1" /> Referidos</TabsTrigger>}
             </>
           )}
-          
-          {/* Todos ven estas pestañas (admin + almacenistas) */}
-
         </TabsList>
 
         {/* Business Settings — Admin only */}
-        {isAdmin && <TabsContent value="business">
+        {canBusiness && <TabsContent value="business">
           <Card className="border-0 shadow-sm p-6 space-y-6">
             <h3 className="font-semibold text-slate-700 text-lg">Información del Negocio</h3>
             {(!settings?.rfc || settings?.business_name === "Mi Negocio" || !settings?.business_name) && (
@@ -358,7 +360,7 @@ export default function Settings() {
 
 
         {/* Facturación — Admin only */}
-        {isAdmin && <TabsContent value="sat">
+        {canSat && <TabsContent value="sat">
           <Card className="border-0 shadow-sm overflow-hidden">
             {/* Under construction game section */}
             <div className="relative bg-gradient-to-br from-brand-900 via-purple-900 to-slate-900 p-8 flex flex-col items-center justify-center min-h-[360px] overflow-hidden">
@@ -497,7 +499,7 @@ export default function Settings() {
           </TabsContent>}
 
           {/* Team — Admin only */}
-          {isAdmin && <TabsContent value="team">
+          {canTeam && <TabsContent value="team">
           <div className="space-y-4">
             {/* Invite code card */}
             <Card className="border-0 shadow-sm p-6 space-y-4">
@@ -567,12 +569,12 @@ export default function Settings() {
           </TabsContent>}
 
           {/* Import — Admin only */}
-          {isAdmin && <TabsContent value="import">
+          {canImport && <TabsContent value="import">
           <ImportProducts />
           </TabsContent>}
 
-          {/* Account — All users */}
-          <TabsContent value="account">
+          {/* Account */}
+          {canDeleteAccount && <TabsContent value="account">
           <div className="space-y-6">
             <LicenseInfoCard />
             <Card className="border-0 shadow-sm p-6 space-y-6">
@@ -602,10 +604,10 @@ export default function Settings() {
             </div>
           </Card>
             </div>
-          </TabsContent>
+          </TabsContent>}
 
-          {/* Audit Inventario — Admin only */}
-          {isAdmin && (
+          {/* Audit Inventario */}
+          {canAuditInventory && (
             <TabsContent value="inventario">
               <Card className="border-0 shadow-sm p-6 space-y-6">
                 <div className="flex items-start justify-between gap-4">
@@ -789,8 +791,8 @@ export default function Settings() {
             </TabsContent>
           )}
 
-          {/* Referidos — Admin only */}
-          {isAdmin && (
+          {/* Referidos */}
+          {canReferrals && (
             <TabsContent value="referidos">
               <ReferralPanel />
             </TabsContent>

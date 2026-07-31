@@ -15,6 +15,7 @@ import { Save, ScanLine, Search, Plus, Trash2, CheckCircle2, Banknote } from "lu
 import BarcodeCameraScanner from "@/components/products/BarcodeCameraScanner";
 import { toast } from "sonner";
 import { useBusinessContext } from "@/components/BusinessContext";
+import { usePermissions } from "@/lib/PermissionContext";
 import { createButtonProps } from "@/lib/a11y";
 import { calculatePrice } from "@/lib/pricingEngine";
 import ProductSearchInput from "./ProductSearchInput";
@@ -39,7 +40,9 @@ return price;
 
 export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
   const { businessId, user } = useBusinessContext();
-  const isAdmin = user?.role === "admin";
+  const { can } = usePermissions();
+  const canAdjustment = can('Movimientos', 'adjustment');
+  const canShowCostPrice = can('Productos', 'cost_price');
   const barcodeRef = useRef(null);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -334,7 +337,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
               value={movType}
               onValueChange={(val) => { setMovType(val); setClientId(""); setPettyCashDeduct(null); }}
               placeholder="Tipo"
-              options={ALL_TYPES.filter(t => t.value !== "adjustment" || isAdmin).map((t) => ({ value: t.value, label: t.label }))}
+              options={ALL_TYPES.filter(t => t.value !== "adjustment" || canAdjustment).map((t) => ({ value: t.value, label: t.label }))}
             />
           </div>
 
@@ -387,11 +390,13 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
                     <div>
                       <Label className="text-xs text-muted-foreground mb-1 block">Precio</Label>
                       <div className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm items-center text-muted-foreground">
-                        ${unitPrice.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                        {movType === "entry" && !canShowCostPrice
+                          ? "—"
+                          : `$${unitPrice.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`}
                       </div>
                     </div>
                   </div>
-                  {item.product && (
+                  {item.product && (movType !== "entry" || canShowCostPrice) && (
                     <p className="text-xs text-right text-muted-foreground">
                       Subtotal: <span className="font-semibold text-foreground">
                         ${(item.quantity * unitPrice).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
