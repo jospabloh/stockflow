@@ -1175,7 +1175,8 @@ Para cada cotización concretada puedes registrar el estado de facturación:
 |---|---|
 | **Pendiente** | Aún no se ha emitido factura |
 | **Emitida** | Factura generada y entregada al cliente |
-| **No Requerida** | El cliente no necesita factura |
+| **No Requerida** | El cliente no pidió su propia factura, pero la venta sigue contando para la factura mensual al público en general (ver reporte en Reportes) |
+| **No Aplica** | Esta cotización nunca va a facturarse (p. ej. una muestra o cortesía interna) — al elegirlo, el campo **N° Factura** se bloquea y se limpia si ya tenía algo escrito |
 
 ---
 
