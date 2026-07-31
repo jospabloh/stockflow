@@ -43,6 +43,11 @@ const statusConfig = {
   cancelled: { label: "Cancelada", color: "bg-red-100 text-red-700", dot: "bg-red-500", desc: "Cancelada/Anulada" },
 };
 
+// Folio de factura ya emitida por el sistema de facturación del negocio
+// (ej. "F1024") — al escribir un valor con esta forma en N° de Factura,
+// se asume que la factura ya se emitió y el semáforo se actualiza solo.
+const ISSUED_INVOICE_NUMBER_PATTERN = /^F\d+$/i;
+
 const isExpired = (q) => {
   if (!q.valid_until || q.status === "converted" || q.status === "cancelled") return false;
   // Comparar solo fechas como strings YYYY-MM-DD para evitar problemas de zona horaria
@@ -123,6 +128,9 @@ export default function Quotations() {
   const [previewQuotation, setPreviewQuotation] = useState(null);
   const [previewClient, setPreviewClient] = useState(null);
   const [returnQuotation, setReturnQuotation] = useState(null);
+  const [invoiceNumberPromptQuotation, setInvoiceNumberPromptQuotation] = useState(null);
+  const [invoiceNumberPromptValue, setInvoiceNumberPromptValue] = useState("");
+  const [savingInvoiceNumberPrompt, setSavingInvoiceNumberPrompt] = useState(false);
   const [settings, setSettings] = useState(null);
   const [paymentMethodsCatalog, setPaymentMethodsCatalog] = useState([]);
   const [showPerQuotation, setShowPerQuotation] = useState(false);
@@ -396,6 +404,37 @@ export default function Quotations() {
     }
   };
 
+  // Marcar "Emitida" desde el semáforo pide el N° de factura correspondiente
+  // en el mismo paso, para que el estado nunca quede "Emitida" sin su número.
+  const handleConfirmInvoiceNumberPrompt = async (quotationSnapshot, valueSnapshot) => {
+    const target = quotationSnapshot || invoiceNumberPromptQuotation;
+    const value = (valueSnapshot ?? invoiceNumberPromptValue).trim();
+    if (!target) return;
+    if (!value) {
+      toast.error("Ingresa el número de factura");
+      return;
+    }
+    setSavingInvoiceNumberPrompt(true);
+    try {
+      const response = await base44.functions.invoke('quotations', { action: 'updateQuotationFlagsSafe',
+        quotation_id: target.id,
+        updates: { invoice_number: value, invoice_status: "emitida" }
+      });
+      if (response.data?.success) {
+        toast.success(`✓ Factura ${value} — cotización ${target.folio} marcada como Emitida`);
+        setInvoiceNumberPromptQuotation(null);
+        setInvoiceNumberPromptValue("");
+        invalidate("Quotation");
+      } else {
+        toast.error(response.data?.error || response.data?.message || "No se pudo actualizar la factura");
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.error || err?.message || "No se pudo actualizar la factura");
+    } finally {
+      setSavingInvoiceNumberPrompt(false);
+    }
+  };
+
   const handleRegenerate = async (q) => {
     if (q.status !== "draft") return;
     
@@ -541,13 +580,23 @@ export default function Quotations() {
           }
         }}
         onInvoiceNumberChange={async (q, val) => {
+          const trimmed = (val || "").trim();
+          // Un N° de factura con forma "F###" implica que ya se emitió —
+          // actualiza el semáforo junto con el número, en la misma llamada.
+          const autoMarkEmitida = ISSUED_INVOICE_NUMBER_PATTERN.test(trimmed) && q.invoice_status !== "emitida";
+          const updates = autoMarkEmitida
+            ? { invoice_number: trimmed, invoice_status: "emitida" }
+            : { invoice_number: trimmed };
           try {
             const response = await base44.functions.invoke('quotations', { action: 'updateQuotationFlagsSafe',
               quotation_id: q.id,
-              updates: { invoice_number: val }
+              updates
             });
             if (response.data?.success) {
               invalidate("Quotation");
+              if (autoMarkEmitida) {
+                toast.success(`✓ Factura ${trimmed} — estado de factura actualizado a Emitida`);
+              }
             } else {
               toast.error(response.data?.error || response.data?.message || "No se pudo actualizar el número de factura");
             }
@@ -555,6 +604,7 @@ export default function Quotations() {
             toast.error(err?.response?.data?.error || err?.message || "No se pudo actualizar el número de factura");
           }
         }}
+        onRequestInvoiceNumber={(q) => { setInvoiceNumberPromptQuotation(q); setInvoiceNumberPromptValue(""); }}
         onInRouteChange={async (q, action) => {
           if (action === "delivered") {
             // Use deliverQuotationSafe to handle on-demand EXIT movements
@@ -830,6 +880,54 @@ export default function Quotations() {
               className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50"
             >
               {isConverting ? "Procesando…" : "Confirmar Venta"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Al marcar "Emitida" sin N° de factura todavía, pide el número en el
+          mismo paso — el estado nunca se guarda "Emitida" sin su valor. */}
+      <AlertDialog
+        open={!!invoiceNumberPromptQuotation}
+        onOpenChange={(v) => { if (!v && !savingInvoiceNumberPrompt) { setInvoiceNumberPromptQuotation(null); setInvoiceNumberPromptValue(""); } }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Marcar factura como Emitida</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cotización {invoiceNumberPromptQuotation?.folio} · {invoiceNumberPromptQuotation?.client_name}. Ingresa el número de factura correspondiente para completar el cambio de estado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2">
+            <Label className="text-xs text-muted-foreground">Número de factura</Label>
+            <Input
+              value={invoiceNumberPromptValue}
+              onChange={(e) => setInvoiceNumberPromptValue(e.target.value)}
+              placeholder="Ej. F1024"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && invoiceNumberPromptValue.trim()) {
+                  e.preventDefault();
+                  handleConfirmInvoiceNumberPrompt(invoiceNumberPromptQuotation, invoiceNumberPromptValue);
+                }
+              }}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={savingInvoiceNumberPrompt}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={savingInvoiceNumberPrompt || !invoiceNumberPromptValue.trim()}
+              className="disabled:opacity-50"
+              onClick={(e) => {
+                // Captura los valores ANTES de que el dialog se cierre (mismo
+                // patrón que el diálogo de conversión, evita condición de carrera).
+                const q = invoiceNumberPromptQuotation;
+                const val = invoiceNumberPromptValue;
+                e.preventDefault();
+                handleConfirmInvoiceNumberPrompt(q, val);
+              }}
+            >
+              {savingInvoiceNumberPrompt ? "Guardando…" : "Confirmar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
