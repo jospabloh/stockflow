@@ -15,7 +15,8 @@ const TYPE_LABELS = {
   adjustment:   { label: "Ajuste",        color: "bg-amber-100 text-amber-700" },
 };
 
-export default function PettyCashHistory({ movements, isAdmin, onEdit, onDelete }) {
+export default function PettyCashHistory({ movements, canEdit, canDelete, canExport, onEdit, onDelete }) {
+  const showActionsCol = canEdit || canDelete;
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
@@ -78,12 +79,14 @@ export default function PettyCashHistory({ movements, isAdmin, onEdit, onDelete 
         />
         <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36" title="Desde" />
         <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36" title="Hasta" />
+        {canExport && (
         <ExportMenu
           columns={exportColumns}
           rows={exportRows}
           filename="caja_chica"
           title="Caja Chica"
         />
+        )}
       </div>
 
       {/* Table */}
@@ -98,13 +101,13 @@ export default function PettyCashHistory({ movements, isAdmin, onEdit, onDelete 
                 <TableHead>Categoría</TableHead>
                 <TableHead className="text-right">Monto</TableHead>
                 <TableHead>Referencia</TableHead>
-                {isAdmin && <TableHead className="text-right">Acciones</TableHead>}
+                {showActionsCol && <TableHead className="text-right">Acciones</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10 text-slate-400">
+                  <TableCell colSpan={showActionsCol ? 7 : 6} className="text-center py-10 text-slate-400">
                     Sin movimientos en este período
                   </TableCell>
                 </TableRow>
@@ -136,7 +139,7 @@ export default function PettyCashHistory({ movements, isAdmin, onEdit, onDelete 
                         {isNeg ? "−" : "+"} ${m.amount?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                       </TableCell>
                       <TableCell className="text-slate-500 text-sm">{m.reference || "—"}</TableCell>
-                      {isAdmin && (
+                      {showActionsCol && (
                         <TableCell className="text-right">
                           {isSystemGenerated ? (
                             <span
@@ -147,12 +150,16 @@ export default function PettyCashHistory({ movements, isAdmin, onEdit, onDelete 
                             </span>
                           ) : (
                             <div className="flex justify-end gap-1">
+                              {canEdit && (
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onEdit(m)} title="Editar">
                                 <Pencil className="h-3.5 w-3.5 text-slate-500" />
                               </Button>
+                              )}
+                              {canDelete && (
                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onDelete(m.id)} title="Eliminar">
                                 <Trash2 className="h-3.5 w-3.5 text-rose-500" />
                               </Button>
+                              )}
                             </div>
                           )}
                         </TableCell>

@@ -24,7 +24,6 @@ export default function PettyCash() {
   const { can } = usePermissions();
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [formType, setFormType] = useState("income");
   const [editingMovement, setEditingMovement] = useState(null);
@@ -54,7 +53,6 @@ export default function PettyCash() {
   };
 
   useEffect(() => {
-    base44.auth.me().then(u => setIsAdmin(u?.role === "admin")).catch(() => {});
     loadMovements();
     loadRubros();
   }, [businessId]);
@@ -141,13 +139,17 @@ export default function PettyCash() {
               <Plus className="h-4 w-4 mr-1" /> Fondo Inicial
             </Button>
           )}
+          {can('Caja Chica', 'income') && (
           <Button onClick={() => openForm("income")} className="bg-emerald-600 hover:bg-emerald-700" {...createButtonProps('add')}>
             <Plus className="h-4 w-4 mr-1" /> Ingreso
           </Button>
+          )}
+          {can('Caja Chica', 'expense') && (
           <Button onClick={() => openForm("expense")} className="bg-rose-600 hover:bg-rose-700" {...createButtonProps('add')}>
             <Minus className="h-4 w-4 mr-1" /> Egreso
           </Button>
-          {isAdmin && can('Caja Chica', 'edit_amount') && (
+          )}
+          {can('Caja Chica', 'edit_amount') && (
             <Button onClick={() => openForm("adjustment")} variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-50" {...createButtonProps('add')}>
               <SlidersHorizontal className="h-4 w-4 mr-1" /> Ajuste
             </Button>
@@ -209,7 +211,9 @@ export default function PettyCash() {
       <Tabs defaultValue="recent">
         <TabsList className="bg-white shadow-sm border">
           <TabsTrigger value="recent"><ListOrdered className="h-4 w-4 mr-1" /> Últimos movimientos</TabsTrigger>
+          {can('Caja Chica', 'view_history') && (
           <TabsTrigger value="history"><History className="h-4 w-4 mr-1" /> Historial completo</TabsTrigger>
+          )}
         </TabsList>
 
         {/* Recent */}
@@ -251,18 +255,22 @@ export default function PettyCash() {
                   <span className={`font-bold text-sm whitespace-nowrap ${isNeg ? "text-rose-600" : "text-emerald-600"}`}>
                     {isNeg ? "−" : "+"} ${m.amount?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                   </span>
-                  {isAdmin && (
+                  {(can('Caja Chica', 'edit_amount') || can('Caja Chica', 'delete')) && (
                     <div className="flex gap-1 ml-1">
                       {isSystemGenerated ? (
                         <span className="text-[10px] text-slate-400 px-1" title="Generado automáticamente — editar desde la venta de origen">🔒</span>
                       ) : (
                         <>
+                          {can('Caja Chica', 'edit_amount') && (
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(m)} title="Editar">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.415.586H9v-2.414a2 2 0 01.586-1.414z" /></svg>
                           </Button>
+                          )}
+                          {can('Caja Chica', 'delete') && (
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDeletingId(m.id)} title="Eliminar">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                           </Button>
+                          )}
                         </>
                       )}
                     </div>
@@ -274,9 +282,18 @@ export default function PettyCash() {
         </TabsContent>
 
         {/* Full history */}
+        {can('Caja Chica', 'view_history') && (
         <TabsContent value="history" className="mt-4">
-          <PettyCashHistory movements={movements} isAdmin={isAdmin} onEdit={openEdit} onDelete={setDeletingId} />
+          <PettyCashHistory
+            movements={movements}
+            canEdit={can('Caja Chica', 'edit_amount')}
+            canDelete={can('Caja Chica', 'delete')}
+            canExport={can('Caja Chica', 'export')}
+            onEdit={openEdit}
+            onDelete={setDeletingId}
+          />
         </TabsContent>
+        )}
       </Tabs>
 
       {/* Movement form modal */}
