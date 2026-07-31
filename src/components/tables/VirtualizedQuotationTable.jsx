@@ -47,7 +47,7 @@ function InvoiceNumberCell({ value, onSave, disabled }) {
   );
 }
 
-function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, expanded, onToggleExpand, forceExpandAll }) {
+function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, canEditInvoiceStatus, expanded, onToggleExpand, forceExpandAll }) {
   const status = statusConfig[q.status] || statusConfig.draft;
 
   return (
@@ -118,15 +118,16 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
         {INVOICE_STATUS_META.map(({ value: opt, abbr, label, activeClass }) => (
           <button type="button"
             key={opt}
+            disabled={!canEditInvoiceStatus}
             onClick={() => {
               const newVal = q.invoice_status === opt ? null : opt;
               onInvoiceStatusChange(q, newVal);
               if (newVal === "na" && q.invoice_number) onInvoiceNumberChange(q, "");
             }}
-            className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full transition-colors border ${
+            className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full transition-colors border disabled:cursor-not-allowed disabled:opacity-60 ${
               q.invoice_status === opt ? activeClass : "bg-transparent text-slate-300 border-slate-200"
             }`}
-            title={label}
+            title={canEditInvoiceStatus ? label : `${label} (sin permiso para cambiar el estado de factura)`}
           >
             {abbr}
           </button>
@@ -138,7 +139,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
         <InvoiceNumberCell
           value={q.invoice_number}
           onSave={(val) => onInvoiceNumberChange(q, val)}
-          disabled={q.invoice_status === "na"}
+          disabled={!canEditInvoiceStatus || q.invoice_status === "na"}
         />
       </div>
 
@@ -521,6 +522,7 @@ export default function VirtualizedQuotationTable({
   clientSuggestions,
   invoiceNumberSuggestions,
   canShowPricing,
+  canEditInvoiceStatus,
   forceExpandAll,
 }) {
   const [expandedIds, setExpandedIds] = React.useState(() => new Set());
@@ -542,7 +544,7 @@ export default function VirtualizedQuotationTable({
   const pageStart = (currentPage - 1) * pageSize;
   const pagedQuotations = quotations.slice(pageStart, pageStart + pageSize);
 
-  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing };
+  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, canEditInvoiceStatus };
 
   const statusOptions = Object.entries(statusConfig).map(([value, cfg]) => ({
     value,

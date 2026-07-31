@@ -108,7 +108,6 @@ export default function Quotations() {
   const { canSee } = useFieldVisibility("Cotizaciones");
   const { businessId, user } = useBusinessContext();
   const userRole = user?.role || null;
-  const canRevertPayment = can("Cotizaciones:revert_payment") || userRole === "admin";
   const invalidate = useInvalidateEntities();
   const quotationsQuery = useQuotations(businessId);
   const quotations = quotationsQuery.data ?? [];
@@ -484,6 +483,7 @@ export default function Quotations() {
         invoiceNumberSuggestions={invoiceNumberSuggestions}
         canShowPricing={can('Cotizaciones', 'pricing')}
         forceExpandAll={showPerQuotation && can('Cotizaciones', 'pricing')}
+        canEditInvoiceStatus={can('Cotizaciones', 'edit_invoice_status')}
         canConvert={can('Cotizaciones', 'convert')}
         canCancel={can('Cotizaciones', 'cancel')}
         canConfirmPayment={can('Cotizaciones', 'confirm_payment')}

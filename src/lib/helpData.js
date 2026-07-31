@@ -1004,7 +1004,7 @@ Desde cualquier cotización, haz clic en el botón **PDF** para descargar un doc
       category: "Cotizaciones",
       role: "all",
       title: "🚦 Estados de una Cotización",
-      keywords: ["estado", "borrador", "enviada", "aceptada", "concretada", "cancelada", "vencida", "status", "flujo", "resumen financiero", "base 16", "base 0", "efectivo", "otro método", "mostrar por cotización", "paginación", "periodo", "n° factura", "filtro factura", "autocompletar", "recordar filtros", "mes actual", "sesión", "cerrar navegador"],
+      keywords: ["estado", "borrador", "enviada", "aceptada", "concretada", "cancelada", "vencida", "status", "flujo", "resumen financiero", "base 16", "base 0", "efectivo", "otro método", "mostrar por cotización", "paginación", "periodo", "n° factura", "filtro factura", "autocompletar", "recordar filtros", "mes actual", "sesión", "cerrar navegador", "permiso", "cambiar estado de factura"],
       related_ids: ["quotations-create", "quotations-convert", "quotations-cancel"],
       content: `## 🚦 Estados de una Cotización
 
@@ -1185,6 +1185,8 @@ Para cada cotización concretada puedes registrar el estado de facturación:
 | **Emitida** | Factura generada y entregada al cliente |
 | **No Requerida** | El cliente no pidió su propia factura, pero la venta sigue contando para la factura mensual al público en general (ver reporte en Reportes) |
 | **No Aplica** | Esta cotización nunca va a facturarse (p. ej. una muestra o cortesía interna) — al elegirlo, el campo **N° Factura** se bloquea y se limpia si ya tenía algo escrito |
+
+> 🔒 Cambiar el semáforo o capturar el **N° Factura** requiere el permiso **"Cambiar estado de factura"** (Cotizaciones). El admin lo tiene por default; para un almacenista debe activarse manualmente en **Configuración → Permisos**.
 
 ---
 

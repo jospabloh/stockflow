@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-07-31T03:35:52.905Z
+// Generado: 2026-07-31T15:12:24.660Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -110,6 +110,7 @@ export const ALL_PERMISSION_KEYS = [
   "Cotizaciones:edit_notes",
   "Cotizaciones:edit_validity",
   "Cotizaciones:edit_payment_method",
+  "Cotizaciones:edit_invoice_status",
   "Cotizaciones:confirm_payment",
   "Cotizaciones:revert_payment",
   "Cotizaciones:convert",
@@ -347,6 +348,7 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "edit_notes", label: "Editar notas", category: "actionable" },
     { id: "edit_validity", label: "Editar vigencia", category: "actionable" },
     { id: "edit_payment_method", label: "Editar pago", category: "actionable" },
+    { id: "edit_invoice_status", label: "Cambiar estado de factura", category: "actionable" },
     { id: "confirm_payment", label: "Confirmar pago", category: "actionable" },
     { id: "revert_payment", label: "Revertir pago", category: "actionable", sensitive: true },
     { id: "convert", label: "Convertir a venta", category: "actionable" },
@@ -559,6 +561,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Cotizaciones:edit_notes": true,
   "Cotizaciones:edit_validity": true,
   "Cotizaciones:edit_payment_method": true,
+  "Cotizaciones:edit_invoice_status": true,
   "Cotizaciones:confirm_payment": true,
   "Cotizaciones:revert_payment": true,
   "Cotizaciones:convert": true,
@@ -732,6 +735,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Cotizaciones:edit_notes": true,
   "Cotizaciones:edit_validity": true,
   "Cotizaciones:edit_payment_method": true,
+  "Cotizaciones:edit_invoice_status": false,
   "Cotizaciones:confirm_payment": true,
   "Cotizaciones:revert_payment": false,
   "Cotizaciones:convert": true,
