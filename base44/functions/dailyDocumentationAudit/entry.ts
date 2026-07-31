@@ -6,38 +6,38 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.15";
-const SNAPSHOT_RELEASE_DATE = "2026-07-28";
+const CURRENT_VERSION_IN_CODE = "2.18.16";
+const SNAPSHOT_RELEASE_DATE = "2026-07-31";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 const GIT_LOG_SNAPSHOT = `
-fc3e54a Merge pull request #318 from jospabloh/dependabot/npm_and_yarn/npm-dependencies-651debc960
-ad43cf7 chore(deps): bump the npm-dependencies group with 4 updates
-bf5712c fix: curated dependency bump, unbreak Auto Release PR CI trigger (v2.18.14)
-5293298 Merge origin/main: resolve conflicts with the now-merged #314/#315
-9b85fa9 fix: curated dependency bump, unbreak Auto Release PR CI trigger, v2.18.14
-2ce780c Merge pull request #314 from jospabloh/automated/release-pr
-d6f52b1 Merge branch 'main' into automated/release-pr
-5be80c0 Merge pull request #315 from jospabloh/dependabot/npm_and_yarn/npm-dependencies-4a5fd31b2f
-fb8bf52 chore(deps): bump the npm-dependencies group across 1 directory with 47 updates
-6a6246c chore: release and update documentation
-cf5e62c Merge pull request #313 from jospabloh/claude/gifted-turing-7puf7q
-cfcd736 chore: automated security, quality and permissions audit v2.18.13
-cded2ff Update base44 packages
-6936e49 Merge pull request #310 from jospabloh/claude/unmerged-branches-cleanup-xwtflm
-43f5776 chore(deps): remove unused dependencies
-5b3642f Merge pull request #308 from jospabloh/dependabot/github_actions/github-actions-eefdb6dedd
-97b8eae chore(deps): bump actions/setup-node in the github-actions group
-ab6eefe Merge pull request #307 from jospabloh/claude/unmerged-branches-cleanup-xwtflm
-f13d2f5 fix(deps): correct dependabot.yml content (was accidentally base64-encoded)
-ae406d9 chore(deps): group dependabot updates into a single weekly PR per ecosystem
-2694c98 Merge pull request #293 from jospabloh/automated/release-pr
-22a8e83 Merge remote-tracking branch 'origin/main' into automated/release-pr
-9e7bbd6 Merge pull request #294 from jospabloh/claude/utility-withdrawals-admin-visibility-99f8g4
-01ee5b8 Merge remote-tracking branch 'origin/main' into claude/utility-withdrawals-admin-visibility-99f8g4
-c5f2297 Merge pull request #295 from jospabloh/claude/react-deps-merge-conflict-p8c82n
+36b5709 Merge pull request #324 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
+e4b7902 Replace native month input with a custom MonthYearPicker
+ca7e9de Merge pull request #323 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
+50b8a28 Per-quotation fiscal detail, filter-aware summary bar, and search typeahead
+e7265df Merge pull request #322 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
+1b568b2 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck
+8bc3eea Document the Cotizaciones financial summary bar and remove dead code
+481313a Merge pull request #321 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
+dd2dd11 Add IVA/payment-method financial summary bar to Cotizaciones
+cd2c091 Merge pull request #320 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
+75b9a47 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck
+f11b767 docs: document mandatory entity-before-function deploy order
+b6ce0f9 fix: address final review findings — currency rounding, partial-failure handling, 500-row cap warning, gate bulk-assign behind confirm_payment permission
+a6750bd feat: wire invoice_number inline edit to updateQuotationFlagsSafe
+8c030b3 feat: add editable invoice_number column to quotations table
+90e0211 feat: add Facturación Público General tab to Reports page
+2b51c07 feat: add UnbilledNonCashInvoiceReport component
+b345917 feat: add nonCashInvoicing helper for non-cash unbilled report math
+7adc3c7 feat: allow invoice_number in updateQuotationFlagsSafe whitelist
+1c9a698 feat: add invoice_number field to Quotation entity schema
+d349407 fix: label untaxed quotation items as IVA 0% instead of Exento in preview
+4623214 fix: label untaxed quotation items as IVA 0% instead of Exento in PDF
+a7012db docs: add implementation plan for IVA label fix and non-cash invoicing
+120bcda docs: add design spec for IVA label fix and non-cash invoicing report
+f438c54 Update base44 packages
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.18.15",
+  "Actualización a la versión 2.18.16",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
