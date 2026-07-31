@@ -5,7 +5,6 @@ import { usePermissions } from "@/lib/PermissionContext";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { useQuotations, useInvalidateEntities } from "@/hooks/queries";
 import { LoadingOverlay } from "@/components/ui/spinner";
-import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"; // usado en dialogs de pago/conversión
 import { Label } from "@/components/ui/label";
@@ -105,7 +104,6 @@ export default function Quotations() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = usePermissions();
-  const { canSee } = useFieldVisibility("Cotizaciones");
   const { businessId, user } = useBusinessContext();
   const userRole = user?.role || null;
   const invalidate = useInvalidateEntities();
