@@ -213,6 +213,7 @@ export const PERMISSION_REGISTRY = {
       { id: "edit_reference", label: "Editar referencia", category: "actionable", icon: "🔗", description: "Cambiar número de transacción/recibo" },
       { id: "edit_notes", label: "Editar notas", category: "actionable", icon: "📋", description: "Agregar observaciones adicionales" },
       { id: "affect_petty_cash", label: "Afectar caja chica", category: "actionable", icon: "💰", description: "Registrar egreso automático en caja" },
+      { id: "edit_invoice_status", label: "Estado de factura", category: "actionable", icon: "🚦", description: "Marcar el semáforo de estado de factura del proveedor (pendiente/recibida/no requerida)" },
       { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar registro de pagos" },
     ]
   },

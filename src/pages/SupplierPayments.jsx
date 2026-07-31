@@ -518,7 +518,7 @@ export default function SupplierPayments() {
                   <div className="flex gap-0.5 justify-center flex-wrap">
                     {INVOICE_STATUS_OPTIONS.map(opt => {
                       const selected = (p.invoice_status || "") === opt.value;
-                      const canEdit = can('Pagos a Proveedores', 'edit_amount');
+                      const canEdit = can('Pagos a Proveedores', 'edit_invoice_status');
                       return (
                         <button
                           type="button"
