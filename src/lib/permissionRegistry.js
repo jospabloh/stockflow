@@ -176,7 +176,7 @@ export const PERMISSION_REGISTRY = {
       { id: "export", label: "Exportar PDF", category: "actionable", icon: "📄", description: "Exportar cotizaciones en formato PDF" },
       { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar cotizaciones" },
       { id: "share", label: "Compartir enlace público", category: "actionable", icon: "🔗", description: "Generar y gestionar enlace público de cotizaciones para clientes" },
-      { id: "pricing", label: "Ver detalles precio", category: "report", icon: "💲", sensitive: true, description: "Ver cálculo detallado de precios y el resumen financiero (Base/IVA/Total y pagos por método) en la lista de cotizaciones (confidencial)" },
+      { id: "pricing", label: "Ver detalles precio", category: "report", icon: "💲", sensitive: true, description: "Ver el panorama financiero agregado de varias cotizaciones a la vez: la barra de resumen fiscal, el desglose por fila (Base/IVA/Total y pagos por método) y el modo \"Mostrar por cotización\" (confidencial). NO afecta ver el precio de una cotización individual al crearla, editarla o previsualizarla — eso ya lo ve cualquiera con permiso para manejarla, es parte de atender al cliente." },
     ]
   },
   "Caja Chica": {
