@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-07-31T15:12:24.660Z
+// Generado: 2026-07-31T18:17:08.066Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -69,6 +69,7 @@ export const ALL_PERMISSION_KEYS = [
   "Clientes:edit_status",
   "Clientes:edit_force_wholesale",
   "Clientes:edit_force_purchase",
+  "Clientes:edit_force_zero_price",
   "Clientes:delete",
   "Cursos:view",
   "Cursos:create",
@@ -101,6 +102,7 @@ export const ALL_PERMISSION_KEYS = [
   "Movimientos:confirm_payment",
   "Movimientos:edit_status",
   "Movimientos:delete",
+  "Movimientos:export",
   "Cotizaciones:view",
   "Cotizaciones:create",
   "Cotizaciones:edit_items",
@@ -120,6 +122,7 @@ export const ALL_PERMISSION_KEYS = [
   "Cotizaciones:export",
   "Cotizaciones:delete",
   "Cotizaciones:share",
+  "Cotizaciones:edit_payment_record",
   "Cotizaciones:pricing",
   "Caja Chica:view",
   "Caja Chica:view_history",
@@ -132,6 +135,7 @@ export const ALL_PERMISSION_KEYS = [
   "Caja Chica:edit_date",
   "Caja Chica:edit_notes",
   "Caja Chica:delete",
+  "Caja Chica:export",
   "Pagos a Proveedores:view",
   "Pagos a Proveedores:create",
   "Pagos a Proveedores:edit_supplier",
@@ -150,6 +154,7 @@ export const ALL_PERMISSION_KEYS = [
   "Reportes:cost_view",
   "Reportes:profit_margin",
   "Reportes:export",
+  "Reportes:billing",
   "Configuracion:view",
   "Configuracion:edit_company_name",
   "Configuracion:edit_company_rfc",
@@ -162,6 +167,7 @@ export const ALL_PERMISSION_KEYS = [
   "Configuracion:import_products",
   "Configuracion:manage_team",
   "Configuracion:manage_referral",
+  "Configuracion:audit_inventory",
   "Configuracion:delete_account",
   "Utilidad:view",
   "Utilidad:view_withdrawals",
@@ -175,6 +181,9 @@ export const ALL_PERMISSION_KEYS = [
   "CuentasFondo:create",
   "CuentasFondo:edit",
   "CuentasFondo:delete",
+  "Centro de Soporte:view",
+  "Centro de Soporte:create",
+  "Centro de Soporte:reply",
 ] as const;
 
 export type PermissionKey = (typeof ALL_PERMISSION_KEYS)[number];
@@ -272,6 +281,7 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "edit_status", label: "Cambiar estado", category: "actionable" },
     { id: "edit_force_wholesale", label: "Forzar mayoreo", category: "actionable" },
     { id: "edit_force_purchase", label: "Forzar precio compra", category: "actionable", sensitive: true },
+    { id: "edit_force_zero_price", label: "Forzar precio $0", category: "actionable", sensitive: true },
     { id: "delete", label: "Eliminar", category: "actionable" }
     ]
   },
@@ -333,7 +343,8 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "edit_payment", label: "Editar forma pago", category: "actionable" },
     { id: "confirm_payment", label: "Confirmar pago", category: "actionable" },
     { id: "edit_status", label: "Cambiar estado pago", category: "actionable" },
-    { id: "delete", label: "Eliminar", category: "actionable" }
+    { id: "delete", label: "Eliminar", category: "actionable" },
+    { id: "export", label: "Exportar", category: "report" }
     ]
   },
   "Cotizaciones": {
@@ -358,6 +369,7 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "export", label: "Exportar PDF", category: "actionable" },
     { id: "delete", label: "Eliminar", category: "actionable" },
     { id: "share", label: "Compartir enlace público", category: "actionable" },
+    { id: "edit_payment_record", label: "Editar/eliminar pago registrado", category: "actionable" },
     { id: "pricing", label: "Ver detalles precio", category: "report", sensitive: true }
     ]
   },
@@ -374,7 +386,8 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "edit_category", label: "Editar categoría", category: "actionable" },
     { id: "edit_date", label: "Editar fecha", category: "actionable" },
     { id: "edit_notes", label: "Editar notas", category: "actionable" },
-    { id: "delete", label: "Eliminar movimiento", category: "actionable" }
+    { id: "delete", label: "Eliminar movimiento", category: "actionable" },
+    { id: "export", label: "Exportar", category: "report", sensitive: true }
     ]
   },
   "Pagos a Proveedores": {
@@ -402,7 +415,8 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "predictive", label: "Ver predictivos", category: "report" },
     { id: "cost_view", label: "Ver costos", category: "report", sensitive: true },
     { id: "profit_margin", label: "Ver márgenes", category: "report", sensitive: true },
-    { id: "export", label: "Exportar datos", category: "report" }
+    { id: "export", label: "Exportar datos", category: "report" },
+    { id: "billing", label: "Ver facturación público general", category: "report" }
     ]
   },
   "Configuracion": {
@@ -420,6 +434,7 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "import_products", label: "Importar productos", category: "actionable" },
     { id: "manage_team", label: "Gestionar equipo", category: "actionable" },
     { id: "manage_referral", label: "Gestionar referidos", category: "actionable" },
+    { id: "audit_inventory", label: "Auditar inventario", category: "actionable", sensitive: true },
     { id: "delete_account", label: "Eliminar cuenta", category: "actionable" }
     ]
   },
@@ -448,6 +463,14 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "create", label: "Crear cuenta", category: "actionable" },
     { id: "edit", label: "Editar cuenta", category: "actionable" },
     { id: "delete", label: "Eliminar cuenta", category: "actionable" }
+    ]
+  },
+  "Centro de Soporte": {
+    label: "Centro de Soporte",
+    actions: [
+    { id: "view", label: "Ver tickets", category: "visual" },
+    { id: "create", label: "Crear ticket", category: "actionable" },
+    { id: "reply", label: "Responder", category: "actionable" }
     ]
   },
 };
@@ -520,6 +543,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Clientes:edit_status": true,
   "Clientes:edit_force_wholesale": true,
   "Clientes:edit_force_purchase": true,
+  "Clientes:edit_force_zero_price": true,
   "Clientes:delete": true,
   "Cursos:view": true,
   "Cursos:create": true,
@@ -552,6 +576,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Movimientos:confirm_payment": true,
   "Movimientos:edit_status": true,
   "Movimientos:delete": true,
+  "Movimientos:export": true,
   "Cotizaciones:view": true,
   "Cotizaciones:create": true,
   "Cotizaciones:edit_items": true,
@@ -571,6 +596,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Cotizaciones:export": true,
   "Cotizaciones:delete": true,
   "Cotizaciones:share": true,
+  "Cotizaciones:edit_payment_record": true,
   "Cotizaciones:pricing": true,
   "Caja Chica:view": true,
   "Caja Chica:view_history": true,
@@ -583,6 +609,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Caja Chica:edit_date": true,
   "Caja Chica:edit_notes": true,
   "Caja Chica:delete": true,
+  "Caja Chica:export": true,
   "Pagos a Proveedores:view": true,
   "Pagos a Proveedores:create": true,
   "Pagos a Proveedores:edit_supplier": true,
@@ -601,6 +628,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Reportes:cost_view": true,
   "Reportes:profit_margin": true,
   "Reportes:export": true,
+  "Reportes:billing": true,
   "Configuracion:view": true,
   "Configuracion:edit_company_name": true,
   "Configuracion:edit_company_rfc": true,
@@ -613,6 +641,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Configuracion:import_products": true,
   "Configuracion:manage_team": true,
   "Configuracion:manage_referral": true,
+  "Configuracion:audit_inventory": true,
   "Configuracion:delete_account": true,
   "Utilidad:view": true,
   "Utilidad:view_withdrawals": true,
@@ -626,6 +655,9 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "CuentasFondo:create": true,
   "CuentasFondo:edit": true,
   "CuentasFondo:delete": true,
+  "Centro de Soporte:view": true,
+  "Centro de Soporte:create": true,
+  "Centro de Soporte:reply": true,
   } as Record<PermissionKey, boolean>,
   almacenista: {
   "Dashboard:view": true,
@@ -692,8 +724,9 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Clientes:edit_rfc": true,
   "Clientes:edit_notes": true,
   "Clientes:edit_status": true,
-  "Clientes:edit_force_wholesale": false,
-  "Clientes:edit_force_purchase": false,
+  "Clientes:edit_force_wholesale": true,
+  "Clientes:edit_force_purchase": true,
+  "Clientes:edit_force_zero_price": true,
   "Clientes:delete": true,
   "Cursos:view": true,
   "Cursos:create": true,
@@ -726,6 +759,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Movimientos:confirm_payment": true,
   "Movimientos:edit_status": true,
   "Movimientos:delete": true,
+  "Movimientos:export": true,
   "Cotizaciones:view": true,
   "Cotizaciones:create": true,
   "Cotizaciones:edit_items": true,
@@ -735,7 +769,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Cotizaciones:edit_notes": true,
   "Cotizaciones:edit_validity": true,
   "Cotizaciones:edit_payment_method": true,
-  "Cotizaciones:edit_invoice_status": false,
+  "Cotizaciones:edit_invoice_status": true,
   "Cotizaciones:confirm_payment": true,
   "Cotizaciones:revert_payment": false,
   "Cotizaciones:convert": true,
@@ -745,7 +779,8 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Cotizaciones:export": true,
   "Cotizaciones:delete": true,
   "Cotizaciones:share": true,
-  "Cotizaciones:pricing": false,
+  "Cotizaciones:edit_payment_record": true,
+  "Cotizaciones:pricing": true,
   "Caja Chica:view": true,
   "Caja Chica:view_history": true,
   "Caja Chica:add_fund": false,
@@ -757,8 +792,9 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Caja Chica:edit_date": true,
   "Caja Chica:edit_notes": true,
   "Caja Chica:delete": false,
+  "Caja Chica:export": false,
   "Pagos a Proveedores:view": true,
-  "Pagos a Proveedores:create": false,
+  "Pagos a Proveedores:create": true,
   "Pagos a Proveedores:edit_supplier": false,
   "Pagos a Proveedores:edit_amount": false,
   "Pagos a Proveedores:edit_date": false,
@@ -775,6 +811,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Reportes:cost_view": false,
   "Reportes:profit_margin": false,
   "Reportes:export": false,
+  "Reportes:billing": true,
   "Configuracion:view": true,
   "Configuracion:edit_company_name": false,
   "Configuracion:edit_company_rfc": false,
@@ -787,6 +824,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Configuracion:import_products": false,
   "Configuracion:manage_team": false,
   "Configuracion:manage_referral": true,
+  "Configuracion:audit_inventory": false,
   "Configuracion:delete_account": false,
   "Utilidad:view": false,
   "Utilidad:view_withdrawals": false,
@@ -800,5 +838,8 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "CuentasFondo:create": false,
   "CuentasFondo:edit": false,
   "CuentasFondo:delete": false,
+  "Centro de Soporte:view": true,
+  "Centro de Soporte:create": true,
+  "Centro de Soporte:reply": true,
   } as Record<PermissionKey, boolean>,
 };

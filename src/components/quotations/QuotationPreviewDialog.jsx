@@ -7,12 +7,14 @@ import { generateQuotationPDF } from "./QuotationPDF";
 import { getDisplayUnitPrice } from "@/lib/vatCalculator";
 import CreateFromOnDemandModal from "./CreateFromOnDemandModal";
 import QuotationPaymentsSection from "./QuotationPaymentsSection";
+import { usePermissions } from "@/lib/PermissionContext";
 
 function fmt(n) {
   return (n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export default function QuotationPreviewDialog({ quotation, settings, client, open, onOpenChange, onOnDemandCreated, onQuotationUpdated, userRole }) {
+export default function QuotationPreviewDialog({ quotation, settings, client, open, onOpenChange, onOnDemandCreated, onQuotationUpdated }) {
+  const { can } = usePermissions();
   const [downloading, setDownloading] = useState(false);
   const [createOnDemand, setCreateOnDemand] = useState(null); // { item, itemIndex }
   const [localQuotation, setLocalQuotation] = useState(null);
@@ -98,18 +100,22 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
         <DialogHeader className="px-6 pt-5 pb-3 border-b flex flex-row items-center justify-between">
           <DialogTitle className="text-lg font-semibold">Vista previa — {q.folio}</DialogTitle>
           <div className="flex gap-2">
+            {can('Cotizaciones', 'share') && (
             <Button size="sm" variant="outline" onClick={handleShare} disabled={sharingLoading}>
               {copied ? <Check className="h-4 w-4 mr-1 text-green-600" /> : <Link className="h-4 w-4 mr-1" />}
               {copied ? "¡Copiado!" : q.public_link_enabled ? "Copiar enlace" : "Compartir enlace"}
             </Button>
-            {q.public_link_enabled && (
+            )}
+            {can('Cotizaciones', 'share') && q.public_link_enabled && (
               <Button size="sm" variant="ghost" title="Desactivar enlace público" onClick={handleDisableShare} disabled={sharingLoading}>
                 <EyeOff className="h-4 w-4" />
               </Button>
             )}
+            {can('Cotizaciones', 'export') && (
             <Button size="sm" className="bg-brand-600 hover:bg-brand-700" onClick={handleDownload} disabled={downloading}>
               <FileDown className="h-4 w-4 mr-1" /> {downloading ? "Generando..." : "Descargar PDF"}
             </Button>
+            )}
           </div>
         </DialogHeader>
 
@@ -305,7 +311,6 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                 <p className="text-[10px] font-bold uppercase text-slate-400 mb-3">Pagos</p>
                 <QuotationPaymentsSection
                   quotation={q}
-                  userRole={userRole}
                   onPaymentRegistered={() => {
                     base44.entities.Quotation.get(q.id).then(updated => {
                       if (updated) {

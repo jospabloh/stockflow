@@ -264,8 +264,10 @@ export default function ClientsManager() {
             </div>
 
             {/* Pricing flags */}
+            {(can('Clientes', 'edit_force_wholesale') || can('Clientes', 'edit_force_purchase') || can('Clientes', 'edit_force_zero_price')) && (
             <div className="border border-border rounded-lg p-3 space-y-3 bg-muted/30">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Configuración de precios</p>
+              {can('Clientes', 'edit_force_wholesale') && (
               <div className="flex items-start gap-3">
                 <Checkbox
                   id="force_wholesale"
@@ -279,6 +281,8 @@ export default function ClientsManager() {
                   Aplicar precio mayoreo en todos los productos y en cualquier cantidad
                 </Label>
               </div>
+              )}
+              {can('Clientes', 'edit_force_purchase') && (
               <div className="flex items-start gap-3">
                 <Checkbox
                   id="force_purchase"
@@ -292,6 +296,8 @@ export default function ClientsManager() {
                     Aplicar precio de compra en todos los productos y en cualquier cantidad
                   </Label>
                 </div>
+              )}
+              {can('Clientes', 'edit_force_zero_price') && (
               <div className="flex items-start gap-3">
                 <Checkbox
                   id="force_zero_price"
@@ -304,6 +310,7 @@ export default function ClientsManager() {
                   Precio $0 (transferencia interna / muestra)
                 </Label>
               </div>
+              )}
                 {form.force_zero_price && (
                   <div className="bg-orange-50 border border-orange-200 rounded p-2">
                     <p className="text-xs text-orange-700">🔁 <strong>Sin cargo:</strong> todas las ventas a este cliente serán registradas en $0. No genera movimiento en caja chica.</p>
@@ -320,6 +327,7 @@ export default function ClientsManager() {
                   </div>
                 )}
             </div>
+            )}
 
           </div>
           <div className="flex justify-end gap-3 px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-border shrink-0 bg-card">
