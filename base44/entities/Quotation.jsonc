@@ -50,6 +50,10 @@
       "description": "Pedido en ruta de entrega",
       "type": "boolean"
     },
+    "invoice_number": {
+      "description": "Número de la factura (individual o consolidada) a la que quedó asignada esta cotización",
+      "type": "string"
+    },
     "invoice_status": {
       "description": "Estado de facturaci\u00f3n",
       "enum": [

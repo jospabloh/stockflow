@@ -197,7 +197,7 @@ export async function generateQuotationPDF(quotation, settings, client) {
     doc.text(String(item.quantity || 0), cols.qty, y + 5.5);
     // IVA label
     const effectiveTaxRate = item.tax_rate ?? 16;
-    const ivaLabel = (effectiveTaxRate > 0) ? "16%" : "Exento";
+    const ivaLabel = (effectiveTaxRate > 0) ? "IVA 16%" : "IVA 0%";
     const displayUnitPrice = getDisplayUnitPrice(item.unit_price, item.tax_rate);
     doc.setTextColor(...((effectiveTaxRate > 0) ? [180, 120, 0] : mutedText));
     doc.text(ivaLabel, cols.iva, y + 5.5);
