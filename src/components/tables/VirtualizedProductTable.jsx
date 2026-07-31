@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 const ITEM_HEIGHT = 60;
 
-export default function VirtualizedProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated, canEdit = true, canDelete = true }) {
+export default function VirtualizedProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated, canEdit = true, canDelete = true, canShowCost = true, canGenerateBarcode = true }) {
   const navigate = useNavigate();
   const [generatingId, setGeneratingId] = useState(null);
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || "—";
@@ -47,7 +47,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
         </div>
         <div className="w-20 text-muted-foreground text-xs truncate">{product.sku || "—"}</div>
         <div className="w-20 text-muted-foreground text-xs truncate">{getCategoryName(product.category)}</div>
-        {isAdmin && (
+        {canShowCost && (
           <div className="w-24 text-right text-muted-foreground text-xs tabular">
             ${product.purchase_price?.toLocaleString("es-MX", { minimumFractionDigits: 2 }) || "—"}
           </div>
@@ -76,7 +76,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
           </Badge>
         </div>
         <div className="w-32 text-center flex items-center justify-center gap-1">
-          {!product.barcode && (
+          {!product.barcode && canGenerateBarcode && (
             <Button
               variant="ghost"
               size="icon"
@@ -145,7 +145,7 @@ export default function VirtualizedProductTable({ products, categories, onEdit, 
         <div className="flex-1 min-w-0">Producto</div>
         <div className="w-20">SKU</div>
         <div className="w-20">Categoría</div>
-        {isAdmin && <div className="w-24 text-right">Precio Compra</div>}
+        {canShowCost && <div className="w-24 text-right">Precio Compra</div>}
         <div className="w-24 text-right">Precio Menudeo</div>
         <div className="w-32 text-right">Stock</div>
         <div className="w-16 text-center">Estado</div>

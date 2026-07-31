@@ -47,7 +47,7 @@ function InvoiceNumberCell({ value, onSave, disabled }) {
   );
 }
 
-function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, canEditInvoiceStatus, expanded, onToggleExpand, forceExpandAll }) {
+function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, canEditInvoiceStatus, canEdit, canConvert, canCancel, canConfirmPayment, canReturn, canExport, expanded, onToggleExpand, forceExpandAll }) {
   const status = statusConfig[q.status] || statusConfig.draft;
 
   return (
@@ -219,11 +219,11 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
             const hasPartial = payments && !q.paid;
             return (
               <button type="button"
-                onClick={() => { if (!isPaid) onPay(q); }}
+                onClick={() => { if (!isPaid && canConfirmPayment) onPay(q); }}
                 className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-1 rounded transition-colors ${
                   isPaid
                     ? "bg-green-100 text-green-700 cursor-default"
-                    : q.delivered && !q.paid
+                    : q.delivered && !q.paid && canConfirmPayment
                       ? "bg-red-100 text-red-700 hover:bg-red-200 cursor-pointer animate-pulse"
                       : hasPartial
                         ? "bg-amber-100 text-amber-700 hover:bg-amber-200 cursor-pointer"
@@ -253,7 +253,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="text-xs">
-            {q.status === "draft" && (
+            {canEdit && q.status === "draft" && (
               <>
                 <DropdownMenuItem onClick={() => onEdit(q)}>
                   <Pencil className="h-3 w-3 mr-2" /> Editar
@@ -263,15 +263,17 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
                 </DropdownMenuItem>
               </>
             )}
-            {(q.status === "sent" || q.status === "accepted") && (
+            {canEdit && (q.status === "sent" || q.status === "accepted") && (
               <DropdownMenuItem onClick={() => onEdit(q)}>
                 <Pencil className="h-3 w-3 mr-2" /> Editar
               </DropdownMenuItem>
             )}
+            {canExport && (
             <DropdownMenuItem onClick={() => onDownloadPDF(q)}>
               <FileDown className="h-3 w-3 mr-2" /> PDF
             </DropdownMenuItem>
-            {(q.status === "draft" || q.status === "sent" || q.status === "accepted") && (
+            )}
+            {canConvert && (q.status === "draft" || q.status === "sent" || q.status === "accepted") && (
               <DropdownMenuItem
                 onClick={() => {
                   if (isExpired(q)) {
@@ -284,7 +286,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
                 <ShoppingCart className="h-3 w-3 mr-2" /> Venta
               </DropdownMenuItem>
             )}
-            {q.status === "converted" && !q.paid && q.total > 0 && (
+            {canConfirmPayment && q.status === "converted" && !q.paid && q.total > 0 && (
               <DropdownMenuItem onClick={() => onPay(q)}>
                 <DollarSign className="h-3 w-3 mr-2" /> Pago
               </DropdownMenuItem>
@@ -294,12 +296,12 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
                 <Undo2 className="h-3 w-3 mr-2" /> Revertir pago
               </DropdownMenuItem>
             )}
-            {q.status === "converted" && onPartialReturn && (
+            {canReturn && q.status === "converted" && onPartialReturn && (
               <DropdownMenuItem onClick={() => onPartialReturn(q)} className="text-orange-600 focus:text-orange-600">
                 <RotateCcw className="h-3 w-3 mr-2" /> Devolución parcial
               </DropdownMenuItem>
             )}
-            {q.status !== "cancelled" && (
+            {canCancel && q.status !== "cancelled" && (
               <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => onCancel(q)}>
                 <XCircle className="h-3 w-3 mr-2" /> {q.status === "converted" ? "Anular" : "Cancelar"}
               </DropdownMenuItem>
@@ -313,7 +315,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
   );
 }
 
-function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, expanded, onToggleExpand, forceExpandAll }) {
+function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, canEdit, canConvert, canCancel, canConfirmPayment, canReturn, canExport, expanded, onToggleExpand, forceExpandAll }) {
   const status = statusConfig[q.status] || statusConfig.draft;
   const expired = isExpired(q);
 
@@ -344,7 +346,7 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
               <DropdownMenuItem onClick={() => onPreview(q)}>
                 <FileDown className="h-3.5 w-3.5 mr-2" /> Ver cotización
               </DropdownMenuItem>
-              {q.status === "draft" && (
+              {canEdit && q.status === "draft" && (
                 <>
                   <DropdownMenuItem onClick={() => onEdit(q)}>
                     <Pencil className="h-3.5 w-3.5 mr-2" /> Editar
@@ -354,20 +356,22 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
                   </DropdownMenuItem>
                 </>
               )}
-              {(q.status === "sent" || q.status === "accepted") && (
+              {canEdit && (q.status === "sent" || q.status === "accepted") && (
                 <DropdownMenuItem onClick={() => onEdit(q)}>
                   <Pencil className="h-3.5 w-3.5 mr-2" /> Editar
                 </DropdownMenuItem>
               )}
+              {canExport && (
               <DropdownMenuItem onClick={() => onDownloadPDF(q)}>
                 <FileDown className="h-3.5 w-3.5 mr-2" /> PDF
               </DropdownMenuItem>
-              {(q.status === "draft" || q.status === "sent" || q.status === "accepted") && (
+              )}
+              {canConvert && (q.status === "draft" || q.status === "sent" || q.status === "accepted") && (
                 <DropdownMenuItem onClick={() => { if (!expired) onConvert(q); }}>
                   <ShoppingCart className="h-3.5 w-3.5 mr-2" /> Convertir en venta
                 </DropdownMenuItem>
               )}
-              {q.status === "converted" && !q.paid && q.total > 0 && (
+              {canConfirmPayment && q.status === "converted" && !q.paid && q.total > 0 && (
                 <DropdownMenuItem onClick={() => onPay(q)}>
                   <DollarSign className="h-3.5 w-3.5 mr-2" /> Confirmar pago
                 </DropdownMenuItem>
@@ -377,12 +381,12 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
                   <Undo2 className="h-3.5 w-3.5 mr-2" /> Revertir pago
                 </DropdownMenuItem>
               )}
-              {q.status === "converted" && onPartialReturn && (
+              {canReturn && q.status === "converted" && onPartialReturn && (
                 <DropdownMenuItem onClick={() => onPartialReturn(q)} className="text-orange-600">
                   <RotateCcw className="h-3.5 w-3.5 mr-2" /> Devolución parcial
                 </DropdownMenuItem>
               )}
-              {q.status !== "cancelled" && (
+              {canCancel && q.status !== "cancelled" && (
                 <DropdownMenuItem className="text-red-600" onClick={() => onCancel(q)}>
                   <XCircle className="h-3.5 w-3.5 mr-2" /> {q.status === "converted" ? "Anular" : "Cancelar"}
                 </DropdownMenuItem>
@@ -439,7 +443,7 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
               else label = "Cobrar";
               return (
                 <button type="button"
-                  onClick={() => { if (!isPaid) onPay(q); }}
+                  onClick={() => { if (!isPaid && canConfirmPayment) onPay(q); }}
                   title={isPaid && uniqueMethods?.length > 1 ? uniqueMethods.join(", ") : hasPartial ? `$${(q.amount_paid||0).toLocaleString("es-MX",{minimumFractionDigits:2})} de $${(q.total||0).toLocaleString("es-MX",{minimumFractionDigits:2})}` : undefined}
                   className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-medium transition-colors ${isPaid ? "bg-green-100 text-green-700" : q.delivered && !q.paid ? "bg-red-100 text-red-700 animate-pulse" : hasPartial ? "bg-amber-100 text-amber-700" : "bg-muted text-muted-foreground"}`}
                 >
@@ -523,6 +527,12 @@ export default function VirtualizedQuotationTable({
   invoiceNumberSuggestions,
   canShowPricing,
   canEditInvoiceStatus,
+  canEdit,
+  canConvert,
+  canCancel,
+  canConfirmPayment,
+  canReturn,
+  canExport,
   forceExpandAll,
 }) {
   const [expandedIds, setExpandedIds] = React.useState(() => new Set());
@@ -544,7 +554,7 @@ export default function VirtualizedQuotationTable({
   const pageStart = (currentPage - 1) * pageSize;
   const pagedQuotations = quotations.slice(pageStart, pageStart + pageSize);
 
-  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, canEditInvoiceStatus };
+  const commonProps = { statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, canEditInvoiceStatus, canEdit, canConvert, canCancel, canConfirmPayment, canReturn, canExport };
 
   const statusOptions = Object.entries(statusConfig).map(([value, cfg]) => ({
     value,

@@ -105,7 +105,7 @@ export default function Reports() {
                 Cot: <span className="tabular">${totalSalesFromQuotations.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span> · Directas: <span className="tabular">${totalSalesFromDirectExits.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
               </p>
             </div>
-            {isAdmin && (
+            {can('Reportes', 'cost_view') && (
               <div className="flex items-center gap-2">
                 <TrendingDown className="h-4 w-4 text-blue-500" />
                 <span className="text-slate-500">Compras:</span>
@@ -130,7 +130,7 @@ export default function Reports() {
           )}
 
           {/* FACTURACIÓN PÚBLICO GENERAL (no-efectivo, no facturado) */}
-          {can('Reportes', 'operational') && (
+          {can('Reportes', 'billing') && (
             <TabsTrigger value="billing" className="font-medium">🧾 Facturación Público General</TabsTrigger>
           )}
 
@@ -164,12 +164,12 @@ export default function Reports() {
         )}
 
         {/* FACTURACIÓN PÚBLICO GENERAL */}
-        {can('Reportes', 'operational') && (
+        {can('Reportes', 'billing') && (
           <TabsContent value="billing">
             <UnbilledNonCashInvoiceReport
               quotations={quotations}
               onQuotationsUpdated={refetchQuotations}
-              canAssign={can('Cotizaciones', 'confirm_payment')}
+              canAssign={can('Cotizaciones', 'edit_invoice_status')}
               quotationsCapped={quotationsCapped}
             />
           </TabsContent>

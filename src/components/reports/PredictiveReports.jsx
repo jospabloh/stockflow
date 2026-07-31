@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MobileSelect } from "@/components/ui/MobileSelect";
 import ExportMenu from "@/components/common/ExportMenu";
+import { usePermissions } from "@/lib/PermissionContext";
 import {
   XAxis,
   YAxis,
@@ -27,6 +28,8 @@ export default function PredictiveReports({
   dateFrom,
   dateTo,
 }) {
+  const { can } = usePermissions();
+  const canExport = can('Reportes', 'export');
   const [topSelling] = useState(() => {
     const filteredMovements = movements.filter((m) => {
       const date = moment(m.created_date);
@@ -178,12 +181,14 @@ export default function PredictiveReports({
                 <h3 className="font-semibold text-slate-700">Productos Más Vendidos (por valor)</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Período seleccionado</p>
               </div>
+              {canExport && (
               <ExportMenu
                 columns={topSellingColumns}
                 rows={topSelling}
                 filename="productos_mas_vendidos"
                 title="Productos Más Vendidos"
               />
+              )}
             </div>
             {topSelling.length === 0 ? (
               <div className="text-center py-12 text-slate-400">
@@ -218,12 +223,14 @@ export default function PredictiveReports({
                 <h3 className="font-semibold text-slate-700">Productos de Baja Rotación</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Productos con menor movimiento en el período seleccionado</p>
               </div>
+              {canExport && (
               <ExportMenu
                 columns={lowRotationColumns}
                 rows={lowRotationRows}
                 filename="baja_rotacion"
                 title="Productos de Baja Rotación"
               />
+              )}
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -267,12 +274,14 @@ export default function PredictiveReports({
           <Card className="border-0 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-700">Tendencia de Movimientos</h3>
+              {canExport && (
               <ExportMenu
                 columns={trendColumns}
                 rows={trendRows}
                 filename="tendencia_movimientos"
                 title="Tendencia de Movimientos"
               />
+              )}
             </div>
             <ResponsiveContainer width="100%" height={350}>
               <LineChart data={dailyTrend}>
@@ -526,6 +535,7 @@ function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo 
 
       <div className="p-4 border-t bg-slate-50 flex items-center gap-2">
         <p className="text-xs text-slate-600 flex-1">💡 Selecciona filas, columnas, métrica y agregación para análisis personalizados.</p>
+        {canExport && (
         <ExportMenu
           filename="analisis_dinamico"
           title="Análisis Dinámico"
@@ -545,6 +555,7 @@ function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo 
             return { columns, rows: exportRows };
           }}
         />
+        )}
       </div>
     </Card>
   );

@@ -15,10 +15,13 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
+import { usePermissions } from "@/lib/PermissionContext";
 import VirtualizedProductTable from "@/components/tables/VirtualizedProductTable";
 
 export default function ProductTable({ products, categories, onEdit, onDelete, isAdmin, onBarcodeGenerated, canEdit = true, canDelete = true, canShowCost = true }) {
   const navigate = useNavigate();
+  const { can } = usePermissions();
+  const canGenerateBarcode = can('Productos', 'barcode');
   const [generatingId, setGeneratingId] = useState(null);
 
   const handleGenerateBarcode = async (product) => {
@@ -41,7 +44,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
   const isMobile = typeof globalThis !== "undefined" && globalThis.innerWidth < 768;
 
   if (!isMobile && products.length > 20) {
-    return <VirtualizedProductTable products={products} categories={categories} onEdit={onEdit} onDelete={onDelete} isAdmin={isAdmin} onBarcodeGenerated={onBarcodeGenerated} canEdit={canEdit} canDelete={canDelete} />;
+    return <VirtualizedProductTable products={products} categories={categories} onEdit={onEdit} onDelete={onDelete} isAdmin={isAdmin} onBarcodeGenerated={onBarcodeGenerated} canEdit={canEdit} canDelete={canDelete} canShowCost={canShowCost} canGenerateBarcode={canGenerateBarcode} />;
   }
   const getCategoryName = (id) => categories.find((c) => c.id === id)?.name || "—";
 
@@ -88,7 +91,7 @@ export default function ProductTable({ products, categories, onEdit, onDelete, i
         </TableCell>
         <TableCell className="text-center">
           <div className="flex items-center justify-center gap-1">
-            {!product.barcode && (
+            {!product.barcode && canGenerateBarcode && (
               <Button 
                  variant="ghost" 
                  size="icon" 

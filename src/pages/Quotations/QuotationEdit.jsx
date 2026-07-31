@@ -2,14 +2,21 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
+import { usePermissions } from "@/lib/PermissionContext";
 import QuotationFormDialog from "@/components/quotations/QuotationFormDialog";
 
 export default function QuotationEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { can } = usePermissions();
   const [quotation, setQuotation] = useState(null);
 
   useEffect(() => {
+    if (!can('Cotizaciones', 'edit_items')) {
+      toast.error("No tienes permiso para editar cotizaciones.");
+      navigate("/Quotations", { replace: true });
+      return;
+    }
     base44.entities.Quotation.filter({ id })
       .then((results) => {
         if (results.length > 0) {

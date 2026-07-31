@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { MobileSelect } from "@/components/ui/MobileSelect";
 import ExportMenu from "@/components/common/ExportMenu";
+import { usePermissions } from "@/lib/PermissionContext";
 import moment from "moment";
 
 const QUOTATION_SALES_COLUMNS = [
@@ -32,6 +33,8 @@ export default function OperationalReports({
   dateFrom,
   dateTo,
 }) {
+  const { can } = usePermissions();
+  const canExport = can('Reportes', 'export');
   const [qStatusFilter, setQStatusFilter] = useState("converted");
   const [qClientFilter, setQClientFilter] = useState("all");
   const [qPaymentFilter, setQPaymentFilter] = useState("all");
@@ -147,6 +150,7 @@ export default function OperationalReports({
                 <h3 className="font-semibold text-slate-700">Ventas por Cotización</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Ventas concretadas a través del flujo de cotización</p>
               </div>
+              {canExport && (
               <ExportMenu
                 columns={QUOTATION_SALES_COLUMNS}
                 rows={filteredQuotations.map(q => ({
@@ -157,6 +161,7 @@ export default function OperationalReports({
                 filename="ventas_cotizaciones"
                 title="Ventas por Cotización"
               />
+              )}
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -223,6 +228,7 @@ export default function OperationalReports({
                       Movimientos de salida registrados directamente — Total: <span className="font-semibold text-accent-700 tabular">${totalDirect.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                     </p>
                   </div>
+                  {canExport && (
                   <ExportMenu
                     columns={DIRECT_SALES_COLUMNS}
                     rows={directExits.map(m => ({
@@ -233,6 +239,7 @@ export default function OperationalReports({
                     filename="ventas_directas"
                     title="Ventas Directas"
                   />
+                  )}
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">

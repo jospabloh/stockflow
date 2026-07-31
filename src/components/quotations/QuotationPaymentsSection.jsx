@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import { Plus, CreditCard, Pencil, Trash2 } from "lucide-react";
 import { useBusinessContext } from "@/components/BusinessContext";
+import { usePermissions } from "@/lib/PermissionContext";
 
 function fmt(n) {
   return (n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -25,8 +26,9 @@ function getBalance(q) {
   return (q.total || 0) - getAmountPaid(q);
 }
 
-export default function QuotationPaymentsSection({ quotation, onPaymentRegistered, userRole }) {
+export default function QuotationPaymentsSection({ quotation, onPaymentRegistered }) {
   const { businessId } = useBusinessContext();
+  const { can } = usePermissions();
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState(null); // null = new, object = editing
@@ -37,7 +39,8 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
-  const canRegisterPayment = !userRole || userRole === "admin" || userRole === "almacenista";
+  const canRegisterPayment = can('Cotizaciones', 'confirm_payment');
+  const canEditPaymentRecord = can('Cotizaciones', 'edit_payment_record');
 
   useEffect(() => {
     if (businessId) {
@@ -187,7 +190,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
                   </td>
                   <td className="px-3 py-2 text-foreground">{p.payment_method}</td>
                   <td className="px-3 py-2 text-muted-foreground hidden md:table-cell">{p.notes || "—"}</td>
-                  {canRegisterPayment && (
+                  {canEditPaymentRecord && (
                     <td className="px-2 py-1">
                       <div className="flex gap-1">
                         <button type="button"

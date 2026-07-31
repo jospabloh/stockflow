@@ -482,6 +482,7 @@ export default function Quotations() {
         canShowPricing={can('Cotizaciones', 'pricing')}
         forceExpandAll={showPerQuotation && can('Cotizaciones', 'pricing')}
         canEditInvoiceStatus={can('Cotizaciones', 'edit_invoice_status')}
+        canEdit={can('Cotizaciones', 'edit_items')}
         canConvert={can('Cotizaciones', 'convert')}
         canCancel={can('Cotizaciones', 'cancel')}
         canConfirmPayment={can('Cotizaciones', 'confirm_payment')}
@@ -610,7 +611,6 @@ export default function Quotations() {
         settings={settings}
         client={previewClient}
         open={!!previewQuotation}
-        userRole={userRole}
         onOpenChange={(v) => {
           if (!v) {
             invalidate("Quotation");

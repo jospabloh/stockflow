@@ -91,6 +91,7 @@ export const PERMISSION_REGISTRY = {
       { id: "edit_status", label: "Cambiar estado", category: "actionable", icon: "✓", description: "Activar o desactivar cliente" },
       { id: "edit_force_wholesale", label: "Forzar mayoreo", category: "actionable", icon: "💲", description: "Aplicar precios mayoristas automáticamente" },
       { id: "edit_force_purchase", label: "Forzar precio compra", category: "actionable", icon: "💲", sensitive: true, description: "Aplicar precios de compra (confidencial)" },
+      { id: "edit_force_zero_price", label: "Forzar precio $0", category: "actionable", icon: "💲", sensitive: true, description: "Marcar cliente para vender a $0 (transferencia interna / muestra) (confidencial)" },
       { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar clientes del sistema" },
     ]
   },
@@ -153,6 +154,7 @@ export const PERMISSION_REGISTRY = {
       { id: "confirm_payment", label: "Confirmar pago", category: "actionable", icon: "✓", description: "Marcar movimientos como pagados" },
       { id: "edit_status", label: "Cambiar estado pago", category: "actionable", icon: "⚙️", description: "Marcar como pagado o pendiente" },
       { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar movimientos del registro" },
+      { id: "export", label: "Exportar", category: "report", icon: "📥", description: "Exportar historial de movimientos en Excel/CSV" },
     ]
   },
   Cotizaciones: {
@@ -177,6 +179,7 @@ export const PERMISSION_REGISTRY = {
       { id: "export", label: "Exportar PDF", category: "actionable", icon: "📄", description: "Exportar cotizaciones en formato PDF" },
       { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar cotizaciones" },
       { id: "share", label: "Compartir enlace público", category: "actionable", icon: "🔗", description: "Generar y gestionar enlace público de cotizaciones para clientes" },
+      { id: "edit_payment_record", label: "Editar/eliminar pago registrado", category: "actionable", icon: "💵", description: "Modificar o eliminar un pago ya registrado en una cotización (distinto de registrar/confirmar uno nuevo)" },
       { id: "pricing", label: "Ver detalles precio", category: "report", icon: "💲", sensitive: true, description: "Ver el panorama financiero agregado de varias cotizaciones a la vez: la barra de resumen fiscal, el desglose por fila (Base/IVA/Total y pagos por método) y el modo \"Mostrar por cotización\" (confidencial). NO afecta ver el precio de una cotización individual al crearla, editarla o previsualizarla — eso ya lo ve cualquiera con permiso para manejarla, es parte de atender al cliente." },
     ]
   },
@@ -194,6 +197,7 @@ export const PERMISSION_REGISTRY = {
       { id: "edit_date", label: "Editar fecha", category: "actionable", icon: "📅", description: "Modificar fecha del movimiento" },
       { id: "edit_notes", label: "Editar notas", category: "actionable", icon: "📋", description: "Agregar o cambiar notas adicionales" },
       { id: "delete", label: "Eliminar movimiento", category: "actionable", icon: "🗑️", description: "Eliminar movimientos de caja" },
+      { id: "export", label: "Exportar", category: "report", icon: "📥", sensitive: true, description: "Exportar historial completo de caja chica en Excel/CSV (confidencial)" },
     ]
   },
   "Pagos a Proveedores": {
@@ -222,6 +226,7 @@ export const PERMISSION_REGISTRY = {
       { id: "cost_view", label: "Ver costos", category: "report", icon: "💲", sensitive: true, description: "Acceso a reportes con información de costos (confidencial)" },
       { id: "profit_margin", label: "Ver márgenes", category: "report", icon: "📈", sensitive: true, description: "Ver cálculos de rentabilidad y márgenes (confidencial)" },
       { id: "export", label: "Exportar datos", category: "report", icon: "📥", description: "Exportar reportes y datos en Excel/CSV" },
+      { id: "billing", label: "Ver facturación público general", category: "report", icon: "🧾", description: "Reporte de facturación a público en general (ventas no facturadas por método no efectivo)" },
     ]
   },
   Configuracion: {
@@ -239,6 +244,7 @@ export const PERMISSION_REGISTRY = {
       { id: "import_products", label: "Importar productos", category: "actionable", icon: "📥", description: "Importar catálogo de productos desde archivo" },
       { id: "manage_team", label: "Gestionar equipo", category: "actionable", icon: "👥", description: "Invitar y gestionar miembros del equipo" },
       { id: "manage_referral", label: "Gestionar referidos", category: "actionable", icon: "🎁", description: "Ver código de referido, estadísticas y gestionar el programa de referidos" },
+      { id: "audit_inventory", label: "Auditar inventario", category: "actionable", icon: "🔍", sensitive: true, description: "Ejecutar auditoría de inventario y aplicar correcciones masivas de stock (confidencial)" },
       { id: "delete_account", label: "Eliminar cuenta", category: "actionable", icon: "🗑️", description: "Eliminar cuenta del sistema (irreversible)" },
     ]
   },
@@ -248,6 +254,8 @@ export const PERMISSION_REGISTRY = {
       { id: "view", label: "Ver Estado de Resultados", category: "report", icon: "📊", sensitive: true, description: "Ver Estado de Resultados, retiros de utilidad y proyección de fin de mes (confidencial)" },
       { id: "view_withdrawals", label: "Ver retiros de utilidad", category: "report", icon: "🔒", sensitive: true, description: "Ver detalle, montos y responsable de los retiros de utilidad, y la utilidad disponible (confidencial)" },
       { id: "add_withdrawal", label: "Registrar Retiro de Utilidad", category: "actionable", icon: "💸", description: "Registrar un retiro de utilidad del negocio" },
+      { id: "edit_withdrawal", label: "Editar Retiro de Utilidad", category: "actionable", icon: "✏️", description: "Modificar un retiro de utilidad ya registrado" },
+      { id: "delete_withdrawal", label: "Eliminar Retiro de Utilidad", category: "actionable", icon: "🗑️", description: "Eliminar un retiro de utilidad ya registrado" },
       { id: "manage_forecast", label: "Gestionar proyección", category: "actionable", icon: "📈", sensitive: true, description: "Activar/desactivar la proyección de utilidad a fin de mes (confidencial)" },
     ]
   },
@@ -269,6 +277,14 @@ export const PERMISSION_REGISTRY = {
       { id: "delete", label: "Eliminar cuenta", category: "actionable", icon: "🗑️", description: "Eliminar cuentas de fondos" },
     ]
   },
+  "Centro de Soporte": {
+    label: "Centro de Soporte",
+    actions: [
+      { id: "view", label: "Ver tickets", category: "visual", icon: "👁️", description: "Acceso al centro de soporte y al historial de tickets del negocio" },
+      { id: "create", label: "Crear ticket", category: "actionable", icon: "➕", description: "Abrir un nuevo ticket de soporte" },
+      { id: "reply", label: "Responder", category: "actionable", icon: "💬", description: "Responder mensajes en un ticket existente" },
+    ]
+  },
 };
 
 export const ALL_PERMISSION_KEYS = Object.entries(PERMISSION_REGISTRY)
@@ -288,7 +304,18 @@ export function getDefaultsForRole(role) {
       for (const action of def.actions) {
         const key = `${module}:${action.id}`;
         if (action.sensitive) {
-          defaults[key] = false;
+          // Sensitive actions deny by default, except where almacenista
+          // already had real access to this — either by explicit business
+          // decision (Cotizaciones:pricing) or because the action was
+          // previously ungated and this registry must not silently revoke
+          // access a 2026-07-31 permission-coverage fix is only meant to
+          // make configurable, not restrict on its own.
+          const sensitiveGrantedForAlmacenista = [
+            'Cotizaciones:pricing',
+            'Clientes:edit_force_purchase',
+            'Clientes:edit_force_zero_price',
+          ];
+          defaults[key] = sensitiveGrantedForAlmacenista.includes(key);
         } else if (action.category === 'visual') {
           // Visual non-sensitive: most granted, except financial ones
           const financialVisual = [
@@ -306,8 +333,6 @@ export function getDefaultsForRole(role) {
             'Caja Chica:add_fund',
             'Caja Chica:delete',
             'Movimientos:adjustment',
-            'Pagos a Proveedores:view',
-            'Pagos a Proveedores:create',
             'Pagos a Proveedores:edit_supplier',
             'Pagos a Proveedores:edit_amount',
             'Pagos a Proveedores:edit_date',
@@ -329,10 +354,9 @@ export function getDefaultsForRole(role) {
             'Configuracion:import_products',
             'Configuracion:manage_team',
             'Configuracion:delete_account',
-            'Cotizaciones:edit_invoice_status',
-            'Clientes:edit_force_wholesale',
-            'Clientes:edit_force_purchase',
             'Utilidad:add_withdrawal',
+            'Utilidad:edit_withdrawal',
+            'Utilidad:delete_withdrawal',
             'CuentasFondo:create',
             'CuentasFondo:edit',
             'CuentasFondo:delete',

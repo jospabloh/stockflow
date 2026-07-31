@@ -58,6 +58,11 @@ export default function Movements() {
   const { can } = usePermissions();
   const { businessId, user } = useBusinessContext();
   const isAdmin = user?.role === "admin";
+  const canEditMovement = can('Movimientos', 'edit_reason');
+  const canDeleteMovement = can('Movimientos', 'delete');
+  const canConfirmPayment = can('Movimientos', 'confirm_payment');
+  const showActionsCol = canEditMovement || canDeleteMovement;
+  const actionsColCount = (canEditMovement ? 1 : 0) + (canDeleteMovement ? 1 : 0);
   const invalidate = useInvalidateEntities();
   const movementsQuery = useMovements(businessId);
   const productsQuery = useProducts(businessId);
@@ -242,6 +247,7 @@ export default function Movements() {
               { value: "adjustment", label: "Ajustes" },
             ]}
           />
+          {can('Movimientos', 'export') && (
           <ExportMenu
             columns={exportColumns}
             rows={exportRows}
@@ -250,6 +256,7 @@ export default function Movements() {
             variant="outline"
             size="default"
           />
+          )}
           {can('Movimientos', 'create') && (
             <Button className="bg-brand-600 hover:bg-brand-700" onClick={() => navigate("/Movements/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Movimiento
@@ -273,13 +280,13 @@ export default function Movements() {
               <TableHead className="font-semibold text-muted-foreground" role="columnheader">Cliente</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-right" role="columnheader">Stock Después</TableHead>
               <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader">Pago</TableHead>
-              {isAdmin && <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader" colSpan={2}>Acciones</TableHead>}
+              {showActionsCol && <TableHead className="font-semibold text-muted-foreground text-center" role="columnheader" colSpan={actionsColCount}>Acciones</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 9 : 8} className="text-center py-12 text-slate-400">
+                  <TableCell colSpan={8 + actionsColCount} className="text-center py-12 text-slate-400">
                     Sin movimientos registrados
                   </TableCell>
                 </TableRow>
@@ -326,43 +333,47 @@ export default function Movements() {
                             <span className="inline-flex items-center gap-1 text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-0.5 rounded-full font-medium">
                               <CheckCircle2 className="h-3 w-3" /> Cobrado
                             </span>
-                          ) : (
+                          ) : canConfirmPayment ? (
                             <button type="button"
                               onClick={() => setConfirmingPayment(m)}
                               className="inline-flex items-center gap-1 text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-0.5 rounded-full font-medium hover:bg-orange-200 transition-colors"
                             >
                               <Clock className="h-3 w-3" /> Pendiente
                             </button>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-0.5 rounded-full font-medium">
+                              <Clock className="h-3 w-3" /> Pendiente
+                            </span>
                           )
                         ) : (
                           <span className="text-muted-foreground text-xs">—</span>
                         )}
                       </TableCell>
-                      {isAdmin && (
-                        <>
-                          <TableCell className="text-center">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-slate-400 hover:text-brand-600 hover:bg-brand-100 dark:hover:bg-brand-900/30"
-                              onClick={(e) => { e.stopPropagation(); setEditingMovement(m); }}
-                              aria-label="Editar movimiento"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30"
-                              onClick={(e) => { e.stopPropagation(); setDeletingMovement(m); }}
-                              aria-label="Eliminar movimiento"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </>
+                      {canEditMovement && (
+                        <TableCell className="text-center">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-brand-600 hover:bg-brand-100 dark:hover:bg-brand-900/30"
+                            onClick={(e) => { e.stopPropagation(); setEditingMovement(m); }}
+                            aria-label="Editar movimiento"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      )}
+                      {canDeleteMovement && (
+                        <TableCell className="text-center">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30"
+                            onClick={(e) => { e.stopPropagation(); setDeletingMovement(m); }}
+                            aria-label="Eliminar movimiento"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       )}
                       </TableRow>
                   );

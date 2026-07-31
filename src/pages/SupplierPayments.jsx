@@ -688,7 +688,7 @@ export default function SupplierPayments() {
             </div>
 
             {/* Toggle caja chica — solo visible cuando el método de pago es efectivo */}
-            {String(form.payment_method || "").trim().toLowerCase() === "efectivo" && (
+            {String(form.payment_method || "").trim().toLowerCase() === "efectivo" && can('Pagos a Proveedores', 'affect_petty_cash') && (
               <div className="flex items-start gap-3 p-3 rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20">
                 <Switch
                   id="affects-petty-cash"

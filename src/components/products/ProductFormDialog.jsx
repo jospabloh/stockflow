@@ -15,6 +15,7 @@ import { Save, X, ScanBarcode, Wand2, Camera, Plus, Barcode, Loader2 } from "luc
 import confetti from "canvas-confetti";
 import BarcodeCameraScanner from "./BarcodeCameraScanner";
 import { useBusinessContext } from "@/components/BusinessContext";
+import { usePermissions } from "@/lib/PermissionContext";
 import { createButtonProps } from "@/lib/a11y";
 import { toast } from "sonner";
 
@@ -22,7 +23,8 @@ const UNITS = ["pieza", "kg", "litro", "metro", "caja", "paquete"];
 
 export default function ProductFormDialog({ open, onOpenChange, product, onSaved }) {
   const { businessId, user } = useBusinessContext();
-  const isAlmacenista = user?.role === "almacenista";
+  const { can } = usePermissions();
+  const canEditStockQuantity = can('Productos', 'edit_stock_quantity');
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [form, setForm] = useState({
@@ -356,8 +358,8 @@ export default function ProductFormDialog({ open, onOpenChange, product, onSaved
 
           <div>
             <Label className="text-foreground mb-1.5 block">Stock actual</Label>
-            <Input type="number" min={0} value={form.stock === 0 ? "" : form.stock} placeholder="0" onChange={(e) => updateField("stock", e.target.value === "" ? 0 : parseInt(e.target.value) || 0)} disabled={!!product && isAlmacenista} />
-            {!!product && isAlmacenista && <p className="text-xs text-muted-foreground mt-1">Usa Movimientos para ajustar el stock.</p>}
+            <Input type="number" min={0} value={form.stock === 0 ? "" : form.stock} placeholder="0" onChange={(e) => updateField("stock", e.target.value === "" ? 0 : parseInt(e.target.value) || 0)} disabled={!!product && !canEditStockQuantity} />
+            {!!product && !canEditStockQuantity && <p className="text-xs text-muted-foreground mt-1">Usa Movimientos para ajustar el stock.</p>}
           </div>
           <div>
             <Label className="text-foreground mb-1.5 block">Stock mínimo</Label>

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Pencil, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, Pencil, AlertTriangle, Shield } from "lucide-react";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps, createTableProps } from "@/lib/a11y";
 import {
@@ -124,19 +124,31 @@ export default function Categories() {
     );
   }
 
+  if (!can('Categorias', 'view')) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-64 gap-4">
+        <Shield className="h-12 w-12 text-rose-300" />
+        <h2 className="text-xl font-semibold text-slate-700">Acceso Restringido</h2>
+        <p className="text-slate-500 text-sm text-center">No tienes permiso para ver las categorías.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       <Card className="border-0 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="font-semibold text-slate-700 text-lg">Categorías</h1>
-          <Button 
-            size="sm" 
-            className="bg-brand-600 hover:bg-brand-700" 
-            onClick={() => { setEditingCat(null); setCatForm({ name: "", description: "", color: "#6366f1" }); setCatFormOpen(true); }} 
+          {can('Categorias', 'create') && (
+          <Button
+            size="sm"
+            className="bg-brand-600 hover:bg-brand-700"
+            onClick={() => { setEditingCat(null); setCatForm({ name: "", description: "", color: "#6366f1" }); setCatFormOpen(true); }}
             {...createButtonProps('add')}
           >
             <Plus className="h-4 w-4 mr-1" /> Nueva
           </Button>
+          )}
         </div>
         <Table {...createTableProps('categories-table')}>
           <TableHeader>
@@ -158,9 +170,11 @@ export default function Categories() {
                   {cat.wholesale_min_qty > 0 ? `${cat.wholesale_min_qty} uds.` : "—"}
                 </TableCell>
                 <TableCell className="text-center">
+                   {can('Categorias', 'edit_name') && (
                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingCat(cat); setCatForm({ name: cat.name, description: cat.description || "", color: cat.color || "#6366f1", wholesale_min_qty: cat.wholesale_min_qty ?? "" }); setCatFormOpen(true); }} {...createButtonProps('edit')}>
                      <Pencil className="h-4 w-4 text-slate-400" />
                    </Button>
+                   )}
                    {can('Categorias', 'delete') && (
                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteCatId(cat.id)} {...createButtonProps('delete')}>
                      <Trash2 className="h-4 w-4 text-slate-400" />

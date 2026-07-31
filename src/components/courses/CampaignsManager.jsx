@@ -238,11 +238,18 @@ export default function CampaignsManager() {
                 <p className="px-3 py-2 text-xs text-muted-foreground">Toca cada contacto para abrir WhatsApp con el mensaje precargado.</p>
                 {withPhone.length === 0 && <p className="px-3 py-3 text-sm text-slate-400">No hay contactos con teléfono.</p>}
                 {withPhone.map((r, i) => (
-                  <a key={i} href={waLink(r.phone, personalize(form.body, r.name))} target="_blank" rel="noreferrer"
-                    className={`flex items-center justify-between px-3 py-2 text-sm hover:bg-muted ${!form.body.trim() ? "pointer-events-none opacity-50" : ""}`}>
-                    <span>{r.name || r.phone}<span className="text-muted-foreground"> · {r.phone}</span></span>
-                    <MessageCircle className="h-4 w-4 text-green-600" />
-                  </a>
+                  canSend ? (
+                    <a key={i} href={waLink(r.phone, personalize(form.body, r.name))} target="_blank" rel="noreferrer"
+                      className={`flex items-center justify-between px-3 py-2 text-sm hover:bg-muted ${!form.body.trim() ? "pointer-events-none opacity-50" : ""}`}>
+                      <span>{r.name || r.phone}<span className="text-muted-foreground"> · {r.phone}</span></span>
+                      <MessageCircle className="h-4 w-4 text-green-600" />
+                    </a>
+                  ) : (
+                    <div key={i} className="flex items-center justify-between px-3 py-2 text-sm opacity-50 cursor-not-allowed">
+                      <span>{r.name || r.phone}<span className="text-muted-foreground"> · {r.phone}</span></span>
+                      <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  )
                 ))}
               </div>
             )}
