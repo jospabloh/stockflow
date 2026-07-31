@@ -217,7 +217,7 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
                             ${fmt(ivaPerUnit)}
                           </span>
                         ) : (
-                          <span className="bg-slate-100 text-slate-400 font-bold px-1.5 py-0.5 rounded text-[10px]">Exento</span>
+                          <span className="bg-slate-100 text-slate-400 font-bold px-1.5 py-0.5 rounded text-[10px]">IVA 0%</span>
                         )}
                       </td>
                       <td className="px-3 py-2 text-right font-medium text-slate-800 tabular">${fmt(totalPrice)}</td>
