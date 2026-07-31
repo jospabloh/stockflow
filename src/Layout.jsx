@@ -373,7 +373,7 @@ export default function Layout({ children, currentPageName }) {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-svh">
+      <div className="flex-1 min-w-0 flex flex-col min-h-svh">
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-card/80 backdrop-blur-md border-b border-border px-4 lg:px-8 h-16 flex items-center gap-4 select-none">
           {/* Back button — mobile only, visible on child routes and non-root pages */}
@@ -460,7 +460,7 @@ export default function Layout({ children, currentPageName }) {
           <motion.main
             key={location.pathname}
             ref={mainRef}
-            className="flex-1 p-4 lg:p-8 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-8 overflow-y-auto"
+            className="flex-1 min-w-0 p-4 lg:p-8 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-8 overflow-y-auto overflow-x-hidden"
             initial={prefersReducedMotion ? false : { opacity: 0, x: direction === 'back' ? -30 : 30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: direction === 'back' ? 30 : -30 }}
