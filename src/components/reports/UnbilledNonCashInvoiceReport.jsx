@@ -36,12 +36,15 @@ export default function UnbilledNonCashInvoiceReport({ quotations, onQuotationsU
       .map((q) => {
         const amount = nonCashAmount(q);
         const { preIva, iva } = proratePreIva(q, amount);
-        const methods = [...new Set(
-          (q.payments || [])
-            .filter((p) => !String(p.payment_method || "").toLowerCase().includes("efectivo"))
-            .map((p) => p.payment_method)
-            .filter(Boolean)
-        )];
+        const paymentsList = Array.isArray(q.payments) ? q.payments : [];
+        const methods = paymentsList.length > 0
+          ? [...new Set(
+              paymentsList
+                .filter((p) => !String(p.payment_method || "").toLowerCase().includes("efectivo"))
+                .map((p) => p.payment_method)
+                .filter(Boolean)
+            )]
+          : (q.payment_method ? [q.payment_method] : []);
         return {
           quotation: q,
           amount: Math.round(amount * 100) / 100,
@@ -114,15 +117,24 @@ export default function UnbilledNonCashInvoiceReport({ quotations, onQuotationsU
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-b bg-emerald-50/50">
         <div>
           <h3 className="font-semibold text-slate-700">Facturación Público General — Pagos No-Efectivo</h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Cotizaciones no facturadas individualmente (No Requerida) con pagos en un método distinto a efectivo
+          <p className="text-xs text-slate-500 mt-0.5 max-w-2xl">
+            Ventas del mes que marcaste como <strong className="font-medium">"No Requerida"</strong> (el cliente no pidió su propia factura) pero que sí cobraste por transferencia, tarjeta u otro método distinto a efectivo — el SAT exige declararlas igual, normalmente juntas en <strong className="font-medium">una sola "factura al público en general"</strong> por mes.
+          </p>
+          <p className="text-xs text-slate-400 mt-1">
+            Selecciona las que vas a incluir en esa factura y asígnale el número — desaparecen de esta lista en cuanto quedan asignadas.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Label className="text-xs text-slate-500">Mes</Label>
           <MonthYearPicker value={month} onChange={setMonth} className="w-40" />
         </div>
       </div>
+
+      {rows.length > 0 && (
+        <p className="px-4 py-2 text-xs text-slate-500 border-b bg-slate-50/50">
+          <strong className="font-semibold text-slate-700">{rows.length}</strong> cotización{rows.length !== 1 ? "es" : ""} pendiente{rows.length !== 1 ? "s" : ""} de incluir en la factura de {formatMonthYearEs(moment(month, "YYYY-MM"))}
+        </p>
+      )}
 
       {quotationsCapped && (
         <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-200 text-amber-700 text-xs">

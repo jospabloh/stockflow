@@ -26,6 +26,7 @@ export function formatMonthYearEs(momentValue) {
  */
 export default function MonthYearPicker({ value, onChange, className }) {
   const [open, setOpen] = useState(false);
+  const [popoverPos, setPopoverPos] = useState({ align: "left", vAlign: "below" });
   const selected = moment(value, "YYYY-MM");
   const [viewYear, setViewYear] = useState(selected.isValid() ? selected.year() : moment().year());
   const containerRef = useRef(null);
@@ -42,6 +43,20 @@ export default function MonthYearPicker({ value, onChange, className }) {
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  // El popover mide ~256px de ancho y ~230px de alto — si abrirlo hacia la
+  // izquierda/abajo del trigger se saldría de la ventana visible, se ancla
+  // hacia el lado opuesto en su lugar.
+  useEffect(() => {
+    if (!open || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const POPOVER_W = 256;
+    const POPOVER_H = 230;
+    setPopoverPos({
+      align: rect.left + POPOVER_W > window.innerWidth ? "right" : "left",
+      vAlign: rect.bottom + POPOVER_H > window.innerHeight ? "above" : "below",
+    });
   }, [open]);
 
   const selectMonth = (monthIdx) => {
@@ -64,7 +79,13 @@ export default function MonthYearPicker({ value, onChange, className }) {
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-64 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+        <div
+          className={cn(
+            "absolute z-50 w-64 bg-card border border-border rounded-xl shadow-lg overflow-hidden",
+            popoverPos.align === "right" ? "right-0" : "left-0",
+            popoverPos.vAlign === "above" ? "bottom-full mb-1" : "top-full mt-1"
+          )}
+        >
           {/* Navegación de año */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-border">
             <button

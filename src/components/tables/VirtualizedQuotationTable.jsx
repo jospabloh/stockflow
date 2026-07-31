@@ -11,6 +11,7 @@ import { Pencil, FileDown, ShoppingCart, DollarSign, XCircle, MoreHorizontal, Al
 import moment from "moment";
 import ColumnFilterPopover from "@/components/tables/ColumnFilterPopover";
 import QuotationFiscalDetail from "@/components/quotations/QuotationFiscalDetail";
+import MonthYearPicker from "@/components/ui/month-year-picker";
 
 function InvoiceNumberCell({ value, onSave }) {
   const [draft, setDraft] = React.useState(value || "");
@@ -35,7 +36,7 @@ function InvoiceNumberCell({ value, onSave }) {
   );
 }
 
-function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, expanded, onToggleExpand }) {
+function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInvoiceStatusChange, onInvoiceNumberChange, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, expanded, onToggleExpand, forceExpandAll }) {
   const status = statusConfig[q.status] || statusConfig.draft;
 
   return (
@@ -43,7 +44,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
     <div className="flex items-center hover:bg-muted/40 transition-colors px-4 py-3">
       {/* Expand toggle — desglose fiscal por cotización */}
       <div className="w-5 shrink-0">
-        {canShowPricing && (
+        {canShowPricing && !forceExpandAll && (
           <button
             type="button"
             onClick={onToggleExpand}
@@ -304,7 +305,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
   );
 }
 
-function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, expanded, onToggleExpand }) {
+function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onConvert, onCancel, onPay, onPartialReturn, onInRouteChange, isExpired, onRegenerate, canRevertPayment, onRevertPayment, canShowPricing, expanded, onToggleExpand, forceExpandAll }) {
   const status = statusConfig[q.status] || statusConfig.draft;
   const expired = isExpired(q);
 
@@ -445,14 +446,16 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
       {/* Desglose fiscal por cotización */}
       {canShowPricing && (
         <div className="-mx-4 -mb-4">
-          <button
-            type="button"
-            onClick={onToggleExpand}
-            className="w-full flex items-center justify-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-brand-600 transition-colors px-4 py-2 border-t border-border"
-          >
-            <ChevronRight className={`h-3 w-3 transition-transform ${expanded ? "rotate-90" : ""}`} />
-            {expanded ? "Ocultar desglose fiscal" : "Ver desglose fiscal"}
-          </button>
+          {!forceExpandAll && (
+            <button
+              type="button"
+              onClick={onToggleExpand}
+              className="w-full flex items-center justify-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-brand-600 transition-colors px-4 py-2 border-t border-border"
+            >
+              <ChevronRight className={`h-3 w-3 transition-transform ${expanded ? "rotate-90" : ""}`} />
+              {expanded ? "Ocultar desglose fiscal" : "Ver desglose fiscal"}
+            </button>
+          )}
           {expanded && <QuotationFiscalDetail q={q} className="rounded-b-xl" />}
         </div>
       )}
@@ -514,6 +517,7 @@ export default function VirtualizedQuotationTable({
   folioSuggestions,
   clientSuggestions,
   canShowPricing,
+  forceExpandAll,
 }) {
   const [expandedIds, setExpandedIds] = React.useState(() => new Set());
   const toggleExpand = (id) => {
@@ -559,6 +563,8 @@ export default function VirtualizedQuotationTable({
       totalPages={totalPages}
       onPageChange={setPage}
       onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+      dateRange={filters?.dateRange}
+      onDateRangeChange={(val) => { onFiltersChange({ ...filters, dateRange: val }); setPage(1); }}
     />
   );
 
@@ -567,7 +573,7 @@ export default function VirtualizedQuotationTable({
       {/* Mobile: card list */}
       <div className="flex flex-col gap-3 lg:hidden">
         {pagedQuotations.map((q) => (
-          <QuotationCard key={q.id} q={q} {...commonProps} expanded={expandedIds.has(q.id)} onToggleExpand={() => toggleExpand(q.id)} />
+          <QuotationCard key={q.id} q={q} {...commonProps} expanded={forceExpandAll || expandedIds.has(q.id)} onToggleExpand={forceExpandAll ? undefined : () => toggleExpand(q.id)} forceExpandAll={forceExpandAll} />
         ))}
         {pagination}
       </div>
@@ -658,7 +664,7 @@ export default function VirtualizedQuotationTable({
         {/* Rows */}
         <div>
           {pagedQuotations.map((q) => (
-            <QuotationRow key={q.id} q={q} {...commonProps} expanded={expandedIds.has(q.id)} onToggleExpand={() => toggleExpand(q.id)} />
+            <QuotationRow key={q.id} q={q} {...commonProps} expanded={forceExpandAll || expandedIds.has(q.id)} onToggleExpand={forceExpandAll ? undefined : () => toggleExpand(q.id)} forceExpandAll={forceExpandAll} />
           ))}
         </div>
         </div>
@@ -669,8 +675,19 @@ export default function VirtualizedQuotationTable({
   );
 }
 
-function PaginationBar({ total, pageStart, pageSize, currentPage, totalPages, onPageChange, onPageSizeChange }) {
+function PaginationBar({ total, pageStart, pageSize, currentPage, totalPages, onPageChange, onPageSizeChange, dateRange, onDateRangeChange }) {
   const rangeEnd = Math.min(pageStart + pageSize, total);
+
+  const showingAll = !dateRange?.from && !dateRange?.to;
+  // Si el rango activo empieza el día 1 de un mes, se interpreta como "ese
+  // mes" para reflejar la selección en el picker — coincidencia razonable,
+  // no necesita ser un match exacto de fin de mes.
+  const monthValue = dateRange?.from?.endsWith("-01") ? dateRange.from.slice(0, 7) : "";
+
+  const selectMonth = (monthStr) => {
+    const m = moment(monthStr, "YYYY-MM");
+    onDateRangeChange({ from: m.startOf("month").format("YYYY-MM-DD"), to: m.endOf("month").format("YYYY-MM-DD") });
+  };
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-border">
@@ -678,7 +695,7 @@ function PaginationBar({ total, pageStart, pageSize, currentPage, totalPages, on
         Mostrando <strong className="font-semibold text-foreground">{pageStart + 1}–{rangeEnd}</strong> de <strong className="font-semibold text-foreground">{total}</strong>
       </span>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground">Ver</span>
           {[10, 50, 100].map((size) => (
@@ -694,6 +711,25 @@ function PaginationBar({ total, pageStart, pageSize, currentPage, totalPages, on
             </button>
           ))}
         </div>
+
+        {onDateRangeChange && (
+          <>
+            <div className="w-px h-5 bg-border shrink-0" aria-hidden="true" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground">Periodo</span>
+              <button
+                type="button"
+                onClick={() => onDateRangeChange({ from: "", to: "" })}
+                className={`text-xs font-medium px-2 py-1 rounded-md transition-colors whitespace-nowrap ${
+                  showingAll ? "bg-brand-600 text-white" : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Todo
+              </button>
+              <MonthYearPicker value={monthValue} onChange={selectMonth} className="w-36" />
+            </div>
+          </>
+        )}
 
         {totalPages > 1 && (
           <div className="flex items-center gap-1">
