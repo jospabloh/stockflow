@@ -1004,7 +1004,7 @@ Desde cualquier cotización, haz clic en el botón **PDF** para descargar un doc
       category: "Cotizaciones",
       role: "all",
       title: "🚦 Estados de una Cotización",
-      keywords: ["estado", "borrador", "enviada", "aceptada", "concretada", "cancelada", "vencida", "status", "flujo", "resumen financiero", "base 16", "base 0", "efectivo", "otro método"],
+      keywords: ["estado", "borrador", "enviada", "aceptada", "concretada", "cancelada", "vencida", "status", "flujo", "resumen financiero", "base 16", "base 0", "efectivo", "otro método", "mostrar por cotización", "paginación", "periodo", "n° factura", "filtro factura", "autocompletar"],
       related_ids: ["quotations-create", "quotations-convert", "quotations-cancel"],
       content: `## 🚦 Estados de una Cotización
 
@@ -1087,7 +1087,7 @@ Arriba de la tabla de Cotizaciones aparece una barra compacta con el total de la
 | **Total** | Subtotal + IVA 16% |
 | **Efectivo / Otro método** | Cuánto se ha cobrado en efectivo vs. por transferencia, tarjeta u otro medio, con una barra de proporción |
 
-**Obedece los filtros de la tabla** — folio, cliente, fecha, estado, factura y pago. Si filtras por ejemplo por fecha o cliente, la barra recalcula sobre lo que quedó visible, y muestra "de cuántas cotizaciones filtradas" son ventas concretadas.
+**Obedece los filtros de la tabla** — folio, cliente, N° de factura, fecha, estado, factura y pago. Si filtras por ejemplo por fecha o cliente, la barra recalcula sobre lo que quedó visible, y muestra "de cuántas cotizaciones filtradas (sin contar Canceladas)" son ventas concretadas.
 
 ---
 
@@ -1095,13 +1095,31 @@ Arriba de la tabla de Cotizaciones aparece una barra compacta con el total de la
 
 Cada fila tiene una flecha (▸) a la izquierda del folio. Al hacer clic, se despliega el mismo desglose (Base 16%, IVA 16%, Base 0%, Subtotal, Total, Efectivo/Otro método) pero **de esa cotización individual** — útil para revisar una venta puntual sin tener que abrir el PDF. En la vista de tarjetas (celular) es el enlace "Ver desglose fiscal" al pie de cada tarjeta.
 
-Solo lo ven quienes tienen el permiso **Cotizaciones → Ver detalles precio** (por defecto Admin sí, Almacenista no) — es la misma protección que ya oculta los precios y márgenes en la tabla, tanto para la barra de arriba como para el desglose por fila.
+Solo lo ven quienes tienen el permiso **Cotizaciones → Ver detalles precio** (por defecto Admin sí, Almacenista no). Ese permiso protege el **panorama agregado** (esta barra, el desglose por fila, el modo "Mostrar por cotización" de abajo) — no afecta ver el precio de una cotización individual al crearla, editarla o previsualizarla, eso lo ve cualquiera con permiso para atender esa cotización.
+
+---
+
+### 🔀 Modo "Mostrar por cotización"
+
+Interruptor arriba a la derecha de la barra de resumen (mismo permiso que arriba). Al activarlo:
+- La barra de resumen general **se oculta**.
+- **Cada fila visible** muestra su desglose fiscal ya desplegado, sin tener que hacer clic en la flecha una por una.
+
+Útil para revisar varias ventas puntuales seguidas (p. ej. conciliar caja) en vez de ver solo el total del negocio. Desactívalo para volver al resumen general.
+
+---
+
+### 📄 Paginación y filtro de periodo
+
+Al fondo de la tabla:
+- **Ver 10 / 50 / 100** — cuántas filas se muestran por página (no afecta los totales de la barra de arriba, que siempre suman *todas* las cotizaciones filtradas, no solo la página visible).
+- **Periodo: Todo / [mes]** — atajo para ver un mes específico (mismo selector que el filtro de la columna Fecha) o quitar el filtro de fecha por completo y ver todo el historial cargado.
 
 ---
 
 ### 🔎 Autocompletar en los filtros de texto
 
-Los filtros de **Folio** y **Cliente** (encabezado de la tabla) sugieren coincidencias mientras escribes, tomadas de las cotizaciones que cumplen los demás filtros activos — por ejemplo, si ya filtraste por un cliente, el autocompletar de Folio solo te sugiere folios de ese cliente. Usa las flechas ↑/↓ y Enter para elegir una sugerencia, o sigue escribiendo libremente.`
+Los filtros de **Folio**, **Cliente** y **N° Factura** (encabezado de la tabla) sugieren coincidencias mientras escribes, tomadas de las cotizaciones que cumplen los demás filtros activos — por ejemplo, si ya filtraste por un cliente, el autocompletar de Folio solo te sugiere folios de ese cliente. Usa las flechas ↑/↓ y Enter para elegir una sugerencia, o sigue escribiendo libremente.`
     },
     {
       id: "quotations-convert",

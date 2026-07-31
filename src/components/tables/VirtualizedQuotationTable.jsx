@@ -516,6 +516,7 @@ export default function VirtualizedQuotationTable({
   paymentMethodOptions,
   folioSuggestions,
   clientSuggestions,
+  invoiceNumberSuggestions,
   canShowPricing,
   forceExpandAll,
 }) {
@@ -639,7 +640,13 @@ export default function VirtualizedQuotationTable({
           </div>
 
           <div className="w-20 shrink-0 text-center">
-            <span className="text-[11px] font-semibold text-muted-foreground">N° Factura</span>
+            <ColumnFilterPopover
+              label="N° Fact."
+              type="search"
+              selected={filters?.invoiceNumberSearch || ""}
+              onChange={(val) => onFiltersChange({ ...filters, invoiceNumberSearch: val })}
+              suggestions={invoiceNumberSuggestions}
+            />
           </div>
 
           <div className="w-28 shrink-0 text-center">

@@ -83,6 +83,7 @@ export default function Quotations() {
   const [tableFilters, setTableFilters] = useState({
     folioSearch: "",
     clientSearch: "",
+    invoiceNumberSearch: "",
     statuses: new Set(),
     invoiceStatuses: new Set(),
     paymentStates: new Set(),
@@ -106,8 +107,10 @@ export default function Quotations() {
   // al calcular las sugerencias de autocompletar (ver folioSuggestions/clientSuggestions).
   const folioQ = tableFilters.folioSearch?.trim().toLowerCase();
   const clientQ = tableFilters.clientSearch?.trim().toLowerCase();
+  const invoiceNumberQ = tableFilters.invoiceNumberSearch?.trim().toLowerCase();
   const matchFolio = (q) => !folioQ || q.folio?.toLowerCase().includes(folioQ);
   const matchClient = (q) => !clientQ || q.client_name?.toLowerCase().includes(clientQ);
+  const matchInvoiceNumber = (q) => !invoiceNumberQ || q.invoice_number?.toLowerCase().includes(invoiceNumberQ);
   const matchStatus = (q) => tableFilters.statuses.size === 0 || tableFilters.statuses.has(q.status);
   const matchInvoiceStatus = (q) => tableFilters.invoiceStatuses.size === 0 || tableFilters.invoiceStatuses.has(q.invoice_status || "");
   const matchPaymentState = (q) => tableFilters.paymentStates.size === 0 || tableFilters.paymentStates.has(derivePaymentState(q));
@@ -121,25 +124,31 @@ export default function Quotations() {
   };
 
   const filtered = quotations.filter((q) =>
-    matchFolio(q) && matchClient(q) && matchStatus(q) && matchInvoiceStatus(q) && matchPaymentState(q) && matchDate(q)
+    matchFolio(q) && matchClient(q) && matchInvoiceNumber(q) && matchStatus(q) && matchInvoiceStatus(q) && matchPaymentState(q) && matchDate(q)
   );
 
   // Sugerencias de autocompletar: opciones visibles si ignoramos solo el propio
   // campo de texto que se está escribiendo — reflejan "lo que se ve en la lista"
   // respetando los demás filtros activos (estado, fecha, factura, pago).
   const folioSuggestions = useMemo(() => {
-    const pool = quotations.filter((q) => matchClient(q) && matchStatus(q) && matchInvoiceStatus(q) && matchPaymentState(q) && matchDate(q));
+    const pool = quotations.filter((q) => matchClient(q) && matchInvoiceNumber(q) && matchStatus(q) && matchInvoiceStatus(q) && matchPaymentState(q) && matchDate(q));
     return [...new Set(pool.map((q) => q.folio).filter(Boolean))].sort();
-  }, [quotations, clientQ, tableFilters.statuses, tableFilters.invoiceStatuses, tableFilters.paymentStates, tableFilters.dateRange]);
+  }, [quotations, clientQ, invoiceNumberQ, tableFilters.statuses, tableFilters.invoiceStatuses, tableFilters.paymentStates, tableFilters.dateRange]);
 
   const clientSuggestions = useMemo(() => {
-    const pool = quotations.filter((q) => matchFolio(q) && matchStatus(q) && matchInvoiceStatus(q) && matchPaymentState(q) && matchDate(q));
+    const pool = quotations.filter((q) => matchFolio(q) && matchInvoiceNumber(q) && matchStatus(q) && matchInvoiceStatus(q) && matchPaymentState(q) && matchDate(q));
     return [...new Set(pool.map((q) => q.client_name).filter(Boolean))].sort();
-  }, [quotations, folioQ, tableFilters.statuses, tableFilters.invoiceStatuses, tableFilters.paymentStates, tableFilters.dateRange]);
+  }, [quotations, folioQ, invoiceNumberQ, tableFilters.statuses, tableFilters.invoiceStatuses, tableFilters.paymentStates, tableFilters.dateRange]);
+
+  const invoiceNumberSuggestions = useMemo(() => {
+    const pool = quotations.filter((q) => matchFolio(q) && matchClient(q) && matchStatus(q) && matchInvoiceStatus(q) && matchPaymentState(q) && matchDate(q));
+    return [...new Set(pool.map((q) => q.invoice_number).filter(Boolean))].sort();
+  }, [quotations, folioQ, clientQ, tableFilters.statuses, tableFilters.invoiceStatuses, tableFilters.paymentStates, tableFilters.dateRange]);
 
   const activeFiltersCount = [
     tableFilters.folioSearch?.trim(),
     tableFilters.clientSearch?.trim(),
+    tableFilters.invoiceNumberSearch?.trim(),
     tableFilters.statuses.size > 0,
     tableFilters.invoiceStatuses.size > 0,
     tableFilters.paymentStates.size > 0,
@@ -147,7 +156,7 @@ export default function Quotations() {
   ].filter(Boolean).length;
 
   const clearAllFilters = () => {
-    setTableFilters({ folioSearch: "", clientSearch: "", statuses: new Set(), invoiceStatuses: new Set(), paymentStates: new Set(), paymentMethods: new Set(), dateRange: { from: "", to: "" } });
+    setTableFilters({ folioSearch: "", clientSearch: "", invoiceNumberSearch: "", statuses: new Set(), invoiceStatuses: new Set(), paymentStates: new Set(), paymentMethods: new Set(), dateRange: { from: "", to: "" } });
   };
 
   const activePaymentMethodNames = paymentMethodsCatalog.map((pm) => pm.name);
@@ -402,6 +411,7 @@ export default function Quotations() {
         paymentMethodOptions={paymentMethodsCatalog.map(pm => ({ value: pm.name, label: pm.name }))}
         folioSuggestions={folioSuggestions}
         clientSuggestions={clientSuggestions}
+        invoiceNumberSuggestions={invoiceNumberSuggestions}
         canShowPricing={can('Cotizaciones', 'pricing')}
         forceExpandAll={showPerQuotation && can('Cotizaciones', 'pricing')}
         canConvert={can('Cotizaciones', 'convert')}
