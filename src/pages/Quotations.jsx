@@ -51,6 +51,56 @@ const isExpired = (q) => {
   return q.valid_until < todayStr;
 };
 
+// Filtros persistidos por sesión de navegador (sessionStorage, no localStorage
+// — debe olvidarse al cerrar el navegador, tal como se pidió). Se guarda por
+// negocio para que cambiar de negocio en la misma pestaña no mezcle filtros.
+const FILTERS_STORAGE_PREFIX = "stockflow:quotationsFilters:";
+
+// Función (no un objeto compartido) para que cada llamada tenga sus propias
+// instancias de Set — evita que dos snapshots de "filtros vacíos" terminen
+// apuntando al mismo Set en memoria.
+function getEmptyFilters() {
+  return {
+    folioSearch: "",
+    clientSearch: "",
+    invoiceNumberSearch: "",
+    statuses: new Set(),
+    invoiceStatuses: new Set(),
+    paymentStates: new Set(),
+    paymentMethods: new Set(),
+    dateRange: { from: "", to: "" },
+  };
+}
+
+function getCurrentMonthRange() {
+  const now = new Date();
+  const first = new Date(now.getFullYear(), now.getMonth(), 1);
+  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return { from: first.toLocaleDateString("en-CA"), to: last.toLocaleDateString("en-CA") };
+}
+
+function serializeFilters(f) {
+  return JSON.stringify({
+    ...f,
+    statuses: [...f.statuses],
+    invoiceStatuses: [...f.invoiceStatuses],
+    paymentStates: [...f.paymentStates],
+    paymentMethods: [...f.paymentMethods],
+  });
+}
+
+function deserializeFilters(json) {
+  const parsed = JSON.parse(json);
+  return {
+    ...getEmptyFilters(),
+    ...parsed,
+    statuses: new Set(parsed.statuses || []),
+    invoiceStatuses: new Set(parsed.invoiceStatuses || []),
+    paymentStates: new Set(parsed.paymentStates || []),
+    paymentMethods: new Set(parsed.paymentMethods || []),
+  };
+}
+
 export default function Quotations() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -80,16 +130,8 @@ export default function Quotations() {
   const [paymentMethodsCatalog, setPaymentMethodsCatalog] = useState([]);
   const [showPerQuotation, setShowPerQuotation] = useState(false);
   // Filtros tipo Excel — estado centralizado
-  const [tableFilters, setTableFilters] = useState({
-    folioSearch: "",
-    clientSearch: "",
-    invoiceNumberSearch: "",
-    statuses: new Set(),
-    invoiceStatuses: new Set(),
-    paymentStates: new Set(),
-    paymentMethods: new Set(),
-    dateRange: { from: "", to: "" },
-  });
+  const [tableFilters, setTableFilters] = useState(getEmptyFilters);
+  const [filtersHydrated, setFiltersHydrated] = useState(false);
 
   useEffect(() => {
     if (!businessId) return;
@@ -97,11 +139,39 @@ export default function Quotations() {
     base44.entities.PaymentMethod.filter({ business_id: businessId, active: true }).then(setPaymentMethodsCatalog).catch(() => setPaymentMethodsCatalog([]));
   }, [businessId]);
 
+  // Restaura los filtros de esta sesión de navegador para este negocio, o —
+  // si es la primera carga de la sesión — arranca con el mes actual completo.
+  // Corre una sola vez por negocio (guard filtersHydrated); un status=... en
+  // la URL se aplica aparte, en el efecto de más abajo.
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const status = params.get("status");
+    if (!businessId || filtersHydrated) return;
+    const stored = sessionStorage.getItem(FILTERS_STORAGE_PREFIX + businessId);
+    let restored;
+    try {
+      restored = stored ? deserializeFilters(stored) : { ...getEmptyFilters(), dateRange: getCurrentMonthRange() };
+    } catch {
+      restored = { ...getEmptyFilters(), dateRange: getCurrentMonthRange() };
+    }
+    setTableFilters(restored);
+    setFiltersHydrated(true);
+  }, [businessId, filtersHydrated]);
+
+  // Persiste cada cambio de filtro para el resto de la sesión del navegador
+  // (sessionStorage se borra solo al cerrar el navegador).
+  useEffect(() => {
+    if (!businessId || !filtersHydrated) return;
+    sessionStorage.setItem(FILTERS_STORAGE_PREFIX + businessId, serializeFilters(tableFilters));
+  }, [businessId, filtersHydrated, tableFilters]);
+
+  // Un status=... en la URL (p. ej. una tarjeta del Dashboard) siempre gana
+  // sobre lo restaurado/por-defecto — tanto en la carga inicial (corre justo
+  // después de que la hidratación de arriba marca filtersHydrated=true) como
+  // en navegaciones posteriores mientras ya se está en esta página.
+  useEffect(() => {
+    if (!filtersHydrated) return;
+    const status = new URLSearchParams(location.search).get("status");
     if (status) setTableFilters(f => ({ ...f, statuses: new Set([status]) }));
-  }, [location.search]);
+  }, [location.search, filtersHydrated]);
 
   // Cada filtro es una función independiente para poder componer "todos menos uno"
   // al calcular las sugerencias de autocompletar (ver folioSuggestions/clientSuggestions).
@@ -156,7 +226,7 @@ export default function Quotations() {
   ].filter(Boolean).length;
 
   const clearAllFilters = () => {
-    setTableFilters({ folioSearch: "", clientSearch: "", invoiceNumberSearch: "", statuses: new Set(), invoiceStatuses: new Set(), paymentStates: new Set(), paymentMethods: new Set(), dateRange: { from: "", to: "" } });
+    setTableFilters(getEmptyFilters());
   };
 
   const activePaymentMethodNames = paymentMethodsCatalog.map((pm) => pm.name);

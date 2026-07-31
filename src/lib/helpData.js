@@ -1004,7 +1004,7 @@ Desde cualquier cotización, haz clic en el botón **PDF** para descargar un doc
       category: "Cotizaciones",
       role: "all",
       title: "🚦 Estados de una Cotización",
-      keywords: ["estado", "borrador", "enviada", "aceptada", "concretada", "cancelada", "vencida", "status", "flujo", "resumen financiero", "base 16", "base 0", "efectivo", "otro método", "mostrar por cotización", "paginación", "periodo", "n° factura", "filtro factura", "autocompletar"],
+      keywords: ["estado", "borrador", "enviada", "aceptada", "concretada", "cancelada", "vencida", "status", "flujo", "resumen financiero", "base 16", "base 0", "efectivo", "otro método", "mostrar por cotización", "paginación", "periodo", "n° factura", "filtro factura", "autocompletar", "recordar filtros", "mes actual", "sesión", "cerrar navegador"],
       related_ids: ["quotations-create", "quotations-convert", "quotations-cancel"],
       content: `## 🚦 Estados de una Cotización
 
@@ -1114,6 +1114,14 @@ Interruptor arriba a la derecha de la barra de resumen (mismo permiso que arriba
 Al fondo de la tabla:
 - **Ver 10 / 50 / 100** — cuántas filas se muestran por página (no afecta los totales de la barra de arriba, que siempre suman *todas* las cotizaciones filtradas, no solo la página visible).
 - **Periodo: Todo / [mes]** — atajo para ver un mes específico (mismo selector que el filtro de la columna Fecha) o quitar el filtro de fecha por completo y ver todo el historial cargado.
+
+---
+
+### 💾 La tabla recuerda tus filtros mientras el navegador esté abierto
+
+La primera vez que abres Cotizaciones (recién abriste el navegador), la tabla arranca mostrando **el mes actual completo**. En cuanto cambias cualquier filtro — folio, cliente, fecha, estado, factura, pago — StockFlow sigue usando exactamente eso mientras navegas entre páginas de la app, incluso si sales de Cotizaciones y vuelves.
+
+Esto se olvida solo en dos casos: presionas **"Limpiar filtros"**, o cierras el navegador por completo (recargar/refrescar la página no cuenta como cerrar el navegador — los filtros sobreviven a eso). La próxima vez que abras StockFlow desde cero, vuelve a arrancar en el mes actual.
 
 ---
 
