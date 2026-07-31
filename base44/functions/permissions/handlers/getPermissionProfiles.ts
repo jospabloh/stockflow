@@ -147,6 +147,7 @@ const CANONICAL_KEYS: string[] = [
   "Pagos a Proveedores:edit_reference",
   "Pagos a Proveedores:edit_notes",
   "Pagos a Proveedores:affect_petty_cash",
+  "Pagos a Proveedores:edit_invoice_status",
   "Pagos a Proveedores:delete",
   "Reportes:view",
   "Reportes:operational",

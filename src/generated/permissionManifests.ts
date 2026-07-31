@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-07-31T18:44:20.561Z
+// Generado: 2026-07-31T21:24:38.811Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -146,6 +146,7 @@ export const ALL_PERMISSION_KEYS = [
   "Pagos a Proveedores:edit_reference",
   "Pagos a Proveedores:edit_notes",
   "Pagos a Proveedores:affect_petty_cash",
+  "Pagos a Proveedores:edit_invoice_status",
   "Pagos a Proveedores:delete",
   "Reportes:view",
   "Reportes:operational",
@@ -405,6 +406,7 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "edit_reference", label: "Editar referencia", category: "actionable" },
     { id: "edit_notes", label: "Editar notas", category: "actionable" },
     { id: "affect_petty_cash", label: "Afectar caja chica", category: "actionable" },
+    { id: "edit_invoice_status", label: "Estado de factura", category: "actionable" },
     { id: "delete", label: "Eliminar", category: "actionable" }
     ]
   },
@@ -624,6 +626,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Pagos a Proveedores:edit_reference": true,
   "Pagos a Proveedores:edit_notes": true,
   "Pagos a Proveedores:affect_petty_cash": true,
+  "Pagos a Proveedores:edit_invoice_status": true,
   "Pagos a Proveedores:delete": true,
   "Reportes:view": true,
   "Reportes:operational": true,
@@ -809,6 +812,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Pagos a Proveedores:edit_reference": false,
   "Pagos a Proveedores:edit_notes": false,
   "Pagos a Proveedores:affect_petty_cash": false,
+  "Pagos a Proveedores:edit_invoice_status": true,
   "Pagos a Proveedores:delete": false,
   "Reportes:view": true,
   "Reportes:operational": false,
