@@ -428,6 +428,21 @@ export default function Quotations() {
             toast.error(err?.response?.data?.error || err?.message || "No se pudo actualizar el estado de facturación");
           }
         }}
+        onInvoiceNumberChange={async (q, val) => {
+          try {
+            const response = await base44.functions.invoke('quotations', { action: 'updateQuotationFlagsSafe',
+              quotation_id: q.id,
+              updates: { invoice_number: val }
+            });
+            if (response.data?.success) {
+              invalidate("Quotation");
+            } else {
+              toast.error(response.data?.error || response.data?.message || "No se pudo actualizar el número de factura");
+            }
+          } catch (err) {
+            toast.error(err?.response?.data?.error || err?.message || "No se pudo actualizar el número de factura");
+          }
+        }}
         onInRouteChange={async (q, action) => {
           if (action === "delivered") {
             // Use deliverQuotationSafe to handle on-demand EXIT movements
