@@ -8,6 +8,8 @@ import { LoadingOverlay } from "@/components/ui/spinner";
 import { useFieldVisibility } from "@/hooks/useFieldVisibility";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"; // usado en dialogs de pago/conversión
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 
 import {
@@ -76,6 +78,7 @@ export default function Quotations() {
   const [returnQuotation, setReturnQuotation] = useState(null);
   const [settings, setSettings] = useState(null);
   const [paymentMethodsCatalog, setPaymentMethodsCatalog] = useState([]);
+  const [showPerQuotation, setShowPerQuotation] = useState(false);
   // Filtros tipo Excel — estado centralizado
   const [tableFilters, setTableFilters] = useState({
     folioSearch: "",
@@ -368,10 +371,24 @@ export default function Quotations() {
       </div>
 
       {can('Cotizaciones', 'pricing') && (
-        <QuotationsFinancialSummaryBar
-          quotations={filtered}
-          totalVisible={filtered.filter((q) => q.status !== "cancelled").length}
-        />
+        <div className="space-y-2">
+          <div className="flex items-center justify-end gap-2">
+            <Label htmlFor="per-quotation-toggle" className="text-xs text-muted-foreground cursor-pointer">
+              Mostrar por cotización
+            </Label>
+            <Switch id="per-quotation-toggle" checked={showPerQuotation} onCheckedChange={setShowPerQuotation} />
+          </div>
+          {showPerQuotation ? (
+            <p className="text-xs text-muted-foreground -mt-1">
+              Cada fila muestra su propio desglose fiscal abajo. Desactiva para ver el resumen general de arriba.
+            </p>
+          ) : (
+            <QuotationsFinancialSummaryBar
+              quotations={filtered}
+              totalVisible={filtered.filter((q) => q.status !== "cancelled").length}
+            />
+          )}
+        </div>
       )}
 
       {can('Cotizaciones', 'view') && (
@@ -386,6 +403,7 @@ export default function Quotations() {
         folioSuggestions={folioSuggestions}
         clientSuggestions={clientSuggestions}
         canShowPricing={can('Cotizaciones', 'pricing')}
+        forceExpandAll={showPerQuotation && can('Cotizaciones', 'pricing')}
         canConvert={can('Cotizaciones', 'convert')}
         canCancel={can('Cotizaciones', 'cancel')}
         canConfirmPayment={can('Cotizaciones', 'confirm_payment')}
