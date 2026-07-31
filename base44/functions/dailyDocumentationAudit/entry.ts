@@ -6,10 +6,22 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.17";
+const CURRENT_VERSION_IN_CODE = "2.18.18";
 const SNAPSHOT_RELEASE_DATE = "2026-07-31";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 const GIT_LOG_SNAPSHOT = `
+63d8b64 Merge pull request #332 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
+77490a5 Document why the public-quotation-link functions are intentionally unauthenticated
+35ad67c Add hover/tap explanations to the quotations fiscal stat pills
+20b4959 Fix accented permission-module keys, remove dead field-visibility system
+d0ef04a Add missing Cotizaciones invoice-status permission, consolidate legacy permission fallbacks
+7398c96 Merge pull request #331 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
+956293d Persist Cotizaciones filters per browser session, default to current month
+139f513 Merge pull request #326 from jospabloh/automated/release-pr
+db49030 Merge branch 'main' into automated/release-pr
+9b0864b Merge pull request #329 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
+a47aad6 Add "N/A" invoice status — locks N° Factura when a quotation never invoices
+14750df chore: release and update documentation
 54c82bc Merge pull request #328 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
 34996be Add N° Factura filter, clarify pricing-permission scope, update docs
 730ec76 Merge pull request #327 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
@@ -23,21 +35,9 @@ e4b7902 Replace native month input with a custom MonthYearPicker
 ca7e9de Merge pull request #323 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
 50b8a28 Per-quotation fiscal detail, filter-aware summary bar, and search typeahead
 e7265df Merge pull request #322 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
-1b568b2 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck
-8bc3eea Document the Cotizaciones financial summary bar and remove dead code
-481313a Merge pull request #321 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
-dd2dd11 Add IVA/payment-method financial summary bar to Cotizaciones
-cd2c091 Merge pull request #320 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
-75b9a47 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck
-f11b767 docs: document mandatory entity-before-function deploy order
-b6ce0f9 fix: address final review findings — currency rounding, partial-failure handling, 500-row cap warning, gate bulk-assign behind confirm_payment permission
-a6750bd feat: wire invoice_number inline edit to updateQuotationFlagsSafe
-8c030b3 feat: add editable invoice_number column to quotations table
-90e0211 feat: add Facturación Público General tab to Reports page
-2b51c07 feat: add UnbilledNonCashInvoiceReport component
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.18.17",
+  "Actualización a la versión 2.18.18",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
