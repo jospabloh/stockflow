@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useNavigation } from "@/lib/NavigationContext";
+import { getMonthlyTheme } from "@/lib/monthlyTheme";
 import { useLicense } from "@/lib/LicenseContext";
 import { usePermissions } from "@/lib/PermissionContext";
 import TrialBanner from "@/components/license/TrialBanner";
@@ -149,6 +150,7 @@ export default function Layout({ children, currentPageName }) {
   const isChildRoute = /\/(Products|Movements|Quotations)\/(new|edit)/.test(location.pathname);
   const { theme, setTheme } = useTheme();
   const prefersReducedMotion = useReducedMotion();
+  const monthlyTheme = useMemo(() => getMonthlyTheme(), []);
 
   // Auto-expand "Catálogos"/"Sistema" si estamos en una página hijo
   useEffect(() => {
@@ -260,7 +262,10 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex items-center gap-3">
             <img src="https://media.base44.com/images/public/69af971d0fdb362c9ae52ed3/5032b5555_StockFlow_logo.png" alt="StockFlow" className="h-10 w-10 object-contain" />
             <div>
-              <h1 className="font-bold text-foreground text-lg tracking-tight">StockFlow</h1>
+              <h1 className="font-bold text-foreground text-lg tracking-tight flex items-center gap-1.5">
+                StockFlow
+                <monthlyTheme.icon className="h-4 w-4 text-primary" aria-hidden="true" />
+              </h1>
               <p className="text-xs text-muted-foreground">{businessName || "Control de stock"}</p>
             </div>
           </div>
