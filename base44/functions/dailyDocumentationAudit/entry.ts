@@ -6,10 +6,18 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.16";
+const CURRENT_VERSION_IN_CODE = "2.18.17";
 const SNAPSHOT_RELEASE_DATE = "2026-07-31";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 const GIT_LOG_SNAPSHOT = `
+54c82bc Merge pull request #328 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
+34996be Add N° Factura filter, clarify pricing-permission scope, update docs
+730ec76 Merge pull request #327 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
+d8c53e0 Fix picker overflow, clarify invoicing report, add period filter + per-quotation view
+4e3f204 Merge pull request #325 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
+1a77cff Fix page-wide horizontal scroll, remove the 100-quotation cap, add pagination
+d8820d9 Merge pull request #319 from jospabloh/automated/release-pr
+24272e1 chore: release and update documentation
 36b5709 Merge pull request #324 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
 e4b7902 Replace native month input with a custom MonthYearPicker
 ca7e9de Merge pull request #323 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
@@ -27,17 +35,9 @@ a6750bd feat: wire invoice_number inline edit to updateQuotationFlagsSafe
 8c030b3 feat: add editable invoice_number column to quotations table
 90e0211 feat: add Facturación Público General tab to Reports page
 2b51c07 feat: add UnbilledNonCashInvoiceReport component
-b345917 feat: add nonCashInvoicing helper for non-cash unbilled report math
-7adc3c7 feat: allow invoice_number in updateQuotationFlagsSafe whitelist
-1c9a698 feat: add invoice_number field to Quotation entity schema
-d349407 fix: label untaxed quotation items as IVA 0% instead of Exento in preview
-4623214 fix: label untaxed quotation items as IVA 0% instead of Exento in PDF
-a7012db docs: add implementation plan for IVA label fix and non-cash invoicing
-120bcda docs: add design spec for IVA label fix and non-cash invoicing report
-f438c54 Update base44 packages
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.18.16",
+  "Actualización a la versión 2.18.17",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 

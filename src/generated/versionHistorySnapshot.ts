@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-07-31T02:14:01.808Z
+// Generado: 2026-07-31T03:35:53.084Z
 
-export const SNAPSHOT_VERSION = "2.18.16";
+export const SNAPSHOT_VERSION = "2.18.17";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-07-31";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 
-export const SNAPSHOT_GIT_LOG = "36b5709 Merge pull request #324 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\ne4b7902 Replace native month input with a custom MonthYearPicker\nca7e9de Merge pull request #323 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n50b8a28 Per-quotation fiscal detail, filter-aware summary bar, and search typeahead\ne7265df Merge pull request #322 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n1b568b2 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck\n8bc3eea Document the Cotizaciones financial summary bar and remove dead code\n481313a Merge pull request #321 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\ndd2dd11 Add IVA/payment-method financial summary bar to Cotizaciones\ncd2c091 Merge pull request #320 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n75b9a47 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck\nf11b767 docs: document mandatory entity-before-function deploy order\nb6ce0f9 fix: address final review findings — currency rounding, partial-failure handling, 500-row cap warning, gate bulk-assign behind confirm_payment permission\na6750bd feat: wire invoice_number inline edit to updateQuotationFlagsSafe\n8c030b3 feat: add editable invoice_number column to quotations table\n90e0211 feat: add Facturación Público General tab to Reports page\n2b51c07 feat: add UnbilledNonCashInvoiceReport component\nb345917 feat: add nonCashInvoicing helper for non-cash unbilled report math\n7adc3c7 feat: allow invoice_number in updateQuotationFlagsSafe whitelist\n1c9a698 feat: add invoice_number field to Quotation entity schema\nd349407 fix: label untaxed quotation items as IVA 0% instead of Exento in preview\n4623214 fix: label untaxed quotation items as IVA 0% instead of Exento in PDF\na7012db docs: add implementation plan for IVA label fix and non-cash invoicing\n120bcda docs: add design spec for IVA label fix and non-cash invoicing report\nf438c54 Update base44 packages";
+export const SNAPSHOT_GIT_LOG = "54c82bc Merge pull request #328 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n34996be Add N° Factura filter, clarify pricing-permission scope, update docs\n730ec76 Merge pull request #327 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\nd8c53e0 Fix picker overflow, clarify invoicing report, add period filter + per-quotation view\n4e3f204 Merge pull request #325 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n1a77cff Fix page-wide horizontal scroll, remove the 100-quotation cap, add pagination\nd8820d9 Merge pull request #319 from jospabloh/automated/release-pr\n24272e1 chore: release and update documentation\n36b5709 Merge pull request #324 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\ne4b7902 Replace native month input with a custom MonthYearPicker\nca7e9de Merge pull request #323 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n50b8a28 Per-quotation fiscal detail, filter-aware summary bar, and search typeahead\ne7265df Merge pull request #322 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n1b568b2 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck\n8bc3eea Document the Cotizaciones financial summary bar and remove dead code\n481313a Merge pull request #321 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\ndd2dd11 Add IVA/payment-method financial summary bar to Cotizaciones\ncd2c091 Merge pull request #320 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n75b9a47 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck\nf11b767 docs: document mandatory entity-before-function deploy order\nb6ce0f9 fix: address final review findings — currency rounding, partial-failure handling, 500-row cap warning, gate bulk-assign behind confirm_payment permission\na6750bd feat: wire invoice_number inline edit to updateQuotationFlagsSafe\n8c030b3 feat: add editable invoice_number column to quotations table\n90e0211 feat: add Facturación Público General tab to Reports page\n2b51c07 feat: add UnbilledNonCashInvoiceReport component";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.18.16",
+  "Actualización a la versión 2.18.17",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.17",
+    date: "2026-07-31",
+    changes: [
+    "Actualización a la versión 2.18.17"
+    ]
+  },
   {
     version: "2.18.16",
     date: "2026-07-31",
