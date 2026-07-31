@@ -1004,7 +1004,7 @@ Desde cualquier cotización, haz clic en el botón **PDF** para descargar un doc
       category: "Cotizaciones",
       role: "all",
       title: "🚦 Estados de una Cotización",
-      keywords: ["estado", "borrador", "enviada", "aceptada", "concretada", "cancelada", "vencida", "status", "flujo"],
+      keywords: ["estado", "borrador", "enviada", "aceptada", "concretada", "cancelada", "vencida", "status", "flujo", "resumen financiero", "base 16", "base 0", "efectivo", "otro método"],
       related_ids: ["quotations-create", "quotations-convert", "quotations-cancel"],
       content: `## 🚦 Estados de una Cotización
 
@@ -1070,7 +1070,24 @@ La fecha de vigencia pasó sin que la cotización se concretara.
 |---|---|
 | 🟢 Verde | Concretadas, Entregadas, Pagadas |
 | 🟡 Ámbar | Borrador, Enviada, Aceptada |
-| 🔴 Rojo | Canceladas, Vencidas |`
+| 🔴 Rojo | Canceladas, Vencidas |
+
+---
+
+### 📊 Resumen Financiero en la Lista *(solo con permiso "Ver detalles precio")*
+
+Arriba de la tabla de Cotizaciones aparece una barra compacta con el total de todas las **ventas concretadas** (Borrador, Enviada, Aceptada y Cancelada no se incluyen — no son ventas reales todavía):
+
+| Dato | Qué significa |
+|---|---|
+| **Base 16%** | Suma sin IVA de los productos gravados al 16% |
+| **IVA 16%** | El impuesto correspondiente a esa base |
+| **Base 0%** | Suma de productos exentos (0% IVA) |
+| **Subtotal** | Base 16% + Base 0% |
+| **Total** | Subtotal + IVA 16% |
+| **Efectivo / Otro método** | Cuánto se ha cobrado en efectivo vs. por transferencia, tarjeta u otro medio, con una barra de proporción |
+
+Solo lo ven quienes tienen el permiso **Cotizaciones → Ver detalles precio** (por defecto Admin sí, Almacenista no) — es la misma protección que ya oculta los precios y márgenes en la tabla.`
     },
     {
       id: "quotations-convert",
