@@ -12,11 +12,14 @@ import { cn } from "@/lib/utils";
  *  options       — array de { value, label } (solo multiselect)
  *  selected      — Set (multiselect) | { from, to } (daterange) | string (search)
  *  onChange      — fn(newSelected) → callback al padre
+ *  suggestions   — array de string (solo search) — valores disponibles en la lista actual;
+ *                  se muestran como sugerencias tipo autocompletar mientras se escribe
  *  className     — clases adicionales al trigger
  */
-export default function ColumnFilterPopover({ label, type = "multiselect", options = [], selected, onChange, className }) {
+export default function ColumnFilterPopover({ label, type = "multiselect", options = [], selected, onChange, suggestions, className }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [highlightIdx, setHighlightIdx] = useState(-1);
   const containerRef = useRef(null);
 
   const isMulti = type === "multiselect";
@@ -45,6 +48,37 @@ export default function ColumnFilterPopover({ label, type = "multiselect", optio
   const filtered = isMulti
     ? options.filter(o => o.label.toLowerCase().includes(search.toLowerCase()))
     : [];
+
+  // Sugerencias tipo autocompletar para el filtro de texto: valores presentes
+  // en la lista actual que contienen lo escrito hasta ahora (case-insensitive).
+  const searchValue = isSearch ? String(selected || "").trim().toLowerCase() : "";
+  const matchingSuggestions = isSearch && searchValue && Array.isArray(suggestions)
+    ? suggestions.filter(s => s && s.toLowerCase() !== searchValue && s.toLowerCase().includes(searchValue)).slice(0, 8)
+    : [];
+
+  useEffect(() => { setHighlightIdx(-1); }, [selected]);
+
+  const selectSuggestion = (val) => {
+    onChange(val);
+    setHighlightIdx(-1);
+    setOpen(false);
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (matchingSuggestions.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightIdx(i => (i + 1) % matchingSuggestions.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightIdx(i => (i - 1 + matchingSuggestions.length) % matchingSuggestions.length);
+    } else if (e.key === "Enter" && highlightIdx >= 0) {
+      e.preventDefault();
+      selectSuggestion(matchingSuggestions[highlightIdx]);
+    } else if (e.key === "Escape") {
+      setOpen(false);
+    }
+  };
 
   const toggleOption = (val) => {
     const next = new Set(selected);
@@ -204,10 +238,45 @@ export default function ColumnFilterPopover({ label, type = "multiselect", optio
                   placeholder={`Buscar ${label.toLowerCase()}...`}
                   value={selected || ""}
                   onChange={e => onChange(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
                   className="w-full pl-6 pr-2 py-1.5 text-xs border border-border rounded-md bg-background outline-none focus:ring-1 focus:ring-brand-400"
                   autoFocus
+                  role="combobox"
+                  aria-expanded={matchingSuggestions.length > 0}
+                  aria-autocomplete="list"
                 />
               </div>
+
+              {matchingSuggestions.length > 0 && (
+                <ul className="mt-1.5 max-h-40 overflow-y-auto rounded-md border border-border divide-y divide-border" role="listbox">
+                  {matchingSuggestions.map((s, idx) => {
+                    const matchStart = s.toLowerCase().indexOf(searchValue);
+                    const matchEnd = matchStart + searchValue.length;
+                    return (
+                      <li key={s} role="option" aria-selected={idx === highlightIdx}>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => selectSuggestion(s)}
+                          onMouseEnter={() => setHighlightIdx(idx)}
+                          className={cn(
+                            "w-full text-left px-2.5 py-1.5 text-xs truncate transition-colors",
+                            idx === highlightIdx ? "bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300" : "hover:bg-muted"
+                          )}
+                        >
+                          {matchStart >= 0 ? (
+                            <>
+                              {s.slice(0, matchStart)}
+                              <strong className="font-semibold">{s.slice(matchStart, matchEnd)}</strong>
+                              {s.slice(matchEnd)}
+                            </>
+                          ) : s}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
           )}
         </div>
