@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { HandCoins, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import ExportMenu from "@/components/common/ExportMenu";
+import { usePermissions } from "@/lib/PermissionContext";
 import moment from "moment";
 
 const SUPPLIER_PAYMENTS_COLUMNS = [
@@ -27,6 +28,8 @@ const SUPPLIER_PAYMENTS_COLUMNS = [
  * seleccionado, con KPI total + comparación vs período anterior de igual longitud.
  */
 export default function SupplierPaymentsReportChart({ dateFrom, dateTo }) {
+  const { can } = usePermissions();
+  const canExport = can('Reportes', 'export');
   const { businessId } = useBusinessContext();
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -184,12 +187,14 @@ export default function SupplierPaymentsReportChart({ dateFrom, dateTo }) {
                 ▼ Bajada vs período anterior
               </Badge>
             )}
+            {canExport && (
             <ExportMenu
               columns={SUPPLIER_PAYMENTS_COLUMNS}
               rows={chartData.map((d) => ({ fecha: d.date, diario: d.Diario, acumulado: d.Acumulado }))}
               filename="pagos_proveedores"
               title="Pagos a Proveedores"
             />
+            )}
           </div>
         </div>
 

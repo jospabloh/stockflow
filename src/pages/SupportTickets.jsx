@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, ArrowLeft, LifeBuoy, Send, Sparkles } from "lucide-react";
+import { Plus, ArrowLeft, LifeBuoy, Send, Sparkles, Shield } from "lucide-react";
 import { toast } from "sonner";
+import { usePermissions } from "@/lib/PermissionContext";
 import AiIntakeChat from "@/components/support/AiIntakeChat";
 import { composeTicketBody } from "@/lib/aiIntake";
 
@@ -42,6 +43,7 @@ function fmt(v) {
 }
 
 export default function SupportTickets() {
+  const { can } = usePermissions();
   const { businessId, businessName } = useBusinessContext();
   const [user, setUser] = useState(null);
   const [tickets, setTickets] = useState(null);
@@ -156,6 +158,16 @@ export default function SupportTickets() {
     <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[s] || "bg-gray-100 text-gray-600"}`}>{STATUS_LABEL[s] || s}</span>
   );
 
+  if (!can('Centro de Soporte', 'view')) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-64 gap-4">
+        <Shield className="h-12 w-12 text-rose-300" />
+        <h2 className="text-xl font-semibold text-slate-700">Acceso Restringido</h2>
+        <p className="text-slate-500 text-sm text-center">No tienes permiso para ver el centro de soporte.</p>
+      </div>
+    );
+  }
+
   // ── New ticket ──
   if (view === "new") {
     return (
@@ -233,7 +245,7 @@ export default function SupportTickets() {
               </div>
             ))}
         </Card>
-        {active.status !== "closed" && (
+        {active.status !== "closed" && can('Centro de Soporte', 'reply') && (
           <Card className="p-3">
             <Textarea rows={3} value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Escribe tu respuesta…" />
             <div className="mt-2 flex justify-end"><Button onClick={sendReply} disabled={busy || !reply.trim()}><Send className="mr-1 h-4 w-4" />{busy ? "Enviando…" : "Responder"}</Button></div>
@@ -248,7 +260,9 @@ export default function SupportTickets() {
     <div className="max-w-2xl mx-auto p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold flex items-center gap-2"><LifeBuoy className="h-5 w-5" /> Soporte</h1>
+        {can('Centro de Soporte', 'create') && (
         <Button onClick={() => { setNewStep("form"); setView("new"); }}><Plus className="mr-1 h-4 w-4" /> Nuevo ticket</Button>
+        )}
       </div>
       {tickets === null ? <p className="text-sm text-muted-foreground">Cargando…</p>
         : tickets.length === 0 ? (

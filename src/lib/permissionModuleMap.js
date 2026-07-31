@@ -25,6 +25,7 @@ export const PAGE_TO_MODULE_MAP = {
   FundAccounts: 'CuentasFondo',
   HelpCenter: 'Centro de Ayuda',
   About: 'Acerca de',
+  SupportTickets: 'Centro de Soporte',
 };
 
 // Obtener el módulo de permisos para una página
