@@ -21,6 +21,7 @@ export default function Reports() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [businessId, setBusinessId] = useState(null);
+  const [quotationsCapped, setQuotationsCapped] = useState(false);
   const [dateFrom, setDateFrom] = useState(moment().subtract(30, "days").format("YYYY-MM-DD"));
   const [dateTo, setDateTo] = useState(moment().format("YYYY-MM-DD"));
 
@@ -40,6 +41,7 @@ export default function Reports() {
       setCategories(cats);
       const quots = await base44.entities.Quotation.filter({ business_id: bId }, "-created_date", 500).catch(() => []);
       setQuotations(quots);
+      setQuotationsCapped(quots.length === 500);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -48,6 +50,7 @@ export default function Reports() {
     if (!businessId) return;
     const quots = await base44.entities.Quotation.filter({ business_id: businessId }, "-created_date", 500).catch(() => []);
     setQuotations(quots);
+    setQuotationsCapped(quots.length === 500);
   };
 
   // Cálculos para summary superior
@@ -166,6 +169,8 @@ export default function Reports() {
             <UnbilledNonCashInvoiceReport
               quotations={quotations}
               onQuotationsUpdated={refetchQuotations}
+              canAssign={can('Cotizaciones', 'confirm_payment')}
+              quotationsCapped={quotationsCapped}
             />
           </TabsContent>
         )}
