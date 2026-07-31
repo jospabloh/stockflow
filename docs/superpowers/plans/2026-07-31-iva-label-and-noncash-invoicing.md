@@ -848,6 +848,14 @@ Expected: exits 0.
 Run: `npx base44 whoami`
 
 - If authenticated and the CLI works in this environment: confirm (re-run if needed) that `npx base44 entities push` (Task 3) and `npx base44 functions deploy quotations` (Task 4) both completed successfully. If either wasn't run yet, run it now.
+
+**The deploy order is load-bearing, not incidental — deploy in this exact sequence:**
+1. `npx base44 entities push` — deploys the `invoice_number` schema field.
+2. Verify it actually landed (e.g. Base44 MCP `list_entity_schemas` for `Quotation`, or the dashboard) before moving on.
+3. Only then `npx base44 functions deploy quotations` — deploys the whitelist update.
+4. Smoke-test on ONE real quotation before batch-assigning a whole month: assign a test invoice number from either the report or the table column, reload the page, and confirm the number is still there.
+
+Why the order matters: `handleAssign` writes `{ invoice_number, invoice_status: "emitida" }` in a single call. If the function is deployed (so `invoice_number` passes the backend whitelist) while the entity schema is *not* yet deployed, Base44 accepts the write, silently drops the unknown `invoice_number` field, but still applies `invoice_status: "emitida"` — the quotation flips out of `no_requerida` and disappears from the report with **no invoice number recorded and no way to find it again** via this report. Deploying schema-before-function, plus the one-record smoke test, is what prevents that.
 - If the CLI cannot run here (network-restricted sandbox): explicitly tell the user, in plain terms, that the code is committed but the `invoice_number` field and the updated `updateQuotationFlagsSafe` function are **not yet live** on Baristop's Base44 backend, and that this must be deployed (`npx base44 entities push && npx base44 functions deploy quotations` from an environment with Base44 CLI network access) before the new report or the inline invoice-number editor will actually persist data — until then, saves will silently no-op per the exact failure class documented in this repo's `CLAUDE.md`.
 
 - [ ] **Step 5: Manual QA checklist (post-deploy)**
