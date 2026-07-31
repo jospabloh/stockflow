@@ -1,5 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 
+// Intentionally unauthenticated: this is the "share by link" feature — a
+// customer with no Base44 account opens the link and views the quotation.
+// Access is gated by public_token (crypto.randomUUID(), set only by an
+// authenticated owner of the quotation via QuotationPreviewDialog.jsx) and
+// public_link_enabled. Do not add an auth requirement here without
+// redesigning the sharing feature itself.
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
