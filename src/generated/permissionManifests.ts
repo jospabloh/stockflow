@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-07-31T18:17:08.066Z
+// Generado: 2026-07-31T18:41:46.743Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -172,6 +172,8 @@ export const ALL_PERMISSION_KEYS = [
   "Utilidad:view",
   "Utilidad:view_withdrawals",
   "Utilidad:add_withdrawal",
+  "Utilidad:edit_withdrawal",
+  "Utilidad:delete_withdrawal",
   "Utilidad:manage_forecast",
   "Rubros:view",
   "Rubros:create",
@@ -444,6 +446,8 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "view", label: "Ver Estado de Resultados", category: "report", sensitive: true },
     { id: "view_withdrawals", label: "Ver retiros de utilidad", category: "report", sensitive: true },
     { id: "add_withdrawal", label: "Registrar Retiro de Utilidad", category: "actionable" },
+    { id: "edit_withdrawal", label: "Editar Retiro de Utilidad", category: "actionable" },
+    { id: "delete_withdrawal", label: "Eliminar Retiro de Utilidad", category: "actionable" },
     { id: "manage_forecast", label: "Gestionar proyección", category: "actionable", sensitive: true }
     ]
   },
@@ -646,6 +650,8 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Utilidad:view": true,
   "Utilidad:view_withdrawals": true,
   "Utilidad:add_withdrawal": true,
+  "Utilidad:edit_withdrawal": true,
+  "Utilidad:delete_withdrawal": true,
   "Utilidad:manage_forecast": true,
   "Rubros:view": true,
   "Rubros:create": true,
@@ -829,6 +835,8 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Utilidad:view": false,
   "Utilidad:view_withdrawals": false,
   "Utilidad:add_withdrawal": false,
+  "Utilidad:edit_withdrawal": false,
+  "Utilidad:delete_withdrawal": false,
   "Utilidad:manage_forecast": false,
   "Rubros:view": true,
   "Rubros:create": true,

@@ -254,6 +254,8 @@ export const PERMISSION_REGISTRY = {
       { id: "view", label: "Ver Estado de Resultados", category: "report", icon: "📊", sensitive: true, description: "Ver Estado de Resultados, retiros de utilidad y proyección de fin de mes (confidencial)" },
       { id: "view_withdrawals", label: "Ver retiros de utilidad", category: "report", icon: "🔒", sensitive: true, description: "Ver detalle, montos y responsable de los retiros de utilidad, y la utilidad disponible (confidencial)" },
       { id: "add_withdrawal", label: "Registrar Retiro de Utilidad", category: "actionable", icon: "💸", description: "Registrar un retiro de utilidad del negocio" },
+      { id: "edit_withdrawal", label: "Editar Retiro de Utilidad", category: "actionable", icon: "✏️", description: "Modificar un retiro de utilidad ya registrado" },
+      { id: "delete_withdrawal", label: "Eliminar Retiro de Utilidad", category: "actionable", icon: "🗑️", description: "Eliminar un retiro de utilidad ya registrado" },
       { id: "manage_forecast", label: "Gestionar proyección", category: "actionable", icon: "📈", sensitive: true, description: "Activar/desactivar la proyección de utilidad a fin de mes (confidencial)" },
     ]
   },
@@ -353,6 +355,8 @@ export function getDefaultsForRole(role) {
             'Configuracion:manage_team',
             'Configuracion:delete_account',
             'Utilidad:add_withdrawal',
+            'Utilidad:edit_withdrawal',
+            'Utilidad:delete_withdrawal',
             'CuentasFondo:create',
             'CuentasFondo:edit',
             'CuentasFondo:delete',

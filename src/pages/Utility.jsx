@@ -295,6 +295,8 @@ export default function Utility() {
   );
 
   const canAddWithdrawal = can('Utilidad', 'add_withdrawal');
+  const canEditWithdrawal = can('Utilidad', 'edit_withdrawal');
+  const canDeleteWithdrawal = can('Utilidad', 'delete_withdrawal');
   const canManageForecast = can('Utilidad', 'manage_forecast');
 
   return (
@@ -573,16 +575,17 @@ export default function Utility() {
                         {isIncome ? "+" : "−"} {fmt(m.amount)}
                       </TableCell>
                       <TableCell className="text-center">
-                        {canAddWithdrawal ? (
-                          <>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)} {...createButtonProps('edit')}>
-                              <Pencil className="h-4 w-4 text-slate-400" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeletingMovement(m)} {...createButtonProps('delete')}>
-                              <Trash2 className="h-4 w-4 text-rose-400" />
-                            </Button>
-                          </>
-                        ) : (
+                        {canEditWithdrawal && (
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)} {...createButtonProps('edit')}>
+                            <Pencil className="h-4 w-4 text-slate-400" />
+                          </Button>
+                        )}
+                        {canDeleteWithdrawal && (
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeletingMovement(m)} {...createButtonProps('delete')}>
+                            <Trash2 className="h-4 w-4 text-rose-400" />
+                          </Button>
+                        )}
+                        {!canEditWithdrawal && !canDeleteWithdrawal && (
                           <span className="text-slate-300 text-xs">—</span>
                         )}
                       </TableCell>

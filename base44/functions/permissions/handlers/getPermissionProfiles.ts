@@ -173,6 +173,8 @@ const CANONICAL_KEYS: string[] = [
   "Utilidad:view",
   "Utilidad:view_withdrawals",
   "Utilidad:add_withdrawal",
+  "Utilidad:edit_withdrawal",
+  "Utilidad:delete_withdrawal",
   "Utilidad:manage_forecast",
   "Rubros:view",
   "Rubros:create",

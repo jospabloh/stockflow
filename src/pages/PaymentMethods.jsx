@@ -140,7 +140,7 @@ export default function PaymentMethods() {
               <TableRow key={pm.id}>
                 <TableCell className="font-medium">{pm.name}</TableCell>
                 <TableCell className="text-center">
-                  <Switch checked={pm.active !== false} onCheckedChange={() => handleTogglePaymentMethod(pm)} />
+                  <Switch checked={pm.active !== false} disabled={!can('Tipo de Pago', 'edit_status')} onCheckedChange={() => handleTogglePaymentMethod(pm)} />
                 </TableCell>
                 <TableCell className="text-center">
                   {can('Tipo de Pago', 'edit_name') && (
