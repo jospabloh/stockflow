@@ -13,7 +13,17 @@ import ColumnFilterPopover from "@/components/tables/ColumnFilterPopover";
 import QuotationFiscalDetail from "@/components/quotations/QuotationFiscalDetail";
 import MonthYearPicker from "@/components/ui/month-year-picker";
 
-function InvoiceNumberCell({ value, onSave }) {
+// Única fuente de verdad para los 4 estados de facturación — se usa tanto en
+// las píldoras por fila como en las opciones del filtro de columna, para que
+// nunca queden desincronizados.
+const INVOICE_STATUS_META = [
+  { value: "pendiente", label: "Pendiente", abbr: "Pte", dotColor: "bg-amber-400", activeClass: "bg-amber-100 text-amber-700 border-amber-300" },
+  { value: "emitida", label: "Emitida", abbr: "Emit", dotColor: "bg-emerald-400", activeClass: "bg-emerald-100 text-emerald-700 border-emerald-300" },
+  { value: "no_requerida", label: "No Requerida", abbr: "N/R", dotColor: "bg-slate-400", activeClass: "bg-slate-100 text-slate-600 border-slate-300" },
+  { value: "na", label: "No Aplica", abbr: "N/A", dotColor: "bg-zinc-400", activeClass: "bg-zinc-100 text-zinc-500 border-zinc-300 border-dashed" },
+];
+
+function InvoiceNumberCell({ value, onSave, disabled }) {
   const [draft, setDraft] = React.useState(value || "");
   React.useEffect(() => { setDraft(value || ""); }, [value]);
   const commit = () => {
@@ -29,9 +39,10 @@ function InvoiceNumberCell({ value, onSave }) {
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
       onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
-      placeholder="—"
-      title="Número de factura"
-      className="w-full text-[10px] text-center bg-transparent border border-transparent hover:border-slate-200 focus:border-brand-400 focus:bg-white rounded px-1 py-0.5 outline-none"
+      placeholder={disabled ? "N/A" : "—"}
+      title={disabled ? "No aplica — esta cotización no genera factura" : "Número de factura"}
+      disabled={disabled}
+      className="w-full text-[10px] text-center bg-transparent border border-transparent hover:border-slate-200 focus:border-brand-400 focus:bg-white rounded px-1 py-0.5 outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-transparent"
     />
   );
 }
@@ -103,26 +114,21 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
       </div>
 
       {/* Invoice Status */}
-      <div className="w-20 shrink-0 text-center flex gap-0.5 justify-center flex-wrap">
-        {["pendiente", "emitida", "no_requerida"].map((opt) => (
+      <div className="w-20 shrink-0 grid grid-cols-2 gap-0.5 place-items-center">
+        {INVOICE_STATUS_META.map(({ value: opt, abbr, label, activeClass }) => (
           <button type="button"
             key={opt}
             onClick={() => {
               const newVal = q.invoice_status === opt ? null : opt;
               onInvoiceStatusChange(q, newVal);
+              if (newVal === "na" && q.invoice_number) onInvoiceNumberChange(q, "");
             }}
             className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full transition-colors border ${
-              q.invoice_status === opt
-                ? opt === "pendiente"
-                  ? "bg-amber-100 text-amber-700 border-amber-300"
-                  : opt === "emitida"
-                    ? "bg-emerald-100 text-emerald-700 border-emerald-300"
-                    : "bg-slate-100 text-slate-600 border-slate-300"
-                : "bg-transparent text-slate-300 border-slate-200"
+              q.invoice_status === opt ? activeClass : "bg-transparent text-slate-300 border-slate-200"
             }`}
-            title={opt === "pendiente" ? "Pendiente" : opt === "emitida" ? "Emitida" : "No Requerida"}
+            title={label}
           >
-            {opt === "pendiente" ? "Pte" : opt === "emitida" ? "Emit" : "N/R"}
+            {abbr}
           </button>
         ))}
       </div>
@@ -132,6 +138,7 @@ function QuotationRow({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCon
         <InvoiceNumberCell
           value={q.invoice_number}
           onSave={(val) => onInvoiceNumberChange(q, val)}
+          disabled={q.invoice_status === "na"}
         />
       </div>
 
@@ -463,11 +470,7 @@ function QuotationCard({ q, statusConfig, onEdit, onPreview, onDownloadPDF, onCo
   );
 }
 
-const INVOICE_STATUS_OPTIONS = [
-  { value: "pendiente", label: "Pendiente", color: "bg-amber-400" },
-  { value: "emitida", label: "Emitida", color: "bg-emerald-400" },
-  { value: "no_requerida", label: "No Requerida", color: "bg-slate-400" },
-];
+const INVOICE_STATUS_OPTIONS = INVOICE_STATUS_META.map(({ value, label, dotColor }) => ({ value, label, color: dotColor }));
 
 // Deriva el estado de pago de una cotización — debe ser idéntico a la lógica de QuotationRow
 export function derivePaymentState(q) {

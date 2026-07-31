@@ -55,11 +55,12 @@
       "type": "string"
     },
     "invoice_status": {
-      "description": "Estado de facturaci\u00f3n",
+      "description": "Estado de facturaci\u00f3n. \"na\" = No Aplica: esta cotizaci\u00f3n nunca generar\u00e1 factura (distinto de no_requerida, que igual entra al reporte de factura al p\u00fablico en general); al elegir \"na\" se bloquea la edici\u00f3n de invoice_number.",
       "enum": [
         "pendiente",
         "emitida",
-        "no_requerida"
+        "no_requerida",
+        "na"
       ],
       "type": "string"
     },
