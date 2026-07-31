@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { FileText, AlertTriangle } from "lucide-react";
+import MonthYearPicker, { formatMonthYearEs } from "@/components/ui/month-year-picker";
 import moment from "moment";
 import { toast } from "sonner";
 import { nonCashAmount, proratePreIva, isEligibleForNonCashInvoicing } from "@/lib/nonCashInvoicing";
@@ -119,7 +120,7 @@ export default function UnbilledNonCashInvoiceReport({ quotations, onQuotationsU
         </div>
         <div className="flex items-center gap-2">
           <Label className="text-xs text-slate-500">Mes</Label>
-          <Input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-40" />
+          <MonthYearPicker value={month} onChange={setMonth} className="w-40" />
         </div>
       </div>
 
@@ -150,7 +151,7 @@ export default function UnbilledNonCashInvoiceReport({ quotations, onQuotationsU
           </thead>
           <tbody>
             {rows.length === 0 ? (
-              <tr><td colSpan={columnCount} className="text-center py-10 text-slate-400">Sin cotizaciones pendientes de facturar para {moment(month, "YYYY-MM").format("MMMM YYYY")}</td></tr>
+              <tr><td colSpan={columnCount} className="text-center py-10 text-slate-400">Sin cotizaciones pendientes de facturar para {formatMonthYearEs(moment(month, "YYYY-MM"))}</td></tr>
             ) : (
               rows.map((r) => (
                 <tr key={r.quotation.id} className="border-t border-slate-100 hover:bg-slate-50/50">
