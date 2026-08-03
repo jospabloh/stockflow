@@ -1,5 +1,22 @@
 # StockFlow — Project Notes
 
+## License lifecycle is owned by Mission Control (2026-08-03)
+
+StockFlow has **no native license-lifecycle automation**. `checkAccountLifecycle`,
+`processMonthlyRenewal`, `checkTenantLicense`, `expireTrials`,
+`queueBillingReminders`, and `migrateViewOnlySince` were removed — they
+duplicated the unified portfolio lifecycle that `jospabloh/acacia-mission-control`
+(`api/cron/license-lifecycle.js`) already runs against `Business.billing_status`.
+Do not re-add a StockFlow-native cron for trial/license status transitions or
+lifecycle reminder emails — that logic belongs in Mission Control now. See
+`base44/AUTOMATION_SETUP_PROMPT.md` for the retirement note and a known gap
+(Mercado Pago pre-charge reminder emails aren't reproduced there yet).
+
+`sendLifecycleEmails` and `base44/functions/licenses/*` were kept — they're
+real dependencies of the manual admin actions in `LicenseAdmin.jsx`
+(`confirmRenewalPayment`, `adminUpdateTenantLicense`), unrelated to the
+retired cron.
+
 ## Base44
 
 This app's data models live as schema-as-code in `base44/entities/*.jsonc`, but
@@ -110,3 +127,55 @@ read/update/delete.
 path. Run it after touching any `rls` block, and remember to **deploy** the
 fixed schema to the Base44 backend (`update_entity_schema`) — the repo `.jsonc`
 alone does not change runtime behavior.
+
+## Known gap (blocked, 2026-08-03): granular permission keys are UI-only for a few direct-SDK entity writes
+
+RLS (above) only enforces **tenant isolation** (`business_id` match) — it has no
+concept of the app's granular `almacenista` permission keys
+(`src/lib/permissionRegistry.js`, e.g. `Caja Chica:add_fund`,
+`Utilidad:add_withdrawal`). Those keys are enforced in **two** places today:
+
+1. The UI (`can()` / hides the button) — always present, but bypassable by
+   anyone calling the Base44 SDK directly (e.g. from devtools).
+2. A hand-written check inside a backend **"Safe" function**
+   (`base44/functions/*/handlers/*Safe.ts`) — this is the real, non-bypassable
+   enforcement. Most sensitive writes (quotations, movements, products,
+   categories, contacts, courses, enrollments, client delete, team/role
+   changes, license admin, tenant-rule admin, product import) go through one
+   of these and are correctly gated server-side.
+
+`PettyCashMovement` and `UtilityMovement` are the exception: the client writes
+them **directly** via `base44.entities.X.create/update/delete(...)`, with no
+Safe function in between. RLS still stops cross-tenant writes, but nothing
+server-side checks `Caja Chica:add_fund` / `Caja Chica:delete` /
+`Utilidad:add_withdrawal` / `edit_withdrawal` / `delete_withdrawal` — an
+authenticated `almacenista` can bypass the UI and perform these actions on
+their own business's records even when explicitly denied by their admin.
+`SupplierPayment` has the same direct-write shape and should be checked too.
+
+The same class of gap exists, currently un-exploitable, in two Safe functions
+that validate `business_id` but not the specific permission key:
+`partialReturnQuotation` (`Cotizaciones:return`) and
+`createQuotationSafe`/`updateQuotationSafe` (`Cotizaciones:create`/
+`edit_items`) — both keys are granted to `almacenista` by default today, so
+there's no live bypass, but revoking either via `PermissionAdmin` would
+silently fail to take effect server-side.
+
+**Separately, same root cause:** the `write_blocked` billing/license gate
+(`checkTenantLicense`, `billing_status: suspended|view_only`) is implemented
+inside the Safe functions too, so `PettyCashMovement`/`SupplierPayment`/
+`UtilityMovement` writes also skip it — a suspended/view-only tenant can keep
+using Caja Chica/Utilidad after their license should have cut off writes.
+`LicenseContext.isReadOnly` was already added for exactly this purpose but has
+**zero consumers** in `src/` — it's dead code waiting for someone to wire it up
+client-side (which would only be a UX nicety here, not the real fix).
+
+**Why this isn't fixed yet:** the correct fix is a new Safe function (or
+equivalent) that checks the permission key and `write_blocked` before writing,
+which needs **deploying to Base44** to take effect — writing it without
+deploying would just be a second instance of the "`.jsonc` changed but runtime
+didn't" bug this file already warns about. Base44 MCP access and CLI login are
+both required and were unavailable in the 2026-08-03 audit session that found
+this. Next session with Base44 access: add and deploy the missing checks,
+verify via `list_entity_schemas`/a live create/delete call as a
+non-privileged `almacenista`, then remove this section.
