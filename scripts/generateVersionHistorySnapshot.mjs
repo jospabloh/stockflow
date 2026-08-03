@@ -74,16 +74,12 @@ console.log(`✅  src/generated/versionHistorySnapshot.ts generado (versión ${A
 const fnPath = join(ROOT, 'base44', 'functions', 'dailyDocumentationAudit', 'entry.ts');
 let fnSource = readFileSync(fnPath, 'utf8');
 
-const escapedGitLog = gitLog.replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
 const changesTs = latestEntry.changes.map(c => `  ${JSON.stringify(c)}`).join(',\n');
 
 const newBlock = `// AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
 const CURRENT_VERSION_IN_CODE = ${JSON.stringify(APP_VERSION)};
 const SNAPSHOT_RELEASE_DATE = ${JSON.stringify(RELEASE_DATE)};
 const USER_MANUAL_LAST_REVIEWED = ${JSON.stringify(USER_MANUAL_LAST_REVIEWED ?? RELEASE_DATE)};
-const GIT_LOG_SNAPSHOT = \`
-${escapedGitLog}
-\`;
 const SNAPSHOT_LATEST_CHANGES = [
 ${changesTs},
 ];

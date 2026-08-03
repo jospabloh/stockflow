@@ -1,17 +1,23 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-07-31T21:33:34.728Z
+// Generado: 2026-08-03T07:25:28.804Z
 
-export const SNAPSHOT_VERSION = "2.18.19";
+export const SNAPSHOT_VERSION = "2.18.20";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-07-31";
+export const SNAPSHOT_RELEASE_DATE = "2026-08-03";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 
-export const SNAPSHOT_GIT_LOG = "e2694a3 Merge pull request #336 from jospabloh/claude/factura-emision-seleccion-2avzs7\n382171e Fix: almacenista couldn't toggle invoice status on Pagos a Proveedores\n62ba0ad Merge pull request #333 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\ne9f7802 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck\na4a921e Merge pull request #334 from jospabloh/claude/stockflow-monthly-visual-changes-kdaf0b\ne55e07d Add monthly decorative theme (palette + icon)\n516554a Merge main into permission-audit branch\n34aa42a Permission audit fix (6/N): Campañas, Tipo de Pago, Utilidad\n06747eb Permission audit fix (5/N): Productos\n515c5cd Permission audit fix (4/N): SupportTickets module, Reportes\na4dcf19 Permission audit fix (3/N): Pagos a Proveedores, Caja Chica\n95ff8d1 Permission audit fix (2/N): Configuración, Movimientos\ncbd7d7e Permission audit fix (1/N): registry keys, Clientes, Categorías, Cotizaciones\ndc353b1 Add design spec for the permission-registry coverage audit\nf93f3eb Merge pull request #330 from jospabloh/automated/release-pr\n842c3f7 chore: release and update documentation\n63d8b64 Merge pull request #332 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n77490a5 Document why the public-quotation-link functions are intentionally unauthenticated\n35ad67c Add hover/tap explanations to the quotations fiscal stat pills\n20b4959 Fix accented permission-module keys, remove dead field-visibility system\nd0ef04a Add missing Cotizaciones invoice-status permission, consolidate legacy permission fallbacks\n7398c96 Merge pull request #331 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n956293d Persist Cotizaciones filters per browser session, default to current month\n139f513 Merge pull request #326 from jospabloh/automated/release-pr\ndb49030 Merge branch 'main' into automated/release-pr";
+export const SNAPSHOT_GIT_LOG = "5f2299f chore: automated security, quality, permissions and release audit v2.18.20\na1fb658 Merge pull request #335 from jospabloh/automated/release-pr\n160529d Merge branch 'main' into automated/release-pr\nfab15f5 Merge pull request #337 from jospabloh/claude/factura-emision-seleccion-2avzs7\n7a58609 Link Cotizaciones invoice number and invoice status two-way\n5123b49 chore: release and update documentation\ne2694a3 Merge pull request #336 from jospabloh/claude/factura-emision-seleccion-2avzs7\n382171e Fix: almacenista couldn't toggle invoice status on Pagos a Proveedores\n62ba0ad Merge pull request #333 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\ne9f7802 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck\na4a921e Merge pull request #334 from jospabloh/claude/stockflow-monthly-visual-changes-kdaf0b\ne55e07d Add monthly decorative theme (palette + icon)\n516554a Merge main into permission-audit branch\n34aa42a Permission audit fix (6/N): Campañas, Tipo de Pago, Utilidad\n06747eb Permission audit fix (5/N): Productos\n515c5cd Permission audit fix (4/N): SupportTickets module, Reportes\na4dcf19 Permission audit fix (3/N): Pagos a Proveedores, Caja Chica\n95ff8d1 Permission audit fix (2/N): Configuración, Movimientos\ncbd7d7e Permission audit fix (1/N): registry keys, Clientes, Categorías, Cotizaciones\ndc353b1 Add design spec for the permission-registry coverage audit\nf93f3eb Merge pull request #330 from jospabloh/automated/release-pr\n842c3f7 chore: release and update documentation\n63d8b64 Merge pull request #332 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\n77490a5 Document why the public-quotation-link functions are intentionally unauthenticated\n35ad67c Add hover/tap explanations to the quotations fiscal stat pills";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.18.19",
+  "🔒 Auditoría automatizada de seguridad, calidad, permisos y tenant-isolation v2.18.20.",
+  "📦 Dependencias: corregida vulnerabilidad alta en brace-expansion (DoS por expansión de llaves) sin cambios de compatibilidad ni de comportamiento.",
+  "📦 Vulnerabilidades residuales reconfirmadas y aceptadas (sin cambios desde v2.18.13): react-router (CSRF en modo RSC, no usado por esta app), xlsx (sin fix upstream — solo se usa para exportar, nunca para parsear archivos de usuarios).",
+  "✅ Validación RLS: 29 entidades, 21 con alcance de tenant — sin hallazgos nuevos.",
+  "🔍 Auditoría de permisos: 55 componentes revisados por el escaneo heurístico (9 confirmados con aplicación real de permisos vía función de backend o guardia de ruta). 2 hallazgos Altos identificados y documentados como pendientes — ver notas técnicas del repositorio — sin cambio de comportamiento para ningún usuario con permisos ya otorgados.",
+  "🧹 PR automatizada obsoleta (#338, contenido ya incorporado en el release anterior) cerrada.",
+  "Sin cambios en lógica de negocio, precios, impuestos, inventario ni datos.",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +25,19 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.20",
+    date: "2026-08-03",
+    changes: [
+    "🔒 Auditoría automatizada de seguridad, calidad, permisos y tenant-isolation v2.18.20.",
+    "📦 Dependencias: corregida vulnerabilidad alta en brace-expansion (DoS por expansión de llaves) sin cambios de compatibilidad ni de comportamiento.",
+    "📦 Vulnerabilidades residuales reconfirmadas y aceptadas (sin cambios desde v2.18.13): react-router (CSRF en modo RSC, no usado por esta app), xlsx (sin fix upstream — solo se usa para exportar, nunca para parsear archivos de usuarios).",
+    "✅ Validación RLS: 29 entidades, 21 con alcance de tenant — sin hallazgos nuevos.",
+    "🔍 Auditoría de permisos: 55 componentes revisados por el escaneo heurístico (9 confirmados con aplicación real de permisos vía función de backend o guardia de ruta). 2 hallazgos Altos identificados y documentados como pendientes — ver notas técnicas del repositorio — sin cambio de comportamiento para ningún usuario con permisos ya otorgados.",
+    "🧹 PR automatizada obsoleta (#338, contenido ya incorporado en el release anterior) cerrada.",
+    "Sin cambios en lógica de negocio, precios, impuestos, inventario ni datos."
+    ]
+  },
   {
     version: "2.18.19",
     date: "2026-07-31",

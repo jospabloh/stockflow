@@ -1,5 +1,50 @@
 # Changelog — StockFlow
 
+## v2.18.20 (2026-08-03)
+
+### 🔒 Auditoría automatizada de seguridad, calidad, permisos y release readiness
+
+Auditoría completa: seguridad, calidad de código, tenant-isolation, matriz de permisos, licencia/trial, y estado de PRs. Repositorio sin commits nuevos desde v2.18.19 aparte de esta pasada.
+
+#### PRs revisadas
+
+- **PR #338** (`automated/release-pr`, generada 2026-07-31T22:08Z) — obsoleta: su bump de versión (2.18.18→2.18.19) y su entrada de changelog ya estaban incorporados en `main` vía la release anterior (#335, mergeada después de que #338 se generara). `mergeable_state: dirty`. Cerrada con comentario explicando la superposición, sin mergear.
+
+#### Dependencias
+
+- `npm audit fix` (sin cambios de compatibilidad): `brace-expansion` 1.1.16 → 1.1.18, corrige DoS por expansión de llaves (GHSA-mh99-v99m-4gvg). Dependencia transitiva de `eslint-plugin-react`/`minimatch` (solo toolchain de desarrollo).
+- Vulnerabilidades altas residuales reconfirmadas, sin cambios desde v2.18.13 (siguen aceptadas, evaluación registrada abajo):
+  - `react-router`/`react-router-dom` 7.18.x — GHSA-qwww-vcr4-c8h2 (CSRF bypass en **modo RSC**). Confirmado por grep: la app no usa `react-router`'s RSC/framework mode ni server actions — SPA cliente puro con `react-router-dom`. Sin exposición.
+  - `xlsx` 0.18.5 — GHSA-4r6h-8v6p-xvw6 (prototype pollution) / GHSA-5pgg-2g8v-p4x9 (ReDoS). Sin fix upstream. Confirmado por grep (`src/lib/exportData.js`): uso exclusivo de escritura (`XLSX.utils.book_new/aoa_to_sheet/writeFile`) para exportar reportes; nunca se usa `XLSX.read`/`sheet_to_json` sobre archivos subidos por usuarios. `ImportProducts.jsx` (única vía de carga de archivos) parsea CSV con `FileReader` propio, no con `xlsx`. Sin exposición.
+
+#### Seguridad — hallazgos
+
+- 🔴 **Alto — bypass de permiso granular vía SDK directo (Caja Chica, Utilidad).** `PettyCashMovement` y `UtilityMovement` se escriben directo desde el cliente vía `base44.entities.X.create/update/delete` (sin función "Safe" de backend). La UI oculta correctamente "Fondo Inicial"/eliminar en Caja Chica (`Caja Chica:add_fund`, `Caja Chica:delete`) y "Registrar Retiro"/editar/eliminar en Utilidad (`Utilidad:add_withdrawal`, `edit_withdrawal`, `delete_withdrawal`) cuando el rol `almacenista` no tiene el permiso — pero el RLS de esas entidades solo valida `data.business_id === user.data.business_id` (aislamiento de tenant), no la clave de permiso granular. Un almacenista autenticado que invoque el SDK directamente (p. ej. desde devtools) puede crear/editar/eliminar movimientos de caja chica y retiros de utilidad de su propio negocio aunque su admin se lo haya denegado explícitamente. **No es fuga entre tenants** (el aislamiento por `business_id` sigue vigente) y requiere que el atacante ya sea un usuario autenticado de ese negocio.
+  - Estado: **Bloqueado.** La corrección correcta requiere una función "Safe" de backend (o un mecanismo RLS equivalente) que valide el permiso granular server-side, y su **despliegue** a Base44 (`npx base44 functions deploy` / MCP `update_entity_schema`) — ninguno de los dos disponibles en esta sesión (conector Base44 MCP sin autenticar; CLI de Base44 requiere login interactivo). Escribir la función sin poder desplegarla y verificarla replicaría exactamente el bug de "el `.jsonc` cambia pero el runtime no" documentado arriba en este archivo — se decidió no hacerlo a ciegas.
+  - Acción del owner: autorizar el conector Base44 MCP (o completar `npx base44 login`) para una sesión de seguimiento que implemente y despliegue la corrección.
+- 🟡 **Medio — mismo patrón, sin explotación bajo configuración actual.** `PartialReturnDialog.jsx` (`Cotizaciones:return`) y `QuotationFormDialog.jsx` (`Cotizaciones:create`/`edit_items`) llaman funciones "Safe" de backend que validan `business_id` pero no la clave de permiso granular. Hoy no es explotable porque esos permisos están otorgados a `almacenista` por defecto — pero si un admin los revoca vía `PermissionAdmin`, el backend seguiría permitiendo la acción. Mismo blocker de despliegue que el hallazgo anterior; queda documentado para la misma sesión de seguimiento.
+- Sin hallazgos Críticos. Sin hallazgos de fuga de datos entre tenants. Secrets/credenciales: sin coincidencias en el repo (`.env*` correctamente ignorado).
+
+#### Tenant isolation
+
+- `npm run validate:rls`: 29 entidades, 21 con alcance de tenant — sin hallazgos. Las 15 entidades de negocio + `Business` + `Session` mantienen el patrón `$or` de dos ramas (tenant + `role:admin` para `asServiceRole`) documentado arriba en este archivo, en las cuatro operaciones.
+- `EmailNotification`/`AppVersion`/`AppChangelog`/`TenantRule` confirmadas como diseño intencional "admin-gated, no por-tenant" (mismo trade-off aceptado 2026-06-17 documentado arriba) — no es un hallazgo nuevo, ya exento explícitamente en `scripts/lib/entity-rls-rules.mjs`.
+
+#### Licencia / trial
+
+- Patrón `write_blocked` (`checkTenantLicense` / `billing_status: suspended|view_only`) confirmado consistente en 27 funciones "Safe" (cotizaciones, movimientos, productos, categorías, contactos, cursos, inscripciones). `PettyCashMovement`/`SupplierPayment`/`UtilityMovement` no pasan por ninguna función "Safe" y por lo tanto tampoco heredan este check — mismo blocker de despliegue que el hallazgo de permisos de arriba; el campo `isReadOnly` ya expuesto por `LicenseContext` para este propósito está definido pero sin ningún consumidor en `src/` (dead code) — otra pieza para la misma sesión de seguimiento.
+
+#### Calidad de código / CI
+
+- `npm run lint`, `npm run build`, `npm run validate:rls`, `npm run permissions:audit`: todos pasan (permissions:audit es heurístico e informativo, `exit 0` por diseño).
+- `npm run typecheck` (`tsc`, no forma parte de CI): ~4900 errores preexistentes en todo el árbol `src/` (deuda técnica de tipado histórica, no introducida por esta pasada) — fuera de alcance para esta auditoría (refactor masivo no solicitado).
+- `deno lint` / `deno test` (CI): no ejecutables en este entorno (binario `deno` no disponible) — se dejan a la corrida de GitHub Actions sobre la PR.
+- Confirmado (sin cambios): `auto-release-pr.yml` sigue sin `RELEASE_PR_PAT` configurado — PR #338, generada por ese workflow, nunca disparó `Deno CI` (`0` checks, el mismo bug "unstable para siempre" documentado en v2.18.14). Acción del owner pendiente desde esa versión: crear un PAT con permisos `contents`+`pull-requests` y guardarlo como secret `RELEASE_PR_PAT`.
+
+> Nota: ningún cambio modifica lógica de negocio, precios, impuestos, inventario ni datos. Los 2 hallazgos de permisos/licencia quedan bloqueados en el estado "documentado, sin corregir" — ver arriba para la acción exacta del owner.
+
+---
+
 ## v2.18.14 (2026-07-28)
 
 ### 🔒 Re-auditoría de seguridad, calidad, permisos y CI
