@@ -9,33 +9,6 @@ const STALE_MANUAL_DAYS = 60;
 const CURRENT_VERSION_IN_CODE = "2.18.20";
 const SNAPSHOT_RELEASE_DATE = "2026-08-03";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
-const GIT_LOG_SNAPSHOT = `
-a1fb658 Merge pull request #335 from jospabloh/automated/release-pr
-160529d Merge branch 'main' into automated/release-pr
-fab15f5 Merge pull request #337 from jospabloh/claude/factura-emision-seleccion-2avzs7
-7a58609 Link Cotizaciones invoice number and invoice status two-way
-5123b49 chore: release and update documentation
-e2694a3 Merge pull request #336 from jospabloh/claude/factura-emision-seleccion-2avzs7
-382171e Fix: almacenista couldn't toggle invoice status on Pagos a Proveedores
-62ba0ad Merge pull request #333 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
-e9f7802 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck
-a4a921e Merge pull request #334 from jospabloh/claude/stockflow-monthly-visual-changes-kdaf0b
-e55e07d Add monthly decorative theme (palette + icon)
-516554a Merge main into permission-audit branch
-34aa42a Permission audit fix (6/N): Campañas, Tipo de Pago, Utilidad
-06747eb Permission audit fix (5/N): Productos
-515c5cd Permission audit fix (4/N): SupportTickets module, Reportes
-a4dcf19 Permission audit fix (3/N): Pagos a Proveedores, Caja Chica
-95ff8d1 Permission audit fix (2/N): Configuración, Movimientos
-cbd7d7e Permission audit fix (1/N): registry keys, Clientes, Categorías, Cotizaciones
-dc353b1 Add design spec for the permission-registry coverage audit
-f93f3eb Merge pull request #330 from jospabloh/automated/release-pr
-842c3f7 chore: release and update documentation
-63d8b64 Merge pull request #332 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
-77490a5 Document why the public-quotation-link functions are intentionally unauthenticated
-35ad67c Add hover/tap explanations to the quotations fiscal stat pills
-20b4959 Fix accented permission-module keys, remove dead field-visibility system
-`;
 const SNAPSHOT_LATEST_CHANGES = [
   "🔒 Auditoría automatizada de seguridad, calidad, permisos y tenant-isolation v2.18.20.",
   "📦 Dependencias: corregida vulnerabilidad alta en brace-expansion (DoS por expansión de llaves) sin cambios de compatibilidad ni de comportamiento.",
@@ -60,17 +33,6 @@ function fmtDate(d: Date): string {
 
 function daysBetween(a: Date, b: Date): number {
   return Math.floor((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24));
-}
-
-function notesFromGitLog(gitLog: string, fallback: string[]): string {
-  const lines = gitLog
-    .split('\n')
-    .map(l => l.trim())
-    .filter(l => l.length > 0 && !/^[0-9a-f]+\s+Merge (pull request|branch)/i.test(l))
-    .map(l => l.replace(/^[0-9a-f]+\s+/, ''))
-    .slice(0, 15);
-  if (lines.length === 0) return fallback.join('\n');
-  return lines.map(l => `- ${l}`).join('\n');
 }
 
 function statusBadge(status: CheckStatus): string {
@@ -258,7 +220,12 @@ Deno.serve(async (req) => {
       detail: `Existe entrada publicada para ${CURRENT_VERSION_IN_CODE}.`,
     });
   } else {
-    const notes = notesFromGitLog(GIT_LOG_SNAPSHOT, SNAPSHOT_LATEST_CHANGES);
+    // Use the curated per-release notes (same source as AppVersion.release_notes
+    // above) — NOT a derivation from GIT_LOG_SNAPSHOT. That snapshot is a rolling
+    // window of recent commits for human/documentation-audit context, not scoped
+    // to "since the previous release", so deriving changelog notes from it could
+    // describe older releases' commits instead of this version's actual changes.
+    const notes = SNAPSHOT_LATEST_CHANGES.join('\n');
     try {
       await base44.asServiceRole.entities.AppChangelog.create({
         version: CURRENT_VERSION_IN_CODE,
@@ -271,7 +238,7 @@ Deno.serve(async (req) => {
       stats.checks.push({
         name: 'Changelog en BD',
         status: 'auto',
-        detail: `No había changelog para ${CURRENT_VERSION_IN_CODE} — creado desde GIT_LOG_SNAPSHOT.`,
+        detail: `No había changelog para ${CURRENT_VERSION_IN_CODE} — creado desde SNAPSHOT_LATEST_CHANGES.`,
       });
     } catch (e) {
       stats.checks.push({
