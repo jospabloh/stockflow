@@ -2,9 +2,9 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.18.19";
+export const APP_VERSION = "2.18.20";
 
-export const RELEASE_DATE = "2026-07-31";
+export const RELEASE_DATE = "2026-08-03";
 
 // URL pública de la página comercial donde el cliente contrata o renueva su
 // licencia. Es información pública (NO un secreto): aparece también en el manual
@@ -21,6 +21,19 @@ export const STOCKFLOW_UPGRADE_URL =
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 
 export const CHANGELOG = [
+  {
+    version: "2.18.20",
+    date: "2026-08-03",
+    changes: [
+      "🔒 Auditoría automatizada de seguridad, calidad, permisos y tenant-isolation v2.18.20.",
+      "📦 Dependencias: corregida vulnerabilidad alta en brace-expansion (DoS por expansión de llaves) sin cambios de compatibilidad ni de comportamiento.",
+      "📦 Vulnerabilidades residuales reconfirmadas y aceptadas (sin cambios desde v2.18.13): react-router (CSRF en modo RSC, no usado por esta app), xlsx (sin fix upstream — solo se usa para exportar, nunca para parsear archivos de usuarios).",
+      "✅ Validación RLS: 29 entidades, 21 con alcance de tenant — sin hallazgos nuevos.",
+      "🔍 Auditoría de permisos: 55 componentes revisados por el escaneo heurístico (9 confirmados con aplicación real de permisos vía función de backend o guardia de ruta). 2 hallazgos Altos identificados y documentados como pendientes — ver notas técnicas del repositorio — sin cambio de comportamiento para ningún usuario con permisos ya otorgados.",
+      "🧹 PR automatizada obsoleta (#338, contenido ya incorporado en el release anterior) cerrada.",
+      "Sin cambios en lógica de negocio, precios, impuestos, inventario ni datos.",
+    ],
+  },
   {
     version: "2.18.19",
     date: "2026-07-31",

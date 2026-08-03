@@ -6,10 +6,15 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.19";
-const SNAPSHOT_RELEASE_DATE = "2026-07-31";
+const CURRENT_VERSION_IN_CODE = "2.18.20";
+const SNAPSHOT_RELEASE_DATE = "2026-08-03";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 const GIT_LOG_SNAPSHOT = `
+a1fb658 Merge pull request #335 from jospabloh/automated/release-pr
+160529d Merge branch 'main' into automated/release-pr
+fab15f5 Merge pull request #337 from jospabloh/claude/factura-emision-seleccion-2avzs7
+7a58609 Link Cotizaciones invoice number and invoice status two-way
+5123b49 chore: release and update documentation
 e2694a3 Merge pull request #336 from jospabloh/claude/factura-emision-seleccion-2avzs7
 382171e Fix: almacenista couldn't toggle invoice status on Pagos a Proveedores
 62ba0ad Merge pull request #333 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
@@ -30,14 +35,15 @@ f93f3eb Merge pull request #330 from jospabloh/automated/release-pr
 77490a5 Document why the public-quotation-link functions are intentionally unauthenticated
 35ad67c Add hover/tap explanations to the quotations fiscal stat pills
 20b4959 Fix accented permission-module keys, remove dead field-visibility system
-d0ef04a Add missing Cotizaciones invoice-status permission, consolidate legacy permission fallbacks
-7398c96 Merge pull request #331 from jospabloh/claude/stockflow-iva-invoicing-sht1ck
-956293d Persist Cotizaciones filters per browser session, default to current month
-139f513 Merge pull request #326 from jospabloh/automated/release-pr
-db49030 Merge branch 'main' into automated/release-pr
 `;
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.18.19",
+  "🔒 Auditoría automatizada de seguridad, calidad, permisos y tenant-isolation v2.18.20.",
+  "📦 Dependencias: corregida vulnerabilidad alta en brace-expansion (DoS por expansión de llaves) sin cambios de compatibilidad ni de comportamiento.",
+  "📦 Vulnerabilidades residuales reconfirmadas y aceptadas (sin cambios desde v2.18.13): react-router (CSRF en modo RSC, no usado por esta app), xlsx (sin fix upstream — solo se usa para exportar, nunca para parsear archivos de usuarios).",
+  "✅ Validación RLS: 29 entidades, 21 con alcance de tenant — sin hallazgos nuevos.",
+  "🔍 Auditoría de permisos: 55 componentes revisados por el escaneo heurístico (9 confirmados con aplicación real de permisos vía función de backend o guardia de ruta). 2 hallazgos Altos identificados y documentados como pendientes — ver notas técnicas del repositorio — sin cambio de comportamiento para ningún usuario con permisos ya otorgados.",
+  "🧹 PR automatizada obsoleta (#338, contenido ya incorporado en el release anterior) cerrada.",
+  "Sin cambios en lógica de negocio, precios, impuestos, inventario ni datos.",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
