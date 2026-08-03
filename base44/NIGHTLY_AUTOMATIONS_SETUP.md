@@ -11,7 +11,7 @@ Configúralas en Base44 → Settings → Environment Variables **antes** de crea
 
 | Variable | Descripción |
 |---|---|
-| `CRON_SECRET` | Cadena aleatoria ≥32 chars. Genera con `openssl rand -hex 32`. Mismo valor ya usado por `checkAccountLifecycle` y `processMonthlyRenewal`. |
+| `CRON_SECRET` | Cadena aleatoria ≥32 chars. Genera con `openssl rand -hex 32`. |
 | `ANTHROPIC_API_KEY_SF_SF` | API key de Anthropic para generación de changelogs. Solo la necesita `dailyDocumentationAudit`. |
 
 ---
@@ -72,7 +72,7 @@ VERIFICACIÓN (ejecuta después de configurar)
 
 NO HAGAS
 - No modifiques el código de las funciones.
-- No uses el mismo horario que checkAccountLifecycle (08:00) ni processMonthlyRenewal (09:00 si ya existe).
+- No uses el horario 08:00-09:00 CDMX sin verificar primero qué otros crons de licencia siguen agendados en el panel de Base44 (el ciclo de vida nativo de StockFlow fue retirado — ver `base44/AUTOMATION_SETUP_PROMPT.md` — pero un cron viejo puede seguir agendado ahí hasta que se borre a mano).
 - No configures ANTHROPIC_API_KEY_SF si no la tienes; dailyDocumentationAudit degradará
   graciosamente usando los cambios del snapshot en lugar de generarlos con IA.
 
