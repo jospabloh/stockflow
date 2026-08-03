@@ -6,17 +6,11 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.20";
+const CURRENT_VERSION_IN_CODE = "2.18.21";
 const SNAPSHOT_RELEASE_DATE = "2026-08-03";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 const SNAPSHOT_LATEST_CHANGES = [
-  "🔒 Auditoría automatizada de seguridad, calidad, permisos y tenant-isolation v2.18.20.",
-  "📦 Dependencias: corregida vulnerabilidad alta en brace-expansion (DoS por expansión de llaves) sin cambios de compatibilidad ni de comportamiento.",
-  "📦 Vulnerabilidades residuales reconfirmadas y aceptadas (sin cambios desde v2.18.13): react-router (CSRF en modo RSC, no usado por esta app), xlsx (sin fix upstream — solo se usa para exportar, nunca para parsear archivos de usuarios).",
-  "✅ Validación RLS: 29 entidades, 21 con alcance de tenant — sin hallazgos nuevos.",
-  "🔍 Auditoría de permisos: 55 componentes revisados por el escaneo heurístico (9 confirmados con aplicación real de permisos vía función de backend o guardia de ruta). 2 hallazgos Altos identificados y documentados como pendientes — ver notas técnicas del repositorio — sin cambio de comportamiento para ningún usuario con permisos ya otorgados.",
-  "🧹 PR automatizada obsoleta (#338, contenido ya incorporado en el release anterior) cerrada.",
-  "Sin cambios en lógica de negocio, precios, impuestos, inventario ni datos.",
+  "Actualización a la versión 2.18.21",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
