@@ -342,6 +342,8 @@ export default function PredictiveReports({
 
 // Componente Pivot Dinámico
 function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo }) {
+  const { can } = usePermissions();
+  const canExport = can('Reportes', 'export');
   const [rowGroupBy, setRowGroupBy] = useState("product");
   const [colGroupBy, setColGroupBy] = useState("month");
   const [metricType, setMetricType] = useState("sum");

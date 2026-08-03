@@ -19,25 +19,42 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'entity_name and record_id required' }, { status: 400 });
     }
 
-    // Fetch record using service role to bypass RLS
-    const records = await base44.asServiceRole.entities[entity_name].filter({ id: record_id });
-    
-    if (records.length === 0) {
-      return Response.json({ 
-        valid: false, 
-        reason: 'Record not found' 
-      });
+    // Whitelist of entities that can be validated through this endpoint.
+    // All of them carry a `business_id` field used for the tenant check below.
+    // Restricting the parameter prevents probing arbitrary entities (e.g. User,
+    // Session, SupportTicket) for cross-tenant record enumeration.
+    const ALLOWED_ENTITIES = new Set([
+      'Product', 'Category', 'Supplier', 'Client', 'PaymentMethod',
+      'Quotation', 'Movement', 'Rubro', 'FundAccount', 'PettyCashMovement',
+      'UtilityMovement', 'Campaign', 'PermissionProfile', 'AppSettings',
+      'Contact', 'Course', 'Enrollment', 'Session', 'SupplierPayment',
+      'SupportTicket', 'SupportTicketMessage', 'InventoryAuditLog',
+    ]);
+    if (!ALLOWED_ENTITIES.has(entity_name)) {
+      return Response.json({ valid: false, reason: 'Unauthorized or invalid record' });
     }
 
-    const record = records[0];
+    // Fetch record using service role to bypass RLS. The SDK throws on invalid
+    // / non-existent ids, so wrap the call and surface the same unified message
+    // used for cross-tenant mismatches — this avoids a side-channel where an
+    // attacker distinguishes "record does not exist" from "record belongs to
+    // another tenant" by comparing error vs. valid responses.
+    let record;
+    try {
+      const records = await base44.asServiceRole.entities[entity_name].filter({ id: record_id });
+      if (records.length === 0) {
+        return Response.json({ valid: false, reason: 'Unauthorized or invalid record' });
+      }
+      record = records[0];
+    } catch (error) {
+      console.error('[validateBusinessOwnership] lookup error', error);
+      return Response.json({ valid: false, reason: 'Unauthorized or invalid record' });
+    }
 
     // Validate record belongs to user's business
     if (record.business_id !== user.business_id) {
       console.error(`[validateBusinessOwnership] CROSS-BUSINESS ATTEMPT: User ${user.email} (business ${user.business_id}) tried ${operation} on ${entity_name} ${record_id} (business ${record.business_id})`);
-      return Response.json({ 
-        valid: false, 
-        reason: `Record belongs to different business` 
-      });
+      return Response.json({ valid: false, reason: 'Unauthorized or invalid record' });
     }
 
     return Response.json({ 
@@ -49,6 +66,6 @@ export async function handle(req: Request): Promise<Response> {
     
   } catch (error) {
     console.error('[validateBusinessOwnership]', error);
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
