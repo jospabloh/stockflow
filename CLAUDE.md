@@ -1,5 +1,22 @@
 # StockFlow — Project Notes
 
+## License lifecycle is owned by Mission Control (2026-08-03)
+
+StockFlow has **no native license-lifecycle automation**. `checkAccountLifecycle`,
+`processMonthlyRenewal`, `checkTenantLicense`, `expireTrials`,
+`queueBillingReminders`, and `migrateViewOnlySince` were removed — they
+duplicated the unified portfolio lifecycle that `jospabloh/acacia-mission-control`
+(`api/cron/license-lifecycle.js`) already runs against `Business.billing_status`.
+Do not re-add a StockFlow-native cron for trial/license status transitions or
+lifecycle reminder emails — that logic belongs in Mission Control now. See
+`base44/AUTOMATION_SETUP_PROMPT.md` for the retirement note and a known gap
+(Mercado Pago pre-charge reminder emails aren't reproduced there yet).
+
+`sendLifecycleEmails` and `base44/functions/licenses/*` were kept — they're
+real dependencies of the manual admin actions in `LicenseAdmin.jsx`
+(`confirmRenewalPayment`, `adminUpdateTenantLicense`), unrelated to the
+retired cron.
+
 ## Base44
 
 This app's data models live as schema-as-code in `base44/entities/*.jsonc`, but
