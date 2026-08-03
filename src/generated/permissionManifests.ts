@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-08-03T07:18:29.033Z
+// Generado: 2026-08-03T18:47:26.688Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
