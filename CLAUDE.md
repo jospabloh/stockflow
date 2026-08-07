@@ -1,5 +1,40 @@
 # StockFlow — Project Notes
 
+## Quotation payments: two confirmation flows, only one was partial-payment-aware (fixed 2026-08-07)
+
+A converted quotation can be marked paid two different ways, and only one of them used to
+keep petty cash and the quotation's own bookkeeping fields (`amount_paid`/`balance`/
+`payments[]`) correct:
+
+- **`registerQuotationPayment.ts`** (the "Registrar Pago" panel,
+  `QuotationPaymentsSection.jsx`) — always was correct: validates the entered amount against
+  the real outstanding balance, appends to `payments[]`, updates `amount_paid`/`balance`/
+  `paid`, and creates a `PettyCashMovement` for exactly the amount entered.
+- **`updateQuotationFlagsSafe.ts`**'s quick "Confirmar Pago Total" path
+  (`Quotations.jsx` → `handleConfirmPayment`) — used to reconcile petty cash with the
+  quotation's **full `total`**, unconditionally, and never touched `amount_paid`/`balance`/
+  `payments[]` at all. A quotation that already had a partial payment registered via the
+  correct flow, then finished off via "Confirmar Pago Total", got **double-counted**: the
+  already-collected partial amount stayed in its own "Pago efectivo" petty-cash entry, *and*
+  the full total got recorded again as a second "Venta confirmada" entry.
+
+> Reference (baristop, 2026-08-06): a $1,070 quotation paid in two $535 cash installments —
+> the second installment (finished via "Confirmar Pago Total") was recorded in petty cash as
+> $1,070 instead of the $535 actually still owed, so the ledger showed $1,605 collected
+> against a $1,070 sale. Symptom of this class of bug: a converted quotation's `paid: true`
+> is correct, but its petty-cash total exceeds its `total`, and/or `amount_paid` stays stale
+> at the last partial-payment amount even though the quotation shows fully paid.
+
+**Fix:** `updateQuotationFlagsSafe.ts` now computes `newlyCollected = total - amount_paid`
+(pre-update) and reconciles petty cash with that instead of the raw total, and — when it's
+the call that first flips `paid` to `true` — also sets `amount_paid`/`balance`/`payments[]`
+itself, mirroring the invariant `registerQuotationPayment.ts` already enforced. Any tenant
+affected by this before the fix can be found and corrected with
+`scripts/reconcile-quotation-petty-cash.mjs --audit` (add `--apply` to write); it scans every
+business for the exact fingerprint (a "Venta confirmada" petty-cash entry that doesn't match
+`total - sum(payments[])`) and backfills the missing `payments[]` entry. Requires a live
+Base44 service token — see the script's header comment.
+
 ## License lifecycle is owned by Mission Control (2026-08-03)
 
 StockFlow has **no native license-lifecycle automation**. `checkAccountLifecycle`,
