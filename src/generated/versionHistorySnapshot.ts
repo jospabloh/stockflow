@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-08-03T18:47:26.853Z
+// Generado: 2026-08-07T21:54:00.157Z
 
-export const SNAPSHOT_VERSION = "2.18.21";
+export const SNAPSHOT_VERSION = "2.18.22";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-08-03";
+export const SNAPSHOT_RELEASE_DATE = "2026-08-07";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 
-export const SNAPSHOT_GIT_LOG = "15c2d85 Merge pull request #340 from jospabloh/dependabot/npm_and_yarn/npm-dependencies-5df57405fb\nfa655a6 Merge branch 'main' into dependabot/npm_and_yarn/npm-dependencies-5df57405fb\n9cac09f Merge pull request #339 from jospabloh/claude/lucid-lamport-19gxg3\nd102970 Merge branch 'main' into claude/lucid-lamport-19gxg3\n95f489a Merge pull request #341 from jospabloh/claude/audit-email-reminders-csp5u4\nc6e3ba1 Retire StockFlow's native license-lifecycle automation\n62a6e31 chore(deps): bump the npm-dependencies group with 8 updates\n757beed fix: dailyDocumentationAudit no longer derives new AppChangelog entries from GIT_LOG_SNAPSHOT\n5f2299f chore: automated security, quality, permissions and release audit v2.18.20\na1fb658 Merge pull request #335 from jospabloh/automated/release-pr\n160529d Merge branch 'main' into automated/release-pr\nfab15f5 Merge pull request #337 from jospabloh/claude/factura-emision-seleccion-2avzs7\n7a58609 Link Cotizaciones invoice number and invoice status two-way\n5123b49 chore: release and update documentation\ne2694a3 Merge pull request #336 from jospabloh/claude/factura-emision-seleccion-2avzs7\n382171e Fix: almacenista couldn't toggle invoice status on Pagos a Proveedores\n62ba0ad Merge pull request #333 from jospabloh/claude/stockflow-iva-invoicing-sht1ck\ne9f7802 Merge branch 'main' into claude/stockflow-iva-invoicing-sht1ck\na4a921e Merge pull request #334 from jospabloh/claude/stockflow-monthly-visual-changes-kdaf0b\ne55e07d Add monthly decorative theme (palette + icon)\n516554a Merge main into permission-audit branch\n34aa42a Permission audit fix (6/N): Campañas, Tipo de Pago, Utilidad\n06747eb Permission audit fix (5/N): Productos\n515c5cd Permission audit fix (4/N): SupportTickets module, Reportes\na4dcf19 Permission audit fix (3/N): Pagos a Proveedores, Caja Chica";
+export const SNAPSHOT_GIT_LOG = "3f8f264 Merge pull request #345 from jospabloh/claude/stockflow-partial-payments-bug-a2vtq9\nbdf20d5 Guard \"Confirmar Pago Total\" against double-submit; document live audit results\n3232fed File changes\nc45c9d5 Merge pull request #344 from jospabloh/claude/stockflow-partial-payments-bug-a2vtq9\n9e21f8d Fix: quotation payment confirmation double-counted already-collected partials\n9152771 chore: add boilerplate auth templates\n54f3d2b File changes\n040a9e7 Update base44 packages\n2bd632d Merge pull request #342 from jospabloh/automated/release-pr\nfe5e9b6 chore: release and update documentation\n15c2d85 Merge pull request #340 from jospabloh/dependabot/npm_and_yarn/npm-dependencies-5df57405fb\nfa655a6 Merge branch 'main' into dependabot/npm_and_yarn/npm-dependencies-5df57405fb\n9cac09f Merge pull request #339 from jospabloh/claude/lucid-lamport-19gxg3\nd102970 Merge branch 'main' into claude/lucid-lamport-19gxg3\n95f489a Merge pull request #341 from jospabloh/claude/audit-email-reminders-csp5u4\nc6e3ba1 Retire StockFlow's native license-lifecycle automation\n62a6e31 chore(deps): bump the npm-dependencies group with 8 updates\n757beed fix: dailyDocumentationAudit no longer derives new AppChangelog entries from GIT_LOG_SNAPSHOT\n5f2299f chore: automated security, quality, permissions and release audit v2.18.20\na1fb658 Merge pull request #335 from jospabloh/automated/release-pr\n160529d Merge branch 'main' into automated/release-pr\nfab15f5 Merge pull request #337 from jospabloh/claude/factura-emision-seleccion-2avzs7\n7a58609 Link Cotizaciones invoice number and invoice status two-way\n5123b49 chore: release and update documentation\ne2694a3 Merge pull request #336 from jospabloh/claude/factura-emision-seleccion-2avzs7";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.18.21",
+  "Actualización a la versión 2.18.22",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.22",
+    date: "2026-08-07",
+    changes: [
+    "Actualización a la versión 2.18.22"
+    ]
+  },
   {
     version: "2.18.21",
     date: "2026-08-03",
