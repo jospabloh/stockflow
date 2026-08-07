@@ -35,6 +35,29 @@ business for the exact fingerprint (a "Venta confirmada" petty-cash entry that d
 `total - sum(payments[])`) and backfills the missing `payments[]` entry. Requires a live
 Base44 service token — see the script's header comment.
 
+**Data audited and corrected, 2026-08-07** (via live Base44 access, both businesses that
+existed at the time — Baristop Distribuidora and the internal ACACIA owner sandbox): only one
+quotation was ever actually hit by the double-count — Baristop's COT-260803-0003 (the
+reference case above), now reconciled: `PettyCashMovement 6a750a5d84dcc1b5f5e39eb5` corrected
+from $1,070 → $535, and the `Quotation`'s `amount_paid`/`balance`/`payments[]` backfilled to
+match (`$535 + $535 = $1,070`). No other quotation in either business carried a mismatched
+"Venta confirmada" entry. Inventory was independently confirmed untouched by this bug (exactly
+one stock-exit batch per affected quotation, as expected — this bug never wrote to `Movement`).
+
+**Separate, unrelated finding from the same audit:** `PettyCashMovement`s
+`6a4d23138220fb3fa655e50b` and `6a4d23186b241c863502116b` (Baristop, COT-260707-0001) were
+exact duplicates — same `origin_id`, same $1,080 amount, created 5 seconds apart on
+2026-07-07. This is a race condition in `syncCashSaleToPettyCash`'s create-or-update logic
+(reads "no existing record for this origin_id" before either of two near-simultaneous calls —
+e.g. a double-click on "Confirmar Pago Total" — has written), not the partial-payment bug
+above. The duplicate was neutralized (amount zeroed, annotated) rather than deleted, to keep
+an audit trail. **Not yet fixed in code**: `syncCashSaleToPettyCash`'s existing-record check
+and its create/update are not atomic, so this race is still live for any tenant clicking a
+payment-confirm button twice quickly. A proper fix needs either a DB-level uniqueness
+constraint on `(business_id, origin_type, origin_id, generated_by_system)` or a client-side
+double-submit guard on the confirm buttons (`Quotations.jsx` `handleConfirmPayment` and the
+"Registrar Pago" flow) — neither exists today.
+
 ## License lifecycle is owned by Mission Control (2026-08-03)
 
 StockFlow has **no native license-lifecycle automation**. `checkAccountLifecycle`,
