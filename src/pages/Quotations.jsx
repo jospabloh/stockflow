@@ -733,8 +733,16 @@ export default function Quotations() {
             <AlertDialogDescription asChild>
               <div className="space-y-2">
                 <p>Total: <strong className="font-mono tabular">${payQuotation?.total?.toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong> · Cliente: {payQuotation?.client_name}</p>
+                {payQuotation?.payments?.length > 0 && (
+                  <p className="text-sm">
+                    Ya pagado: <strong className="font-mono tabular text-green-700 dark:text-green-400">${(payQuotation?.amount_paid || 0).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong>
+                    {" · "}
+                    Saldo pendiente: <strong className="font-mono tabular">${Math.max(0, (payQuotation?.total || 0) - (payQuotation?.amount_paid || 0)).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</strong>
+                  </p>
+                )}
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2 text-sm text-blue-800 dark:text-blue-300">
                   💡 <strong>¿Pago parcial o con varios métodos?</strong> Usa el botón de abajo para registrar abonos con diferentes métodos.
+                  {payQuotation?.payments?.length > 0 && " Este botón sólo confirmará el saldo pendiente, no el total de nuevo."}
                 </div>
               </div>
             </AlertDialogDescription>
