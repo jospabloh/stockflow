@@ -112,28 +112,9 @@ export async function handle(req: Request): Promise<Response> {
     if (shouldReconcilePettyCash && bizId) {
       const isCashPayment = paymentMethodAfter.toLowerCase().includes('efectivo');
       try {
-        if (effectivePaid && isCashPayment) {
-          // Reconcile with what was actually newly collected by THIS confirmation,
-          // not the quotation's full total — the remainder may already have been
-          // collected (and recorded in petty cash) via prior partial payments. When
-          // nothing new was collected (e.g. just correcting payment_method on an
-          // already-fully-paid quotation), this is 0 and syncCashSaleToPettyCash
-          // skips instead of re-recording the total.
-          // Use quotation.id as origin_id so this single "full payment confirmed" entry is idempotent
-          await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
-            'x-cron-secret': Deno.env.get('CRON_SECRET'),
-            action: 'reconcile',
-            origin_type: 'quotation',
-            origin_id: quotation.id,
-            amount: newlyCollected,
-            payment_method: paymentMethodAfter,
-            description: `Venta confirmada — ${quotation.folio} | ${quotation.client_name || ''}`,
-            folio_or_ref: quotation.folio,
-            movement_date: new Date().toLocaleDateString('en-CA'),
-            business_id: bizId,
-          });
-        } else if (!effectivePaid || !isCashPayment) {
-          // Reverse: payment undone or method changed away from cash
+        // Reverse FIRST when un-paying or switching away from cash — those are
+        // unconditional regardless of newlyCollected.
+        if (!effectivePaid || !isCashPayment) {
           await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
             'x-cron-secret': Deno.env.get('CRON_SECRET'),
             action: 'reverse',
@@ -146,7 +127,31 @@ export async function handle(req: Request): Promise<Response> {
             movement_date: new Date().toLocaleDateString('en-CA'),
             business_id: bizId,
           });
+        } else if (newlyCollected > 0) {
+          // Reconcile with what was actually newly collected by THIS confirmation,
+          // not the quotation's full total — the remainder may already have been
+          // collected (and recorded in petty cash) via prior partial payments.
+          // Use quotation.id as origin_id so this single "full payment confirmed" entry is idempotent.
+          // Guard newlyCollected > 0: when nothing new was collected (e.g. correcting
+          // payment_method on an already-fully-paid quotation), skip the reconcile
+          // call entirely — calling syncCashSaleToPettyCash with amount 0 would
+          // trigger shouldReverseForPaymentChange inside that function and DELETE
+          // the existing cash entry, which is wrong (the quotation is still paid).
+          await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+            'x-cron-secret': Deno.env.get('CRON_SECRET'),
+            action: 'reconcile',
+            origin_type: 'quotation',
+            origin_id: quotation.id,
+            amount: newlyCollected,
+            payment_method: paymentMethodAfter,
+            description: `Venta confirmada — ${quotation.folio} | ${quotation.client_name || ''}`,
+            folio_or_ref: quotation.folio,
+            movement_date: new Date().toLocaleDateString('en-CA'),
+            business_id: bizId,
+          });
         }
+        // else: effectivePaid && isCashPayment && newlyCollected === 0 → skip
+        // entirely (nothing new to record, no reversal needed — still paid in cash).
       } catch (pettyCashError) {
         console.error('syncCashSaleToPettyCash failed:', pettyCashError?.message);
       }
