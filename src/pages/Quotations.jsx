@@ -125,6 +125,7 @@ export default function Quotations() {
   const [payQuotation, setPayQuotation] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [payMarkDelivered, setPayMarkDelivered] = useState(false);
+  const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
   const [previewQuotation, setPreviewQuotation] = useState(null);
   const [previewClient, setPreviewClient] = useState(null);
   const [returnQuotation, setReturnQuotation] = useState(null);
@@ -344,6 +345,13 @@ export default function Quotations() {
       setPayQuotation(null);
       return;
     }
+    // Guard against a double-click/double-tap firing this twice concurrently —
+    // syncCashSaleToPettyCash's create-or-update check isn't atomic, so two
+    // near-simultaneous calls can each see "no existing record" and both
+    // create a petty-cash entry (see stockflow/CLAUDE.md, 2026-08-07 audit
+    // finding on COT-260707-0001).
+    if (isConfirmingPayment) return;
+    setIsConfirmingPayment(true);
     try {
       const updates = { paid: true, payment_method: targetMethod };
       if (targetDelivered) { updates.delivered = true; updates.in_route = false; }
@@ -367,6 +375,8 @@ export default function Quotations() {
     } catch (error) {
       const errMsg = error.response?.data?.error || error.message || "Error inesperado";
       toast.error(`❌ ${errMsg}`);
+    } finally {
+      setIsConfirmingPayment(false);
     }
   };
 
@@ -726,7 +736,7 @@ export default function Quotations() {
       </AlertDialog>
 
       {/* Payment confirmation dialog */}
-      <AlertDialog open={!!payQuotation} onOpenChange={(v) => { if (!v) { setPayQuotation(null); setPaymentMethod(""); setPayMarkDelivered(false); } }}>
+      <AlertDialog open={!!payQuotation} onOpenChange={(v) => { if (!v && !isConfirmingPayment) { setPayQuotation(null); setPaymentMethod(""); setPayMarkDelivered(false); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar pago — {payQuotation?.folio}</AlertDialogTitle>
@@ -785,7 +795,8 @@ export default function Quotations() {
                   }).catch(() => setPreviewClient(null));
                 }
               }}
-              className="px-4 py-2 rounded-md text-sm font-medium border border-brand-300 text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors"
+              className="px-4 py-2 rounded-md text-sm font-medium border border-brand-300 text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors disabled:opacity-50"
+              disabled={isConfirmingPayment}
             >
               <Coins className="h-4 w-4 mr-1.5" /> Ver pagos parciales
             </button>
@@ -797,10 +808,10 @@ export default function Quotations() {
                 e.preventDefault();
                 handleConfirmPayment(q, m, d);
               }}
-              disabled={!paymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(paymentMethod.trim()))}
+              disabled={isConfirmingPayment || !paymentMethod.trim() || (hasActivePaymentCatalog && !activePaymentMethodNames.includes(paymentMethod.trim()))}
               className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
             >
-              Confirmar Pago Total
+              {isConfirmingPayment ? "Confirmando…" : "Confirmar Pago Total"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
