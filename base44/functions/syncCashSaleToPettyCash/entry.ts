@@ -50,6 +50,49 @@ function isAllowedPaymentMethod(paymentMethod: string, allowedMethods: string[])
   return allowedMethods.some((method) => normalizeText(method) === normalized);
 }
 
+// Deterministic winner for two generated entries that both claim the same
+// (business_id, origin_id): oldest created_date wins, id breaks ties. Both
+// the pre-write read and this post-write re-check use the same ordering, so
+// concurrent callers converge on the same survivor instead of each keeping
+// "their own" record.
+function pickSurvivor(records: any[]) {
+  return [...records].sort((a, b) => {
+    const byDate = new Date(a.created_date || 0).getTime() - new Date(b.created_date || 0).getTime();
+    if (byDate !== 0) return byDate;
+    return String(a.id).localeCompare(String(b.id));
+  })[0];
+}
+
+// syncCashSaleToPettyCash has no atomic "insert-if-absent" available (Base44
+// entity schemas don't support a DB-level uniqueness constraint — see
+// CLAUDE.md), so the read-then-write below the caller of this helper is a
+// TOCTOU window: two near-simultaneous calls for the same origin_id can both
+// read "no existing record" and both create. This closes that window
+// immediately after every write instead of before it: re-read what's
+// actually in the table for (business_id, origin_id, generated_by_system),
+// keep exactly one deterministic survivor, and neutralize the rest (amount
+// zeroed + annotated, not deleted — same "keep the audit trail" convention
+// used for the 2026-08-07 manual reconciliation of COT-260707-0001).
+// This still allows a duplicate to exist for the few hundred ms between two
+// concurrent writes, but it can never persist past the next call for that
+// origin_id — including the call that created it, since the loser's own
+// request performs this same cleanup before returning.
+async function reconcileDuplicates(base44: any, business_id: string, origin_id: string) {
+  const rows = await base44.asServiceRole.entities.PettyCashMovement.filter({ business_id, origin_id });
+  const generated = rows.filter((r: any) => r.origin_id === origin_id && r.generated_by_system === true && !(r.notes || '').includes('[duplicado neutralizado'));
+  if (generated.length <= 1) return generated[0] || null;
+
+  const survivor = pickSurvivor(generated);
+  for (const dup of generated) {
+    if (dup.id === survivor.id) continue;
+    await base44.asServiceRole.entities.PettyCashMovement.update(dup.id, {
+      amount: 0,
+      notes: `${dup.notes || ''} [duplicado neutralizado automáticamente por condición de carrera — ver ${survivor.id}]`.trim(),
+    });
+  }
+  return survivor;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -196,17 +239,28 @@ Deno.serve(async (req) => {
 
     if (existingRecord) {
       await base44.asServiceRole.entities.PettyCashMovement.update(existingRecord.id, payload);
+      const survivorAfterUpdate = await reconcileDuplicates(base44, business_id, origin_id);
       if (rule?.id) {
         await base44.asServiceRole.entities.TenantRule.update(rule.id, { last_applied_at: new Date().toISOString() });
       }
-      return Response.json({ success: true, updated: true, petty_cash_id: existingRecord.id });
+      return Response.json({ success: true, updated: true, petty_cash_id: survivorAfterUpdate?.id || existingRecord.id });
     }
 
     const created = await base44.asServiceRole.entities.PettyCashMovement.create(payload);
+    // Race-condition close: re-check right after the write. If a concurrent
+    // call also created an entry for this same origin_id in the meantime,
+    // exactly one deterministic survivor remains after this call returns.
+    const survivorAfterCreate = await reconcileDuplicates(base44, business_id, origin_id);
     if (rule?.id) {
       await base44.asServiceRole.entities.TenantRule.update(rule.id, { last_applied_at: new Date().toISOString() });
     }
-    return Response.json({ success: true, created: true, petty_cash_id: created.id });
+    const wasSurvivor = !survivorAfterCreate || survivorAfterCreate.id === created.id;
+    return Response.json({
+      success: true,
+      created: wasSurvivor,
+      updated: !wasSurvivor,
+      petty_cash_id: survivorAfterCreate?.id || created.id,
+    });
   } catch (error) {
     return Response.json({ error: (error as Error).message }, { status: 500 });
   }
