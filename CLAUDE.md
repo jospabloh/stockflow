@@ -51,12 +51,25 @@ exact duplicates — same `origin_id`, same $1,080 amount, created 5 seconds apa
 (reads "no existing record for this origin_id" before either of two near-simultaneous calls —
 e.g. a double-click on "Confirmar Pago Total" — has written), not the partial-payment bug
 above. The duplicate was neutralized (amount zeroed, annotated) rather than deleted, to keep
-an audit trail. **Not yet fixed in code**: `syncCashSaleToPettyCash`'s existing-record check
-and its create/update are not atomic, so this race is still live for any tenant clicking a
-payment-confirm button twice quickly. A proper fix needs either a DB-level uniqueness
-constraint on `(business_id, origin_type, origin_id, generated_by_system)` or a client-side
-double-submit guard on the confirm buttons (`Quotations.jsx` `handleConfirmPayment` and the
-"Registrar Pago" flow) — neither exists today.
+an audit trail.
+
+**Fixed 2026-08-10:** `syncCashSaleToPettyCash`'s existing-record check and its create/update
+were not atomic, so the race was still live for any concurrent call for the same
+`(business_id, origin_id)` — not just a double-click on "Confirmar Pago Total" (the 2026-08-07
+fix only guarded that one client button; every other caller — `createMovementSafe`,
+`confirmMovementPaymentSafe`, `registerQuotationPayment`, `cancelQuotationSafe`,
+`revertPaymentConfirmationSafe` — could still race). Base44 entity schemas have no DB-level
+uniqueness constraint to enforce this atomically (confirmed via the Base44 CLI skill's entity
+schema reference — field types are `string|number|integer|boolean|array|object|binary`, no
+unique-index concept), so the fix closes the window from the other side: right after every
+create/update, the function re-reads what's actually in the table for
+`(business_id, origin_id, generated_by_system=true)`, keeps exactly one deterministic survivor
+(oldest `created_date`, id tiebreak — same on every caller, so concurrent requests converge on
+the same winner), and neutralizes the rest using the same "zero the amount, annotate, don't
+delete" convention as the manual COT-260707-0001 fix. A duplicate can still exist for the few
+hundred ms between two concurrent writes, but it cannot survive past the losing request's own
+return — including when that request is the one that created it. See
+`base44/functions/syncCashSaleToPettyCash/entry.ts` (`reconcileDuplicates`/`pickSurvivor`).
 
 ## License lifecycle is owned by Mission Control (2026-08-03)
 
@@ -186,7 +199,7 @@ path. Run it after touching any `rls` block, and remember to **deploy** the
 fixed schema to the Base44 backend (`update_entity_schema`) — the repo `.jsonc`
 alone does not change runtime behavior.
 
-## Known gap (blocked, 2026-08-03): granular permission keys are UI-only for a few direct-SDK entity writes
+## Known gap (deferred, reassessed 2026-08-10): granular permission keys are UI-only for a few direct-SDK entity writes
 
 RLS (above) only enforces **tenant isolation** (`business_id` match) — it has no
 concept of the app's granular `almacenista` permission keys
@@ -234,6 +247,75 @@ which needs **deploying to Base44** to take effect — writing it without
 deploying would just be a second instance of the "`.jsonc` changed but runtime
 didn't" bug this file already warns about. Base44 MCP access and CLI login are
 both required and were unavailable in the 2026-08-03 audit session that found
-this. Next session with Base44 access: add and deploy the missing checks,
-verify via `list_entity_schemas`/a live create/delete call as a
-non-privileged `almacenista`, then remove this section.
+this.
+
+**2026-08-10 reassessment:** Base44 MCP access was available this session, so
+the original blocker is lifted, but the fix was still deferred rather than
+rushed: it touches ~15 direct-write call sites across four live financial-data
+components (`PettyCashMovementForm.jsx`, `UtilityMovementForm.jsx`,
+`SupplierPayments.jsx`, `Utility.jsx`/`PettyCash.jsx`), each with real
+create/update/delete business logic (petty-cash sync amounts, utility↔pettycash
+linking, the invoice-status semáforo), and there is no way in this session to
+exercise the resulting UI as a permission-restricted `almacenista` to verify
+nothing broke before it reaches real tenants' cashbox data — the exact
+combination this file's own rules ("don't patch cashbox logic without
+verification", "don't ship an unverified Base44 deploy") warn against rushing.
+Recommended shape for the next session that picks this up: one new Safe
+function per entity (`createPettyCashMovementSafe` /
+`updatePettyCashMovementSafe` / `deletePettyCashMovementSafe`, mirrored for
+`UtilityMovement` and `SupplierPayment`) that checks the permission key +
+`write_blocked` and then performs exactly the same write the client does
+today; migrate the four call sites to call them; deploy; verify via
+`list_entity_schemas` + a live create/delete call as a non-privileged
+`almacenista` (both an allowed and a denied permission case) before removing
+this section.
+
+## 2026-08-10 automated security/quality/release audit
+
+Routine sweep (secrets, dependency, RLS, permissions-heuristic, tenant isolation).
+Only one code change came out of it — the `syncCashSaleToPettyCash` race-condition
+fix documented above — everything else here was verified and needed no change:
+
+- **Secrets:** grepped `src/` and `base44/` for hardcoded API keys/tokens/passwords
+  and checked for tracked `.env*` files — none found.
+- **`npm audit`** (clean `npm ci`, not just the partial lockfile scan): 5
+  advisories, all verified non-issues for how this app actually uses them —
+  none required a code change:
+  - `xlsx` (high, no fix available upstream) — already risk-accepted with a code
+    comment at `src/lib/exportData.js:118-120`: confirmed the only usage
+    (`exportToXLSX`) *writes* files, never calls `XLSX.read`/`sheet_to_json` on
+    untrusted input, so the parser-side advisories (prototype pollution, ReDoS)
+    don't apply to how this app uses the package.
+  - `dompurify` (moderate, via `jspdf`) — the advisory requires calling
+    `DOMPurify.sanitize(..., {IN_PLACE: true})` on untrusted HTML, which only
+    happens through jsPDF's `.html()` renderer. Confirmed
+    `src/lib/exportData.js`'s PDF export uses `jspdf-autotable` (tabular data)
+    only — `.html()` is never called, so that code path is unreachable.
+  - `js-yaml` (high, via `eslint`) — devDependency-only (lint tooling), never
+    shipped in the built app.
+  - `nanoid` (high, via `postcss`) — build-time-only, never shipped in the
+    built app.
+  - `socket.io-parser` (high) — `npm ls socket.io-parser`/`npm ls socket.io-client`
+    both resolve empty; it's a stale `package-lock.json` entry from a dependency
+    the app no longer declares, not something actually bundled or reachable. Left
+    as-is rather than force-regenerating the lockfile (out of scope, risk of
+    unrelated version churn); a routine `npm install` will prune it naturally.
+- **RLS:** `npm run validate:rls` passes (29 entities, 21 tenant-scoped) — no
+  entity- or user-side path regressions.
+- **`scripts/audit-permissions.mjs`:** 56 heuristic "possibly missing gates" hits
+  across 169 scanned files — this is the same pre-existing, known-noisy baseline
+  this script has produced every release cycle (it flags things like `Login.jsx`
+  and `ForgotPassword.jsx` for having `onClick`/`onSubmit` handlers, which don't
+  need permission gates since they're pre-auth). No new findings traced to this
+  session's change — `syncCashSaleToPettyCash` has no UI surface.
+- **Permission-enforcement gap** (`PettyCashMovement`/`UtilityMovement`/
+  `SupplierPayment` direct writes) — reassessed with live Base44 access this time;
+  deferred with a concrete implementation plan rather than rushed. See the
+  "Known gap" section above.
+- **Version/changelog:** intentionally *not* hand-bumped here. `APP_VERSION`,
+  `RELEASE_DATE`, and the in-app changelog in `src/lib/appConfig.js` are already
+  fully automated by `.github/workflows/auto-release-pr.yml` on every push to
+  `main` (`npm run release` → AI-generated changelog → its own PR,
+  `automated/release-pr`) — hand-editing them here would just race that
+  workflow's next run. `npm run permissions:audit` and `npm run
+  generate:all` are also already wired into that same script.
