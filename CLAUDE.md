@@ -71,6 +71,14 @@ hundred ms between two concurrent writes, but it cannot survive past the losing 
 return — including when that request is the one that created it. See
 `base44/functions/syncCashSaleToPettyCash/entry.ts` (`reconcileDuplicates`/`pickSurvivor`).
 
+**Correction (same day, caught by automated PR review before it caused any real harm):** the
+first version of this fix ran `reconcileDuplicates` unconditionally, which silently overrode a
+tenant that had explicitly set `config_json.prevent_duplicates: false` on the rule — the
+pre-existing pre-write cleanup a few lines below already respected that flag, the new post-write
+one didn't. Fixed by threading `ruleConfig.prevent_duplicates` into `reconcileDuplicates`: with
+it off, the function still computes the same deterministic survivor (so the response points at a
+consistent record) but never neutralizes the other rows' data.
+
 ## License lifecycle is owned by Mission Control (2026-08-03)
 
 StockFlow has **no native license-lifecycle automation**. `checkAccountLifecycle`,
