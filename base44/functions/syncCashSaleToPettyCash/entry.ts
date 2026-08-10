@@ -77,12 +77,19 @@ function pickSurvivor(records: any[]) {
 // concurrent writes, but it can never persist past the next call for that
 // origin_id — including the call that created it, since the loser's own
 // request performs this same cleanup before returning.
-async function reconcileDuplicates(base44: any, business_id: string, origin_id: string) {
+//
+// Respects the same `prevent_duplicates` tenant-rule config the pre-write
+// cleanup above already honors: when a tenant has explicitly turned it off,
+// this only picks which record the response points at (the same
+// deterministic survivor) — it never touches the other rows' data.
+async function reconcileDuplicates(base44: any, business_id: string, origin_id: string, preventDuplicates: boolean) {
   const rows = await base44.asServiceRole.entities.PettyCashMovement.filter({ business_id, origin_id });
   const generated = rows.filter((r: any) => r.origin_id === origin_id && r.generated_by_system === true && !(r.notes || '').includes('[duplicado neutralizado'));
   if (generated.length <= 1) return generated[0] || null;
 
   const survivor = pickSurvivor(generated);
+  if (!preventDuplicates) return survivor;
+
   for (const dup of generated) {
     if (dup.id === survivor.id) continue;
     await base44.asServiceRole.entities.PettyCashMovement.update(dup.id, {
@@ -239,7 +246,7 @@ Deno.serve(async (req) => {
 
     if (existingRecord) {
       await base44.asServiceRole.entities.PettyCashMovement.update(existingRecord.id, payload);
-      const survivorAfterUpdate = await reconcileDuplicates(base44, business_id, origin_id);
+      const survivorAfterUpdate = await reconcileDuplicates(base44, business_id, origin_id, ruleConfig.prevent_duplicates);
       if (rule?.id) {
         await base44.asServiceRole.entities.TenantRule.update(rule.id, { last_applied_at: new Date().toISOString() });
       }
@@ -250,7 +257,7 @@ Deno.serve(async (req) => {
     // Race-condition close: re-check right after the write. If a concurrent
     // call also created an entry for this same origin_id in the meantime,
     // exactly one deterministic survivor remains after this call returns.
-    const survivorAfterCreate = await reconcileDuplicates(base44, business_id, origin_id);
+    const survivorAfterCreate = await reconcileDuplicates(base44, business_id, origin_id, ruleConfig.prevent_duplicates);
     if (rule?.id) {
       await base44.asServiceRole.entities.TenantRule.update(rule.id, { last_applied_at: new Date().toISOString() });
     }
