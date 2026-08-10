@@ -278,12 +278,23 @@ fix documented above — everything else here was verified and needed no change:
 
 - **Secrets:** grepped `src/` and `base44/` for hardcoded API keys/tokens/passwords
   and checked for tracked `.env*` files — none found.
-- **`npm audit`:** 3 advisories, both pre-existing and accepted, not new:
+- **`npm audit`** (clean `npm ci`, not just the partial lockfile scan): 5
+  advisories, all verified non-issues for how this app actually uses them —
+  none required a code change:
   - `xlsx` (high, no fix available upstream) — already risk-accepted with a code
     comment at `src/lib/exportData.js:118-120`: confirmed the only usage
     (`exportToXLSX`) *writes* files, never calls `XLSX.read`/`sheet_to_json` on
     untrusted input, so the parser-side advisories (prototype pollution, ReDoS)
     don't apply to how this app uses the package.
+  - `dompurify` (moderate, via `jspdf`) — the advisory requires calling
+    `DOMPurify.sanitize(..., {IN_PLACE: true})` on untrusted HTML, which only
+    happens through jsPDF's `.html()` renderer. Confirmed
+    `src/lib/exportData.js`'s PDF export uses `jspdf-autotable` (tabular data)
+    only — `.html()` is never called, so that code path is unreachable.
+  - `js-yaml` (high, via `eslint`) — devDependency-only (lint tooling), never
+    shipped in the built app.
+  - `nanoid` (high, via `postcss`) — build-time-only, never shipped in the
+    built app.
   - `socket.io-parser` (high) — `npm ls socket.io-parser`/`npm ls socket.io-client`
     both resolve empty; it's a stale `package-lock.json` entry from a dependency
     the app no longer declares, not something actually bundled or reachable. Left
