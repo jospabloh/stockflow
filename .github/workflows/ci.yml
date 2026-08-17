@@ -18,8 +18,14 @@ jobs:
           # "skip", so `deno test` never actually ran in CI (not for this
           # repo's pre-existing base44/tests/integration_test.ts, nor for
           # any test added since). `find` is always available on the runner.
-          if find . -type f \( -name '*_test.ts' -o -name '*_test.js' -o -name '*.test.ts' -o -name '*.test.js' \) | grep -q .; then
-            deno test
+          #
+          # Scoped to base44/ (this app's own Deno backend, same scope
+          # deno.json's lint.include already uses) — a bare `deno test`/`find .`
+          # also picks up vendored, unrelated *.test.js files under
+          # skills/superpowers-main/, which need a `node_modules` this
+          # Deno-only workflow never installs and always fail to type-check.
+          if find base44 -type f \( -name '*_test.ts' -o -name '*_test.js' -o -name '*.test.ts' -o -name '*.test.js' \) | grep -q .; then
+            deno test base44
           else
-            echo "No Deno test modules found; skipping deno test."
+            echo "No Deno test modules found under base44/; skipping deno test."
           fi

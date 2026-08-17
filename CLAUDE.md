@@ -299,7 +299,14 @@ modules found; skipping," regardless of whether test files existed. This means
 **`base44/tests/integration_test.ts` had never actually executed in CI since
 it was added** — `deno lint` (syntax/style only) and `validate-entity-rls.mjs`
 were the only checks that ever really ran; a broken assertion in either test
-file would have gone green forever. Fixed by switching the detection to `find` (always available on the runner).
+file would have gone green forever. Fixed by switching the detection to
+`find` (always available on the runner), scoped to `base44/` — the same
+scope `deno.json`'s `lint.include` already uses. Scoping mattered: an
+unscoped `find .`/`deno test` also discovers the vendored, unrelated
+`*.test.js` files under `skills/superpowers-main/` (a Claude Code skill
+package checked into this repo, not part of the app), which need a
+`node_modules`/`@types/node` this Deno-only workflow never installs and
+fail to type-check — caught only once `deno test` started actually running.
 
 ## 2026-08-10 automated security/quality/release audit
 
