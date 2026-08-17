@@ -74,8 +74,6 @@ const EMPTY_FORM = {
   affects_petty_cash: false,
 };
 
-const PETTY_CASH_CATEGORY = "Pago a proveedor";
-
 // Estado de factura del proveedor — mismo patrón que cotizaciones
 const INVOICE_STATUS_OPTIONS = [
   { value: "pendiente", label: "Pendiente", short: "Pte", active: "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700" },
@@ -213,7 +211,6 @@ export default function SupplierPayments() {
 
     const supplier = suppliers.find(s => s.id === form.supplier_id);
     const payload = {
-      business_id: businessId,
       supplier_id: form.supplier_id,
       supplier_name: supplier?.name || "",
       amount: amountNum,
@@ -228,71 +225,25 @@ export default function SupplierPayments() {
 
     setSaving(true);
     try {
-      if (editing) {
-        // Sincronizar caja chica
-        const prevAffects = !!editing.affects_petty_cash;
-        const nextAffects = !!form.affects_petty_cash;
-        const existingPcId = editing.petty_cash_movement_id;
-
-        let pettyCashId = existingPcId || null;
-
-        if (nextAffects && existingPcId) {
-          await base44.entities.PettyCashMovement.update(existingPcId, {
-            amount: amountNum,
-            description: payload.concept || `Pago a ${payload.supplier_name}`,
-            category: PETTY_CASH_CATEGORY,
-            movement_date: payload.payment_date,
-            reference: payload.reference,
-            notes: payload.notes,
-            payment_method_snapshot: payload.payment_method,
-          }).catch(err => console.warn("No se pudo actualizar caja chica", err));
-        } else if (nextAffects && !existingPcId) {
-          const pc = await base44.entities.PettyCashMovement.create({
+      const resp = editing
+        ? await base44.functions.invoke('supplierPayments', {
+            action: 'updateSupplierPaymentSafe',
+            payment_id: editing.id,
+            ...payload,
+          })
+        : await base44.functions.invoke('supplierPayments', {
+            action: 'createSupplierPaymentSafe',
             business_id: businessId,
-            movement_type: "expense",
-            amount: amountNum,
-            description: payload.concept || `Pago a ${payload.supplier_name}`,
-            category: PETTY_CASH_CATEGORY,
-            movement_date: payload.payment_date,
-            reference: payload.reference,
-            notes: payload.notes,
-            generated_by_system: true,
-            payment_method_snapshot: payload.payment_method,
+            ...payload,
           });
-          pettyCashId = pc?.id || null;
-        } else if (!nextAffects && prevAffects && existingPcId) {
-          await base44.entities.PettyCashMovement.delete(existingPcId).catch(err => console.warn("No se pudo eliminar egreso caja chica", err));
-          pettyCashId = null;
-        }
 
-        await base44.entities.SupplierPayment.update(editing.id, {
-          ...payload,
-          petty_cash_movement_id: pettyCashId || "",
-        });
-        toast.success("✓ Pago actualizado");
-      } else {
-        let pettyCashId = "";
-        if (payload.affects_petty_cash) {
-          const pc = await base44.entities.PettyCashMovement.create({
-            business_id: businessId,
-            movement_type: "expense",
-            amount: amountNum,
-            description: payload.concept || `Pago a ${payload.supplier_name}`,
-            category: PETTY_CASH_CATEGORY,
-            movement_date: payload.payment_date,
-            reference: payload.reference,
-            notes: payload.notes,
-            generated_by_system: true,
-            payment_method_snapshot: payload.payment_method,
-          });
-          pettyCashId = pc?.id || "";
-        }
-        await base44.entities.SupplierPayment.create({
-          ...payload,
-          petty_cash_movement_id: pettyCashId,
-        });
-        toast.success("✓ Pago registrado");
+      if (!resp?.data?.success) {
+        toast.error(resp?.data?.error || "No se pudo guardar el pago");
+        setSaving(false);
+        return;
       }
+
+      toast.success(editing ? "✓ Pago actualizado" : "✓ Pago registrado");
       setFormOpen(false);
       setEditing(null);
       setForm(EMPTY_FORM);
@@ -308,11 +259,11 @@ export default function SupplierPayments() {
   const handleDelete = async () => {
     if (!deletingPayment) return;
     try {
-      if (deletingPayment.affects_petty_cash && deletingPayment.petty_cash_movement_id) {
-        await base44.entities.PettyCashMovement.delete(deletingPayment.petty_cash_movement_id)
-          .catch(err => console.warn("No se pudo eliminar egreso caja chica asociado", err));
+      const resp = await base44.functions.invoke('supplierPayments', { action: 'deleteSupplierPaymentSafe', payment_id: deletingPayment.id });
+      if (!resp?.data?.success) {
+        toast.error(resp?.data?.error || "No se pudo eliminar el pago");
+        return;
       }
-      await base44.entities.SupplierPayment.delete(deletingPayment.id);
       toast.success("Pago eliminado");
       setDeletingPayment(null);
       await invalidate("SupplierPayment");
@@ -333,7 +284,12 @@ export default function SupplierPayments() {
       (old ?? []).map((x) => (x.id === p.id ? { ...x, invoice_status: newVal } : x))
     );
     try {
-      await base44.entities.SupplierPayment.update(p.id, { invoice_status: newVal });
+      const resp = await base44.functions.invoke('supplierPayments', {
+        action: 'updateSupplierPaymentInvoiceStatusSafe',
+        payment_id: p.id,
+        invoice_status: newVal,
+      });
+      if (!resp?.data?.success) throw new Error(resp?.data?.error || "update failed");
     } catch (err) {
       console.error("invoice status update error", err);
       toast.error("No se pudo actualizar el estado de la factura");

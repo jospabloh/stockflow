@@ -11,9 +11,27 @@ jobs:
       - run: deno lint
       - name: Validate entity RLS rules
         run: node scripts/validate-entity-rls.mjs
-      - run: |
-          if rg -l --glob '*_test.ts' --glob '*_test.js' --glob '*.test.ts' --glob '*.test.js' . > /dev/null; then
-            deno test
+      - name: Run Deno tests (if any test modules exist)
+        run: |
+          # NOTE: this previously used `rg`, which isn't installed on
+          # ubuntu-latest — the condition silently always fell through to
+          # "skip", so `deno test` never actually ran in CI (not for this
+          # repo's pre-existing base44/tests/integration_test.ts, nor for
+          # any test added since). `find` is always available on the runner.
+          #
+          # Scoped to base44/ (this app's own Deno backend, same scope
+          # deno.json's lint.include already uses) — a bare `deno test`/`find .`
+          # also picks up vendored, unrelated *.test.js files under
+          # skills/superpowers-main/, which need a `node_modules` this
+          # Deno-only workflow never installs and always fail to type-check.
+          #
+          # --allow-env: base44/functions/*/handlers/_permissions.ts reads
+          # PLATFORM_OWNER_EMAIL at module load time (same pattern the
+          # existing getPermissionProfiles.ts uses), which needs env access
+          # to even import — real Base44 function runtimes always have it;
+          # deno test's default sandbox doesn't.
+          if find base44 -type f \( -name '*_test.ts' -o -name '*_test.js' -o -name '*.test.ts' -o -name '*.test.js' \) | grep -q .; then
+            deno test --allow-env base44
           else
-            echo "No Deno test modules found; skipping deno test."
+            echo "No Deno test modules found under base44/; skipping deno test."
           fi

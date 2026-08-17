@@ -51,20 +51,6 @@ export default function UtilityMovementForm({ open, movementType, businessId, ru
   const selectedAccount = (accounts || []).find((a) => a.id === form.account_id);
   const accountAffectsPettyCash = !!selectedAccount?.affects_petty_cash;
 
-  const buildPettyCashPayload = (amount, rubroName, accountName) => ({
-    business_id: businessId,
-    movement_type: effectiveType, // income | expense — el saldo de Caja Chica ya lo maneja
-    amount,
-    description: form.description.trim() || `${TYPE_LABELS[effectiveType]}: ${rubroName || "Utilidad"}`,
-    category: rubroName || "",
-    movement_date: form.movement_date,
-    reference: form.reference.trim(),
-    notes: form.notes.trim(),
-    generated_by_system: true,
-    origin_type: "utility",
-    payment_method_snapshot: accountName || "",
-  });
-
   const handleSave = async () => {
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) { toast.error("El monto debe ser mayor a cero"); return; }
@@ -83,14 +69,7 @@ export default function UtilityMovementForm({ open, movementType, businessId, ru
 
     setSaving(true);
     try {
-      let registeredBy = movement?.registered_by || "";
-      if (!isEdit) {
-        registeredBy = (await base44.auth.me().catch(() => null))?.email || "";
-      }
-
-      const basePayload = {
-        business_id: businessId,
-        movement_type: effectiveType,
+      const sharedPayload = {
         amount,
         movement_date: form.movement_date,
         rubro_id: rubro?.id || "",
@@ -104,47 +83,30 @@ export default function UtilityMovementForm({ open, movementType, businessId, ru
         invoiced: !!form.invoiced,
         reference: form.reference.trim(),
         notes: form.notes.trim(),
-        registered_by: registeredBy,
       };
 
-      if (isEdit) {
-        const prevAffects = !!movement.affects_petty_cash;
-        const existingPcId = movement.petty_cash_movement_id;
-        let pettyCashId = existingPcId || "";
-
-        if (affects && existingPcId) {
-          await base44.entities.PettyCashMovement.update(existingPcId, {
-            ...buildPettyCashPayload(amount, rubro?.name, account?.name),
-            origin_id: movement.id,
-          }).catch((err) => console.warn("No se pudo actualizar caja chica", err));
-        } else if (affects && !existingPcId) {
-          const pc = await base44.entities.PettyCashMovement.create({
-            ...buildPettyCashPayload(amount, rubro?.name, account?.name),
-            origin_id: movement.id,
+      const resp = isEdit
+        ? await base44.functions.invoke('utility', {
+            action: 'updateUtilityMovementSafe',
+            movement_id: movement.id,
+            ...sharedPayload,
+          })
+        : await base44.functions.invoke('utility', {
+            action: 'createUtilityMovementSafe',
+            business_id: businessId,
+            movement_type: effectiveType,
+            ...sharedPayload,
           });
-          pettyCashId = pc?.id || "";
-        } else if (!affects && prevAffects && existingPcId) {
-          await base44.entities.PettyCashMovement.delete(existingPcId).catch((err) => console.warn("No se pudo eliminar caja chica", err));
-          pettyCashId = "";
-        }
 
-        await base44.entities.UtilityMovement.update(movement.id, {
-          ...basePayload,
-          petty_cash_movement_id: pettyCashId,
-        });
+      if (!resp?.data?.success) {
+        toast.error(resp?.data?.error || "No se pudo guardar el movimiento");
+        setSaving(false);
+        return;
+      }
+
+      if (isEdit) {
         toast.success("Movimiento actualizado");
       } else {
-        const created = await base44.entities.UtilityMovement.create({
-          ...basePayload,
-          petty_cash_movement_id: "",
-        });
-        if (affects) {
-          const pc = await base44.entities.PettyCashMovement.create({
-            ...buildPettyCashPayload(amount, rubro?.name, account?.name),
-            origin_id: created.id,
-          });
-          await base44.entities.UtilityMovement.update(created.id, { petty_cash_movement_id: pc?.id || "" });
-        }
         toast.success("Movimiento guardado correctamente");
         celebrate();
       }

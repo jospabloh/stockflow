@@ -102,10 +102,19 @@ export default function PettyCash() {
       setDeletingId(null);
       return;
     }
-    await base44.entities.PettyCashMovement.delete(deletingId);
-    toast.success("Movimiento eliminado");
-    setDeletingId(null);
-    loadMovements();
+    try {
+      const resp = await base44.functions.invoke('pettyCash', { action: 'deletePettyCashMovementSafe', movement_id: deletingId });
+      if (!resp?.data?.success) {
+        toast.error(resp?.data?.error || "No se pudo eliminar el movimiento");
+        return;
+      }
+      toast.success("Movimiento eliminado");
+      setDeletingId(null);
+      loadMovements();
+    } catch (err) {
+      console.error("Delete petty cash movement error:", err);
+      toast.error("No se pudo eliminar el movimiento");
+    }
   };
 
   if (!businessId) return (
