@@ -11,8 +11,14 @@ jobs:
       - run: deno lint
       - name: Validate entity RLS rules
         run: node scripts/validate-entity-rls.mjs
-      - run: |
-          if rg -l --glob '*_test.ts' --glob '*_test.js' --glob '*.test.ts' --glob '*.test.js' . > /dev/null; then
+      - name: Run Deno tests (if any test modules exist)
+        run: |
+          # NOTE: this previously used `rg`, which isn't installed on
+          # ubuntu-latest — the condition silently always fell through to
+          # "skip", so `deno test` never actually ran in CI (not for this
+          # repo's pre-existing base44/tests/integration_test.ts, nor for
+          # any test added since). `find` is always available on the runner.
+          if find . -type f \( -name '*_test.ts' -o -name '*_test.js' -o -name '*.test.ts' -o -name '*.test.js' \) | grep -q .; then
             deno test
           else
             echo "No Deno test modules found; skipping deno test."

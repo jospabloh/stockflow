@@ -291,6 +291,16 @@ silently fail to take effect server-side. Left out of this fix's scope
 (read-only entities in this bug's original report, not write-direct-from-client
 like the three above); a natural follow-up once `hasPermission()` proves out.
 
+**Separate finding from the same PR: `deno test` had never actually run in
+CI.** `.github/workflows/ci.yml`'s test-detection step used `rg -l` to decide
+whether to run `deno test` — `rg` (ripgrep) isn't installed on `ubuntu-latest`
+runners, so that check always failed and silently fell through to "no test
+modules found; skipping," regardless of whether test files existed. This means
+**`base44/tests/integration_test.ts` had never actually executed in CI since
+it was added** — `deno lint` (syntax/style only) and `validate-entity-rls.mjs`
+were the only checks that ever really ran; a broken assertion in either test
+file would have gone green forever. Fixed by switching the detection to `find` (always available on the runner).
+
 ## 2026-08-10 automated security/quality/release audit
 
 Routine sweep (secrets, dependency, RLS, permissions-heuristic, tenant isolation).
