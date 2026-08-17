@@ -268,10 +268,12 @@ from direct `base44.entities.X.*` calls to `base44.functions.invoke(...)`,
 matching the calling convention every other Safe function already uses.
 
 **Verification performed:** `npm run lint`, `npm run build`, `npm run
-validate:rls` all pass; the new Deno test suite runs in CI (`deno test`, same
-as `integration_test.ts`) since `deno` isn't available in this session's
-sandbox — that CI run is the first live signal, watched via the PR. **Not**
-verified: an actual browser session as a permission-restricted `almacenista`
+validate:rls` all pass locally; `deno` isn't available in this session's
+sandbox, so the new Deno test suite got its first live run in this PR's CI —
+which caught three unrelated, real, pre-existing CI bugs along the way (see
+below) before finally going green: `ok | 31 passed | 0 failed` (12 from the
+pre-existing `integration_test.ts` + 19 new). **Not** verified: an actual
+browser session as a permission-restricted `almacenista`
 against the deployed app (still not achievable in this environment) — the risk
 this gap in verification carries is bounded by scope: these are brand-new
 functions nothing previously called, and the migrated call sites preserve
