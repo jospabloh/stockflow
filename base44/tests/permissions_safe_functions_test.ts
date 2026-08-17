@@ -1,12 +1,13 @@
 /**
  * Tests for the granular permission-key enforcement added to the
  * PettyCashMovement / UtilityMovement / SupplierPayment Safe functions
- * (base44/functions/{pettyCash,utility,supplierPayments}). See CLAUDE.md
- * "Known gap" for the bug this closes: those entities used to be written
+ * (base44/functions/pettyCash, base44/functions/utility,
+ * base44/functions/supplierPayments). See CLAUDE.md "Granular permission-key
+ * enforcement" for the bug this closes: those entities used to be written
  * directly from the client with no server-side check of the
  * permissionRegistry.js keys the UI already gates on.
  *
- * `hasPermission()` itself (base44/functions/*/handlers/_permissions.ts) has
+ * hasPermission() itself (see each function's handlers/_permissions.ts) has
  * no npm/Base44-SDK imports, so it's imported and exercised directly here —
  * not just simulated like the older tests in integration_test.ts.
  *
