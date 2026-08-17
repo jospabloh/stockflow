@@ -71,6 +71,15 @@
     "rubro_name": {
       "description": "Nombre del rubro (desnormalizado al momento del registro)",
       "type": "string"
+    },
+    "taken_by": {
+      "description": "Nombre de quien dispuso del dinero (opcional)",
+      "type": "string"
+    },
+    "invoiced": {
+      "default": false,
+      "description": "Si el movimiento fue facturado",
+      "type": "boolean"
     }
   },
   "required": [

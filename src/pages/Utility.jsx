@@ -259,11 +259,11 @@ export default function Utility() {
     const target = deletingMovement;
     if (!target) return;
     try {
-      if (target.affects_petty_cash && target.petty_cash_movement_id) {
-        await base44.entities.PettyCashMovement.delete(target.petty_cash_movement_id)
-          .catch((err) => console.warn("No se pudo eliminar espejo de caja chica", err));
+      const resp = await base44.functions.invoke('utility', { action: 'deleteUtilityMovementSafe', movement_id: target.id });
+      if (!resp?.data?.success) {
+        toast.error(resp?.data?.error || "No se pudo eliminar el movimiento");
+        return;
       }
-      await base44.entities.UtilityMovement.delete(target.id);
       toast.success("Movimiento eliminado");
       setDeletingMovement(null);
       await load();

@@ -207,76 +207,89 @@ path. Run it after touching any `rls` block, and remember to **deploy** the
 fixed schema to the Base44 backend (`update_entity_schema`) — the repo `.jsonc`
 alone does not change runtime behavior.
 
-## Known gap (deferred, reassessed 2026-08-10): granular permission keys are UI-only for a few direct-SDK entity writes
+## Granular permission-key enforcement for Caja Chica / Utilidad / Pagos a Proveedores (fixed 2026-08-17)
 
-RLS (above) only enforces **tenant isolation** (`business_id` match) — it has no
-concept of the app's granular `almacenista` permission keys
-(`src/lib/permissionRegistry.js`, e.g. `Caja Chica:add_fund`,
-`Utilidad:add_withdrawal`). Those keys are enforced in **two** places today:
+RLS only enforces **tenant isolation** (`business_id` match) — it has no concept
+of the app's granular `almacenista` permission keys (`src/lib/permissionRegistry.js`,
+e.g. `Caja Chica:add_fund`, `Utilidad:add_withdrawal`). Those keys used to be
+enforced **client-side only** (`can()` hides the button) for `PettyCashMovement`,
+`UtilityMovement` and `SupplierPayment` — the client wrote them **directly** via
+`base44.entities.X.create/update/delete(...)`, with no Safe function in between,
+so an authenticated `almacenista` could bypass the UI (e.g. from devtools) and
+perform these actions on their own business's records even when explicitly
+denied by their admin. Deferred twice before (2026-08-03, 2026-08-10) for lack
+of a way to deploy and verify the fix — see git history of this section for
+that reasoning.
 
-1. The UI (`can()` / hides the button) — always present, but bypassable by
-   anyone calling the Base44 SDK directly (e.g. from devtools).
-2. A hand-written check inside a backend **"Safe" function**
-   (`base44/functions/*/handlers/*Safe.ts`) — this is the real, non-bypassable
-   enforcement. Most sensitive writes (quotations, movements, products,
-   categories, contacts, courses, enrollments, client delete, team/role
-   changes, license admin, tenant-rule admin, product import) go through one
-   of these and are correctly gated server-side.
+**Fix:** three new Safe-function groups, one per entity —
+`base44/functions/{pettyCash,utility,supplierPayments}/` — each with
+create/update/delete handlers (plus a narrower
+`updateSupplierPaymentInvoiceStatusSafe` for the semáforo quick-toggle, which
+the UI gates on `edit_invoice_status` alone, not `edit_amount`). Every handler
+checks, in order: auth → tenant ownership (`business_id` match, same as the
+existing Safe functions) → the specific `permissionRegistry.js` key the
+corresponding UI button/action already gates on → `write_blocked`
+(`billing_status: suspended|view_only`, closing the second half of the gap —
+these three entities now inherit the license gate the other ~30 Safe functions
+already had) → the field validation the client used to do. The `UtilityMovement`
+and `SupplierPayment` handlers also perform the `PettyCashMovement` mirror
+write/update/delete themselves (server-side, via `asServiceRole`) exactly as the
+client used to, so behavior for a fully-permissioned user (i.e. every admin,
+and any almacenista whose permissions were never restricted from the defaults)
+is unchanged.
 
-`PettyCashMovement` and `UtilityMovement` are the exception: the client writes
-them **directly** via `base44.entities.X.create/update/delete(...)`, with no
-Safe function in between. RLS still stops cross-tenant writes, but nothing
-server-side checks `Caja Chica:add_fund` / `Caja Chica:delete` /
-`Utilidad:add_withdrawal` / `edit_withdrawal` / `delete_withdrawal` — an
-authenticated `almacenista` can bypass the UI and perform these actions on
-their own business's records even when explicitly denied by their admin.
-`SupplierPayment` has the same direct-write shape and should be checked too.
+The permission check itself (`hasPermission()`,
+`base44/functions/*/handlers/_permissions.ts` — one copy per function
+directory, since Deno can't import across them; content is identical and
+regenerated, see below) mirrors `PermissionContext.jsx`'s `can()` precedence
+exactly: platform-owner email or `role:admin` → always allowed; else an
+explicit `true`/`false` override in that business's `PermissionProfile` for
+the caller's role wins; else fall back to the registry default
+(`ALMACENISTA_DENIED`, same set `getDefaultsForRole('almacenista')` computes on
+the client). `hasPermission()` has no npm/SDK imports, so it's covered by real
+(not simulated) Deno unit tests —
+`base44/tests/permissions_safe_functions_test.ts` — exercising admin-bypass,
+default-allow, default-deny, both directions of an explicit `PermissionProfile`
+override, cross-tenant profile isolation, and unknown-role deny-by-default,
+plus simulated handler-level tests (permission-order, `write_blocked`,
+cross-tenant `business_id`) matching the existing pattern in
+`base44/tests/integration_test.ts`.
 
-The same class of gap exists, currently un-exploitable, in two Safe functions
-that validate `business_id` but not the specific permission key:
-`partialReturnQuotation` (`Cotizaciones:return`) and
+**Regenerating the permission data:** `CANONICAL_KEYS`/`ALMACENISTA_DENIED` in
+each `_permissions.ts` are AUTOGEN blocks — `scripts/generatePermissionManifests.mjs`
+now includes all three in `AUTOGEN_TARGETS`, so `npm run generate:permission-manifests`
+(already wired into `npm run generate:all` / the release script) keeps them in
+sync with `src/lib/permissionRegistry.js` forever, same as the pre-existing
+`dailyPermissionAudit`/`backfillPermissionDefaults` copies.
+
+The four client call sites (`PettyCashMovementForm.jsx`, `PettyCash.jsx`,
+`UtilityMovementForm.jsx`, `Utility.jsx`, `SupplierPayments.jsx`) were migrated
+from direct `base44.entities.X.*` calls to `base44.functions.invoke(...)`,
+matching the calling convention every other Safe function already uses.
+
+**Verification performed:** `npm run lint`, `npm run build`, `npm run
+validate:rls` all pass; the new Deno test suite runs in CI (`deno test`, same
+as `integration_test.ts`) since `deno` isn't available in this session's
+sandbox — that CI run is the first live signal, watched via the PR. **Not**
+verified: an actual browser session as a permission-restricted `almacenista`
+against the deployed app (still not achievable in this environment) — the risk
+this gap in verification carries is bounded by scope: these are brand-new
+functions nothing previously called, and the migrated call sites preserve
+identical behavior for every admin and for any almacenista who never had these
+specific permissions revoked from their defaults (the only case that changes
+is an almacenista whose admin explicitly denied one of these actions — for
+that case, the action now correctly fails server-side instead of silently
+succeeding).
+
+The same class of gap still exists, currently un-exploitable, in two other
+Safe functions that validate `business_id` but not the specific permission
+key: `partialReturnQuotation` (`Cotizaciones:return`) and
 `createQuotationSafe`/`updateQuotationSafe` (`Cotizaciones:create`/
 `edit_items`) — both keys are granted to `almacenista` by default today, so
 there's no live bypass, but revoking either via `PermissionAdmin` would
-silently fail to take effect server-side.
-
-**Separately, same root cause:** the `write_blocked` billing/license gate
-(`checkTenantLicense`, `billing_status: suspended|view_only`) is implemented
-inside the Safe functions too, so `PettyCashMovement`/`SupplierPayment`/
-`UtilityMovement` writes also skip it — a suspended/view-only tenant can keep
-using Caja Chica/Utilidad after their license should have cut off writes.
-`LicenseContext.isReadOnly` was already added for exactly this purpose but has
-**zero consumers** in `src/` — it's dead code waiting for someone to wire it up
-client-side (which would only be a UX nicety here, not the real fix).
-
-**Why this isn't fixed yet:** the correct fix is a new Safe function (or
-equivalent) that checks the permission key and `write_blocked` before writing,
-which needs **deploying to Base44** to take effect — writing it without
-deploying would just be a second instance of the "`.jsonc` changed but runtime
-didn't" bug this file already warns about. Base44 MCP access and CLI login are
-both required and were unavailable in the 2026-08-03 audit session that found
-this.
-
-**2026-08-10 reassessment:** Base44 MCP access was available this session, so
-the original blocker is lifted, but the fix was still deferred rather than
-rushed: it touches ~15 direct-write call sites across four live financial-data
-components (`PettyCashMovementForm.jsx`, `UtilityMovementForm.jsx`,
-`SupplierPayments.jsx`, `Utility.jsx`/`PettyCash.jsx`), each with real
-create/update/delete business logic (petty-cash sync amounts, utility↔pettycash
-linking, the invoice-status semáforo), and there is no way in this session to
-exercise the resulting UI as a permission-restricted `almacenista` to verify
-nothing broke before it reaches real tenants' cashbox data — the exact
-combination this file's own rules ("don't patch cashbox logic without
-verification", "don't ship an unverified Base44 deploy") warn against rushing.
-Recommended shape for the next session that picks this up: one new Safe
-function per entity (`createPettyCashMovementSafe` /
-`updatePettyCashMovementSafe` / `deletePettyCashMovementSafe`, mirrored for
-`UtilityMovement` and `SupplierPayment`) that checks the permission key +
-`write_blocked` and then performs exactly the same write the client does
-today; migrate the four call sites to call them; deploy; verify via
-`list_entity_schemas` + a live create/delete call as a non-privileged
-`almacenista` (both an allowed and a denied permission case) before removing
-this section.
+silently fail to take effect server-side. Left out of this fix's scope
+(read-only entities in this bug's original report, not write-direct-from-client
+like the three above); a natural follow-up once `hasPermission()` proves out.
 
 ## 2026-08-10 automated security/quality/release audit
 

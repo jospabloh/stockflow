@@ -68,31 +68,43 @@ export default function PettyCashMovementForm({ open, movementType, businessId, 
     if (!businessId) { toast.error("No se encontró el negocio asociado"); return; }
 
     setSaving(true);
-    if (isEdit) {
-      await base44.entities.PettyCashMovement.update(movement.id, {
-        amount,
-        description: form.description.trim(),
-        category: form.category || "",
-        movement_date: form.movement_date,
-        reference: form.reference.trim(),
-        notes: form.notes.trim(),
-      });
-    } else {
-      await base44.entities.PettyCashMovement.create({
-        business_id: businessId,
-        movement_type: movementType,
-        amount,
-        description: form.description.trim(),
-        category: form.category || "",
-        movement_date: form.movement_date,
-        reference: form.reference.trim(),
-        notes: form.notes.trim(),
-      });
+    try {
+      const resp = isEdit
+        ? await base44.functions.invoke('pettyCash', {
+            action: 'updatePettyCashMovementSafe',
+            movement_id: movement.id,
+            amount,
+            description: form.description.trim(),
+            category: form.category || "",
+            movement_date: form.movement_date,
+            reference: form.reference.trim(),
+            notes: form.notes.trim(),
+          })
+        : await base44.functions.invoke('pettyCash', {
+            action: 'createPettyCashMovementSafe',
+            business_id: businessId,
+            movement_type: movementType,
+            amount,
+            description: form.description.trim(),
+            category: form.category || "",
+            movement_date: form.movement_date,
+            reference: form.reference.trim(),
+            notes: form.notes.trim(),
+          });
+      if (!resp?.data?.success) {
+        toast.error(resp?.data?.error || "No se pudo guardar el movimiento");
+        setSaving(false);
+        return;
+      }
+      toast.success(isEdit ? "Movimiento actualizado" : "Movimiento guardado correctamente");
+      setSaving(false);
+      onSaved();
+      onClose();
+    } catch (err) {
+      console.error("Save petty cash movement error:", err);
+      toast.error(`Error al guardar: ${err.message || "Intenta de nuevo"}`);
+      setSaving(false);
     }
-    toast.success(isEdit ? "Movimiento actualizado" : "Movimiento guardado correctamente");
-    setSaving(false);
-    onSaved();
-    onClose();
   };
 
   return (

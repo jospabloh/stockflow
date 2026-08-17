@@ -97,6 +97,9 @@ ${canonicalKeysTs},
 const AUTOGEN_TARGETS = [
   { path: ['base44', 'functions', 'dailyPermissionAudit', 'entry.ts'], block: blockWithDenied },
   { path: ['base44', 'functions', 'permissions', 'handlers', 'backfillPermissionDefaults.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'pettyCash', 'handlers', '_permissions.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'utility', 'handlers', '_permissions.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'supplierPayments', 'handlers', '_permissions.ts'], block: blockWithDenied },
   { path: ['base44', 'functions', 'permissions', 'handlers', 'getPermissionProfiles.ts'], block: blockKeysOnly },
 ];
 
