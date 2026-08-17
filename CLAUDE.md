@@ -307,6 +307,14 @@ unscoped `find .`/`deno test` also discovers the vendored, unrelated
 package checked into this repo, not part of the app), which need a
 `node_modules`/`@types/node` this Deno-only workflow never installs and
 fail to type-check — caught only once `deno test` started actually running.
+Also needed `--allow-env` on the `deno test` invocation itself:
+`_permissions.ts` reads `PLATFORM_OWNER_EMAIL` at module load time (same
+pattern `getPermissionProfiles.ts` already used), which `deno test`'s default
+sandbox blocks even just to import the module — real Base44 function runtimes
+always have env access, so this was never a production issue, only a gap in
+this test file being the first to actually `import` production handler code
+directly instead of simulating it (the pre-existing `integration_test.ts`
+never imports anything real, so it never needed this).
 
 ## 2026-08-10 automated security/quality/release audit
 

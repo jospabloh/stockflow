@@ -24,8 +24,14 @@ jobs:
           # also picks up vendored, unrelated *.test.js files under
           # skills/superpowers-main/, which need a `node_modules` this
           # Deno-only workflow never installs and always fail to type-check.
+          #
+          # --allow-env: base44/functions/*/handlers/_permissions.ts reads
+          # PLATFORM_OWNER_EMAIL at module load time (same pattern the
+          # existing getPermissionProfiles.ts uses), which needs env access
+          # to even import — real Base44 function runtimes always have it;
+          # deno test's default sandbox doesn't.
           if find base44 -type f \( -name '*_test.ts' -o -name '*_test.js' -o -name '*.test.ts' -o -name '*.test.js' \) | grep -q .; then
-            deno test base44
+            deno test --allow-env base44
           else
             echo "No Deno test modules found under base44/; skipping deno test."
           fi
