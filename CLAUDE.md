@@ -81,20 +81,44 @@ consistent record) but never neutralizes the other rows' data.
 
 ## License lifecycle is owned by Mission Control (2026-08-03)
 
-StockFlow has **no native license-lifecycle automation**. `checkAccountLifecycle`,
-`processMonthlyRenewal`, `checkTenantLicense`, `expireTrials`,
-`queueBillingReminders`, and `migrateViewOnlySince` were removed — they
-duplicated the unified portfolio lifecycle that `jospabloh/acacia-mission-control`
-(`api/cron/license-lifecycle.js`) already runs against `Business.billing_status`.
-Do not re-add a StockFlow-native cron for trial/license status transitions or
-lifecycle reminder emails — that logic belongs in Mission Control now. See
-`base44/AUTOMATION_SETUP_PROMPT.md` for the retirement note and a known gap
-(Mercado Pago pre-charge reminder emails aren't reproduced there yet).
+StockFlow has **no native license-*status-transition*** automation.
+`checkAccountLifecycle`, `processMonthlyRenewal`, `checkTenantLicense`,
+`expireTrials`, `queueBillingReminders`, and `migrateViewOnlySince` were
+removed — they duplicated the unified portfolio lifecycle that
+`jospabloh/acacia-mission-control` (`api/cron/license-lifecycle.js`) already
+runs against `Business.billing_status`. Do not re-add a StockFlow-native cron
+that writes `billing_status` or does trial/license status transitions — that
+logic belongs in Mission Control now. See `base44/AUTOMATION_SETUP_PROMPT.md`
+for the retirement note and a known gap (Mercado Pago pre-charge reminder
+emails aren't reproduced there yet).
 
 `sendLifecycleEmails` and `base44/functions/licenses/*` were kept — they're
 real dependencies of the manual admin actions in `LicenseAdmin.jsx`
 (`confirmRenewalPayment`, `adminUpdateTenantLicense`), unrelated to the
 retired cron.
+
+**Documented exception (2026-08-18): `processTrialReactivationEmails` is
+intentionally kept**, flagged by a portfolio-standard audit
+(`jospabloh/acacia-app-standard`) as looking like the same violation this
+section warns against, but it isn't one — it's a distinct engagement feature,
+not a lifecycle-status duplicate:
+- It **reads** `Business.billing_status === 'trial'` to scope which
+  businesses to consider, but **never writes** `billing_status` or does any
+  status transition — no overlap with what was removed above.
+- It sends a "we miss you" nudge to a specific, narrow audience Mission
+  Control's unified cron doesn't address at all: users **still inside an
+  active trial** who've been inactive >24h. Mission Control's
+  `computePortfolioLifecycleStage` only acts **after** `current_period_end`
+  (the read_only/blocked/inactive escalation) — it has no concept of
+  "still-active-trial, but user hasn't logged in," so retiring this without
+  a replacement would just delete the feature, not centralize it.
+- Proposed (not implemented) as a candidate for a future portfolio-wide
+  `computePortfolioLifecycleStage` stage — see the 2026-08-18 addendum in
+  Mission Control's `docs/superpowers/specs/2026-08-03-portfolio-license-lifecycle-design.md`.
+  Until/unless that lands, this stays StockFlow-native. If you touch this
+  function, keep it billing_status-**read-only** — the moment it needs to
+  write status, it becomes the exact violation this section exists to
+  prevent, and belongs in Mission Control instead.
 
 ## Base44
 
