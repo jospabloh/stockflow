@@ -342,6 +342,85 @@ this test file being the first to actually `import` production handler code
 directly instead of simulating it (the pre-existing `integration_test.ts`
 never imports anything real, so it never needed this).
 
+## Granular permission-key enforcement, part 2: Rubros / Tipo de Pago / CuentasFondo / AppSettings / on-demand arrivals (fixed 2026-08-18)
+
+The 2026-08-17 fix above covered `PettyCashMovement`/`UtilityMovement`/
+`SupplierPayment`. A portfolio-standard audit (`jospabloh/acacia-app-standard`,
+module 3) found the same class of gap still open on five more write paths
+that were writing directly via `base44.entities.X.*` from the client with no
+server-side permission or billing check:
+
+- **`Rubro`, `PaymentMethod`, `FundAccount`** (`Rubros.jsx`,
+  `PaymentMethods.jsx`, `FundAccounts.jsx`) — new shared Safe-function group
+  `base44/functions/catalogSettings/` (`createCatalogItemSafe` /
+  `updateCatalogItemSafe` / `deleteCatalogItemSafe`, all three entities go
+  through the same three handlers, parameterized by an `entity` field — see
+  `handlers/_entityConfig.ts`). Follows the same order as the 2026-08-17
+  fix: auth → `business_id` match → `hasPermission()` → `write_blocked` →
+  field whitelist → `asServiceRole` write. `_entityConfig.ts`'s
+  `fieldAction` map enforces the same per-field granularity the client
+  already had: Rubro/FundAccount gate every field (including the `active`
+  toggle) behind one `edit` action, but PaymentMethod splits `edit_name`
+  (name) from `edit_status` (the active toggle) — that split is intentional,
+  matching `PaymentMethods.jsx`'s two separate `can()` checks, not merged
+  into one.
+- **`AppSettings`** — its `update` path already went through
+  `updateAppSettingsSafe` (business-only, admin-gated), but the **first
+  save** (`Settings.jsx`, when no `AppSettings` row exists yet for the
+  business) called `base44.entities.AppSettings.create()` directly, with no
+  gate of any kind. New `createAppSettingsSafe` handler in the existing
+  `base44/functions/business/` group closes it, mirroring
+  `updateAppSettingsSafe`'s admin-only check (this entity has no granular
+  permission finer than admin — see `Configuracion`'s `deniedActionable`
+  list in `permissionRegistry.js`, every edit action is admin-only by
+  default) plus the `write_blocked` billing gate `updateAppSettingsSafe` was
+  still missing too. Idempotent: if a row already exists (race with another
+  tab, or a retry) it updates that row instead of creating a duplicate.
+  `Utility.jsx`'s forecast toggle (`utility_forecast_enabled`) had the exact
+  same direct-create-or-update gap and got its own narrower fix —
+  `toggleUtilityForecastSafe` in the existing `base44/functions/utility/`
+  group, gated by `Utilidad:manage_forecast` (the permission the switch
+  itself was already client-gated on) rather than the blanket admin check,
+  since that key already supports per-role overrides.
+- **On-demand arrival registration** (`CreateFromOnDemandModal.jsx`, opened
+  from the "Crear" button in `QuotationPreviewDialog.jsx`) — a 3-write
+  sequence (`Movement.create` with `stock_applied:true`, `Product.stock`
+  update, `Quotation.items` status update) that had **no gate of any kind**,
+  not even a client-side `can()` check on the button (only the quotation's
+  `status` gated it). New `registerOnDemandArrivalSafe` handler in the
+  existing `base44/functions/quotations/` group, gated by
+  `Movimientos:entry` (this registers a stock entry — same action id
+  `Movements.jsx`'s own entry button already uses) plus an idempotency guard
+  matching `deliverQuotationSafe`'s own pattern for its EXIT movements
+  (skip if an entry `Movement` already exists for this
+  `quotation_id`+`product_id`, since the call isn't atomic and could be
+  double-invoked). Kept the exact same write shape the client used
+  (`stock_applied:true` + a direct `Product.stock` update, not routed
+  through `applyMovementStock` like `deliverQuotationSafe`'s EXIT movements
+  are — switching that now would be an unrelated behavior change).
+  `QuotationPreviewDialog.jsx`'s "Crear" button now also checks
+  `can('Movimientos', 'entry')` client-side, matching the new server-side
+  gate.
+
+Two new `_permissions.ts` copies (`catalogSettings/`, `quotations/`) were
+added to `AUTOGEN_TARGETS` in `scripts/generatePermissionManifests.mjs` so
+they keep regenerating from `permissionRegistry.js` forever, same as the
+2026-08-17 copies.
+
+**Verification performed:** `npm run lint`, `npm run build`, `npm run
+validate:rls` all pass locally. `deno` isn't available in this sandbox
+either (same limitation noted in the 2026-08-17 section) — the new handlers'
+Deno correctness gets its first live check in this PR's CI. **Not**
+verified: an actual browser session as a permission-restricted `almacenista`
+against the deployed app. Risk is bounded the same way as 2026-08-17: these
+are new functions nothing previously called (or, for `AppSettings`'s update
+path and the existing `utility`/`quotations`/`business` groups, additive new
+actions alongside untouched existing ones), and every migrated client call
+site preserves identical behavior for admins and for any almacenista who
+was never specifically restricted from these actions — the only behavior
+change is that an explicitly-denied action now correctly fails server-side
+instead of silently succeeding.
+
 ## 2026-08-10 automated security/quality/release audit
 
 Routine sweep (secrets, dependency, RLS, permissions-heuristic, tenant isolation).

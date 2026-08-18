@@ -221,12 +221,13 @@ export default function Utility() {
   const handleToggleForecast = async (next) => {
     setForecastEnabled(next); // optimista
     try {
-      if (appSettings?.id) {
-        await base44.entities.AppSettings.update(appSettings.id, { utility_forecast_enabled: next });
-      } else {
-        const created = await base44.entities.AppSettings.create({ business_id: businessId, utility_forecast_enabled: next });
-        setAppSettings(created);
-      }
+      const resp = await base44.functions.invoke('utility', {
+        action: 'toggleUtilityForecastSafe',
+        business_id: businessId,
+        enabled: next,
+      });
+      if (!resp?.data?.success) throw new Error(resp?.data?.error || "No se pudo guardar la preferencia");
+      setAppSettings(resp.data.settings);
       toast.success(next ? "Proyección activada" : "Proyección desactivada");
     } catch (err) {
       console.error("No se pudo guardar la preferencia de proyección", err);

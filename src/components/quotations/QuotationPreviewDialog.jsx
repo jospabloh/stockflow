@@ -91,7 +91,7 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
   const businessName = settings?.business_name || "Mi Empresa";
   const primaryColor = settings?.primary_color || "#4F46E5";
   const footerText = settings?.quotation_footer || "Este documento es una cotización y no representa una factura fiscal.";
-  const canCreateFromOnDemand = q.status === "converted" || q.status === "accepted";
+  const canCreateFromOnDemand = (q.status === "converted" || q.status === "accepted") && can('Movimientos', 'entry');
 
   return (
     <>
