@@ -421,6 +421,53 @@ was never specifically restricted from these actions — the only behavior
 change is that an explicitly-denied action now correctly fails server-side
 instead of silently succeeding.
 
+## `AppSession` — investigated for the module-3 pattern, correctly excluded (2026-08-18)
+
+A portfolio-standard audit flagged `src/lib/SessionHeartbeat.jsx`'s direct
+`base44.entities.AppSession.create/update/get(...)` calls as the last
+write path in this repo not yet routed through a Safe function, matching
+the same shape of gap the 2026-08-17/2026-08-18 fixes above closed for
+`PettyCashMovement`/`Rubro`/`AppSettings`/etc. Investigated rather than
+converted by default, because `AppSession` is a different shape of problem
+from all of those:
+
+- **RLS already fully closes it, and can't be spoofed.** `AppSession.jsonc`'s
+  `create`/`read`/`update` scope every non-admin caller to
+  `created_by_id: "{{user.id}}"` — the Base44-assigned creator id, set by the
+  platform itself on `create`, never client-supplied. There is no
+  `business_id`/tenant field on this entity for a caller to fake, and no way
+  for one user's session heartbeat to touch another user's row. This is the
+  same non-spoofable-built-in pattern `_agentGuard.ts`-style functions use
+  `created_by_id`/`user_id` for elsewhere in the portfolio — it just already
+  lived in the RLS rule instead of a Safe function, so there's no equivalent
+  of the `PettyCashMovement`/`Rubro`/etc. gap here.
+- **Neither of the two things a Safe function would add here applies.**
+  (a) There's no granular `almacenista`-style permission key gating "may
+  this user heartbeat their own session" — every authenticated user, any
+  role, needs this to work, unconditionally. (b) A `write_blocked`
+  billing-status gate would be actively wrong: a suspended/view_only
+  business's users still need to log in and see *why* — session tracking
+  existing specifically so Mission Control can list/revoke sessions and so
+  the app can enforce a forced logout has nothing to do with billing state,
+  and gating it on `billing_status` would risk locking a suspended tenant's
+  users out of the one screen that explains their account is suspended.
+- **Converting it would add risk, not remove it.** `SessionHeartbeat.jsx`'s
+  own header comment is explicit: "session tracking must never break the
+  app" — it's deliberately best-effort, wrapped in try/catch, silently
+  no-oping on failure. Routing it through a Safe function adds a network
+  hop and a new failure mode (the function itself erroring) to a path whose
+  only job is to be invisible when it works and harmless when it doesn't,
+  for zero closed gap (RLS already covers the only thing that mattered).
+
+**Conclusion: `AppSession` is correctly left on direct entity writes.** The
+module-3 Safe-function pattern applies to writes that need a permission-key
+or billing check beyond what RLS's `business_id`/`created_by_id` scoping
+already gives — `AppSession` needs neither, so wrapping it would be
+converting-for-the-sake-of-consistency, not closing a real gap. This closes
+out module 3 for this repo: every remaining direct-write entity in `src/`
+has been checked against this same test (does RLS alone leave a permission-
+or billing-shaped hole?) and none do.
+
 ## 2026-08-10 automated security/quality/release audit
 
 Routine sweep (secrets, dependency, RLS, permissions-heuristic, tenant isolation).
