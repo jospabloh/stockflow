@@ -71,19 +71,23 @@ export default function FundAccounts() {
     if (!form.name.trim()) { toast.error("El nombre es requerido"); return; }
     try {
       if (editing) {
-        await base44.entities.FundAccount.update(editing.id, {
-          name: form.name.trim(),
-          affects_petty_cash: !!form.affects_petty_cash,
+        const resp = await base44.functions.invoke('catalogSettings', {
+          action: 'updateCatalogItemSafe',
+          entity: 'FundAccount',
+          record_id: editing.id,
+          updates: { name: form.name.trim(), affects_petty_cash: !!form.affects_petty_cash },
         });
+        if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo actualizar la cuenta"); return; }
         toast.success("✓ Cuenta actualizada");
       } else {
-        await base44.entities.FundAccount.create({
+        const resp = await base44.functions.invoke('catalogSettings', {
+          action: 'createCatalogItemSafe',
+          entity: 'FundAccount',
+          business_id: businessId,
           name: form.name.trim(),
           affects_petty_cash: !!form.affects_petty_cash,
-          active: true,
-          is_system: false,
-          business_id: businessId,
         });
+        if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo crear la cuenta"); return; }
         toast.success("✓ Cuenta creada");
         celebrate();
       }
@@ -98,7 +102,8 @@ export default function FundAccounts() {
 
   const handleDelete = async (id) => {
     try {
-      await base44.entities.FundAccount.delete(id);
+      const resp = await base44.functions.invoke('catalogSettings', { action: 'deleteCatalogItemSafe', entity: 'FundAccount', record_id: id });
+      if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo eliminar la cuenta"); return; }
       setAccounts(accounts.filter((a) => a.id !== id));
       toast.success("Cuenta eliminada");
     } catch (error) {
@@ -108,7 +113,13 @@ export default function FundAccounts() {
 
   const handleToggle = async (a) => {
     try {
-      await base44.entities.FundAccount.update(a.id, { active: !a.active });
+      const resp = await base44.functions.invoke('catalogSettings', {
+        action: 'updateCatalogItemSafe',
+        entity: 'FundAccount',
+        record_id: a.id,
+        updates: { active: !a.active },
+      });
+      if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo actualizar la cuenta"); return; }
       setAccounts(accounts.map((x) => (x.id === a.id ? { ...x, active: !x.active } : x)));
     } catch (error) {
       toast.error(`Error: ${error.message}`);

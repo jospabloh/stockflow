@@ -52,16 +52,28 @@ export default function PaymentMethods() {
   }, [businessId]);
 
   const handleSavePaymentMethod = async () => {
-    if (!pmForm.name.trim()) { 
-      toast.error("El nombre es requerido"); 
-      return; 
+    if (!pmForm.name.trim()) {
+      toast.error("El nombre es requerido");
+      return;
     }
     try {
       if (editingPm) {
-        await base44.entities.PaymentMethod.update(editingPm.id, { name: pmForm.name });
+        const resp = await base44.functions.invoke('catalogSettings', {
+          action: 'updateCatalogItemSafe',
+          entity: 'PaymentMethod',
+          record_id: editingPm.id,
+          updates: { name: pmForm.name },
+        });
+        if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo actualizar la forma de pago"); return; }
         toast.success("✓ Forma de pago actualizada");
       } else {
-        await base44.entities.PaymentMethod.create({ name: pmForm.name, active: true, business_id: businessId });
+        const resp = await base44.functions.invoke('catalogSettings', {
+          action: 'createCatalogItemSafe',
+          entity: 'PaymentMethod',
+          business_id: businessId,
+          name: pmForm.name,
+        });
+        if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo crear la forma de pago"); return; }
         toast.success("✓ Forma de pago creada");
       }
       const pms = await base44.entities.PaymentMethod.filter({ business_id: businessId });
@@ -76,7 +88,8 @@ export default function PaymentMethods() {
 
   const handleDeletePaymentMethod = async (id) => {
     try {
-      await base44.entities.PaymentMethod.delete(id);
+      const resp = await base44.functions.invoke('catalogSettings', { action: 'deleteCatalogItemSafe', entity: 'PaymentMethod', record_id: id });
+      if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo eliminar la forma de pago"); return; }
       setPaymentMethods(paymentMethods.filter(p => p.id !== id));
       toast.success("Forma de pago eliminada");
     } catch (error) {
@@ -86,7 +99,13 @@ export default function PaymentMethods() {
 
   const handleTogglePaymentMethod = async (pm) => {
     try {
-      await base44.entities.PaymentMethod.update(pm.id, { active: !pm.active });
+      const resp = await base44.functions.invoke('catalogSettings', {
+        action: 'updateCatalogItemSafe',
+        entity: 'PaymentMethod',
+        record_id: pm.id,
+        updates: { active: !pm.active },
+      });
+      if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo actualizar la forma de pago"); return; }
       setPaymentMethods(paymentMethods.map(p => p.id === pm.id ? { ...p, active: !p.active } : p));
     } catch (error) {
       toast.error(`Error: ${error.message}`);

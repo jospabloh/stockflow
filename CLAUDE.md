@@ -81,20 +81,44 @@ consistent record) but never neutralizes the other rows' data.
 
 ## License lifecycle is owned by Mission Control (2026-08-03)
 
-StockFlow has **no native license-lifecycle automation**. `checkAccountLifecycle`,
-`processMonthlyRenewal`, `checkTenantLicense`, `expireTrials`,
-`queueBillingReminders`, and `migrateViewOnlySince` were removed — they
-duplicated the unified portfolio lifecycle that `jospabloh/acacia-mission-control`
-(`api/cron/license-lifecycle.js`) already runs against `Business.billing_status`.
-Do not re-add a StockFlow-native cron for trial/license status transitions or
-lifecycle reminder emails — that logic belongs in Mission Control now. See
-`base44/AUTOMATION_SETUP_PROMPT.md` for the retirement note and a known gap
-(Mercado Pago pre-charge reminder emails aren't reproduced there yet).
+StockFlow has **no native license-*status-transition*** automation.
+`checkAccountLifecycle`, `processMonthlyRenewal`, `checkTenantLicense`,
+`expireTrials`, `queueBillingReminders`, and `migrateViewOnlySince` were
+removed — they duplicated the unified portfolio lifecycle that
+`jospabloh/acacia-mission-control` (`api/cron/license-lifecycle.js`) already
+runs against `Business.billing_status`. Do not re-add a StockFlow-native cron
+that writes `billing_status` or does trial/license status transitions — that
+logic belongs in Mission Control now. See `base44/AUTOMATION_SETUP_PROMPT.md`
+for the retirement note and a known gap (Mercado Pago pre-charge reminder
+emails aren't reproduced there yet).
 
 `sendLifecycleEmails` and `base44/functions/licenses/*` were kept — they're
 real dependencies of the manual admin actions in `LicenseAdmin.jsx`
 (`confirmRenewalPayment`, `adminUpdateTenantLicense`), unrelated to the
 retired cron.
+
+**Documented exception (2026-08-18): `processTrialReactivationEmails` is
+intentionally kept**, flagged by a portfolio-standard audit
+(`jospabloh/acacia-app-standard`) as looking like the same violation this
+section warns against, but it isn't one — it's a distinct engagement feature,
+not a lifecycle-status duplicate:
+- It **reads** `Business.billing_status === 'trial'` to scope which
+  businesses to consider, but **never writes** `billing_status` or does any
+  status transition — no overlap with what was removed above.
+- It sends a "we miss you" nudge to a specific, narrow audience Mission
+  Control's unified cron doesn't address at all: users **still inside an
+  active trial** who've been inactive >24h. Mission Control's
+  `computePortfolioLifecycleStage` only acts **after** `current_period_end`
+  (the read_only/blocked/inactive escalation) — it has no concept of
+  "still-active-trial, but user hasn't logged in," so retiring this without
+  a replacement would just delete the feature, not centralize it.
+- Proposed (not implemented) as a candidate for a future portfolio-wide
+  `computePortfolioLifecycleStage` stage — see the 2026-08-18 addendum in
+  Mission Control's `docs/superpowers/specs/2026-08-03-portfolio-license-lifecycle-design.md`.
+  Until/unless that lands, this stays StockFlow-native. If you touch this
+  function, keep it billing_status-**read-only** — the moment it needs to
+  write status, it becomes the exact violation this section exists to
+  prevent, and belongs in Mission Control instead.
 
 ## Base44
 
@@ -317,6 +341,132 @@ always have env access, so this was never a production issue, only a gap in
 this test file being the first to actually `import` production handler code
 directly instead of simulating it (the pre-existing `integration_test.ts`
 never imports anything real, so it never needed this).
+
+## Granular permission-key enforcement, part 2: Rubros / Tipo de Pago / CuentasFondo / AppSettings / on-demand arrivals (fixed 2026-08-18)
+
+The 2026-08-17 fix above covered `PettyCashMovement`/`UtilityMovement`/
+`SupplierPayment`. A portfolio-standard audit (`jospabloh/acacia-app-standard`,
+module 3) found the same class of gap still open on five more write paths
+that were writing directly via `base44.entities.X.*` from the client with no
+server-side permission or billing check:
+
+- **`Rubro`, `PaymentMethod`, `FundAccount`** (`Rubros.jsx`,
+  `PaymentMethods.jsx`, `FundAccounts.jsx`) — new shared Safe-function group
+  `base44/functions/catalogSettings/` (`createCatalogItemSafe` /
+  `updateCatalogItemSafe` / `deleteCatalogItemSafe`, all three entities go
+  through the same three handlers, parameterized by an `entity` field — see
+  `handlers/_entityConfig.ts`). Follows the same order as the 2026-08-17
+  fix: auth → `business_id` match → `hasPermission()` → `write_blocked` →
+  field whitelist → `asServiceRole` write. `_entityConfig.ts`'s
+  `fieldAction` map enforces the same per-field granularity the client
+  already had: Rubro/FundAccount gate every field (including the `active`
+  toggle) behind one `edit` action, but PaymentMethod splits `edit_name`
+  (name) from `edit_status` (the active toggle) — that split is intentional,
+  matching `PaymentMethods.jsx`'s two separate `can()` checks, not merged
+  into one.
+- **`AppSettings`** — its `update` path already went through
+  `updateAppSettingsSafe` (business-only, admin-gated), but the **first
+  save** (`Settings.jsx`, when no `AppSettings` row exists yet for the
+  business) called `base44.entities.AppSettings.create()` directly, with no
+  gate of any kind. New `createAppSettingsSafe` handler in the existing
+  `base44/functions/business/` group closes it, mirroring
+  `updateAppSettingsSafe`'s admin-only check (this entity has no granular
+  permission finer than admin — see `Configuracion`'s `deniedActionable`
+  list in `permissionRegistry.js`, every edit action is admin-only by
+  default) plus the `write_blocked` billing gate `updateAppSettingsSafe` was
+  still missing too. Idempotent: if a row already exists (race with another
+  tab, or a retry) it updates that row instead of creating a duplicate.
+  `Utility.jsx`'s forecast toggle (`utility_forecast_enabled`) had the exact
+  same direct-create-or-update gap and got its own narrower fix —
+  `toggleUtilityForecastSafe` in the existing `base44/functions/utility/`
+  group, gated by `Utilidad:manage_forecast` (the permission the switch
+  itself was already client-gated on) rather than the blanket admin check,
+  since that key already supports per-role overrides.
+- **On-demand arrival registration** (`CreateFromOnDemandModal.jsx`, opened
+  from the "Crear" button in `QuotationPreviewDialog.jsx`) — a 3-write
+  sequence (`Movement.create` with `stock_applied:true`, `Product.stock`
+  update, `Quotation.items` status update) that had **no gate of any kind**,
+  not even a client-side `can()` check on the button (only the quotation's
+  `status` gated it). New `registerOnDemandArrivalSafe` handler in the
+  existing `base44/functions/quotations/` group, gated by
+  `Movimientos:entry` (this registers a stock entry — same action id
+  `Movements.jsx`'s own entry button already uses) plus an idempotency guard
+  matching `deliverQuotationSafe`'s own pattern for its EXIT movements
+  (skip if an entry `Movement` already exists for this
+  `quotation_id`+`product_id`, since the call isn't atomic and could be
+  double-invoked). Kept the exact same write shape the client used
+  (`stock_applied:true` + a direct `Product.stock` update, not routed
+  through `applyMovementStock` like `deliverQuotationSafe`'s EXIT movements
+  are — switching that now would be an unrelated behavior change).
+  `QuotationPreviewDialog.jsx`'s "Crear" button now also checks
+  `can('Movimientos', 'entry')` client-side, matching the new server-side
+  gate.
+
+Two new `_permissions.ts` copies (`catalogSettings/`, `quotations/`) were
+added to `AUTOGEN_TARGETS` in `scripts/generatePermissionManifests.mjs` so
+they keep regenerating from `permissionRegistry.js` forever, same as the
+2026-08-17 copies.
+
+**Verification performed:** `npm run lint`, `npm run build`, `npm run
+validate:rls` all pass locally. `deno` isn't available in this sandbox
+either (same limitation noted in the 2026-08-17 section) — the new handlers'
+Deno correctness gets its first live check in this PR's CI. **Not**
+verified: an actual browser session as a permission-restricted `almacenista`
+against the deployed app. Risk is bounded the same way as 2026-08-17: these
+are new functions nothing previously called (or, for `AppSettings`'s update
+path and the existing `utility`/`quotations`/`business` groups, additive new
+actions alongside untouched existing ones), and every migrated client call
+site preserves identical behavior for admins and for any almacenista who
+was never specifically restricted from these actions — the only behavior
+change is that an explicitly-denied action now correctly fails server-side
+instead of silently succeeding.
+
+## `AppSession` — investigated for the module-3 pattern, correctly excluded (2026-08-18)
+
+A portfolio-standard audit flagged `src/lib/SessionHeartbeat.jsx`'s direct
+`base44.entities.AppSession.create/update/get(...)` calls as the last
+write path in this repo not yet routed through a Safe function, matching
+the same shape of gap the 2026-08-17/2026-08-18 fixes above closed for
+`PettyCashMovement`/`Rubro`/`AppSettings`/etc. Investigated rather than
+converted by default, because `AppSession` is a different shape of problem
+from all of those:
+
+- **RLS already fully closes it, and can't be spoofed.** `AppSession.jsonc`'s
+  `create`/`read`/`update` scope every non-admin caller to
+  `created_by_id: "{{user.id}}"` — the Base44-assigned creator id, set by the
+  platform itself on `create`, never client-supplied. There is no
+  `business_id`/tenant field on this entity for a caller to fake, and no way
+  for one user's session heartbeat to touch another user's row. This is the
+  same non-spoofable-built-in pattern `_agentGuard.ts`-style functions use
+  `created_by_id`/`user_id` for elsewhere in the portfolio — it just already
+  lived in the RLS rule instead of a Safe function, so there's no equivalent
+  of the `PettyCashMovement`/`Rubro`/etc. gap here.
+- **Neither of the two things a Safe function would add here applies.**
+  (a) There's no granular `almacenista`-style permission key gating "may
+  this user heartbeat their own session" — every authenticated user, any
+  role, needs this to work, unconditionally. (b) A `write_blocked`
+  billing-status gate would be actively wrong: a suspended/view_only
+  business's users still need to log in and see *why* — session tracking
+  existing specifically so Mission Control can list/revoke sessions and so
+  the app can enforce a forced logout has nothing to do with billing state,
+  and gating it on `billing_status` would risk locking a suspended tenant's
+  users out of the one screen that explains their account is suspended.
+- **Converting it would add risk, not remove it.** `SessionHeartbeat.jsx`'s
+  own header comment is explicit: "session tracking must never break the
+  app" — it's deliberately best-effort, wrapped in try/catch, silently
+  no-oping on failure. Routing it through a Safe function adds a network
+  hop and a new failure mode (the function itself erroring) to a path whose
+  only job is to be invisible when it works and harmless when it doesn't,
+  for zero closed gap (RLS already covers the only thing that mattered).
+
+**Conclusion: `AppSession` is correctly left on direct entity writes.** The
+module-3 Safe-function pattern applies to writes that need a permission-key
+or billing check beyond what RLS's `business_id`/`created_by_id` scoping
+already gives — `AppSession` needs neither, so wrapping it would be
+converting-for-the-sake-of-consistency, not closing a real gap. This closes
+out module 3 for this repo: every remaining direct-write entity in `src/`
+has been checked against this same test (does RLS alone leave a permission-
+or billing-shaped hole?) and none do.
 
 ## 2026-08-10 automated security/quality/release audit
 
