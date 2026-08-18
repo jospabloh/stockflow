@@ -119,8 +119,16 @@ export default function Settings() {
           return;
         }
       } else {
-        const created = await base44.entities.AppSettings.create({ ...settings, business_id: businessId });
-        setSettingsId(created.id);
+        const response = await base44.functions.invoke('business', { action: 'createAppSettingsSafe',
+          business_id: businessId,
+          settings
+        });
+        if (!response.data.success) {
+          toast.error(`Error: ${response.data.error || 'No se pudo guardar'}`);
+          setSaving(false);
+          return;
+        }
+        setSettingsId(response.data.settings_id);
       }
       setRfcSaved(!!settings?.rfc);
       toast.success("✓ Configuración guardada exitosamente", {

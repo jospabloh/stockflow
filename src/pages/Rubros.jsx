@@ -91,17 +91,24 @@ export default function Rubros() {
     if (!form.name.trim()) { toast.error("El nombre es requerido"); return; }
     try {
       if (editing) {
-        await base44.entities.Rubro.update(editing.id, { name: form.name.trim(), kind: form.kind, pl_treatment: form.pl_treatment });
+        const resp = await base44.functions.invoke('catalogSettings', {
+          action: 'updateCatalogItemSafe',
+          entity: 'Rubro',
+          record_id: editing.id,
+          updates: { name: form.name.trim(), kind: form.kind, pl_treatment: form.pl_treatment },
+        });
+        if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo actualizar el rubro"); return; }
         toast.success("✓ Rubro actualizado");
       } else {
-        await base44.entities.Rubro.create({
+        const resp = await base44.functions.invoke('catalogSettings', {
+          action: 'createCatalogItemSafe',
+          entity: 'Rubro',
+          business_id: businessId,
           name: form.name.trim(),
           kind: form.kind,
           pl_treatment: form.pl_treatment,
-          active: true,
-          is_system: false,
-          business_id: businessId,
         });
+        if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo crear el rubro"); return; }
         toast.success("✓ Rubro creado");
         celebrate();
       }
@@ -116,7 +123,8 @@ export default function Rubros() {
 
   const handleDelete = async (id) => {
     try {
-      await base44.entities.Rubro.delete(id);
+      const resp = await base44.functions.invoke('catalogSettings', { action: 'deleteCatalogItemSafe', entity: 'Rubro', record_id: id });
+      if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo eliminar el rubro"); return; }
       setRubros(rubros.filter((r) => r.id !== id));
       toast.success("Rubro eliminado");
     } catch (error) {
@@ -126,7 +134,13 @@ export default function Rubros() {
 
   const handleToggle = async (r) => {
     try {
-      await base44.entities.Rubro.update(r.id, { active: !r.active });
+      const resp = await base44.functions.invoke('catalogSettings', {
+        action: 'updateCatalogItemSafe',
+        entity: 'Rubro',
+        record_id: r.id,
+        updates: { active: !r.active },
+      });
+      if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo actualizar el rubro"); return; }
       setRubros(rubros.map((x) => (x.id === r.id ? { ...x, active: !x.active } : x)));
     } catch (error) {
       toast.error(`Error: ${error.message}`);

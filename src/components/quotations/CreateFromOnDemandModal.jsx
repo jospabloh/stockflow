@@ -8,11 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { useBusinessContext } from "@/components/BusinessContext";
 import { PackagePlus } from "lucide-react";
 
 export default function CreateFromOnDemandModal({ open, onOpenChange, quotation, item, itemIndex, onSuccess }) {
-  const { businessId } = useBusinessContext();
   const [quantityReceived, setQuantityReceived] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
@@ -33,46 +31,18 @@ export default function CreateFromOnDemandModal({ open, onOpenChange, quotation,
 
     setSaving(true);
     try {
-      // 1. Fetch current product stock
-      const prods = await base44.entities.Product.filter({ id: item.product_id, business_id: businessId });
-      if (prods.length === 0) {
-        toast.error("Producto no encontrado en el catálogo");
+      const resp = await base44.functions.invoke('quotations', {
+        action: 'registerOnDemandArrivalSafe',
+        quotation_id: quotation.id,
+        item_index: itemIndex,
+        quantity_received: qty,
+        notes,
+      });
+      if (!resp?.data?.success) {
+        toast.error(resp?.data?.error || "No se pudo registrar la entrada");
         setSaving(false);
         return;
       }
-      const product = prods[0];
-      const currentStock = product.stock || 0;
-      const newStock = currentStock + qty;
-
-      // 2. Create entry movement.
-      // El stock se actualiza a mano en el paso 3, por eso se marca
-      // stock_applied=true: evita que applyMovementStock/automatización lo
-      // sume otra vez (evita doble descuento/entrada).
-      await base44.entities.Movement.create({
-        product_id: item.product_id,
-        product_name: item.product_name,
-        type: "entry",
-        quantity: qty,
-        unit_price: item.unit_price,
-        total: qty * item.unit_price,
-        quotation_id: quotation.id,
-        stock_after: newStock,
-        reason: `Entrada por pedido - Cotización #${quotation.folio || quotation.id}${notes ? ` — ${notes}` : ""}`,
-        business_id: businessId,
-        stock_applied: true,
-      });
-
-      // 3. Update product stock
-      await base44.entities.Product.update(item.product_id, { stock: newStock });
-
-      // 4. Update quotation item status
-      const updatedItems = (quotation.items || []).map((it, idx) => {
-        if (idx === itemIndex) {
-          return { ...it, on_demand_status: "product_created" };
-        }
-        return it;
-      });
-      await base44.entities.Quotation.update(quotation.id, { items: updatedItems });
 
       toast.success("✅ Entrada registrada. Stock actualizado.");
       onSuccess?.();
