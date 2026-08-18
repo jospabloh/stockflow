@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-08-07T21:54:00.157Z
+// Generado: 2026-08-18T22:34:58.587Z
 
-export const SNAPSHOT_VERSION = "2.18.22";
+export const SNAPSHOT_VERSION = "2.18.23";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-08-07";
+export const SNAPSHOT_RELEASE_DATE = "2026-08-18";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 
-export const SNAPSHOT_GIT_LOG = "3f8f264 Merge pull request #345 from jospabloh/claude/stockflow-partial-payments-bug-a2vtq9\nbdf20d5 Guard \"Confirmar Pago Total\" against double-submit; document live audit results\n3232fed File changes\nc45c9d5 Merge pull request #344 from jospabloh/claude/stockflow-partial-payments-bug-a2vtq9\n9e21f8d Fix: quotation payment confirmation double-counted already-collected partials\n9152771 chore: add boilerplate auth templates\n54f3d2b File changes\n040a9e7 Update base44 packages\n2bd632d Merge pull request #342 from jospabloh/automated/release-pr\nfe5e9b6 chore: release and update documentation\n15c2d85 Merge pull request #340 from jospabloh/dependabot/npm_and_yarn/npm-dependencies-5df57405fb\nfa655a6 Merge branch 'main' into dependabot/npm_and_yarn/npm-dependencies-5df57405fb\n9cac09f Merge pull request #339 from jospabloh/claude/lucid-lamport-19gxg3\nd102970 Merge branch 'main' into claude/lucid-lamport-19gxg3\n95f489a Merge pull request #341 from jospabloh/claude/audit-email-reminders-csp5u4\nc6e3ba1 Retire StockFlow's native license-lifecycle automation\n62a6e31 chore(deps): bump the npm-dependencies group with 8 updates\n757beed fix: dailyDocumentationAudit no longer derives new AppChangelog entries from GIT_LOG_SNAPSHOT\n5f2299f chore: automated security, quality, permissions and release audit v2.18.20\na1fb658 Merge pull request #335 from jospabloh/automated/release-pr\n160529d Merge branch 'main' into automated/release-pr\nfab15f5 Merge pull request #337 from jospabloh/claude/factura-emision-seleccion-2avzs7\n7a58609 Link Cotizaciones invoice number and invoice status two-way\n5123b49 chore: release and update documentation\ne2694a3 Merge pull request #336 from jospabloh/claude/factura-emision-seleccion-2avzs7";
+export const SNAPSHOT_GIT_LOG = "c6e1b8a Merge pull request #354 from jospabloh/claude/app-modules-standard-1082c8\n88ab716 Close module 3: document why AppSession stays on direct RLS writes\n76eb420 Merge pull request #353 from jospabloh/claude/app-modules-standard-1082c8\n360485f Extend granular permission-key enforcement to Rubros/Tipo de Pago/CuentasFondo/AppSettings/on-demand arrivals\nca460ca Merge pull request #352 from jospabloh/claude/app-modules-standard-1082c8\n88d68dd Document processTrialReactivationEmails as an intentional standard exception\nab64edc Enforce granular permission keys for Caja Chica / Utilidad / Pagos a Proveedores (#351)\nea6143a Update base44 packages\nffe93c1 Merge pull request #348: respect prevent_duplicates=false in reconcileDuplicates\nd7bf72b Respect tenant prevent_duplicates=false in reconcileDuplicates\n20f1104 Merge pull request #347: docs for syncCashSaleToPettyCash fix + audit v2026-08-10\n4608f2c Merge main (Base44 sync landed the same syncCashSaleToPettyCash fix directly)\n4987487 Correct npm audit note: full clean-install scan found 5 advisories, not 3\nfe4d983 Fix syncCashSaleToPettyCash race condition; automated audit v2026-08-10\n070b2aa External agent changes\n28eb42a Merge pull request #343 from jospabloh/automated/release-pr\n404b215 chore: release and update documentation\n3f8f264 Merge pull request #345 from jospabloh/claude/stockflow-partial-payments-bug-a2vtq9\nbdf20d5 Guard \"Confirmar Pago Total\" against double-submit; document live audit results\n3232fed File changes\nc45c9d5 Merge pull request #344 from jospabloh/claude/stockflow-partial-payments-bug-a2vtq9\n9e21f8d Fix: quotation payment confirmation double-counted already-collected partials\n9152771 chore: add boilerplate auth templates\n54f3d2b File changes\n040a9e7 Update base44 packages";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.18.22",
+  "Actualización a la versión 2.18.23",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.23",
+    date: "2026-08-18",
+    changes: [
+    "Actualización a la versión 2.18.23"
+    ]
+  },
   {
     version: "2.18.22",
     date: "2026-08-07",
