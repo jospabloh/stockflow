@@ -517,3 +517,87 @@ fix documented above — everything else here was verified and needed no change:
   `automated/release-pr`) — hand-editing them here would just race that
   workflow's next run. `npm run permissions:audit` and `npm run
   generate:all` are also already wired into that same script.
+
+## Module 7 — self-service data export (added 2026-08-21)
+
+A portfolio-standard audit found `Settings.jsx`'s "Cuenta" tab had the
+irreversible delete-account flow but **no data export**. `src/lib/exportData.js`
+is not that: it renders a specific on-screen report to XLSX/PDF, not the
+tenant's raw rows — so a business could delete its account with no way to take
+its own data with it.
+
+**Fix:** new `exportBusinessData` handler in the existing
+`base44/functions/business/` group. Runs as service role, but every read is
+explicitly filtered by the caller's own `business_id`, re-derived from
+`auth.me()` and never taken from the request body, so it can't reach another
+tenant's rows. Returns the `Business` row plus every row of 22 business-scoped
+entities (AppSettings, Campaign, Category, Client, Contact, Course, Enrollment,
+FundAccount, InventoryAuditLog, Movement, PaymentMethod, PermissionProfile,
+PettyCashMovement, Product, Quotation, Rubro, Supplier, SupplierPayment,
+SupportTicket, SupportTicketMessage, TenantRule, UtilityMovement) as one JSON
+payload. A failure on any single entity doesn't fail the export — that entity
+comes back empty plus an entry in `errors`, and the UI warns rather than
+claiming a clean export.
+
+Two deliberate exclusions: **`User`** (other members' PII — the roster is
+already in the Equipo tab) and **`EmailNotification`** (delivery
+infrastructure, not the tenant's business data).
+
+**No billing gate, on purpose.** Every other Safe function in this repo
+rejects `view_only`/`suspended` with `write_blocked`; this one doesn't,
+because it's read-only and a suspended tenant getting its data out is exactly
+the case the export exists for. Gating it would make the danger zone a trap.
+
+New permission key **`Configuracion:export_data`**, added to
+`permissionRegistry.js` and to the `almacenista` `deniedActionable` list
+(same posture as `delete_account`/`audit_inventory` — a full dump of the
+business's books is admin-tier). `base44/functions/business/handlers/` got its
+own `_permissions.ts` copy, registered in `AUTOGEN_TARGETS` so it keeps
+regenerating from the registry like the other six copies. The "Cuenta" tab
+now opens on `canDeleteAccount || canExportData` rather than delete alone, so
+an operator granted export but not delete still reaches it.
+
+**Verified:** `npm run lint`, `npm run validate:rls` (29 entities, 21
+tenant-scoped), `npm run generate:permission-manifests` (185 keys, 54 denied)
+and `npm run build` all pass. `deno` isn't available in this sandbox — the new
+handler gets its first live `deno lint`/`deno test` in this PR's CI, same
+limitation as the 2026-08-17/2026-08-18 fixes. **Not verified:** a browser
+session as a permission-restricted `almacenista`. Risk is bounded: this is a
+new, read-only function nothing previously called, and no existing call site
+changed behavior.
+
+## ACACIA Portfolio Standard
+
+This app is part of the ACACIA portfolio and must stay compliant with
+`jospabloh/acacia-app-standard`. Read `STANDARD.md` there before implementing
+any item below for the first time, and re-read the relevant section before
+touching a module that's already implemented.
+
+- [x] Module 1 — License lifecycle: `Business.billing_status`
+      (trial|active|view_only|suspended), written ONLY by Mission Control's
+      unified cron. No native lifecycle/renewal/reminder cron here —
+      `processTrialReactivationEmails` is a documented exception (reads
+      billing_status, never writes it; see its section above).
+- [x] Module 2 — Roles (`admin` / `almacenista`) declared in
+      `src/lib/permissionRegistry.js`, mapped onto Base44's built-in `role`
+      field. Mission Control's operator roles are a separate layer.
+- [x] Module 3 — Granular permissions: `src/lib/permissionRegistry.js` +
+      server-side `hasPermission()` re-check on every write path, same
+      precedence order, gated behind billing_status. Generated server copies,
+      drift-checked in CI, with real Deno unit tests.
+- [x] Module 4 — RLS: four-op `$or` shape on every tenant entity, both halves
+      verified, `validate-entity-rls.mjs` blocking in CI.
+- [x] Module 5 — Health: Mission Control polls `acaciaControl`'s `ping`.
+- [x] Module 6 — `src/lib/appConfig.js` + the automated
+      `auto-release-pr.yml` release workflow (never the routine build).
+- [x] Module 7 — Cuenta: license info, team members, **data export**
+      (`exportBusinessData`, added 2026-08-21) and irreversible account
+      deletion behind a three-step confirmation.
+- [x] Module 8 — Soporte writes `SupportTicket` here first, then Mission
+      Control pulls it via `acaciaControl`. No parallel triage UI.
+- [x] Module 9 — `apps/stockflow.html` on `jospabloh/acaciaco-site`.
+- [x] Module 10 — Login: on-brand, distinct error states, suspended/view_only
+      explained post-login, links to the marketing page and to support.
+
+Last audited against the standard: 2026-08-21 — module 7's missing data export
+was the only open item; closed in this pass.

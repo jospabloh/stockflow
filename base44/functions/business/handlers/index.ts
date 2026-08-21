@@ -6,6 +6,7 @@ import { handle as validateBusinessOwnership } from './validateBusinessOwnership
 import { handle as sendTestLifecycleEmails } from './sendTestLifecycleEmails.ts';
 import { handle as createBusinessSafe } from './createBusinessSafe.ts';
 import { handle as joinBusinessSafe } from './joinBusinessSafe.ts';
+import { handle as exportBusinessData } from './exportBusinessData.ts';
 
 type Handler = (req: Request) => Promise<Response>;
 
@@ -18,6 +19,7 @@ const HANDLERS: Record<string, Handler> = {
   sendTestLifecycleEmails,
   createBusinessSafe,
   joinBusinessSafe,
+  exportBusinessData,
 };
 
 export function getHandler(action: string): Handler | undefined {

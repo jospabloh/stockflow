@@ -246,6 +246,7 @@ export const PERMISSION_REGISTRY = {
       { id: "manage_team", label: "Gestionar equipo", category: "actionable", icon: "👥", description: "Invitar y gestionar miembros del equipo" },
       { id: "manage_referral", label: "Gestionar referidos", category: "actionable", icon: "🎁", description: "Ver código de referido, estadísticas y gestionar el programa de referidos" },
       { id: "audit_inventory", label: "Auditar inventario", category: "actionable", icon: "🔍", sensitive: true, description: "Ejecutar auditoría de inventario y aplicar correcciones masivas de stock (confidencial)" },
+      { id: "export_data", label: "Exportar datos del negocio", category: "actionable", icon: "📦", sensitive: true, description: "Descargar todos los datos del negocio (productos, movimientos, cotizaciones, caja chica, utilidad, pagos) en un archivo JSON (confidencial)" },
       { id: "delete_account", label: "Eliminar cuenta", category: "actionable", icon: "🗑️", description: "Eliminar cuenta del sistema (irreversible)" },
     ]
   },
@@ -354,6 +355,7 @@ export function getDefaultsForRole(role) {
             'Configuracion:edit_quotation_footer',
             'Configuracion:import_products',
             'Configuracion:manage_team',
+            'Configuracion:export_data',
             'Configuracion:delete_account',
             'Utilidad:add_withdrawal',
             'Utilidad:edit_withdrawal',
