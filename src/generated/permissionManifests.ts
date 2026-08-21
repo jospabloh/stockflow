@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-08-18T22:34:58.426Z
+// Generado: 2026-08-21T16:45:05.734Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -169,6 +169,7 @@ export const ALL_PERMISSION_KEYS = [
   "Configuracion:manage_team",
   "Configuracion:manage_referral",
   "Configuracion:audit_inventory",
+  "Configuracion:export_data",
   "Configuracion:delete_account",
   "Utilidad:view",
   "Utilidad:view_withdrawals",
@@ -439,6 +440,7 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "manage_team", label: "Gestionar equipo", category: "actionable" },
     { id: "manage_referral", label: "Gestionar referidos", category: "actionable" },
     { id: "audit_inventory", label: "Auditar inventario", category: "actionable", sensitive: true },
+    { id: "export_data", label: "Exportar datos del negocio", category: "actionable", sensitive: true },
     { id: "delete_account", label: "Eliminar cuenta", category: "actionable" }
     ]
   },
@@ -649,6 +651,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Configuracion:manage_team": true,
   "Configuracion:manage_referral": true,
   "Configuracion:audit_inventory": true,
+  "Configuracion:export_data": true,
   "Configuracion:delete_account": true,
   "Utilidad:view": true,
   "Utilidad:view_withdrawals": true,
@@ -835,6 +838,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Configuracion:manage_team": false,
   "Configuracion:manage_referral": true,
   "Configuracion:audit_inventory": false,
+  "Configuracion:export_data": false,
   "Configuracion:delete_account": false,
   "Utilidad:view": false,
   "Utilidad:view_withdrawals": false,

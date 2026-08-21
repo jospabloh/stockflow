@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, CheckCircle2, Minus, ShieldCheck, History, Gift } from "lucide-react";
+import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, CheckCircle2, Minus, ShieldCheck, History, Gift, Download } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
@@ -33,6 +33,7 @@ export default function Settings() {
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
   const [confirmDeleteStep, setConfirmDeleteStep] = useState(0); // 0: initial, 1: warning, 2: confirm
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [_diagnosticBusinessId, setDiagnosticBusinessId] = useState(null);
   const [auditResult, setAuditResult] = useState(null);
   const [auditing, setAuditing] = useState(false);
@@ -95,6 +96,40 @@ export default function Settings() {
 
        checkAndLoadSettings();
        }, [businessId]);
+
+  // Module 7 — self-service data export. Goes through the `business` Safe
+  // function (permission key `Configuracion:export_data`, re-checked
+  // server-side), then turns the response into a client-side download; no
+  // server-side file storage is involved.
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      const response = await base44.functions.invoke('business', { action: 'exportBusinessData' });
+      if (!response.data?.success) {
+        toast.error(`No se pudo exportar: ${response.data?.error || 'error desconocido'}`);
+        return;
+      }
+      const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.download = `stockflow-${settings?.business_name || 'negocio'}-${stamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      if (response.data.errors) {
+        toast.warning('Se exportaron tus datos, pero algunas secciones fallaron. Revisa "errors" en el archivo.');
+      } else {
+        toast.success('Datos exportados');
+      }
+    } catch (error) {
+      toast.error(`No se pudo exportar: ${error.message || 'Intenta de nuevo'}`);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const validateRFC = (rfc) => {
     if (!rfc) return true; // optional
@@ -201,11 +236,15 @@ export default function Settings() {
   const canTeam = can('Configuracion', 'manage_team');
   const canImport = can('Configuracion', 'import_products');
   const canDeleteAccount = can('Configuracion', 'delete_account');
+  const canExportData = can('Configuracion', 'export_data');
+  // The "Cuenta" tab holds both the export (Module 7's data export) and the
+  // irreversible delete — either permission alone is enough to need the tab.
+  const canAccountTab = canDeleteAccount || canExportData;
   const canAuditInventory = can('Configuracion', 'audit_inventory');
   const canReferrals = can('Configuracion', 'manage_referral');
   const canViewConfig = can('Configuracion', 'view');
-  const anyConfigTab = canBusiness || canSat || canTeam || canImport || canDeleteAccount || canAuditInventory || canReferrals;
-  const defaultTab = canBusiness ? 'business' : (canSat ? 'sat' : (canTeam ? 'team' : (canImport ? 'import' : (canDeleteAccount ? 'account' : (canAuditInventory ? 'inventario' : (canReferrals ? 'referidos' : 'clients'))))));
+  const anyConfigTab = canBusiness || canSat || canTeam || canImport || canAccountTab || canAuditInventory || canReferrals;
+  const defaultTab = canBusiness ? 'business' : (canSat ? 'sat' : (canTeam ? 'team' : (canImport ? 'import' : (canAccountTab ? 'account' : (canAuditInventory ? 'inventario' : (canReferrals ? 'referidos' : 'clients'))))));
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -217,7 +256,7 @@ export default function Settings() {
               {canSat && <TabsTrigger value="sat"><FileText className="h-4 w-4 mr-1" /> Facturación</TabsTrigger>}
               {canTeam && <TabsTrigger value="team"><Key className="h-4 w-4 mr-1" /> Equipo</TabsTrigger>}
               {canImport && <TabsTrigger value="import"><Upload className="h-4 w-4 mr-1" /> Importar</TabsTrigger>}
-              {canDeleteAccount && <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>}
+              {canAccountTab && <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>}
               {canAuditInventory && <TabsTrigger value="inventario"><PackageSearch className="h-4 w-4 mr-1" /> Audit Inventario</TabsTrigger>}
               {canReferrals && <TabsTrigger value="referidos"><Gift className="h-4 w-4 mr-1" /> Referidos</TabsTrigger>}
             </>
@@ -582,12 +621,40 @@ export default function Settings() {
           </TabsContent>}
 
           {/* Account */}
-          {canDeleteAccount && <TabsContent value="account">
+          {canAccountTab && <TabsContent value="account">
           <div className="space-y-6">
             <LicenseInfoCard />
             <Card className="border-0 shadow-sm p-6 space-y-6">
             <h3 className="font-semibold text-slate-700 text-lg">Gestión de Cuenta</h3>
-            <div className="border border-red-200 rounded-xl p-5 space-y-3 bg-red-50/50">
+            {canExportData && (
+              <div className="border border-slate-200 rounded-xl p-5 space-y-3 bg-slate-50/50">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
+                    <Download className="h-5 w-5 text-slate-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-800">Exportar mis datos</p>
+                    <p className="text-sm text-slate-500 mt-0.5">
+                      Descarga un archivo JSON con todos los datos de tu negocio: productos, categorías, proveedores,
+                      clientes, movimientos, cotizaciones, caja chica, utilidad y pagos a proveedores.
+                      Hazlo <strong>antes</strong> de eliminar la cuenta.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleExportData}
+                  disabled={exporting}
+                  {...createButtonProps("Exportar los datos del negocio en formato JSON")}
+                >
+                  {exporting
+                    ? <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                    : <Download className="h-4 w-4 mr-1" />}
+                  {exporting ? "Exportando…" : "Exportar mis datos"}
+                </Button>
+              </div>
+            )}
+            {canDeleteAccount && <div className="border border-red-200 rounded-xl p-5 space-y-3 bg-red-50/50">
               <div className="flex items-start gap-3">
                 <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
                   <UserX className="h-5 w-5 text-red-500" />
@@ -609,7 +676,7 @@ export default function Settings() {
               >
                 <Trash2 className="h-4 w-4 mr-1" /> Eliminar mi cuenta
               </Button>
-            </div>
+            </div>}
           </Card>
             </div>
           </TabsContent>}
