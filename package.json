@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint . --quiet",
+    "lint": "eslint . --quiet && npm run validate:functions",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
@@ -16,7 +16,11 @@
     "generate:permission-manifests": "node scripts/generatePermissionManifests.mjs",
     "generate:version-snapshot": "node scripts/generateVersionHistorySnapshot.mjs",
     "generate:all": "npm run generate:permission-manifests && npm run generate:version-snapshot",
-    "release": "node scripts/publish-release.mjs"
+    "release": "node scripts/publish-release.mjs",
+    "deploy": "node scripts/base44-deploy.mjs",
+    "deploy:entities": "node scripts/base44-deploy.mjs --entities",
+    "functions:audit": "node scripts/base44-audit.mjs",
+    "validate:functions": "node scripts/validate-functions.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.43",
