@@ -36,9 +36,6 @@ import {
   ChevronLeft,
   Bell,
   HelpCircle,
-  Sun,
-  Moon,
-  Monitor,
   ChevronDown,
   Briefcase,
   DollarSign,
@@ -56,7 +53,6 @@ import {
   ClipboardList,
   Megaphone
 } from "lucide-react";
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -148,7 +144,6 @@ export default function Layout({ children, currentPageName }) {
     location.pathname === "/TenantRulesAdmin";
   const isRoot = location.pathname === "/" || location.pathname === "/Dashboard";
   const isChildRoute = /\/(Products|Movements|Quotations)\/(new|edit)/.test(location.pathname);
-  const { theme, setTheme } = useTheme();
   const prefersReducedMotion = useReducedMotion();
   const monthlyTheme = useMemo(() => getMonthlyTheme(), []);
 
@@ -431,16 +426,6 @@ export default function Layout({ children, currentPageName }) {
                 </Button>
               </Link>
             )}
-            {/* Theme toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : theme === "light" ? "system" : "dark")}
-              aria-label={`Tema: ${theme === "dark" ? "Oscuro" : theme === "light" ? "Claro" : "Sistema"}`}
-              title={theme === "dark" ? "Oscuro" : theme === "light" ? "Claro" : "Sistema"}
-            >
-              {theme === "dark" ? <Moon className="h-5 w-5 text-slate-500" aria-hidden="true" /> : theme === "light" ? <Sun className="h-5 w-5 text-slate-500" aria-hidden="true" /> : <Monitor className="h-5 w-5 text-slate-500" aria-hidden="true" />}
-            </Button>
           </div>
         </header>
 
