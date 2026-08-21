@@ -18,6 +18,7 @@
     "generate:all": "npm run generate:permission-manifests && npm run generate:version-snapshot",
     "release": "node scripts/publish-release.mjs",
     "deploy": "node scripts/base44-deploy.mjs",
+    "deploy:site": "node scripts/base44-deploy.mjs --site",
     "deploy:entities": "node scripts/base44-deploy.mjs --entities",
     "functions:audit": "node scripts/base44-audit.mjs",
     "validate:functions": "node scripts/validate-functions.mjs"
