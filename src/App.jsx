@@ -1,6 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "next-themes"
+import ThemeSwitcher from "@/components/ThemeSwitcher"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
@@ -156,7 +157,7 @@ const AuthenticatedApp = () => {
 
 function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <BusinessProvider>
@@ -167,6 +168,7 @@ function App() {
               </NavigationProvider>
             </Router>
             <Toaster position="top-center" richColors expand />
+            <ThemeSwitcher />
           </BusinessProvider>
         </QueryClientProvider>
       </AuthProvider>
