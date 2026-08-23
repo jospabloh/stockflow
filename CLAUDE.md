@@ -731,3 +731,129 @@ portafolio llegó a desplegar eran **sintácticamente válidos**: la rama de rol
 motor descartaba la cláusula hermana de `user_condition`, los campos de licencia
 escribibles por el propio inquilino en puntos y rumbo, y el `PermissionProfile`
 que ningún RLS puede consultar porque vive en otra fila.
+
+### Resultado — 2026-08-23, contra el esquema desplegado
+
+Contra `list_entity_schemas` (appId `69af971d0fdb362c9ae52ed3`), no contra los
+`.jsonc`, más los 46 grupos de funciones de `base44/functions/`.
+
+**Ningún inquilino puede leer ni escribir datos de otro. El aislamiento está
+bien.** Lo que esta pasada encontró es otra cosa, y es peor de lo que suena
+"módulo 3": **tres puertas que el propio sujeto al que restringen puede
+escribir.** Y a diferencia del resto del portafolio, aquí no es latente — hay
+dos inquilinos reales y una cuenta `almacenista` real que puede hacerlo hoy.
+
+#### El estado vivo, primero, porque es lo que cambia la lectura
+
+| | |
+|---|---|
+| `Business` | 2 — `69c593f99e0839c7e07fb5d0` ACACIA OWNER SANDBOX · `69c575fa1beaf2c90214d3ee` Baristop Distribuidora |
+| `User` | 3 — dos `admin`, y **`ventas.baristop@gmail.com`, `almacenista` de Baristop** |
+| `PermissionProfile` | 4 — entre ellos `69ebcd98244993257cc6f98f`, el perfil `almacenista` de Baristop |
+
+Todas las demás apps de este portafolio se auditaron con un solo inquilino y un
+solo usuario, así que sus hallazgos se fecharon como latentes. Éste no lo es.
+
+#### 1. `Business` no tiene un solo bloqueo de campo, y su rama de inquilino no pide rol
+
+La regla desplegada es:
+
+```json
+"update": {"$or":[{"id":"{{user.data.business_id}}"},{"user_condition":{"role":"admin"}}]}
+```
+
+Ninguno de estos campos lleva `rls.write`: `billing_status`, `status`,
+`license_plan`, `licensed_user_limit`, `license_expires_at`,
+`license_activated_at`, `trial_start_at`, `trial_end_at`, `auto_renewal`,
+`payment_reference`, `activation_notes`, `activated_by_admin`,
+`view_only_since`, `archived_at`, `scheduled_delete_at`.
+
+Es exactamente el defecto del módulo 1 que puntos cerró el 2026-08-21 con 17
+bloqueos y rumbo el 2026-08-19 con 10 — **los dos que el preámbulo de esta misma
+sección cita como escarmiento**. Y aquí es más ancho que en cualquiera de los
+dos: la rama de rumbo exigía `owner`/`admin`, la de puntos `business_admin`;
+ésta **no exige ningún rol**, sólo pertenecer al inquilino. Un almacenista
+califica. Puede devolver su negocio suspendido a `active`, estirarse el
+`trial_end_at` o subirse el `licensed_user_limit`.
+
+#### 2. `Business.delete` tiene la misma forma
+
+```json
+"delete": {"$or":[{"id":"{{user.data.business_id}}"},{"user_condition":{"role":"admin"}}]}
+```
+
+Cualquier miembro del inquilino borra la fila del negocio con una llamada. El
+módulo 7 pone una confirmación escrita de tres pasos delante de eso en la
+interfaz; RLS no pide nada. La UI es la única puerta y no es una puerta.
+
+#### 3. `PermissionProfile` sólo pide el inquilino, no el rol — y eso deshace el módulo 3
+
+```json
+"update": {"$or":[{"data.business_id":"{{user.data.business_id}}"},{"user_condition":{"role":"admin"}}]}
+```
+
+Sin mitad de rol. El `almacenista` puede reescribir el perfil que decide qué
+puede hacer un `almacenista`.
+
+Vale seguir el hilo hasta el final, porque el trabajo de los días 17 y 18 de
+agosto **sí se hizo bien** y aun así queda anulado: los cinco grupos de Safe
+functions re-comprueban `hasPermission()` en el servidor, y la segunda
+precedencia de `hasPermission()` lee `PermissionProfile`. La comprobación es
+real; su entrada la controla el comprobado. Un `almacenista` al que su admin le
+negó `Caja Chica:add_fund` se lo vuelve a conceder escribiendo la fila, y el
+servidor le da la razón.
+
+cateqhub resuelve esto mismo con `$and[parish_id, $or[role:admin,
+parish_role:admin]]`. Aquí falta la mitad del rol, nada más.
+
+### Lo que está bien, y con qué evidencia
+
+- **El aislamiento entre inquilinos, que es lo que este módulo audita.** Forma
+  `$or` de cuatro operaciones con `data.business_id` + rama de servicio,
+  confirmada en el esquema **desplegado** de `Product`, `PettyCashMovement`,
+  `SupportTicket` y `AppSession`. `validate:rls` (29 entidades, 21 con
+  inquilino) es bloqueante en CI.
+- **El defecto de liuma no está aquí.** Se comprobaron las 29 entidades del repo
+  con un script, no a ojo, buscando `user_condition` con claves hermanas —el
+  motor las descarta en silencio—: **cero**.
+- **Las 32 handlers de update/delete releen el registro almacenado** antes de
+  actuar. Sólo dos no comparan inquilino —`adminUpdateTenantLicense` y
+  `adminDeleteTenantRule`— y las dos son exclusivas del dueño de plataforma, que
+  es su trabajo.
+- **Toda función que recibe `business_id` en el cuerpo lo ata.**
+  `sendCampaignEmails:21` responde 403 si no coincide con el del solicitante;
+  `getCurrentTenantRuleMap` y `upsertMissingRoleDefaults` caen de vuelta a
+  `user.business_id` para quien no sea el dueño de plataforma (más blando que un
+  403, pero igual de cerrado); las cuatro de `licenses`/`tenantRules` son sólo
+  del dueño.
+- **Todas las funciones de plataforma fallan CERRADO**: `!PLATFORM_OWNER_EMAIL
+  || user.email !== PLATFORM_OWNER_EMAIL` → 403. Sin el secreto no hay bypass,
+  hay negación — misma postura que rumbo, contraria a la que flowfin aprendió
+  por las malas.
+- **`exportBusinessData`** saca `businessId` de `auth.me()` y filtra las 22
+  entidades por él.
+- **Correo**: `sendCampaignEmails` arma destinatarios desde `Enrollment`/
+  `Contact` ya filtrados por el `business_id` verificado; `confirmRenewalPayment`
+  escribe sólo a los admins de ese negocio; `processTrialReactivationEmails` va a
+  `u.email`.
+- **`User.role` y `User.business_id` llevan `rls.write: {role: admin}`.** Eso es
+  justo lo que mantiene los tres hallazgos de arriba **dentro** del inquilino: el
+  almacenista puede reescribir la licencia y los permisos de su negocio, pero no
+  puede moverse a otro.
+- **No hay cambio de inquilino**: un `business_id` por usuario, sin entidad
+  `Membership`. La pregunta "¿en qué inquilino estoy?" tiene una sola respuesta.
+
+### Una cosa menor, anotada de paso
+
+El camino de respaldo de `getCorrectBusiness` (líneas 40‑42) hace
+`Business.list()` como rol de servicio y luego `.find()` en memoria. Devuelve
+sólo `{id, name}` del negocio del solicitante, así que no se fuga nada — pero es
+una lectura de tabla completa donde bastaba un filtro.
+
+### Lo que no pude verificar
+
+Una sesión autenticada como `ventas.baristop@gmail.com` ejecutando de verdad
+1, 2 o 3. **No lo intenté a propósito**: escribir en el inquilino de producción
+de un cliente real para demostrar un hallazgo es peor que el hallazgo. La
+evidencia son las reglas RLS desplegadas más las filas vivas sobre las que
+aplican, las dos leídas del backend en esta pasada.
