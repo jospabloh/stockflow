@@ -21,17 +21,24 @@
     "business_id"
   ],
   "rls": {
+    // SECURITY (module 14, 2026-08-23): create/update/delete are gated to
+    // role:admin ONLY — not the usual tenant $or[business_id, role:admin]
+    // shape. A bare business_id match would let an almacenista rewrite the
+    // very PermissionProfile row that decides what an almacenista may do,
+    // undoing every server-side hasPermission() check in module 3 (its
+    // second-highest precedence reads this entity). Every real write path
+    // already required role:admin at the application layer before this rule
+    // existed (upsertPermissionProfile.ts checks user.role !== 'admin' → 403
+    // before writing as the caller; every other writer — seed/backfill/
+    // changeUserRole/dailyPermissionAudit — writes via asServiceRole, which
+    // itself evaluates as role:admin) — so this closes the raw-API bypass
+    // without changing any legitimate flow. `read` keeps the tenant branch:
+    // an almacenista must still be able to read their own resolved profile
+    // for client-side UI gating.
     "create": {
-      "$or": [
-        {
-          "data.business_id": "{{user.data.business_id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "read": {
       "$or": [
@@ -46,28 +53,14 @@
       ]
     },
     "update": {
-      "$or": [
-        {
-          "data.business_id": "{{user.data.business_id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
-      "$or": [
-        {
-          "data.business_id": "{{user.data.business_id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
