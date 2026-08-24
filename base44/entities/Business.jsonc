@@ -1,12 +1,28 @@
 {
   "name": "Business",
   "type": "object",
+  // SECURITY (module 14, 2026-08-23): the 15 license/status fields below carry
+  // FIELD-LEVEL write RLS locking them to role:admin \u2014 same pattern and same
+  // reasoning as User.role/business_id above. Without it, the entity-level
+  // update rule ({"$or":[{"id":business_id},{role:admin}]}) lets ANY member of
+  // the tenant \u2014 almacenista included \u2014 flip their own business back to
+  // billing_status:"active", stretch trial_end_at, or raise
+  // licensed_user_limit via a raw base44.entities.Business.update() call, no
+  // UI required. These fields are supposed to be written ONLY by Mission
+  // Control's unified lifecycle cron and this app's own platform-owner-gated
+  // licenses/ functions (see "License lifecycle is owned by Mission Control"
+  // above) \u2014 both write via asServiceRole, which evaluates as role:admin, so
+  // this lock changes nothing for them. General business-profile fields
+  // (name, address, logo_url, tax_rate, \u2026) are unaffected and stay editable
+  // by the tenant's own admin through the normal update rule.
   "properties": {
     "activated_by_admin": {
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "activation_notes": {
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "address": {
       "description": "Direcci\u00f3n",
@@ -15,7 +31,8 @@
     "archived_at": {
       "description": "Fecha en que el negocio fue archivado",
       "format": "date-time",
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "auto_cash_income_to_petty_cash": {
       "default": false,
@@ -25,7 +42,8 @@
     "auto_renewal": {
       "default": false,
       "description": "Renovaci\u00f3n autom\u00e1tica de licencia activa",
-      "type": "boolean"
+      "type": "boolean",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "billing_status": {
       "default": "trial",
@@ -36,7 +54,8 @@
         "suspended",
         "archived"
       ],
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "currency": {
       "default": "MXN",
@@ -52,11 +71,13 @@
     },
     "license_activated_at": {
       "format": "date-time",
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "license_expires_at": {
       "format": "date-time",
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "license_plan": {
       "default": "start",
@@ -65,11 +86,13 @@
         "growth",
         "pro"
       ],
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "licensed_user_limit": {
       "default": 4,
-      "type": "number"
+      "type": "number",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "logo_url": {
       "description": "URL del logotipo",
@@ -83,7 +106,8 @@
       "type": "string"
     },
     "payment_reference": {
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "phone": {
       "description": "Tel\u00e9fono",
@@ -115,7 +139,8 @@
     "scheduled_delete_at": {
       "description": "Fecha programada de eliminaci\u00f3n permanente del negocio",
       "format": "date-time",
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "status": {
       "default": "active",
@@ -123,7 +148,8 @@
         "active",
         "suspended"
       ],
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "support_contacted_at": {
       "format": "date-time",
@@ -135,16 +161,19 @@
     },
     "trial_end_at": {
       "format": "date-time",
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "trial_start_at": {
       "format": "date-time",
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "view_only_since": {
       "description": "Fecha en que el negocio entr\u00f3 en modo solo lectura",
       "format": "date-time",
-      "type": "string"
+      "type": "string",
+      "rls": { "write": { "user_condition": { "role": "admin" } } }
     }
   },
   "required": [
@@ -187,17 +216,18 @@
         }
       ]
     },
+    // SECURITY (module 14, 2026-08-23): gated to role:admin only, unlike the
+    // usual tenant $or shape — deleting the Business row itself has no
+    // legitimate end-user path (Settings.jsx's danger zone only deletes the
+    // requesting USER, leaving "los datos del negocio permanecerán en el
+    // sistema" by design; a full tenant deletion goes through
+    // scheduled_delete_at, itself locked above). Any tenant member matching
+    // the old {"id":business_id} branch could otherwise delete the whole
+    // business row with one raw API call.
     "delete": {
-      "$or": [
-        {
-          "id": "{{user.data.business_id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }

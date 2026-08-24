@@ -924,3 +924,84 @@ Lo que de verdad está bloqueado es `deno.land` y `jsr.io`, así que un test que
 importe de ahí no resuelve; uno que no importe nada corre igual que en CI. Es la
 misma lección que el `000` del proxy en Mission Control: **que una vía esté
 bloqueada no significa que la pregunta no tenga respuesta.**
+
+## Módulo 14, cierre: los tres hallazgos quedaron arreglados y desplegados (2026-08-24)
+
+La auditoría del 2026-08-23 (sección "Módulo 14" arriba) dejó tres hallazgos
+abiertos — `Business` sin un solo bloqueo de campo, `Business.delete` sin pedir
+rol, y `PermissionProfile` sin la mitad de rol. Los tres se cerraron en esta
+pasada, contra el **esquema desplegado** (`update_entity_schema`, appId
+`69af971d0fdb362c9ae52ed3`), no sólo en el repo — confirmado releyendo con
+`list_entity_schemas` después de escribir.
+
+- **`Business`**: los 15 campos que el módulo 14 listó
+  (`billing_status`, `status`, `license_plan`, `licensed_user_limit`,
+  `license_expires_at`, `license_activated_at`, `trial_start_at`,
+  `trial_end_at`, `auto_renewal`, `payment_reference`, `activation_notes`,
+  `activated_by_admin`, `view_only_since`, `archived_at`,
+  `scheduled_delete_at`) llevan ahora `rls.write: {role: admin}` — mismo
+  patrón que puntos (17 bloqueos) y rumbo (10) ya tenían, y que `User.role`/
+  `User.business_id` ya usaban en este mismo repo. Los campos de perfil
+  general del negocio (`name`, `address`, `logo_url`, `tax_rate`, …) se
+  dejaron sin bloquear a propósito: siguen siendo editables por el admin del
+  propio inquilino por la vía normal.
+- **`Business.delete`**: pasó de `$or[{id:business_id},{role:admin}]` a sólo
+  `{role:admin}`. Se confirmó primero que no hay ningún flujo legítimo de
+  usuario final que borre la fila `Business` — el "Eliminar cuenta" de
+  `Settings.jsx` borra el **usuario**, no el negocio
+  ("Los datos del negocio permanecerán en el sistema" es el propio texto de
+  la UI), y una baja completa de negocio pasa por `scheduled_delete_at`
+  (ya bloqueado arriba), gestionado sólo por las funciones de `licenses/`
+  exclusivas del dueño de plataforma. El cambio no le quita acceso a ningún
+  flujo real, sólo cierra la llamada cruda por API.
+- **`PermissionProfile`**: `create`/`update`/`delete` pasaron de
+  `$or[{business_id},{role:admin}]` a sólo `{role:admin}` (idéntico al
+  patrón que ya usan `AppSession`/`AppChangelog`/`AppVersion`/
+  `EmailNotification`/`SupportTicketMessage` en este mismo repo — no hace
+  falta `$and` con el inquilino porque el rol de plataforma/servicio ya
+  cubre ambos casos). `read` se dejó intacto: un almacenista sigue
+  necesitando leer su propio perfil resuelto para el gateo de UI. Se
+  verificó, antes del cambio, que **todo** camino real de escritura ya exigía
+  `role:admin` en la capa de aplicación: `upsertPermissionProfile.ts`
+  (invocado directo por el cliente) comprueba `user.role !== 'admin'` → 403
+  antes de escribir con la identidad de quien llama;
+  `seedDefaultPermissionProfiles`, `backfillPermissionDefaults`,
+  `changeUserRole`, `upsertMissingRoleDefaults` y `dailyPermissionAudit`
+  escriben con `asServiceRole` (que evalúa como `role:admin` sin contexto de
+  usuario). Ningún flujo real cambia de comportamiento; sólo se cierra el
+  bypass de API cruda que el módulo 14 documentó.
+
+**Verificado:** `npm run validate:rls` (29 entidades, 21 con inquilino),
+`npm run lint`, `npm run build` — los tres en verde con los cambios aplicados.
+Los dos `entitySchema` enviados a `update_entity_schema` se releyeron con
+`list_entity_schemas` y coinciden byte a byte con lo que se pidió escribir.
+**No verificado:** una sesión autenticada como `ventas.baristop@gmail.com`
+(el almacenista real de Baristop que el módulo 14 nombra) confirmando en vivo
+que la escritura ahora falla — mismo límite que el módulo 14 ya declaró, y
+por la misma razón: escribir contra el inquilino de producción de un cliente
+real para demostrarlo sería peor que dejarlo sin confirmar en ese punto. La
+evidencia es la regla RLS desplegada, releída, más la traza de cada camino de
+escritura real de `PermissionProfile` confirmando que ya exigía `role:admin`
+antes de esta capa.
+
+**Hallazgo separado, mismo barrido — `npm audit`:** de las cuatro
+vulnerabilidades de la última pasada (2026-08-10), tres tenían fix disponible
+vía parche de una dependencia transitiva y no se habían aplicado:
+`socket.io-parser` 4.2.6→4.2.7, `js-yaml` 4.3.0→4.3.1, `dompurify` 3.4.12→3.4.14
+(los tres vía `npm audit fix`, sólo `package-lock.json`, sin tocar
+`package.json`). Aplicados y verificados: `npm run build` sigue en verde. La
+cuarta (`xlsx`, sin fix upstream) se re-verificó y el razonamiento de
+2026-08-10 sigue vigente (`src/lib/exportData.js` sólo escribe XLSX, nunca
+parsea uno subido por el usuario).
+
+**Corrección sobre el propio hallazgo de 2026-08-10:** esa pasada dio por
+"entrada de lockfile obsoleta, no empaquetada" a `socket.io-parser` porque
+`npm ls socket.io-parser` resolvía vacío en ese momento. Ya no es así — resuelve
+vía `@base44/sdk` → `socket.io-client`, y `FloatingHelpChat.jsx` sí llama
+`base44.agents.subscribeToConversation`, que usa ese cliente de socket en
+vivo. El riesgo real seguía acotado (el servidor al otro lado es el propio
+backend de Base44, no uno arbitrario controlado por un atacante — el modelo
+de amenaza del aviso, "memory exhaustion" desde un servidor Socket.IO
+malicioso, no aplica a una conexión de primera parte), pero la conclusión de
+"no alcanzable" ya no era cierta, y el parche disponible lo vuelve
+discutible de todos modos.
