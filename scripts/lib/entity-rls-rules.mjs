@@ -28,6 +28,23 @@ const BUILTIN_ENTITY_FIELDS = new Set([
   "updated_date",
 ]);
 const BUILTIN_USER_VARS = new Set(["id", "email", "role"]);
+
+// Entities that carry a `business_id` field but are legitimately scoped by a
+// DIFFERENT field for read — the heuristic below (any entity with
+// business_id must filter read by data.business_id) would otherwise flag
+// them as broken tenant isolation when they aren't.
+//
+// Membership (módulo 18, jospabloh/acacia-app-standard → STANDARD.md): one
+// row per (business_id, user_id) pair — a user with two businesses has two
+// rows, each with a DIFFERENT business_id. Filtering its own read by
+// data.business_id == {{user.data.business_id}} would only ever return the
+// membership for the currently-active business, which defeats the entity's
+// entire purpose (letting the switcher list businesses the user is NOT
+// currently in). It is correctly scoped by data.user_id == {{user.id}}
+// instead — the caller can always read their own memberships regardless of
+// which one is active — mirroring jospabloh/ctrlhq's own Membership entity,
+// the reference implementation the standard names.
+const USER_SCOPED_READ_ALLOWLIST = new Set(["Membership"]);
 const LOGICAL_OPERATORS = new Set(["$or", "$and", "$nor", "$not"]);
 
 /** Strip // and block comments so JSONC parses as JSON. */
@@ -112,7 +129,10 @@ export function collectRlsErrors(entitiesDir) {
       businessScoped++;
       const readJson = JSON.stringify(rls.read);
       const adminBranch = '"user_condition":{"role":"admin"}';
-      if (!readJson.includes('"data.business_id":"{{user.data.business_id}}"')) {
+      if (
+        !readJson.includes('"data.business_id":"{{user.data.business_id}}"') &&
+        !USER_SCOPED_READ_ALLOWLIST.has(entity)
+      ) {
         errors.push(
           `${entity} [read]: tenant-scoped entity (has business_id) must ` +
             `filter read by {"data.business_id":"{{user.data.business_id}}"}.`,
