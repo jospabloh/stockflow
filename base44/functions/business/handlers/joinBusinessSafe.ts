@@ -20,6 +20,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 //
 // DEPLOY ORDER: see createBusinessSafe.ts — deploy this function before the
 // User schema's field-level RLS lock on role/business_id.
+//
+// Módulo 18 (jospabloh/acacia-app-standard → STANDARD.md, 2026-08-26): ya NO
+// rechaza al caller por ya pertenecer a otro negocio — el único rechazo
+// legítimo es ya-ser-miembro-de-ESTE-negocio, y eso es idempotente, no un
+// error. Unirse mueve el business_id activo al negocio recién unido de
+// inmediato (como createBusinessSafe/switchBusinessSafe); si el caller ya
+// tenía un negocio, se le respalda una Membership antes de moverlo — mismo
+// razonamiento y mismo código que createBusinessSafe.ts.
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -27,15 +35,13 @@ export async function handle(req: Request): Promise<Response> {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (user.business_id) {
-      return Response.json({ error: 'already_has_business', business_id: user.business_id }, { status: 409 });
-    }
-
     const body = await req.json().catch(() => ({}));
     const code = typeof body.invite_code === 'string' ? body.invite_code.trim().toUpperCase() : '';
     if (!code) return Response.json({ error: 'invite_code es requerido' }, { status: 400 });
 
-    const businesses = await base44.asServiceRole.entities.Business.filter({ invite_code: code });
+    const sr = base44.asServiceRole;
+
+    const businesses = await sr.entities.Business.filter({ invite_code: code });
     if (businesses.length === 0) {
       return Response.json({ error: 'invalid_code' }, { status: 404 });
     }
@@ -48,9 +54,42 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'business_inactive' }, { status: 403 });
     }
 
-    await base44.asServiceRole.entities.User.update(user.id, {
+    // Backfill a Membership for the business the caller was already in (if
+    // any) BEFORE moving business_id away from it — see createBusinessSafe.ts
+    // for the full reasoning; same one-time, idempotent migration.
+    if (user.business_id && user.business_id !== business.id) {
+      const already = await sr.entities.Membership.filter(
+        { business_id: user.business_id, user_id: user.id }, undefined, 1,
+      );
+      if (!already?.length) {
+        await sr.entities.Membership.create({
+          business_id: user.business_id,
+          user_id: user.id,
+          user_email: user.email,
+          role: user.role || 'almacenista',
+        });
+      }
+    }
+
+    // Idempotent: redeeming a code for a business the caller already belongs
+    // to is a no-op on Membership (keeps the role an admin may have already
+    // granted), never an error — the invite code doesn't downgrade anyone.
+    const existingHere = await sr.entities.Membership.filter(
+      { business_id: business.id, user_id: user.id }, undefined, 1,
+    );
+    let role = existingHere?.[0]?.role || 'almacenista';
+    if (!existingHere?.length) {
+      await sr.entities.Membership.create({
+        business_id: business.id,
+        user_id: user.id,
+        user_email: user.email,
+        role,
+      });
+    }
+
+    await sr.entities.User.update(user.id, {
       business_id: business.id,
-      role: 'almacenista',
+      role,
     });
 
     return Response.json({ success: true, business: { id: business.id, name: business.name } });

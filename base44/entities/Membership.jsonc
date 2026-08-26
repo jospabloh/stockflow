@@ -1,0 +1,79 @@
+{
+  "name": "Membership",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "description": "ID del negocio al que da acceso esta membresía",
+      "type": "string"
+    },
+    "user_id": {
+      "description": "ID del usuario (base44) dueño de esta membresía",
+      "type": "string"
+    },
+    "user_email": {
+      "description": "Correo del usuario al momento de crear la membresía — solo informativo, nunca se usa para autorizar",
+      "type": "string"
+    },
+    "role": {
+      "description": "Rol que este usuario tiene EN ESTE negocio — se re-deriva al cambiar de negocio activo, nunca se copia de otro",
+      "type": "string",
+      "enum": ["admin", "almacenista"]
+    }
+  },
+  "required": [
+    "business_id",
+    "user_id",
+    "role"
+  ],
+  "rls": {
+    // Módulo 18 (jospabloh/acacia-app-standard → STANDARD.md): un email puede
+    // pertenecer a más de un negocio a la vez. Antes de esta entidad,
+    // `User.business_id` (bloqueado a rol:admin) era el ÚNICO registro de
+    // pertenencia — unirse a un segundo negocio simplemente sobrescribía el
+    // primero, sin dejar ningún rastro de que el usuario también seguía
+    // siendo miembro de él. `Membership` es ese rastro: una fila por
+    // negocio al que el usuario tiene acceso, independiente de cuál sea su
+    // `business_id` activo ahora mismo.
+    //
+    // Solo lo escribe el rol de servicio — `createBusinessSafe`,
+    // `joinBusinessSafe` y `switchBusinessSafe` son los tres únicos
+    // escritores, los tres corren como `asServiceRole` después de validar
+    // server-side. Un usuario no puede crearse una membresía en un negocio
+    // ajeno ni reescribir el rol de una propia — eso anularía exactamente
+    // el mismo control que `hasPermission()` ya aplica en cada Safe function.
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    // `read` se llavea a `data.user_id`, NO a `data.business_id` — a
+    // propósito: es lo que permite listar los negocios a los que el usuario
+    // pertenece pero NO tiene activos ahora mismo (el propio `business_id`
+    // del negocio inactivo no coincide con nada del perfil del usuario en
+    // ese momento). Ver Business.jsonc para la otra mitad de esta decisión:
+    // leer el *nombre* de un negocio inactivo sigue sin estar permitido, y
+    // el switcher lo tolera con un nombre genérico en vez de ampliar esa RLS.
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
