@@ -54,8 +54,15 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
     }
     setSharingLoading(true);
     try {
-      const token = crypto.randomUUID();
-      await base44.entities.Quotation.update(q.id, { public_token: token, public_link_enabled: true });
+      const response = await base44.functions.invoke('quotations', { action: 'toggleQuotationShareSafe',
+        quotation_id: q.id,
+        enabled: true,
+      });
+      if (!response.data.success) {
+        setSharingLoading(false);
+        return;
+      }
+      const token = response.data.quotation.public_token;
       setLocalQuotation(prev => ({ ...(prev || q), public_token: token, public_link_enabled: true }));
       onQuotationUpdated?.({ ...q, public_token: token, public_link_enabled: true });
       const link = `${window.location.origin}/q/${token}`;
@@ -70,7 +77,11 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
   const handleDisableShare = async () => {
     setSharingLoading(true);
     try {
-      await base44.entities.Quotation.update(q.id, { public_link_enabled: false });
+      const response = await base44.functions.invoke('quotations', { action: 'toggleQuotationShareSafe',
+        quotation_id: q.id,
+        enabled: false,
+      });
+      if (!response.data.success) return;
       setLocalQuotation(prev => ({ ...(prev || q), public_link_enabled: false }));
       onQuotationUpdated?.({ ...q, public_link_enabled: false });
     } finally {
