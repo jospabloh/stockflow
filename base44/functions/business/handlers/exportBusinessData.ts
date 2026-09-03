@@ -30,6 +30,7 @@ const EXPORTED_ENTITIES = [
   'Enrollment',
   'FundAccount',
   'InventoryAuditLog',
+  'MachinerySale',
   'Movement',
   'PaymentMethod',
   'PermissionProfile',

@@ -41,6 +41,7 @@ const Suppliers = lazy(() => import('./pages/Suppliers'));
 const Clients = lazy(() => import('./pages/Clients'));
 const PaymentMethods = lazy(() => import('./pages/PaymentMethods'));
 const SupplierPayments = lazy(() => import('./pages/SupplierPayments'));
+const MachinerySales = lazy(() => import('./pages/MachinerySales'));
 const Utility = lazy(() => import('./pages/Utility'));
 const Rubros = lazy(() => import('./pages/Rubros'));
 const FundAccounts = lazy(() => import('./pages/FundAccounts'));
@@ -135,6 +136,7 @@ const AuthenticatedApp = () => {
       <Route path="/Clients" element={<LayoutWrapper currentPageName="Clients"><Suspense fallback={<PageLoader />}><Clients /></Suspense></LayoutWrapper>} />
       <Route path="/PaymentMethods" element={<LayoutWrapper currentPageName="PaymentMethods"><Suspense fallback={<PageLoader />}><PaymentMethods /></Suspense></LayoutWrapper>} />
       <Route path="/SupplierPayments" element={<LayoutWrapper currentPageName="SupplierPayments"><Suspense fallback={<PageLoader />}><SupplierPayments /></Suspense></LayoutWrapper>} />
+      <Route path="/MachinerySales" element={<LayoutWrapper currentPageName="MachinerySales"><Suspense fallback={<PageLoader />}><MachinerySales /></Suspense></LayoutWrapper>} />
       <Route path="/Utility" element={<LayoutWrapper currentPageName="Utility"><Suspense fallback={<PageLoader />}><Utility /></Suspense></LayoutWrapper>} />
       <Route path="/Rubros" element={<LayoutWrapper currentPageName="Rubros"><Suspense fallback={<PageLoader />}><Rubros /></Suspense></LayoutWrapper>} />
       <Route path="/FundAccounts" element={<LayoutWrapper currentPageName="FundAccounts"><Suspense fallback={<PageLoader />}><FundAccounts /></Suspense></LayoutWrapper>} />
