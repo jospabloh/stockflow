@@ -1,0 +1,95 @@
+{
+  "name": "MachinerySale",
+  "type": "object",
+  "properties": {
+    "business_id": {
+      "description": "ID del negocio al que pertenece",
+      "type": "string"
+    },
+    "sale_date": {
+      "description": "Fecha de la venta (YYYY-MM-DD). Opcional: una venta en trámite se registra sin fecha hasta que se cierra",
+      "format": "date",
+      "type": "string"
+    },
+    "client_name": {
+      "description": "Nombre del cliente que compra la máquina",
+      "type": "string"
+    },
+    "client_business_name": {
+      "description": "Nombre del negocio del cliente (la cafetería, barra o local donde queda la máquina)",
+      "type": "string"
+    },
+    "machine_type": {
+      "description": "Tipo de máquina o paquete vendido (texto libre)",
+      "type": "string"
+    },
+    "cost": {
+      "default": 0,
+      "description": "Costo de la máquina para el negocio (confidencial)",
+      "type": "number"
+    },
+    "sale_price": {
+      "default": 0,
+      "description": "Precio de venta al cliente",
+      "type": "number"
+    },
+    "notes": {
+      "description": "Notas adicionales (opcional)",
+      "type": "string"
+    }
+  },
+  "required": [
+    "business_id",
+    "machine_type"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.business_id": "{{user.data.business_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

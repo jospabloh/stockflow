@@ -188,6 +188,11 @@ const CANONICAL_KEYS: string[] = [
   "CuentasFondo:create",
   "CuentasFondo:edit",
   "CuentasFondo:delete",
+  "Venta de Maquinaria:view",
+  "Venta de Maquinaria:create",
+  "Venta de Maquinaria:edit",
+  "Venta de Maquinaria:delete",
+  "Venta de Maquinaria:financials",
   "Centro de Soporte:view",
   "Centro de Soporte:create",
   "Centro de Soporte:reply",
@@ -248,6 +253,8 @@ const ALMACENISTA_DENIED = new Set<string>([
   "CuentasFondo:create",
   "CuentasFondo:edit",
   "CuentasFondo:delete",
+  "Venta de Maquinaria:delete",
+  "Venta de Maquinaria:financials",
 ]);
 // AUTOGEN:CANONICAL_KEYS:END
 

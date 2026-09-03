@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-08-21T16:45:05.734Z
+// Generado: 2026-09-03T17:38:01.744Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -185,6 +185,11 @@ export const ALL_PERMISSION_KEYS = [
   "CuentasFondo:create",
   "CuentasFondo:edit",
   "CuentasFondo:delete",
+  "Venta de Maquinaria:view",
+  "Venta de Maquinaria:create",
+  "Venta de Maquinaria:edit",
+  "Venta de Maquinaria:delete",
+  "Venta de Maquinaria:financials",
   "Centro de Soporte:view",
   "Centro de Soporte:create",
   "Centro de Soporte:reply",
@@ -473,6 +478,16 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "delete", label: "Eliminar cuenta", category: "actionable" }
     ]
   },
+  "Venta de Maquinaria": {
+    label: "Venta de Maquinaria",
+    actions: [
+    { id: "view", label: "Ver lista", category: "visual" },
+    { id: "create", label: "Registrar venta", category: "actionable" },
+    { id: "edit", label: "Editar venta", category: "actionable" },
+    { id: "delete", label: "Eliminar venta", category: "actionable" },
+    { id: "financials", label: "Ver costo, utilidad y comisión", category: "report", sensitive: true }
+    ]
+  },
   "Centro de Soporte": {
     label: "Centro de Soporte",
     actions: [
@@ -667,6 +682,11 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "CuentasFondo:create": true,
   "CuentasFondo:edit": true,
   "CuentasFondo:delete": true,
+  "Venta de Maquinaria:view": true,
+  "Venta de Maquinaria:create": true,
+  "Venta de Maquinaria:edit": true,
+  "Venta de Maquinaria:delete": true,
+  "Venta de Maquinaria:financials": true,
   "Centro de Soporte:view": true,
   "Centro de Soporte:create": true,
   "Centro de Soporte:reply": true,
@@ -854,6 +874,11 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "CuentasFondo:create": false,
   "CuentasFondo:edit": false,
   "CuentasFondo:delete": false,
+  "Venta de Maquinaria:view": true,
+  "Venta de Maquinaria:create": true,
+  "Venta de Maquinaria:edit": true,
+  "Venta de Maquinaria:delete": false,
+  "Venta de Maquinaria:financials": false,
   "Centro de Soporte:view": true,
   "Centro de Soporte:create": true,
   "Centro de Soporte:reply": true,

@@ -43,6 +43,22 @@ export function useSupplierPayments(businessId) {
   });
 }
 
+export function useMachinerySales(businessId) {
+  return useQuery({
+    queryKey: ["MachinerySale", businessId],
+    queryFn: () =>
+      // Ordenado por -created_date y no por -sale_date: una venta en trámite
+      // todavía no tiene fecha, y ordenar por un campo vacío la mandaría al
+      // fondo de la lista justo cuando es la que hay que terminar de capturar.
+      base44.entities.MachinerySale.filter(
+        { business_id: businessId },
+        "-created_date",
+        1000
+      ),
+    enabled: !!businessId,
+  });
+}
+
 export function useSuppliers(businessId) {
   return useQuery({
     queryKey: ["Supplier", businessId],
