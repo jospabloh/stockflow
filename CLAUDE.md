@@ -1074,9 +1074,28 @@ sobre $7,777, que es el mismo cálculo).
 tope de Base44 (50) es ahora de 3.** El siguiente grupo de funciones conviene
 que sea una consolidación, no un alta.
 
-**No verificado:** nada de esto está desplegado todavía — ni el esquema de
-`MachinerySale` en el backend de Base44, ni las funciones, ni el sitio. Mergear
-no deploya (ver módulo 11). Y sin la entidad desplegada la pestaña carga vacía
-y el alta falla, porque Base44 no conoce `MachinerySale`. Tampoco se probó una
-sesión de navegador como almacenista restringido — mismo límite que declaran
-las secciones anteriores.
+### Estado del deploy (2026-09-03, después de mergear el PR #377)
+
+Mergear no deploya (módulo 11), así que esto va por partes y conviene leerlo
+antes de dar la pestaña por viva:
+
+- **Esquema de `MachinerySale`: DESPLEGADO.** Enviado con
+  `create_entity_schema` (appId `69af971d0fdb362c9ae52ed3`) y releído con
+  `list_entity_schemas`: 8 campos, `required: [business_id, machine_type]` y
+  la forma `$or` de cuatro operaciones con las dos mitades correctas — coincide
+  con el `.jsonc` del repo.
+- **Funciones (`npm run deploy`) y sitio (`npm run deploy:site`): PENDIENTES.**
+  La CLI de Base44 no está instalada ni autenticada en el sandbox de esta
+  sesión (`npx base44` no resuelve y no hay token en el entorno), así que estos
+  dos pasos se corren a mano desde una terminal con sesión.
+
+**Hasta que corran esos dos, la pestaña no funciona**: el grupo
+`machinerySales` no existe en el backend, así que el alta responde error de
+función desconocida aunque la entidad ya esté ahí. Y comprueba el resultado por
+**contenido**, no por hash (módulo 11).
+
+**No verificado:** una sesión de navegador como almacenista restringido
+(`ventas.baristop@`) confirmando que ve la pestaña sin costo/utilidad/comisión
+y que `applyCost` le conserva el costo al editar — mismo límite que declaran
+las secciones anteriores, y la razón por la que ese comportamiento está fijado
+en un test que sí corre.
