@@ -17,6 +17,7 @@ export const PAGE_TO_MODULE_MAP = {
   Utility: 'Utilidad',
   Rubros: 'Rubros',
   SupplierPayments: 'Pagos a Proveedores',
+  MachinerySales: 'Venta de Maquinaria',
   Reports: 'Reportes',
   Settings: 'Configuracion',
   PermissionAdmin: 'Configuracion',

@@ -279,6 +279,16 @@ export const PERMISSION_REGISTRY = {
       { id: "delete", label: "Eliminar cuenta", category: "actionable", icon: "🗑️", description: "Eliminar cuentas de fondos" },
     ]
   },
+  "Venta de Maquinaria": {
+    label: "Venta de Maquinaria",
+    actions: [
+      { id: "view", label: "Ver lista", category: "visual", icon: "👁️", description: "Acceso al registro de ventas de maquinaria" },
+      { id: "create", label: "Registrar venta", category: "actionable", icon: "➕", description: "Registrar una nueva venta de maquinaria" },
+      { id: "edit", label: "Editar venta", category: "actionable", icon: "✏️", description: "Modificar los datos de una venta ya registrada" },
+      { id: "delete", label: "Eliminar venta", category: "actionable", icon: "🗑️", description: "Eliminar una venta del registro" },
+      { id: "financials", label: "Ver costo, utilidad y comisión", category: "report", icon: "💲", sensitive: true, description: "Ver costo, utilidad y comisión de cada venta de maquinaria (confidencial)" },
+    ]
+  },
   "Centro de Soporte": {
     label: "Centro de Soporte",
     actions: [
@@ -363,6 +373,12 @@ export function getDefaultsForRole(role) {
             'CuentasFondo:create',
             'CuentasFondo:edit',
             'CuentasFondo:delete',
+            // Registrar y corregir una venta de maquinaria es trabajo de quien
+            // vende (el almacenista de Baristop es literalmente "ventas@"), así
+            // que create/edit se conceden. Borrar el renglón no: eso destruye
+            // el registro. El costo/utilidad/comisión quedan fuera por el
+            // 'financials' sensitive de arriba, no por esta lista.
+            'Venta de Maquinaria:delete',
           ];
           defaults[key] = !deniedActionable.includes(key);
         } else if (action.category === 'report') {

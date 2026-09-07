@@ -1139,3 +1139,98 @@ aceptado desde 2026-08-10), ninguna nueva. Secrets: limpio.
 binario — mismo límite que módulos 3/7 documentan repetidamente) y una
 sesión de navegador como `almacenista` con permisos restringidos —
 mismo límite y misma razón que el resto de este archivo ya declara.
+
+## Venta de Maquinaria — un libro aparte, no un producto más (2026-09-03)
+
+Silvita (Baristop) pidió «una pestaña de venta de maquinaria», y la petición
+traía su propio diseño dentro: *«ahí no sería agregar productos, sería q nos
+ponga los campos y nosotros llenarlo»*. Venía de un Excel con nueve columnas
+— # · Fecha · Cliente · Nombre del negocio · Tipo · Costo · Venta · Utilidad ·
+Comisión.
+
+**Lo que hace que este módulo sea correcto es lo que NO toca.** No escribe
+`Movement`, ni `Product.stock`, ni `PettyCashMovement`, ni `Quotation`. Es
+tentador engancharlo a caja chica —«una venta es dinero que entra»— y sería un
+error: los importes de maquinaria ya entran por el flujo de cotizaciones cuando
+corresponde, y duplicarlos aquí reproduce exactamente el doble conteo que la
+sección de arriba (2026-08-07) documenta como el bug más caro de este repo.
+
+- **`MachinerySale`** (`base44/entities/MachinerySale.jsonc`): forma `$or` de
+  cuatro operaciones, como toda entidad con inquilino. Único obligatorio además
+  de `business_id`: `machine_type`. Fecha e importes son opcionales **a
+  propósito** — los renglones 2 y 3 del Excel original tienen cliente y tipo
+  pero ningún importe, así que una venta en trámite se captura y se termina
+  después. La UI la marca «En trámite» en vez de mostrar un cero.
+- **La utilidad y la comisión no se guardan.** Se derivan de `cost` y
+  `sale_price` en `src/lib/machinerySales.js`. Guardar un total calculable es
+  como se desincronizan las cifras.
+- **`MACHINERY_COMMISSION_RATE = 0.05`**, en un solo lugar. El Excel encabezaba
+  la columna «Comisión 4%»; la petición fue explícita en 5% de la utilidad. Al
+  no estar congelada por venta, cambiar la constante recalcula todo el
+  histórico — que es lo que se pidió esta vez, pero **piénsalo antes del
+  próximo cambio de porcentaje**: si alguna vez hace falta que cada venta
+  conserve la tasa a la que se vendió, eso es un campo nuevo, no un ajuste de
+  la constante. Una venta a pérdida da comisión `0`, nunca negativa.
+
+### El costo es el campo delicado, y no por lo que parece
+
+`Venta de Maquinaria:financials` es `sensitive`, así que el almacenista no lo
+tiene por defecto: captura y consulta la venta sin ver nunca costo, utilidad ni
+comisión. Pero `create` y `edit` **sí** se le conceden, al revés que en «Pagos a
+Proveedores» — el almacenista de Baristop es literalmente `ventas.baristop@`, y
+un registro de ventas que el vendedor no puede llenar no sirve de nada. Sólo
+`delete` queda fuera.
+
+De ahí sale la trampa que `handlers/_fields.ts` (`applyCost`) existe para
+evitar: **quien no ve el campo tampoco lo envía**, así que un cuerpo sin `cost`
+no significa «ponlo en cero». Si el handler lo leyera del cuerpo, un
+almacenista corrigiendo el nombre de un cliente borraría el costo de esa venta
+—y con él la utilidad y la comisión— sin haber visto jamás el campo que
+destruyó, y el guardado respondería éxito. Por eso `applyCost` conserva el
+costo **almacenado** salvo que quien llama tenga `financials`, y
+`base44/tests/machinery_sales_fields_test.ts` fija esa dirección en las dos
+variantes (campo ausente y campo manipulado desde devtools).
+
+Ese test no importa nada externo, a propósito: `deno.land` y `jsr.io` están
+bloqueados en el sandbox, y así corre donde se escribe en vez de estrenarse en
+CI. **9 pasaron, 0 fallaron**, corrido aquí.
+
+### Verificado
+
+`npm run lint` (con `validate:functions`), `npm run build` (emite el chunk
+`MachinerySales-*.js`), `npm run validate:rls` (31 entidades, 23 con
+inquilino), `npm run generate:permission-manifests` (190 claves, 56 denegadas)
+y `deno lint base44/functions/` (175 archivos). La aritmética se contrastó
+contra los renglones del propio Excel: utilidades de $8,658 y $7,777, idénticas
+a las suyas; comisión al 5% = $432.90 y $388.85 (su columna al 4% daba $311.08
+sobre $7,777, que es el mismo cálculo).
+
+`maxFunctions` subió de 46 a 47 en `base44.app.json`. **El margen contra el
+tope de Base44 (50) es ahora de 3.** El siguiente grupo de funciones conviene
+que sea una consolidación, no un alta.
+
+### Estado del deploy (2026-09-03, después de mergear el PR #377)
+
+Mergear no deploya (módulo 11), así que esto va por partes y conviene leerlo
+antes de dar la pestaña por viva:
+
+- **Esquema de `MachinerySale`: DESPLEGADO.** Enviado con
+  `create_entity_schema` (appId `69af971d0fdb362c9ae52ed3`) y releído con
+  `list_entity_schemas`: 8 campos, `required: [business_id, machine_type]` y
+  la forma `$or` de cuatro operaciones con las dos mitades correctas — coincide
+  con el `.jsonc` del repo.
+- **Funciones (`npm run deploy`) y sitio (`npm run deploy:site`): PENDIENTES.**
+  La CLI de Base44 no está instalada ni autenticada en el sandbox de esta
+  sesión (`npx base44` no resuelve y no hay token en el entorno), así que estos
+  dos pasos se corren a mano desde una terminal con sesión.
+
+**Hasta que corran esos dos, la pestaña no funciona**: el grupo
+`machinerySales` no existe en el backend, así que el alta responde error de
+función desconocida aunque la entidad ya esté ahí. Y comprueba el resultado por
+**contenido**, no por hash (módulo 11).
+
+**No verificado:** una sesión de navegador como almacenista restringido
+(`ventas.baristop@`) confirmando que ve la pestaña sin costo/utilidad/comisión
+y que `applyCost` le conserva el costo al editar — mismo límite que declaran
+las secciones anteriores, y la razón por la que ese comportamiento está fijado
+en un test que sí corre.
