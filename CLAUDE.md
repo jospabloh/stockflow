@@ -1234,3 +1234,90 @@ función desconocida aunque la entidad ya esté ahí. Y comprueba el resultado p
 y que `applyCost` le conserva el costo al editar — mismo límite que declaran
 las secciones anteriores, y la razón por la que ese comportamiento está fijado
 en un test que sí corre.
+
+## Auditoría 2026-09-07: RLS de escritura de `MachinerySale` cerrada, workflows de licencia obsoletos borrados, lectura confidencial sistémica documentada (no arreglada)
+
+Una revisión automatizada (Codex, disparada al marcar el PR #380 como listo)
+encontró tres hallazgos P1 contra el estado del repo tras el merge de Venta de
+Maquinaria. Los tres se verificaron contra el código real antes de actuar —
+ninguno se aceptó de oídas.
+
+**1. Cerrado — `MachinerySale.jsonc` permitía escritura directa por
+cualquier miembro del inquilino.** `create`/`update`/`delete` tenían la forma
+`$or[business_id, role:admin]` en vez de sólo `role:admin` — el mismo defecto
+que el módulo 14 (2026-08-23) ya había cerrado para `PermissionProfile`, aquí
+sin cerrar desde que la entidad se creó (2026-09-03). Se confirmó por grep que
+las tres únicas escrituras del repo son los handlers de `machinerySales/`
+(vía `asServiceRole`), así que apretar la regla no rompe ningún flujo real.
+Arreglado igual que `PermissionProfile`: `create`/`update`/`delete` → sólo
+`role:admin`, `read` sin tocar (un miembro del inquilino sigue leyendo la
+lista de su propio negocio). **Sólo en el repo — el esquema desplegado
+(`create_entity_schema`, 2026-09-03) sigue con la forma vieja** hasta que se
+corra `update_entity_schema`; esta sesión no tiene credenciales de Base44
+para hacerlo.
+
+**2. Borrado — tres workflows de licencia retirados habían vuelto al repo.**
+El commit `f5a9437` ("Migrated 6 workflow(s)", `base44-builder[bot]`,
+2026-09-06) trajo 6 archivos a `base44/workflows/`; 3 de los 6 invocan
+`checkAccountLifecycle`, `expireTrials` y `processMonthlyRenewal` — las tres
+funciones que la sección "License lifecycle is owned by Mission Control" de
+este mismo archivo documenta como **retiradas** el 2026-08-03. Ninguna de las
+tres existe en `base44/functions/`. Se borraron los tres `.jsonc` del repo
+(los otros 3 migrados — `Send Lifecycle Emails`, `Sync Product Stock on
+Movement`, `Trial Reactivation Emails Daily` — sí invocan funciones que
+existen y se dejaron). **Esto sólo limpia el repo.** Si esos tres workflows
+migrados vinieron de un `pull` contra el backend desplegado (lo más probable,
+dado que `base44-builder[bot]` sincroniza desde ahí), significa que la app
+desplegada en Base44 **todavía tiene programados** tres crons diarios que
+invocan funciones que ya no existen — fallarían cada día, o peor, si el
+nombre de función quedó re-registrado por accidente con otra implementación,
+podrían reintroducir transiciones de `billing_status` compitiendo con Mission
+Control, que es exactamente el escenario que la sección original de este
+archivo dice que nunca debe pasar. **Verificar y borrar esos tres workflows
+en el dashboard de Base44 (o vía `npx base44` autenticado) es la siguiente
+acción, y no se pudo hacer desde esta sesión** (sin CLI ni MCP de Base44
+autenticados aquí).
+
+**3. Documentado, NO arreglado — lectura de campos confidenciales sin
+redactar, y es sistémico, no de `MachinerySale`.** `useMachinerySales`
+(`src/hooks/queries/index.js`) trae la fila completa vía
+`base44.entities.MachinerySale.filter(...)` directo desde el cliente;
+`MachinerySales.jsx` sólo **oculta** las columnas de costo/utilidad/comisión
+cuando falta `Venta de Maquinaria:financials` — el JSON ya llegó al navegador
+con `cost` incluido, recuperable desde el panel de red o el caché de React
+Query sin ningún esfuerzo técnico especial. Se comprobó que **no es un bug
+nuevo de esta pestaña**: `useSupplierPayments` hace exactamente lo mismo con
+`SupplierPayment.amount` (el campo que "Pagos a Proveedores" también trata
+como sensible y también gatea sólo con un `if` en el JSX) — así que esto es
+un límite arquitectónico de cómo este repo implementa "campo sensible" en
+todas partes, no un defecto aislado.
+
+Base44 **sí** soporta RLS de lectura a nivel de campo
+(`properties.<campo>.rls.read`, ver el skill `base44-cli`'s
+`references/rls-examples.md`), pero sólo contra el `role` **incorporado**
+(admin/almacenista) — no contra el `PermissionProfile` por-negocio que
+decide la clave granular `financials`. Bloquear el campo a `role:admin` sería
+**más estricto** de lo que la app pretende: un almacenista al que su admin le
+concedió explícitamente `financials` (el caso `ventas.baristop@`, ver
+"Venta de Maquinaria" arriba) dejaría de poder verlo, aunque su perfil diga
+que sí puede. El arreglo correcto es el mismo patrón que el resto de este
+archivo ya usa para escritura pero que nunca se construyó para lectura: un
+endpoint tipo Safe function que llame `hasPermission()` y devuelva la fila
+redactada cuando falte, sustituyendo la llamada directa del cliente — un
+patrón que no existe todavía en ningún lugar de este repo para lecturas.
+
+**Por qué no se arregló esta noche:** es sistémico (afecta como mínimo
+`MachinerySale` y `SupplierPayment`, probablemente más — no se hizo el barrido
+completo de qué otros campos "sensibles" tienen el mismo patrón), requiere
+inventar una arquitectura nueva (lectura redactada server-side) que nadie ha
+probado en este repo, y esta sesión no puede desplegar ni probar contra
+Base44 en vivo. Construir eso sin poder probarlo, de madrugada, en una app
+financiera en producción, es exactamente el riesgo que este archivo repite
+que hay que evitar cuando no hace falta correrlo. Queda como hallazgo
+prioritario para una sesión con acceso a Base44, con alcance real (no sólo
+`MachinerySale`) por determinar primero con un barrido dedicado.
+
+**Verificado:** `npm run validate:rls` (31 entidades, 23 con inquilino),
+`npm run lint`, `npm run build` — los tres en verde tras los cambios de #1 y
+#2. `grep` confirmando los únicos escritores de `MachinerySale` y el mismo
+patrón de lectura en `SupplierPayment`.

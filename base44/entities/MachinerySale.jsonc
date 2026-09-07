@@ -43,17 +43,28 @@
     "machine_type"
   ],
   "rls": {
+    // SECURITY (audit 2026-09-07, found by automated PR review on #380):
+    // create/update/delete are gated to role:admin ONLY — not the usual
+    // tenant $or[business_id, role:admin] shape. Every legitimate write to
+    // this entity already goes through machinerySales' three Safe handlers
+    // (createMachinerySaleSafe/updateMachinerySaleSafe/deleteMachinerySaleSafe,
+    // confirmed by grep — no other code in the repo calls
+    // MachinerySale.create/update/delete), which run via asServiceRole (itself
+    // evaluates as role:admin) after checking hasPermission() + write_blocked.
+    // Leaving the business_id branch on write would mean those checks are
+    // opt-in only: any tenant member could call base44.entities.MachinerySale
+    // .create/update/delete directly from devtools and skip permission,
+    // billing, and the applyCost cost-preservation guard entirely — the exact
+    // "Safe function exists but raw API still bypasses it" gap this repo's
+    // CLAUDE.md documents for PermissionProfile (module 14, 2026-08-23) and
+    // that this session ported here. `read` keeps the tenant branch: the
+    // machinery-sales list is a normal read for any business member (cost
+    // visibility for non-`financials` users is a **separate, unresolved**
+    // finding from the same review — see CLAUDE.md, not fixed by this rule).
     "create": {
-      "$or": [
-        {
-          "data.business_id": "{{user.data.business_id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "read": {
       "$or": [
@@ -68,28 +79,14 @@
       ]
     },
     "update": {
-      "$or": [
-        {
-          "data.business_id": "{{user.data.business_id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
-      "$or": [
-        {
-          "data.business_id": "{{user.data.business_id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
