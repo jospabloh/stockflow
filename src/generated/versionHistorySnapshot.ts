@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-09-09T20:49:43.074Z
+// Generado: 2026-09-09T20:51:37.687Z
 
-export const SNAPSHOT_VERSION = "2.18.24";
+export const SNAPSHOT_VERSION = "2.18.25";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-09-09";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 
-export const SNAPSHOT_GIT_LOG = "3ebb08e Merge pull request #383 from jospabloh/claude/stockflow-app-8xrhna\na2b97f7 Documentar el cierre del deploy y la deriva de RLS que duró dos días\n676cff2 Update base44 packages\na6aca45 Merge pull request #380 from jospabloh/claude/inspiring-newton-81g912\n8725619 Address Codex review: close MachinerySale write RLS, remove stale lifecycle workflows\nb69ad2c Merge remote-tracking branch 'origin/main' into claude/inspiring-newton-81g912\ne047fe7 Rebase onto main (Venta de Maquinaria) + apply npm audit fix\nf5a9437 Migrated 6 workflow(s)\n781c731 Update base44 packages\n94d631f Merge pull request #378 from jospabloh/claude/stockflow-app-8xrhna\nd7ce186 Corregir el estado de deploy de Venta de Maquinaria: el esquema ya está vivo\n90d7048 Merge pull request #377 from jospabloh/claude/stockflow-app-8xrhna\nb005cc0 Venta de Maquinaria: un registro propio, no un producto de inventario\n6444679 Close three permission-enforcement bypasses (audit 2026-08-31)\n6b855c6 Update base44 packages\n99bdd7c Merge pull request #373 from jospabloh/claude/invitation-code-multi-tenant-s76ohx\n4a7426f Add Módulo 18: multi-tenant account switching and joining\ne90a305 Update base44 packages\n01d77c1 Merge pull request #371 from jospabloh/claude/theme-switcher-icon-wxx6c9\n2466fea Paso 2b: ACCEPT_LEGACY_MASTER a false, ahora con la medición delante\n220ab8e Merge pull request #370 from jospabloh/claude/theme-switcher-icon-wxx6c9\na80af68 Revertir el paso 2b: ACCEPT_LEGACY_MASTER vuelve a true\n1b3c9b8 Merge pull request #367 from jospabloh/claude/theme-switcher-icon-wxx6c9\n711ebb2 Paso 2b: ACCEPT_LEGACY_MASTER a false — deja de aceptar el maestro\n6140658 security: close module 14's three writable-by-the-restricted RLS gaps (#366)";
+export const SNAPSHOT_GIT_LOG = "175ba6d Merge pull request #382 from jospabloh/dependabot/npm_and_yarn/npm-dependencies-c1d53e03cb\nf08ec8e Merge pull request #368 from jospabloh/dependabot/github_actions/github-actions-c923ae5b31\n9a349c2 Merge pull request #355 from jospabloh/automated/release-pr\nea1f052 chore: release and update documentation\n3ebb08e Merge pull request #383 from jospabloh/claude/stockflow-app-8xrhna\na2b97f7 Documentar el cierre del deploy y la deriva de RLS que duró dos días\n2b7e6c3 Bump the npm-dependencies group across 1 directory with 19 updates\n676cff2 Update base44 packages\na6aca45 Merge pull request #380 from jospabloh/claude/inspiring-newton-81g912\n0c76c48 Bump the github-actions group across 1 directory with 3 updates\n8725619 Address Codex review: close MachinerySale write RLS, remove stale lifecycle workflows\nb69ad2c Merge remote-tracking branch 'origin/main' into claude/inspiring-newton-81g912\ne047fe7 Rebase onto main (Venta de Maquinaria) + apply npm audit fix\nf5a9437 Migrated 6 workflow(s)\n781c731 Update base44 packages\n94d631f Merge pull request #378 from jospabloh/claude/stockflow-app-8xrhna\nd7ce186 Corregir el estado de deploy de Venta de Maquinaria: el esquema ya está vivo\n90d7048 Merge pull request #377 from jospabloh/claude/stockflow-app-8xrhna\nb005cc0 Venta de Maquinaria: un registro propio, no un producto de inventario\n6444679 Close three permission-enforcement bypasses (audit 2026-08-31)\n6b855c6 Update base44 packages\n99bdd7c Merge pull request #373 from jospabloh/claude/invitation-code-multi-tenant-s76ohx\n4a7426f Add Módulo 18: multi-tenant account switching and joining\ne90a305 Update base44 packages\n01d77c1 Merge pull request #371 from jospabloh/claude/theme-switcher-icon-wxx6c9";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.18.24",
+  "Actualización a la versión 2.18.25",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.25",
+    date: "2026-09-09",
+    changes: [
+    "Actualización a la versión 2.18.25"
+    ]
+  },
   {
     version: "2.18.24",
     date: "2026-09-09",
