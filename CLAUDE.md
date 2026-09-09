@@ -1219,10 +1219,12 @@ antes de dar la pestaña por viva:
   `list_entity_schemas`: 8 campos, `required: [business_id, machine_type]` y
   la forma `$or` de cuatro operaciones con las dos mitades correctas — coincide
   con el `.jsonc` del repo.
-- **Funciones (`npm run deploy`) y sitio (`npm run deploy:site`): PENDIENTES.**
-  La CLI de Base44 no está instalada ni autenticada en el sandbox de esta
-  sesión (`npx base44` no resuelve y no hay token en el entorno), así que estos
-  dos pasos se corren a mano desde una terminal con sesión.
+- **Funciones (`npm run deploy`) y sitio (`npm run deploy:site`): PENDIENTES
+  en la fecha de esta sección — ya no.** Se corrieron el 2026-09-09; ver
+  "Cierre del deploy" al final del archivo. Se quedaron pendientes aquí porque
+  la CLI de Base44 no está instalada ni autenticada en el sandbox de una
+  sesión de Claude (`npx base44` no resuelve y no hay token en el entorno),
+  así que estos dos pasos se corren a mano desde una terminal con sesión.
 
 **Hasta que corran esos dos, la pestaña no funciona**: el grupo
 `machinerySales` no existe en el backend, así que el alta responde error de
@@ -1321,3 +1323,93 @@ prioritario para una sesión con acceso a Base44, con alcance real (no sólo
 `npm run lint`, `npm run build` — los tres en verde tras los cambios de #1 y
 #2. `grep` confirmando los únicos escritores de `MachinerySale` y el mismo
 patrón de lectura en `SupplierPayment`.
+
+## Cierre del deploy de Venta de Maquinaria, y la deriva de RLS que duró dos días (2026-09-09)
+
+Venta de Maquinaria quedó servida y con su esquema al día. Lo que vale la pena
+guardar no es el «listo», sino la forma del hueco que hubo entre el 7 y el 9 de
+septiembre, porque es una que este repo puede repetir.
+
+### La deriva: un arreglo de seguridad mergeado y no desplegado
+
+El 2026-09-07 la auditoría de arriba apretó `MachinerySale.create/update/delete`
+de `$or[business_id, role:admin]` a sólo `role:admin`, y lo dejó dicho: «sólo en
+el repo». Durante dos días el `main` afirmaba una regla que el backend no tenía,
+y en Baristop eso **no era latente** — `ventas.baristop@gmail.com` existe, es
+`almacenista`, y la regla desplegada le permitía escribir la entidad por API
+cruda saltándose `hasPermission()`, `write_blocked` y el guardián `applyCost`.
+
+**Lo que hace que este hueco sea fácil de crear: `npm run deploy` y
+`npm run deploy:site` NO tocan el esquema.** El primero sube funciones, el
+segundo el frontend. El único que empuja entidades es `npm run deploy:entities`.
+Un cambio que vive sólo en un `.jsonc` puede pasar CI, mergearse, y sobrevivir a
+dos deploys sin llegar nunca al backend — sin un solo error en ninguna parte.
+`validate:rls` tampoco lo caza: valida el archivo, que está bien; lo que está
+mal es que el backend no lo tenga.
+
+**Cerrado el 2026-09-09** con `npm run deploy:entities` (31 entidades, `MachinerySale`
+entre las actualizadas), seguido de `npm run deploy` (47 funciones, todas
+`unchanged` — `machinerySales` ya estaba desde el deploy anterior) y
+`npm run deploy:site`.
+
+### La evidencia, y de qué tipo es
+
+Conviene ser preciso, porque este archivo distingue en otras secciones entre
+«escribí el esquema» y «lo releí del backend»:
+
+- **Lo desplegado se sabe por la salida de la CLI** (`Entities pushed
+  successfully` → `Updated: … MachinerySale …`), pegada desde la terminal del
+  operador. **No se releyó con `list_entity_schemas`**: el MCP de Base44 estaba
+  desconectado y pidiendo autorización en la sesión que documenta esto. Es una
+  evidencia más débil que la del cierre del módulo 14 (2026-08-24), que sí
+  releyó. Si alguien pasa por aquí con el MCP conectado, releer
+  `MachinerySale.rls` y confirmar `role:admin` en las tres operaciones de
+  escritura cuesta una llamada y cierra el punto del todo.
+- **Lo servido se sabe por `smoke.yml` en GitHub Actions**, disparado a mano
+  contra `https://stockflow.acaciaco.com.mx`: run 22, 20:16 UTC, **6 pasaron,
+  1 saltada** (18.4s). Se corrió dos veces a propósito: la primera (run 21,
+  20:03 UTC) cayó **entre** los dos `deploy:site` de esa tanda, así que no
+  cubría el estado final; la 22 sí. Un verde contra el árbol equivocado no es
+  un verde. Desde un
+  sandbox de Claude el dominio **no** se alcanza —el proxy responde 403 al
+  CONNECT, con `curl` y con WebFetch por igual—, así que Actions es la vía, no
+  un lujo. Y ojo con lo que esa suite prueba: responde 200, es esta app, pinta
+  sin excepciones y el selector de tema funciona. **Ninguna de sus
+  afirmaciones toca Venta de Maquinaria** — habría pasado idéntica antes del
+  deploy. Para comprobar por contenido que la página viajó:
+
+      MAIN=$(curl -s https://stockflow.acaciaco.com.mx | grep -oE '/assets/index-[A-Za-z0-9_-]+\.js' | head -1)
+      curl -s "https://stockflow.acaciaco.com.mx$MAIN" | grep -c MachinerySales
+
+### `entities push` rechaza borrar una entidad con registros
+
+En la misma tanda, el `entities push` de **rumbo** falló entero con
+`Cannot delete entity schema for 'DebugProbe': it has existing records` — el
+repo había borrado ese `.jsonc` y el push intentó borrarlo del remoto. Es
+información nueva sobre el comando que el módulo 11 llama «DESTRUCTIVO»: existe
+un freno del lado del servidor para entidades **con filas**.
+
+**No lo leas como una red de seguridad.** Primero, el fallo es
+**todo-o-nada**: rumbo no desplegó *ninguna* de sus 27 entidades por culpa de
+una, y el script reporta el código 1 pero el operador venía encadenando
+comandos y siguió. Segundo, no explica el borrado del modelo de datos de radar
+del 2026-08-21, así que o esas entidades estaban vacías o el freno es posterior
+— **queda como pregunta abierta, no como conclusión**. La disciplina del módulo
+11 (leer la lista de entidades y el nombre de la app antes de confirmar) sigue
+siendo la única puerta en la que confiar.
+
+### Lo que este deploy NO cerró
+
+- **Los tres workflows de licencia obsoletos siguen en el backend.** Ni
+  `entities push` ni `functions deploy` tocan workflows, así que borrarlos del
+  repo (auditoría 2026-09-07, punto 2) no los quitó de Base44. Si de verdad
+  están programados allá, corren a diario invocando `checkAccountLifecycle`,
+  `expireTrials` y `processMonthlyRenewal`, que no existen. Hay que borrarlos
+  desde el panel o con `npx base44` autenticado.
+- **La lectura sin redactar de campos confidenciales** (punto 3 de la misma
+  auditoría) sigue abierta y sigue siendo sistémica — `MachinerySale.cost` y
+  `SupplierPayment.amount` como mínimo. Ningún deploy la cierra; hace falta el
+  patrón de lectura redactada que este repo todavía no tiene.
+- **Una sesión de navegador como `almacenista` restringido**, que es la única
+  comprobación que de verdad cierra el comportamiento de `applyCost` y de la
+  columna de costo oculta. Mismo límite que declara el resto del archivo.
