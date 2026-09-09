@@ -78,12 +78,17 @@ export default function Categories() {
         }
         toast.success("✓ Categoría actualizada");
       } else {
-        const newCat = {
-          ...catForm,
+        const response = await base44.functions.invoke('categories', { action: 'createCategorySafe',
+          name: catForm.name,
+          description: catForm.description,
+          color: catForm.color,
           wholesale_min_qty: catForm.wholesale_min_qty !== "" ? Number(catForm.wholesale_min_qty) : undefined,
           business_id: businessId,
-        };
-        await base44.entities.Category.create(newCat);
+        });
+        if (!response.data.success) {
+          toast.error(`Error: ${response.data.error || 'No se pudo crear'}`);
+          return;
+        }
         toast.success("✓ Categoría creada exitosamente");
       }
       const cats = await base44.entities.Category.filter({ business_id: businessId });

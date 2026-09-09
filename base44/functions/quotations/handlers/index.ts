@@ -11,6 +11,7 @@ import { handle as respondToPublicQuotation } from './respondToPublicQuotation.t
 import { handle as getPublicQuotation } from './getPublicQuotation.ts';
 import { handle as revertPaymentConfirmationSafe } from './revertPaymentConfirmationSafe.ts';
 import { handle as registerOnDemandArrivalSafe } from './registerOnDemandArrivalSafe.ts';
+import { handle as toggleQuotationShareSafe } from './toggleQuotationShareSafe.ts';
 
 type Handler = (req: Request) => Promise<Response>;
 
@@ -28,6 +29,7 @@ const HANDLERS: Record<string, Handler> = {
   getPublicQuotation,
   revertPaymentConfirmationSafe,
   registerOnDemandArrivalSafe,
+  toggleQuotationShareSafe,
 };
 
 export function getHandler(action: string): Handler | undefined {

@@ -1005,6 +1005,141 @@ malicioso, no aplica a una conexión de primera parte), pero la conclusión de
 "no alcanzable" ya no era cierta, y el parche disponible lo vuelve
 discutible de todos modos.
 
+## Módulo 18 — cambio de negocio multi-tenant (mergeado 2026-08-26, documentado aquí 2026-08-31)
+
+`4a7426f` ("Add Módulo 18: multi-tenant account switching and joining") se
+mergeó a `main` sin tocar este archivo — el propio Módulo 14 de arriba dice
+que su auditoría "se repite cuando se añade una entidad", y `Membership` es
+una entidad nueva que nunca la disparó. Esta sección cierra ese hueco de
+documentación tras una auditoría rutinaria que sí la leyó.
+
+Antes de `Membership`, `User.business_id` (ya bloqueado a `role:admin`,
+módulo 14) era el **único** registro de pertenencia — unirse a un segundo
+negocio simplemente sobrescribía el primero, sin dejar rastro de que el
+usuario seguía siendo miembro del anterior. `Membership` es ese rastro: una
+fila por negocio al que el usuario tiene acceso, independiente de cuál sea
+su `business_id` activo ahora mismo. La RLS desplegada (confirmada contra
+`list_entity_schemas`, no solo el `.jsonc`) es:
+
+- `create`/`update`/`delete`: sólo `role:admin` (rol de servicio) — ningún
+  usuario final escribe esta entidad directamente, igual que
+  `PermissionProfile` tras el cierre del módulo 14.
+- `read`: `$or[{data.user_id: user.id}, {role:admin}]` — llaveado a
+  `user_id`, no a `business_id`, a propósito: es lo que permite listar los
+  negocios a los que el usuario pertenece pero no tiene activos ahora mismo
+  (el `business_id` del negocio inactivo no coincide con nada del perfil
+  del usuario en ese momento).
+
+Los tres únicos escritores son `createBusinessSafe`, `joinBusinessSafe` y
+`switchBusinessSafe` (`base44/functions/business/handlers/`), los tres
+corren como `asServiceRole` tras validar server-side — un usuario no puede
+crearse una membresía en un negocio ajeno ni reescribir el rol de una
+propia. Revisado en esta pasada (`switchBusinessSafe.ts`, `joinBusinessSafe.ts`,
+`createBusinessSafe.ts`, `Membership.jsonc`, `BusinessSwitcher.jsx`): el
+servidor re-deriva la membresía desde cero en cada caso y nunca confía en el
+`business_id`/`role` que manda el cliente. **No se encontró ningún defecto**
+en esta pasada — el código en sí está bien construido; el único hallazgo es
+el hueco de documentación que esta sección cierra.
+
+## Auditoría rutinaria 2026-08-31: tres bypasses de Safe function cerrados (granular permissions, parte 3)
+
+Sweep periódico (branch/PR inventory, `npm ci`/lint/build/`validate:rls`,
+`npm audit`, secrets, deno lint + intento de `deno test`, regresión dirigida
+sobre las formas de bug que este archivo ya documenta). El repo estaba
+consistente con su propio estado documentado en todo lo verificable — nada
+de RLS, permisos ni CVEs había retrocedido desde el 2026-08-24. Lo que esta
+pasada encontró es la misma clase de gap que las partes 1 y 2 de arriba
+(`base44.entities.X.create/update/delete` directo desde el cliente, sin
+Safe function de por medio), en tres sitios que ninguna de las dos pasadas
+anteriores había cubierto:
+
+- **`Categories.jsx` (`handleSaveCategory`, rama de creación) — regresión,
+  no gap nuevo.** `createCategorySafe` ya existía y ya se usaba
+  correctamente desde `ProductFormDialog.jsx` (creación rápida de
+  categoría) y desde la propia rama de *edición* de `Categories.jsx` — sólo
+  la rama de *creación* de este archivo se había quedado en la llamada
+  directa, bypaseando el `write_blocked` de `createCategorySafe` para un
+  negocio `suspended`/`view_only`. Arreglo: esa rama ahora invoca
+  `createCategorySafe`, igual que sus dos vecinos.
+- **`BarcodeGenerator.jsx` (`handleSave`) — gap real, sin Safe function
+  previa.** Escribía `Product.barcode` directo, sin ningún gate — ni
+  siquiera client-side (`/BarcodeGenerator` no tenía `can()` check). Nuevo
+  handler estrecho `updateProductBarcodeSafe`
+  (`base44/functions/products/handlers/`), deliberadamente **no** enrutado
+  por `updateProductSafe` — ese handler está fijo a `role:admin`, pero
+  `Productos:edit_barcode` está concedido a `almacenista` por defecto
+  (`permissionRegistry.js`), así que reusarlo habría **regresado** la
+  función para todo usuario no-admin en vez de cerrar el gap. Mismo patrón
+  que `toggleUtilityForecastSafe` (parte 2): un solo campo, gateado por la
+  clave de permiso específica que el cliente ya usaba para mostrar el
+  control (`Productos:edit_barcode`), más el gate de `business_id` y
+  `write_blocked` que faltaban. El cliente ahora también checa
+  `can('Productos', 'edit_barcode')` antes de mostrar el generador.
+- **`QuotationPreviewDialog.jsx` (`handleShare`/`handleDisableShare`) — gap
+  real, no exploitable hoy.** El botón de enlace público ya se gateaba
+  client-side con `can('Cotizaciones', 'share')`, pero la escritura
+  (`public_token`/`public_link_enabled`) iba directa a `Quotation.update`.
+  Nuevo handler `toggleQuotationShareSafe`
+  (`base44/functions/quotations/handlers/`, grupo ya existente — no cuenta
+  contra el tope de 46 funciones del módulo 11). `Cotizaciones:share` está
+  concedido a `almacenista` por defecto, así que esto no era explotable en
+  la práctica — misma forma exacta que `partialReturnQuotation`/
+  `createQuotationSafe`, que la parte 1 (2026-08-17) ya dejó anotados como
+  "fuera de alcance, seguimiento natural". Este cierre es ese seguimiento,
+  para uno de los dos.
+
+Los tres arreglos siguen el mismo orden que las partes 1 y 2: auth →
+`business_id` contra el registro cargado con `asServiceRole` →
+`hasPermission()` → `write_blocked` → escritura. `products/handlers/`
+ganó su propia copia de `_permissions.ts` (no existía antes — este grupo
+nunca había necesitado una) y se registró en `AUTOGEN_TARGETS`
+(`scripts/generatePermissionManifests.mjs`), igual que las seis copias
+anteriores.
+
+**Encontrado y NO cerrado en esta pasada, a propósito —
+`SupportTickets.jsx` (`createTicket`/`sendReply`)**: la misma forma de gap
+(`Centro de Soporte:create`/`reply`, gateados client-side, sin re-chequeo
+server-side), pero deliberadamente diferido en vez de arreglado a la carrera:
+
+1. **`Centro de Soporte:create`/`reply` están concedidos a `almacenista`
+   por defecto** — no explotable hoy, misma situación que
+   `Cotizaciones:share` de arriba antes de su cierre.
+2. Es un flujo bastante más grande que los tres de arriba: dos escrituras
+   encadenadas (`SupportTicket` + `SupportTicketMessage`) con lógica de
+   estado calculada (`status`, `messages_count`, `unread_for_owner`) más un
+   webhook saliente a Mission Control (`ticket-pull`) que **no puede
+   fallar en silencio de forma distinta** a como falla hoy — Módulo 8 dice
+   que este flujo es la única fuente de verdad antes de que Mission Control
+   lo recoja.
+3. No hay grupo de función existente natural para alojarlo sin crear uno
+   nuevo — y el módulo 11 ya deja el margen en cero (46/46). Meterlo en un
+   grupo ajeno (p. ej. `business/`) sólo por no sumar un endpoint sería
+   forzarlo.
+4. Esta sesión no pudo correr `deno test` de verdad (`deno.land` bloqueado
+   en este sandbox — ver módulo 15) ni verificar con una sesión
+   `almacenista` real. Escribir código nuevo sin poder probarlo, contra un
+   flujo del que depende Mission Control, es exactamente el tipo de riesgo
+   que este archivo repite que hay que evitar cuando no hace falta
+   correrlo — la clave por defecto ya está concedida, así que no hay
+   urgencia real.
+
+Queda como seguimiento natural, igual que `Cotizaciones:return`/
+`createQuotationSafe` sigue en la lista de la parte 1.
+
+**Verificado:** `npm run lint` (incluye `validate:functions`, 46/46 — sin
+margen pero sin regresión), `npm run build`, `npm run validate:rls` (30
+entidades, 22 con inquilino), `npm run generate:permission-manifests` (185
+claves, 54 denegadas — sólo el `products/handlers/_permissions.ts` nuevo y
+el timestamp de `permissionManifests.ts` cambiaron de contenido), `deno
+lint base44/functions/` (171 archivos, limpio — el binario de deno **sí** se
+pudo descargar y correr en este sandbox, confirmando de nuevo la nota del
+módulo 15). `npm audit`: 1 advertencia (`xlsx`, sin fix — mismo estado
+aceptado desde 2026-08-10), ninguna nueva. Secrets: limpio.
+**No verificado:** `deno test` (bloqueado por `deno.land`, no por el
+binario — mismo límite que módulos 3/7 documentan repetidamente) y una
+sesión de navegador como `almacenista` con permisos restringidos —
+mismo límite y misma razón que el resto de este archivo ya declara.
+
 ## Venta de Maquinaria — un libro aparte, no un producto más (2026-09-03)
 
 Silvita (Baristop) pidió «una pestaña de venta de maquinaria», y la petición
@@ -1099,3 +1234,90 @@ función desconocida aunque la entidad ya esté ahí. Y comprueba el resultado p
 y que `applyCost` le conserva el costo al editar — mismo límite que declaran
 las secciones anteriores, y la razón por la que ese comportamiento está fijado
 en un test que sí corre.
+
+## Auditoría 2026-09-07: RLS de escritura de `MachinerySale` cerrada, workflows de licencia obsoletos borrados, lectura confidencial sistémica documentada (no arreglada)
+
+Una revisión automatizada (Codex, disparada al marcar el PR #380 como listo)
+encontró tres hallazgos P1 contra el estado del repo tras el merge de Venta de
+Maquinaria. Los tres se verificaron contra el código real antes de actuar —
+ninguno se aceptó de oídas.
+
+**1. Cerrado — `MachinerySale.jsonc` permitía escritura directa por
+cualquier miembro del inquilino.** `create`/`update`/`delete` tenían la forma
+`$or[business_id, role:admin]` en vez de sólo `role:admin` — el mismo defecto
+que el módulo 14 (2026-08-23) ya había cerrado para `PermissionProfile`, aquí
+sin cerrar desde que la entidad se creó (2026-09-03). Se confirmó por grep que
+las tres únicas escrituras del repo son los handlers de `machinerySales/`
+(vía `asServiceRole`), así que apretar la regla no rompe ningún flujo real.
+Arreglado igual que `PermissionProfile`: `create`/`update`/`delete` → sólo
+`role:admin`, `read` sin tocar (un miembro del inquilino sigue leyendo la
+lista de su propio negocio). **Sólo en el repo — el esquema desplegado
+(`create_entity_schema`, 2026-09-03) sigue con la forma vieja** hasta que se
+corra `update_entity_schema`; esta sesión no tiene credenciales de Base44
+para hacerlo.
+
+**2. Borrado — tres workflows de licencia retirados habían vuelto al repo.**
+El commit `f5a9437` ("Migrated 6 workflow(s)", `base44-builder[bot]`,
+2026-09-06) trajo 6 archivos a `base44/workflows/`; 3 de los 6 invocan
+`checkAccountLifecycle`, `expireTrials` y `processMonthlyRenewal` — las tres
+funciones que la sección "License lifecycle is owned by Mission Control" de
+este mismo archivo documenta como **retiradas** el 2026-08-03. Ninguna de las
+tres existe en `base44/functions/`. Se borraron los tres `.jsonc` del repo
+(los otros 3 migrados — `Send Lifecycle Emails`, `Sync Product Stock on
+Movement`, `Trial Reactivation Emails Daily` — sí invocan funciones que
+existen y se dejaron). **Esto sólo limpia el repo.** Si esos tres workflows
+migrados vinieron de un `pull` contra el backend desplegado (lo más probable,
+dado que `base44-builder[bot]` sincroniza desde ahí), significa que la app
+desplegada en Base44 **todavía tiene programados** tres crons diarios que
+invocan funciones que ya no existen — fallarían cada día, o peor, si el
+nombre de función quedó re-registrado por accidente con otra implementación,
+podrían reintroducir transiciones de `billing_status` compitiendo con Mission
+Control, que es exactamente el escenario que la sección original de este
+archivo dice que nunca debe pasar. **Verificar y borrar esos tres workflows
+en el dashboard de Base44 (o vía `npx base44` autenticado) es la siguiente
+acción, y no se pudo hacer desde esta sesión** (sin CLI ni MCP de Base44
+autenticados aquí).
+
+**3. Documentado, NO arreglado — lectura de campos confidenciales sin
+redactar, y es sistémico, no de `MachinerySale`.** `useMachinerySales`
+(`src/hooks/queries/index.js`) trae la fila completa vía
+`base44.entities.MachinerySale.filter(...)` directo desde el cliente;
+`MachinerySales.jsx` sólo **oculta** las columnas de costo/utilidad/comisión
+cuando falta `Venta de Maquinaria:financials` — el JSON ya llegó al navegador
+con `cost` incluido, recuperable desde el panel de red o el caché de React
+Query sin ningún esfuerzo técnico especial. Se comprobó que **no es un bug
+nuevo de esta pestaña**: `useSupplierPayments` hace exactamente lo mismo con
+`SupplierPayment.amount` (el campo que "Pagos a Proveedores" también trata
+como sensible y también gatea sólo con un `if` en el JSX) — así que esto es
+un límite arquitectónico de cómo este repo implementa "campo sensible" en
+todas partes, no un defecto aislado.
+
+Base44 **sí** soporta RLS de lectura a nivel de campo
+(`properties.<campo>.rls.read`, ver el skill `base44-cli`'s
+`references/rls-examples.md`), pero sólo contra el `role` **incorporado**
+(admin/almacenista) — no contra el `PermissionProfile` por-negocio que
+decide la clave granular `financials`. Bloquear el campo a `role:admin` sería
+**más estricto** de lo que la app pretende: un almacenista al que su admin le
+concedió explícitamente `financials` (el caso `ventas.baristop@`, ver
+"Venta de Maquinaria" arriba) dejaría de poder verlo, aunque su perfil diga
+que sí puede. El arreglo correcto es el mismo patrón que el resto de este
+archivo ya usa para escritura pero que nunca se construyó para lectura: un
+endpoint tipo Safe function que llame `hasPermission()` y devuelva la fila
+redactada cuando falte, sustituyendo la llamada directa del cliente — un
+patrón que no existe todavía en ningún lugar de este repo para lecturas.
+
+**Por qué no se arregló esta noche:** es sistémico (afecta como mínimo
+`MachinerySale` y `SupplierPayment`, probablemente más — no se hizo el barrido
+completo de qué otros campos "sensibles" tienen el mismo patrón), requiere
+inventar una arquitectura nueva (lectura redactada server-side) que nadie ha
+probado en este repo, y esta sesión no puede desplegar ni probar contra
+Base44 en vivo. Construir eso sin poder probarlo, de madrugada, en una app
+financiera en producción, es exactamente el riesgo que este archivo repite
+que hay que evitar cuando no hace falta correrlo. Queda como hallazgo
+prioritario para una sesión con acceso a Base44, con alcance real (no sólo
+`MachinerySale`) por determinar primero con un barrido dedicado.
+
+**Verificado:** `npm run validate:rls` (31 entidades, 23 con inquilino),
+`npm run lint`, `npm run build` — los tres en verde tras los cambios de #1 y
+#2. `grep` confirmando los únicos escritores de `MachinerySale` y el mismo
+patrón de lectura en `SupplierPayment`.

@@ -6,10 +6,13 @@ import BarcodeGenerator from "@/components/barcode/BarcodeGenerator";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Check } from "lucide-react";
 import { toast } from "sonner";
+import { usePermissions } from "@/lib/PermissionContext";
 
 export default function BarcodeGeneratorPage() {
   const [searchParams] = useSearchParams();
   const { businessId } = useBusinessContext();
+  const { can } = usePermissions();
+  const canEditBarcode = can('Productos', 'edit_barcode');
   const [product, setProduct] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -36,9 +39,21 @@ export default function BarcodeGeneratorPage() {
       return;
     }
 
+    if (!canEditBarcode) {
+      toast.error("No tienes permiso para editar el código de barras");
+      return;
+    }
+
     setSaving(true);
     try {
-      const updatedProduct = await base44.entities.Product.update(product.id, { barcode });
+      const response = await base44.functions.invoke('products', { action: 'updateProductBarcodeSafe',
+        product_id: product.id,
+        barcode,
+      });
+      if (!response.data.success) {
+        toast.error(`Error: ${response.data.error || 'No se pudo guardar'}`);
+        return;
+      }
       setProduct({ ...product, barcode });
       toast.success("Código de barras guardado exitosamente");
     } catch (err) {
@@ -79,7 +94,7 @@ export default function BarcodeGeneratorPage() {
           </Card>
 
           {/* Generator - only show if no barcode */}
-          {!product.barcode && (
+          {!product.barcode && canEditBarcode && (
             <BarcodeGenerator
               productId={product.id}
               productName={product.name}
@@ -87,6 +102,15 @@ export default function BarcodeGeneratorPage() {
               onSave={handleSave}
               isSaving={saving}
             />
+          )}
+          {!product.barcode && !canEditBarcode && (
+            <Card className="border-0 shadow-sm">
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground">
+                  No tienes permiso para asignar códigos de barras.
+                </p>
+              </CardContent>
+            </Card>
           )}
         </div>
       ) : (
