@@ -1005,7 +1005,10 @@ malicioso, no aplica a una conexión de primera parte), pero la conclusión de
 "no alcanzable" ya no era cierta, y el parche disponible lo vuelve
 discutible de todos modos.
 
-## Módulo 18 — cambio de negocio multi-tenant (mergeado 2026-08-26, documentado aquí 2026-08-31)
+## Módulo 18 — cambio de negocio multi-tenant (mergeado 2026-08-26, documentado aquí 2026-08-31, RETIRADO 2026-09-10)
+
+> **Retirado el 2026-09-10.** Lo que sigue es el registro de cómo funcionaba
+> mientras existió; el feature ya no está en el repo. Ver la sección final.
 
 `4a7426f` ("Add Módulo 18: multi-tenant account switching and joining") se
 mergeó a `main` sin tocar este archivo — el propio Módulo 14 de arriba dice
@@ -1413,3 +1416,56 @@ siendo la única puerta en la que confiar.
 - **Una sesión de navegador como `almacenista` restringido**, que es la única
   comprobación que de verdad cierra el comportamiento de `applyCost` y de la
   columna de costo oculta. Mismo límite que declara el resto del archivo.
+
+## Retirado: el selector de negocio (módulo 18) — 2026-09-10
+
+**Un usuario pertenece a un solo negocio.** `User.business_id` es la
+pertenencia y toda la RLS de las 22 entidades con inquilino compara contra
+`{{user.data.business_id}}`. La entidad `Membership`, el handler
+`switchBusinessSafe` y `src/components/BusinessSwitcher.jsx` se borraron — el
+feature nunca llegó a producción en el portafolio.
+
+**Dos puertas que hubo que volver a poner**, y no son orden: sin selector,
+mover el `business_id` activo deja el negocio anterior inalcanzable.
+
+- `createBusinessSafe` responde **409 `already_in_a_business`** a quien ya
+  pertenece a uno. La comprobación va **antes** del `Business.create`, para no
+  dejar un negocio huérfano con su código de invitación vivo y nadie dentro —
+  ctrlhq acumuló cinco de esos por hacerlo al revés.
+- `joinBusinessSafe` responde lo mismo. Redimir el código del negocio en el que
+  **ya** estás sigue siendo idempotente, no un error.
+
+Los backfills perezosos de las dos (que creaban una `Membership` para el
+negocio anterior antes de moverlo) se van con ellas: sólo existían para no
+perder acceso al cambiar.
+
+`scripts/lib/entity-rls-rules.mjs`: `USER_SCOPED_READ_ALLOWLIST` queda
+**vacía** — `Membership` era su única entrada. La comprobación que exige
+`{{user.id}}` a lo que se meta ahí se queda tal cual: es lo que impide que esa
+lista sirva de puerta trasera al check de aislamiento por `business_id`.
+
+`validate:rls` pasa de 31 a **30 entidades, 22 con inquilino**. El conteo de
+`validate:functions` **no baja**: `switchBusinessSafe` era un handler dentro
+del grupo `business`, no un endpoint propio. **Seguimos en 47/47, margen 0** —
+el siguiente cambio que quiera un endpoint nuevo sigue necesitando una
+consolidación primero.
+
+### Pendiente a mano: borrar `Membership` del esquema desplegado
+
+`Membership` tiene **0 filas en producción** (consultado el 2026-09-10), así
+que aquí `npm run deploy:entities` sí puede borrarla sin tropezar con el freno
+que Base44 pone a una entidad con registros — el mismo freno que en esta misma
+tanda tumbó el push entero de rumbo. Sigue siendo el comando destructivo: lee
+la lista de entidades y el nombre de la app antes de confirmar.
+
+**Verificado:** `npm run lint` (eslint + `validate:functions` 47/47),
+`npm run validate:rls` (30 entidades, 22 con inquilino), `npm run build` y
+`deno lint base44/functions/` (177 archivos) — todos limpios. `deno check`
+sobre `createBusinessSafe`, `joinBusinessSafe` e `index.ts`: 5 errores
+preexistentes, **igual antes y después**.
+
+**No verificado:** `deno test base44/tests/` — `integration_test.ts` importa de
+`deno.land/std`, bloqueado en este sandbox (la nota del módulo 15 sobre bajar
+el binario de GitHub sigue siendo cierta; lo que no se puede es resolver
+imports de `deno.land`). Corre en CI. Tampoco el deploy ni una sesión de
+navegador.

@@ -16,7 +16,6 @@ const IS_NATIVE_APP = typeof globalThis !== "undefined" && (
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { useBusinessContext } from "@/components/BusinessContext";
-import BusinessSwitcher from "@/components/BusinessSwitcher";
 import { useSessionManager } from "@/hooks/useSessionManager";
 import { useRegionalConfig } from "@/hooks/useRegionalConfig";
 import { useActivityTracker } from "@/hooks/useActivityTracker";
@@ -128,7 +127,7 @@ export default function Layout({ children, currentPageName }) {
   const [pullY, setPullY] = useState(0);
   const touchStartY = useRef(0);
   const mainRef = useRef(null);
-  const { businessId, isLoading: bizLoading, user, memberships } = useBusinessContext();
+  const { businessId, businessName, isLoading: bizLoading, user } = useBusinessContext();
   const { isPlatformAdmin } = useLicense();
   const { canSee } = usePermissions();
   const { sessionStatus, reactivate, sessionExpired, idleState, continueSession } = useSessionManager(!!businessId);
@@ -264,17 +263,11 @@ export default function Layout({ children, currentPageName }) {
                 StockFlow
                 <monthlyTheme.icon className="h-4 w-4 text-primary" aria-hidden="true" />
               </h1>
-              <BusinessSwitcher />
+              <p className="text-xs text-muted-foreground truncate">
+                {businessName || "Control de stock"}
+              </p>
             </div>
           </div>
-          {(memberships || []).length <= 1 && (
-            <Link
-              to="/BusinessSetup"
-              className="block text-xs text-brand-600 dark:text-brand-400 hover:underline"
-            >
-              Unirme a otro negocio
-            </Link>
-          )}
         </div>
 
         {/* Navigation */}
