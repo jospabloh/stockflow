@@ -35,17 +35,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 // silently no-op (Base44 drops disallowed field writes from the old
 // client-side updateMe calls) and new users will get stuck on BusinessSetup.
 //
-// Módulo 18 (jospabloh/acacia-app-standard → STANDARD.md, 2026-08-26): ya NO
-// rechaza a un caller que ya pertenece a otro negocio — crear un negocio
-// adicional es legítimo (el mismo email administra dos tiendas). Antes de
-// mover el `business_id` activo al negocio recién creado, si el caller ya
-// tenía uno, se le respalda una fila `Membership` para ÉL — sin esto, un
-// admin existente que usara este flujo por primera vez perdería sin darse
-// cuenta el acceso a su negocio original, porque `Membership` no existía
-// todavía cuando ese negocio se creó (ver STANDARD.md, checklist #16: "cada
-// perfil que ya quedó silenciosamente encerrado en el tenant equivocado
-// necesita un empujón de una sola vez para re-resolverse" — este es ese
-// empujón, aplicado de forma perezosa la primera vez que hace falta).
+// UN USUARIO, UN NEGOCIO (2026-09-10): rechaza a un caller que ya pertenece a
+// otro negocio. Durante un tiempo se permitió crear un segundo, apoyado en un
+// selector que dejaba volver al primero; ese selector se retiró (nunca llegó a
+// producción), así que sin este rechazo el negocio original quedaría
+// inalcanzable en cuanto `business_id` se moviera al nuevo.
 
 const generateInviteCode = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -59,6 +53,13 @@ export async function handle(req: Request): Promise<Response> {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+    // Un usuario, un negocio: quien ya pertenece a uno no puede crear otro.
+    // Se comprueba ANTES de crear el Business, para no dejar un negocio
+    // huérfano con su código de invitación vivo y nadie dentro.
+    if (user.business_id) {
+      return Response.json({ error: 'already_in_a_business' }, { status: 409 });
+    }
 
     const body = await req.json().catch(() => ({}));
     const name = typeof body.name === 'string' ? body.name.trim() : '';
@@ -83,31 +84,6 @@ export async function handle(req: Request): Promise<Response> {
     });
 
     const sr = base44.asServiceRole;
-
-    // Backfill a Membership for whatever business the caller was already in
-    // BEFORE we move business_id away from it — a lazy, one-time migration
-    // for accounts that were onboarded before Membership existed. Best-effort
-    // idempotent (checks for an existing row first) so a retry can't double it.
-    if (user.business_id) {
-      const already = await sr.entities.Membership.filter(
-        { business_id: user.business_id, user_id: user.id }, undefined, 1,
-      );
-      if (!already?.length) {
-        await sr.entities.Membership.create({
-          business_id: user.business_id,
-          user_id: user.id,
-          user_email: user.email,
-          role: user.role || 'admin',
-        });
-      }
-    }
-
-    await sr.entities.Membership.create({
-      business_id: business.id,
-      user_id: user.id,
-      user_email: user.email,
-      role: 'admin',
-    });
 
     // Grant business_id + admin tier via the service role — this is the one
     // privileged write this whole function exists to gate. Bounded to exactly

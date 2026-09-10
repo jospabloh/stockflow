@@ -21,13 +21,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 // DEPLOY ORDER: see createBusinessSafe.ts — deploy this function before the
 // User schema's field-level RLS lock on role/business_id.
 //
-// Módulo 18 (jospabloh/acacia-app-standard → STANDARD.md, 2026-08-26): ya NO
-// rechaza al caller por ya pertenecer a otro negocio — el único rechazo
-// legítimo es ya-ser-miembro-de-ESTE-negocio, y eso es idempotente, no un
-// error. Unirse mueve el business_id activo al negocio recién unido de
-// inmediato (como createBusinessSafe/switchBusinessSafe); si el caller ya
-// tenía un negocio, se le respalda una Membership antes de moverlo — mismo
-// razonamiento y mismo código que createBusinessSafe.ts.
+// UN USUARIO, UN NEGOCIO (2026-09-10): rechaza al caller que ya pertenece a
+// otro negocio. Redimir un código mueve el `business_id` activo, y sin el
+// selector de negocio (retirado, nunca llegó a producción) eso dejaría el
+// negocio anterior inalcanzable. Redimir el código del negocio en el que ya
+// estás sigue siendo idempotente, no un error.
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -54,39 +52,14 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'business_inactive' }, { status: 403 });
     }
 
-    // Backfill a Membership for the business the caller was already in (if
-    // any) BEFORE moving business_id away from it — see createBusinessSafe.ts
-    // for the full reasoning; same one-time, idempotent migration.
+    // Un usuario, un negocio: quien ya pertenece a otro no puede unirse aquí.
+    // Redimir el código del negocio en el que YA estás es idempotente — no
+    // mueve nada y no es un error.
     if (user.business_id && user.business_id !== business.id) {
-      const already = await sr.entities.Membership.filter(
-        { business_id: user.business_id, user_id: user.id }, undefined, 1,
-      );
-      if (!already?.length) {
-        await sr.entities.Membership.create({
-          business_id: user.business_id,
-          user_id: user.id,
-          user_email: user.email,
-          role: user.role || 'almacenista',
-        });
-      }
+      return Response.json({ error: 'already_in_a_business' }, { status: 409 });
     }
 
-    // Idempotent: redeeming a code for a business the caller already belongs
-    // to is a no-op on Membership (keeps the role an admin may have already
-    // granted), never an error — the invite code doesn't downgrade anyone.
-    const existingHere = await sr.entities.Membership.filter(
-      { business_id: business.id, user_id: user.id }, undefined, 1,
-    );
-    let role = existingHere?.[0]?.role || 'almacenista';
-    if (!existingHere?.length) {
-      await sr.entities.Membership.create({
-        business_id: business.id,
-        user_id: user.id,
-        user_email: user.email,
-        role,
-      });
-    }
-
+    const role = user.business_id === business.id ? (user.role || 'almacenista') : 'almacenista';
     await sr.entities.User.update(user.id, {
       business_id: business.id,
       role,

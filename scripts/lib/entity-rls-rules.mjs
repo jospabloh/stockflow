@@ -34,17 +34,12 @@ const BUILTIN_USER_VARS = new Set(["id", "email", "role"]);
 // business_id must filter read by data.business_id) would otherwise flag
 // them as broken tenant isolation when they aren't.
 //
-// Membership (módulo 18, jospabloh/acacia-app-standard → STANDARD.md): one
-// row per (business_id, user_id) pair — a user with two businesses has two
-// rows, each with a DIFFERENT business_id. Filtering its own read by
-// data.business_id == {{user.data.business_id}} would only ever return the
-// membership for the currently-active business, which defeats the entity's
-// entire purpose (letting the switcher list businesses the user is NOT
-// currently in). It is correctly scoped by data.user_id == {{user.id}}
-// instead — the caller can always read their own memberships regardless of
-// which one is active — mirroring jospabloh/ctrlhq's own Membership entity,
-// the reference implementation the standard names.
-const USER_SCOPED_READ_ALLOWLIST = new Set(["Membership"]);
+// Entidades cuya lectura va, a propósito, por usuario y no por negocio.
+// Hoy la lista está VACÍA: su única entrada fue `Membership` (módulo 18,
+// varios negocios por cuenta), retirado el 2026-09-10. La comprobación que
+// exige {{user.id}} a lo que se meta aquí se queda: sin ella, esta lista
+// sería la puerta para saltarse el check de aislamiento por business_id.
+const USER_SCOPED_READ_ALLOWLIST = new Set([]);
 const LOGICAL_OPERATORS = new Set(["$or", "$and", "$nor", "$not"]);
 
 /** Strip // and block comments so JSONC parses as JSON. */
