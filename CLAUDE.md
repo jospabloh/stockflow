@@ -1403,12 +1403,10 @@ siendo la única puerta en la que confiar.
 
 ### Lo que este deploy NO cerró
 
-- **Los tres workflows de licencia obsoletos siguen en el backend.** Ni
-  `entities push` ni `functions deploy` tocan workflows, así que borrarlos del
-  repo (auditoría 2026-09-07, punto 2) no los quitó de Base44. Si de verdad
-  están programados allá, corren a diario invocando `checkAccountLifecycle`,
-  `expireTrials` y `processMonthlyRenewal`, que no existen. Hay que borrarlos
-  desde el panel o con `npx base44` autenticado.
+- **Los tres workflows de licencia obsoletos seguían en el backend — cerrado
+  el 2026-09-11**, ver la sección siguiente. Ni `entities push` ni
+  `functions deploy` tocan workflows, así que borrarlos del repo (auditoría
+  2026-09-07, punto 2) no los quitó de Base44.
 - **La lectura sin redactar de campos confidenciales** (punto 3 de la misma
   auditoría) sigue abierta y sigue siendo sistémica — `MachinerySale.cost` y
   `SupplierPayment.amount` como mínimo. Ningún deploy la cierra; hace falta el
@@ -1469,3 +1467,50 @@ preexistentes, **igual antes y después**.
 el binario de GitHub sigue siendo cierta; lo que no se puede es resolver
 imports de `deno.land`). Corre en CI. Tampoco el deploy ni una sesión de
 navegador.
+
+## Los tres workflows de licencia retirados, borrados del backend (2026-09-11)
+
+Base44 mandó un correo: «Expire Trials Daily failed 5 consecutive times, so we
+automatically paused it». Era la confirmación en vivo de lo que la auditoría
+del 2026-09-07 (punto 2) había supuesto y no había podido comprobar: los tres
+workflows que invocan funciones retiradas el 2026-08-03 **sí** seguían
+programados en el backend desplegado, aunque sus `.jsonc` ya no estén en el
+repo.
+
+Estado leído del backend antes de tocar nada (`GET /api/apps/{app_id}/workflows`,
+appId `69af971d0fdb362c9ae52ed3`):
+
+| workflow | cron | estado | corridas | fallos seguidos |
+|---|---|---|---|---|
+| Check Account Lifecycle Daily | `0 14 * * *` | inactive (`consecutive_failures`) | 101 | 5 |
+| Expire Trials Daily | `0 7 * * *` | inactive (`consecutive_failures`) | 124 | 5 |
+| Process Monthly Renewal Daily | `0 15 * * *` | inactive (`consecutive_failures`) | 102 | 5 |
+
+**Base44 los había pausado solo, y eso es lo que hay que leer bien.** La pausa
+automática no es el arreglo: es un contador. Cualquiera que abriera el panel,
+viera un workflow «pausado por fallos» y pulsara reactivar habría vuelto a
+poner tres crons diarios escribiendo `billing_status` en competencia con
+Mission Control — exactamente lo que la sección «License lifecycle is owned by
+Mission Control» existe para impedir. Un guardia que sólo cuenta hasta cinco no
+es un guardia.
+
+Los tres se archivaron con `DELETE /api/apps/{app_id}/workflows/{workflow_id}`,
+que cancela el schedule y quita el archivo del código de la app conservando el
+historial. Releído después con `include_archived=true`: los tres en
+`status: archived`, `status_reason: null`.
+
+Los otros tres workflows del backend se dejaron intactos a propósito, porque
+invocan funciones que sí existen y que este archivo documenta como vivas:
+`Send Lifecycle Emails` (`sendLifecycleEmails`, dependencia real de
+`LicenseAdmin.jsx`), `Trial Reactivation Emails Daily` (la excepción
+documentada del 2026-08-18, que lee `billing_status` y nunca lo escribe) y
+`Sync Product Stock on Movement`. Los tres con `last_run_status: success`.
+
+**La lección, porque el repo no la tenía escrita:** los workflows son una
+cuarta superficie de despliegue, aparte de funciones, entidades y sitio.
+`npm run deploy`, `deploy:entities` y `deploy:site` no tocan ninguno, y
+`base44-builder[bot]` los sincroniza de vuelta al repo desde el backend — que
+es como los tres reaparecieron en `f5a9437` después de haberse retirado. Borrar
+un `.jsonc` de `base44/workflows/` no apaga nada: se apagan por el panel o por
+la API de la plataforma, y hay que ir a mirarlos cuando se retira la función
+que invocan.
