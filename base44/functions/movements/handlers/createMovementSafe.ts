@@ -1,8 +1,22 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { hasPermission } from './_permissions.ts';
 
 /**
  * Safe Movement creation with business_id validation
  */
+
+// Movements.jsx only checks `Movimientos:create` to show the "+" button, and
+// MovementFormDialog.jsx separately hides the "Ajuste (solo admin)" option
+// unless `Movimientos:adjustment` is granted — that second check was
+// client-only until now, and `adjustment` is denied to almacenista BY
+// DEFAULT (no admin override needed), unlike entry/exit/return which default
+// to granted. See CLAUDE.md's granular-permissions sections for the pattern.
+const TYPE_TO_ACTION: Record<string, string> = {
+  entry: 'entry',
+  exit: 'exit',
+  return: 'return',
+  adjustment: 'adjustment',
+};
 
 const CASH_RULE_KEY = 'cash_sales_to_petty_cash';
 const DEFAULT_CASH_METHODS = ['Efectivo'];
@@ -36,6 +50,14 @@ export async function handle(req: Request): Promise<Response> {
 
     if (business_id !== user.business_id) {
       return Response.json({ success: false, error: `Unauthorized: business_id mismatch (expected: ${user.business_id}, got: ${business_id})` }, { status: 403 });
+    }
+
+    if (!(await hasPermission(base44.asServiceRole, user, 'Movimientos', 'create'))) {
+      return Response.json({ success: false, error: 'Forbidden: missing Movimientos:create permission' }, { status: 403 });
+    }
+    const typeAction = TYPE_TO_ACTION[type];
+    if (typeAction && !(await hasPermission(base44.asServiceRole, user, 'Movimientos', typeAction))) {
+      return Response.json({ success: false, error: `Forbidden: missing Movimientos:${typeAction} permission` }, { status: 403 });
     }
 
     // Server-side ownership check for the referenced product. The frontend

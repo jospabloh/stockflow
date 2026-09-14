@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { hasPermission } from './_permissions.ts';
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -11,6 +12,13 @@ export async function handle(req: Request): Promise<Response> {
     const { movement_id, reference, reason } = body;
 
     if (!movement_id) return Response.json({ error: 'movement_id is required' }, { status: 400 });
+
+    // Matches Movements.jsx's own gate on the edit button (`edit_reason`) —
+    // this handler updates both `reference` (payment method) and `reason`
+    // (client) together, so there is one key for the one client action.
+    if (!(await hasPermission(base44.asServiceRole, user, 'Movimientos', 'edit_reason'))) {
+      return Response.json({ error: 'Forbidden: missing Movimientos:edit_reason permission' }, { status: 403 });
+    }
 
     const found = await base44.asServiceRole.entities.Movement.filter({ id: movement_id });
     const movement = found[0];
