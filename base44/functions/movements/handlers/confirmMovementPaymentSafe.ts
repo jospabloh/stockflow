@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { hasPermission } from './_permissions.ts';
 
 /**
  * confirmMovementPaymentSafe
@@ -30,6 +31,10 @@ export async function handle(req: Request): Promise<Response> {
     // Validate business_id ownership
     if (!resolvedBusinessId || resolvedBusinessId !== user.business_id) {
       return Response.json({ error: 'Forbidden: business_id mismatch' }, { status: 403 });
+    }
+
+    if (!(await hasPermission(base44.asServiceRole, user, 'Movimientos', 'confirm_payment'))) {
+      return Response.json({ error: 'Forbidden: missing Movimientos:confirm_payment permission' }, { status: 403 });
     }
 
     // Fetch the movement as service role

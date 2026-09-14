@@ -1514,3 +1514,140 @@ es como los tres reaparecieron en `f5a9437` después de haberse retirado. Borrar
 un `.jsonc` de `base44/workflows/` no apaga nada: se apagan por el panel o por
 la API de la plataforma, y hay que ir a mirarlos cuando se retira la función
 que invocan.
+
+## Auditoría 2026-09-14: `Movement` era el único núcleo del módulo 3 sin `hasPermission()` — cerrado
+
+Sweep rutinario (branch/PR inventory, `npm ci`/lint/build/`validate:rls`,
+`npm audit`, secrets, deno lint + intento de `deno test`, regresión dirigida
+sobre las formas de bug que este archivo documenta). Todas las partes 1-3 de
+"granular permission-key enforcement" de arriba (`PettyCashMovement`,
+`Utility`, `SupplierPayment`, `Rubro`/`PaymentMethod`/`FundAccount`,
+`AppSettings`, on-demand arrivals, `Category`, `Product.barcode`,
+`Quotation.share`) cerraron el mismo defecto uno por uno — pero
+`base44/functions/movements/handlers/` nunca tuvo una `_permissions.ts`, ni
+una sola llamada a `hasPermission()` en `createMovementSafe.ts`,
+`deleteMovementSafe.ts`, `confirmMovementPaymentSafe.ts` ni
+`updateMovementPaymentDetailsSafe.ts`. Es la entidad con más claves
+granulares del registro (`Movimientos:create/entry/exit/return/adjustment/
+edit_quantity/edit_reason/edit_payment/confirm_payment/edit_status/delete`)
+y era, de las cinco entidades con Safe function, la única sin el
+re-chequeo — no una omisión menor, el hueco más grande que quedaba de esta
+clase.
+
+**Hallazgo P1, real y explotable hoy, no latente:** `Movimientos:adjustment`
+es el único de esos doce que viene **denegado por defecto** al rol
+`almacenista` (`ALMACENISTA_DENIED` en `permissionRegistry.js` —
+`MovementFormDialog.jsx` oculta la opción "Ajuste (solo admin)" del selector
+de tipo con `can('Movimientos','adjustment')`, sin pedirle nada a un admin
+que lo revoque explícitamente). Pero `createMovementSafe.ts` aceptaba
+`type:'adjustment'` en el cuerpo sin volver a comprobar nada más allá de
+`business_id` y `write_blocked` — cualquier `almacenista`, con los permisos
+de fábrica sin tocar, podía invocar
+`base44.functions.invoke('movements', {action:'createMovementSafe',
+type:'adjustment', ...})` desde devtools y crear un ajuste de inventario
+"solo admin" directamente, saltándose por completo el control de stock que
+esa restricción existe para proteger. Con `ventas.baristop@gmail.com` como
+`almacenista` real de un inquilino real (módulo 14), esto no era un riesgo
+teórico.
+
+**Arreglo**, mismo orden que las partes 1-3: se creó
+`base44/functions/movements/handlers/_permissions.ts` (copia AUTOGEN, igual
+que las otras nueve — registrada en `AUTOGEN_TARGETS` de
+`scripts/generatePermissionManifests.mjs`) y:
+
+- `createMovementSafe.ts` ahora exige `Movimientos:create` siempre, más
+  `Movimientos:<type>` (`entry`/`exit`/`return`/`adjustment`) según el
+  `type` recibido — after el chequeo de `business_id`, antes de tocar el
+  producto o crear el movimiento.
+- `confirmMovementPaymentSafe.ts` exige `Movimientos:confirm_payment`,
+  igual que el botón que `Movements.jsx` ya gatea con esa misma clave.
+- `updateMovementPaymentDetailsSafe.ts` exige `Movimientos:edit_reason`
+  (la única clave que `Movements.jsx` usa para mostrar el botón de editar,
+  aunque el handler también toca `reference`/forma de pago — un solo botón
+  de cliente, una sola clave de servidor, igual que la nota ya escrita para
+  `PaymentMethod` sobre no fusionar acciones separadas del cliente en una).
+
+`deleteMovementSafe.ts` **no se tocó**: ya exige `user.role === 'admin'` a
+secas, más estricto que el default del registro (`Movimientos:delete: true`
+para almacenista) — un almacenista con ese permiso de fábrica ve el botón de
+eliminar en `Movements.jsx` pero el borrado siempre le devuelve 403. Es un
+botón muerto, no un agujero (falla cerrado, no abierto), y decidir si el
+registro debería relajarse a `hasPermission()` o si el handler es la fuente
+de verdad y el registro debería marcar `delete` denegado por defecto es una
+decisión de producto, no algo para resolver a la carrera en un audit
+automatizado. Anotado como seguimiento.
+
+**Hallazgo relacionado, documentado y NO arreglado a propósito —
+`ProductFormDialog.jsx:161`:** al crear un producto con stock inicial, el
+cliente escribe el `Movement` de tipo `entry` **directo** contra la entidad
+(`base44.entities.Movement.create(...)`), no vía `createMovementSafe` — el
+mismo tipo de bypass que esta sección cierra arriba, aquí sin cerrar. No es
+explotable hoy: tanto `Productos:create` como `Movimientos:entry` vienen
+concedidos a `almacenista` por defecto, así que un almacenista con permisos
+de fábrica no gana nada saltándose el chequeo (mismo estado que
+`Cotizaciones:return`/`createQuotationSafe` llevan documentado desde la
+parte 1). Lo que sí lo bloqueó de un arreglo esta noche es más importante
+que la ausencia de urgencia: **enrutar esta llamada por `createMovementSafe`
+tal cual introduciría el bug de doble conteo que este archivo dedica más
+espacio a advertir que cualquier otro** — `createMovementSafe` siempre
+invoca `applyMovementStock` después de crear el movimiento (línea
+107-114), mientras que el comentario junto al `Movement.create` actual dice
+explícitamente que se marca `stock_applied:true` **para que la
+automatización no vuelva a sumar** un stock que `createProductSafe` ya fijó.
+`createMovementSafe` ni siquiera acepta `stock_applied` en su cuerpo. Un
+arreglo correcto necesita o bien un parámetro nuevo en `createMovementSafe`
+que respete `stock_applied` (cambia el contrato de una función que otros
+llamadores ya usan sin ese campo) o un endpoint más angosto — ninguno de los
+dos es del tamaño de "hallazgo latente, cerrar de paso" que sí fueron
+`Categories.jsx`/`BarcodeGenerator.jsx`/`QuotationPreviewDialog.jsx` en la
+parte 3. Construirlo sin poder correr `deno test` ni una sesión de navegador
+esta noche, contra el flujo de stock de una app financiera en producción, es
+exactamente el riesgo que este archivo repite que hay que evitar cuando no
+hace falta correrlo. Queda como seguimiento, con la trampa ya escrita para
+quien lo tome.
+
+**Hallazgo separado, mismo barrido — `npm audit`:** `js-yaml` tenía una
+segunda advisory (`GHSA-2883-xcg3-v3hh`, distinta de la que el cierre del
+módulo 14 ya había parchado el 2026-08-24) con fix disponible en 4.3.2.
+Aplicado vía `npm audit fix` (sólo `package-lock.json`, diff de 3 líneas —
+se comprobó primero con `--dry-run`, que traía de más ~40 paquetes binarios
+de plataformas de Tailwind/Rolldown sin relación, así que se aplicó el fix
+real en vez del dry-run y se verificó que el diff resultante fuera mínimo).
+Sigue siendo devDependency-only (herramienta de lint, nunca se empaqueta).
+`xlsx` sigue sin fix upstream — mismo razonamiento aceptado desde
+2026-08-10 (sólo escribe XLSX, nunca parsea uno subido por el usuario).
+
+**Resto del barrido de 17 secciones solicitado:** RLS (módulo 4/14),
+permisos granulares (módulo 3), deploy (módulo 11) y aislamiento
+multi-tenant (módulo 14) ya tienen su propio ciclo de auditoría dedicado
+documentado extensamente arriba, con fecha, y sin regresiones detectadas
+en esta pasada (`validate:rls`: 30 entidades, 22 con inquilino, sin
+cambios). UI/UX visual, cross-device y Core Web Vitals **no se
+re-verificaron esta noche** — hacerlo de verdad requiere una sesión de
+navegador contra la app desplegada o corrida localmente con
+`VITE_BASE44_APP_ID`, ninguna de las dos disponibles en este sandbox (mismo
+límite que todas las secciones anteriores declaran); `npm run test:smoke`
+tampoco corre aquí (el proxy no alcanza el dominio — módulo 12). No hay
+plantillas de correo nuevas ni cambios a `sendCampaignEmails`/
+`sendLifecycleEmails` en esta pasada. El manual de usuario y el changelog no
+se tocaron a propósito: `APP_VERSION`/`CHANGELOG`/manifiestos de permisos ya
+están automatizados por `auto-release-pr.yml` en cada push a `main`
+(sección "2026-08-10 automated security/quality/release audit" de arriba)
+— bumpearlos a mano aquí competiría con esa corrida.
+
+**Verificado:** `npm ci`, `npm run lint` (eslint + `validate:functions`,
+47/47 — sin margen, sin regresión), `npm run build`, `npm run validate:rls`
+(30 entidades, 22 con inquilino), `npm run generate:permission-manifests`
+(190 claves, 56 denegadas — sólo el `_permissions.ts` nuevo de `movements/`
+y el timestamp cambiaron de contenido), `deno lint base44/functions/` (179
+archivos, limpio), `deno test --allow-env
+base44/tests/machinery_sales_fields_test.ts` (9 pasaron, 0 fallaron — el
+único archivo de test sin imports externos, así que el único que corre
+aquí). Secrets: limpio (`.gitignore` cubre `.env*`, nada trackeado).
+**No verificado:** `deno test` sobre `integration_test.ts`/
+`permissions_safe_functions_test.ts` (bloqueados por `deno.land`, no por el
+binario — mismo límite documentado repetidamente arriba; corren en CI), una
+sesión de navegador como `almacenista` real confirmando que
+`Movimientos:adjustment` ahora responde 403, y el esquema desplegado de
+`MachinerySale` (pendiente desde el 2026-09-07, sin relación con este
+hallazgo — el MCP de Base44 no estaba conectado en esta sesión tampoco).
