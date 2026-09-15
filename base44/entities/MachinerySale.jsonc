@@ -23,6 +23,10 @@
       "description": "Tipo de máquina o paquete vendido (texto libre)",
       "type": "string"
     },
+    "invoice_number": {
+      "description": "Folio de la factura emitida por esta venta (opcional, texto libre). No es 'financials': el folio no revela costo, utilidad ni comisión",
+      "type": "string"
+    },
     "cost": {
       "default": 0,
       "description": "Costo de la máquina para el negocio (confidencial)",

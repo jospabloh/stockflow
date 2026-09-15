@@ -1651,3 +1651,85 @@ sesión de navegador como `almacenista` real confirmando que
 `Movimientos:adjustment` ahora responde 403, y el esquema desplegado de
 `MachinerySale` (pendiente desde el 2026-09-07, sin relación con este
 hallazgo — el MCP de Base44 no estaba conectado en esta sesión tampoco).
+
+## Reclamo de Baristop (2026-09-15): columna Factura añadida; lo demás no era un bug de código
+
+Silvita reportó tres cosas sobre Venta de Maquinaria en la misma tanda de
+mensajes de WhatsApp. Sólo una era código faltante — las otras dos ya
+funcionan como están diseñadas, y quedan documentadas aquí para que la
+próxima vez que alguien vea "Karla ve menos que yo" no se vuelva a investigar
+desde cero.
+
+**1. Cerrado — faltaba una columna de factura.** `MachinerySale` no tenía
+ningún campo de folio de factura. Se agregó `invoice_number` (string,
+opcional, texto libre) a `MachinerySale.jsonc`, `_fields.ts`
+(`normalizeFields`, sin permiso especial — no es `financials`, un folio de
+factura no revela costo/utilidad/comisión) y a `MachinerySales.jsx` (columna
+de tabla, campo del formulario junto a "Tipo", y al texto que ya busca
+`search`). Los dos handlers (`create`/`updateMachinerySaleSafe`) lo reciben
+gratis vía el spread de `normalizeFields` — no necesitaron tocarse.
+
+**2. NO era un bug — "a Karla que le aparezca la pantalla igual que a mi, le
+aparece diferente, con menos información".** `Venta de Maquinaria:financials`
+es `sensitive` y se deniega a `almacenista` por defecto
+(`permissionRegistry.js`, confirmado leyendo `getDefaultsForRole` línea por
+línea: el chequeo `if (action.sensitive)` va ANTES del chequeo por
+categoría, así que aunque la acción también sea `category: "report"`, no
+cae en la lista `deniedReports` — se resuelve por la rama `sensitive`, que
+sí la deniega). Es exactamente el diseño que la sección "Venta de
+Maquinaria" de arriba (2026-09-03) documenta: Karla (almacenista) ve y edita
+sin costo/utilidad/comisión, a propósito. La pantalla "con menos
+información" que describe Silvita es la vista de Karla funcionando como se
+diseñó, no un defecto.
+
+**Lo que sí puede hacer Silvita, sin necesitar código:** el admin de un
+negocio ya tiene una UI para esto — Configuración → Permisos → pestaña
+"Almacenista" → módulo "Venta de Maquinaria" → activar "Ver costo, utilidad
+y comisión" (`UnifiedPermissionMatrix.jsx`, confirmado que expone todas las
+claves del registro sin excluir ninguna) → Guardar. Eso escribe un override
+en el `PermissionProfile` de Baristop que `hasPermission()` ya respeta en
+los tres puntos donde importa: la tabla, el diálogo de alta/edición, y el
+re-chequeo server-side de `createMachinerySaleSafe`/`updateMachinerySaleSafe`.
+Es reversible desde la misma pantalla.
+
+**3. Observación, no bug — las 4 ventas visibles en su captura muestran
+Costo $0.00 y por lo tanto Utilidad = Venta exacta.** La aritmética
+(`profit = salePrice - cost`, `commission = profit * 0.05`,
+`src/lib/machinerySales.js`) es correcta; lo que pasa es que el costo real
+nunca se capturó en esas 4 filas — consistente con que fueron creadas por
+Karla, quien (antes del punto 2 de arriba) no puede ver ni escribir ese
+campo, y nadie con `financials` ha vuelto a editarlas para completarlo.
+`applyCost` conserva el costo almacenado (0, el valor por defecto al crear)
+en vez de rechazar la venta — ninguna venta con importe queda bloqueada por
+falta de costo, a propósito (una venta en trámite se documenta como tal;
+una venta cerrada sin costo capturado no se distingue visualmente de una
+venta cerrada con costo real cero, y **eso no se tocó en este cambio** —
+no se pidió, y agregar un indicador nuevo sin que lo pidieran sería
+construir algo no solicitado sobre una lectura de las capturas, no un
+hecho confirmado). Una vez que alguien con `financials` (Silvita, o Karla
+tras el punto 2) edite esas 4 filas y capture el costo real, la utilidad y
+comisión se recalculan solas — no hay nada que migrar ni reconciliar.
+
+**Verificado:** `npm ci`, `npm run lint` (eslint + `validate:functions`,
+47/47 — sin margen, sin regresión), `npm run build` (emite
+`MachinerySales-*.js`), `npm run validate:rls` (30 entidades, 22 con
+inquilino — sin cambio, `invoice_number` no es sensible así que no lleva
+`rls.write`), `npm run generate:permission-manifests` (190 claves, 56
+denegadas — sin cambio; sólo el timestamp del manifiesto y ninguna clave
+nueva, porque este cambio no tocó permisos), `deno lint base44/functions/`
+(178 archivos, limpio) y `deno test --allow-env
+base44/tests/machinery_sales_fields_test.ts` (10 pasaron, 0 fallaron — 9
+existentes + 1 nueva para `invoice_number`).
+
+**Pendiente, y es lo que de verdad importa para que esto no repita el hueco
+del 2026-09-07/09:** `invoice_number` es un campo NUEVO — hace falta
+`npm run deploy:entities` para que el esquema desplegado lo tenga (si no,
+Base44 lo descarta en silencio al guardar, la sección "Base44" de arriba lo
+explica), seguido de `npm run deploy` (los handlers cambiaron) y
+`npm run deploy:site`. Esta sesión no tiene credenciales de Base44 — los
+tres deploys y la verificación por contenido (no por hash, módulo 11) quedan
+para quien tenga la CLI autenticada. **No verificado:** una sesión de
+navegador confirmando que el campo se guarda y se lee correctamente, y que
+Silvita puede efectivamente activar `financials` para almacenista desde la
+UI descrita en el punto 2 — no hay forma de correr esa UI contra datos
+reales desde este entorno.
