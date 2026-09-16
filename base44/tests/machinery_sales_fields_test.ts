@@ -64,6 +64,11 @@ Deno.test("normalizeFields: recorta texto y tolera importes vacíos", () => {
   assertEquals(f.sale_date, "");
 });
 
+Deno.test("normalizeFields: recorta el folio de factura, y tolera que falte", () => {
+  assertEquals(normalizeFields({ invoice_number: "  A-1023  " }).invoice_number, "A-1023");
+  assertEquals(normalizeFields({}).invoice_number, "");
+});
+
 Deno.test("normalizeFields: acepta el importe como número o como cadena", () => {
   assertEquals(normalizeFields({ sale_price: 49458 }).sale_price, 49458);
   assertEquals(normalizeFields({ sale_price: "60367.50" }).sale_price, 60367.5);

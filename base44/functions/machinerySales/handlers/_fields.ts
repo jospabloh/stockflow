@@ -12,6 +12,7 @@ export type MachinerySaleInput = {
   client_name?: unknown;
   client_business_name?: unknown;
   machine_type?: unknown;
+  invoice_number?: unknown;
   cost?: unknown;
   sale_price?: unknown;
   notes?: unknown;
@@ -32,6 +33,7 @@ export function normalizeFields(body: MachinerySaleInput) {
     client_name: str(body.client_name),
     client_business_name: str(body.client_business_name),
     machine_type: str(body.machine_type),
+    invoice_number: str(body.invoice_number),
     sale_price: money(body.sale_price) ?? 0,
     notes: str(body.notes),
   };

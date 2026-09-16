@@ -49,6 +49,7 @@ const EMPTY_FORM = {
   client_name: "",
   client_business_name: "",
   machine_type: "",
+  invoice_number: "",
   cost: "",
   sale_price: "",
   notes: "",
@@ -85,7 +86,7 @@ export default function MachinerySales() {
     const q = search.trim().toLowerCase();
     if (!q) return sales;
     return sales.filter((s) => {
-      const hay = `${s.client_name || ""} ${s.client_business_name || ""} ${s.machine_type || ""} ${s.notes || ""}`.toLowerCase();
+      const hay = `${s.client_name || ""} ${s.client_business_name || ""} ${s.machine_type || ""} ${s.invoice_number || ""} ${s.notes || ""}`.toLowerCase();
       return hay.includes(q);
     });
   }, [sales, search]);
@@ -106,6 +107,7 @@ export default function MachinerySales() {
       client_name: s.client_name || "",
       client_business_name: s.client_business_name || "",
       machine_type: s.machine_type || "",
+      invoice_number: s.invoice_number || "",
       cost: s.cost === 0 || s.cost ? String(s.cost) : "",
       sale_price: s.sale_price === 0 || s.sale_price ? String(s.sale_price) : "",
       notes: s.notes || "",
@@ -133,6 +135,7 @@ export default function MachinerySales() {
       client_name: form.client_name.trim(),
       client_business_name: form.client_business_name.trim(),
       machine_type: form.machine_type.trim(),
+      invoice_number: form.invoice_number.trim(),
       sale_price: form.sale_price === "" ? 0 : Number(form.sale_price),
       notes: form.notes.trim(),
     };
@@ -287,6 +290,7 @@ export default function MachinerySales() {
                 <TableHead>Cliente</TableHead>
                 <TableHead>Nombre del negocio</TableHead>
                 <TableHead>Tipo</TableHead>
+                <TableHead>Factura</TableHead>
                 {canSeeFinancials && <TableHead className="text-right">Costo</TableHead>}
                 <TableHead className="text-right">Venta</TableHead>
                 {canSeeFinancials && <TableHead className="text-right">Utilidad</TableHead>}
@@ -297,7 +301,7 @@ export default function MachinerySales() {
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center text-muted-foreground py-10">
+                  <TableCell colSpan={11} className="text-center text-muted-foreground py-10">
                     {search ? "Ninguna venta coincide con la búsqueda." : "Todavía no hay ventas registradas."}
                   </TableCell>
                 </TableRow>
@@ -315,6 +319,7 @@ export default function MachinerySales() {
                     <TableCell className="font-medium">{s.client_name || "—"}</TableCell>
                     <TableCell>{s.client_business_name || "—"}</TableCell>
                     <TableCell className="max-w-[240px] whitespace-pre-line">{s.machine_type}</TableCell>
+                    <TableCell className="whitespace-nowrap">{s.invoice_number || "—"}</TableCell>
                     {canSeeFinancials && (
                       <TableCell className="text-right whitespace-nowrap">{money(s.cost)}</TableCell>
                     )}
@@ -388,6 +393,10 @@ export default function MachinerySales() {
                 rows={2}
                 className={fieldErrors.machine_type ? "border-red-500" : ""}
               />
+            </div>
+            <div>
+              <Label>Factura</Label>
+              <Input value={form.invoice_number} onChange={(e) => set("invoice_number", e.target.value)} placeholder="Folio de factura" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {canSeeFinancials && (
