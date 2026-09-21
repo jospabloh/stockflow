@@ -1733,3 +1733,187 @@ navegador confirmando que el campo se guarda y se lee correctamente, y que
 Silvita puede efectivamente activar `financials` para almacenista desde la
 UI descrita en el punto 2 — no hay forma de correr esa UI contra datos
 reales desde este entorno.
+
+> **Cerrado, 2026-09-21:** el `deploy:entities` pendiente arriba ya corrió —
+> confirmado con el MCP de Base44 conectado y releído en vivo
+> (`list_entity_schemas`, appId `69af971d0fdb362c9ae52ed3`): `MachinerySale`
+> tiene los 8 campos incluido `invoice_number`, y `create`/`update`/`delete`
+> siguen en `role:admin` (el cierre del 2026-09-07/09). Coincide byte a byte
+> con el `.jsonc` del repo. `Membership` (retirada 2026-09-10) también se
+> confirmó ausente del esquema desplegado — ese pendiente también está
+> cerrado. Ver la auditoría de esa misma fecha, más abajo, para el resto de
+> lo que esta sesión encontró con acceso real a Base44.
+
+## Auditoría 2026-09-21: primera vez con el MCP de Base44 conectado en un audit rutinario — lectura confidencial de `MachinerySale.cost` cerrada, un gap nuevo cerrado, un hallazgo previo corregido
+
+Todas las pasadas anteriores de este archivo que tocaron seguridad declararon,
+en algún punto, "esta sesión no tiene credenciales de Base44" como la razón
+para diferir una verificación o un deploy. Esta vez el MCP de Base44 sí estaba
+conectado (`list_user_apps` confirmó el mismo `appId` que el resto del archivo
+cita, `69af971d0fdb362c9ae52ed3`), así que el barrido de esta noche pudo
+comprobar contra el **esquema y los workflows desplegados de verdad**, no sólo
+contra el repo — y cerrar el hallazgo P3 que la auditoría del 2026-09-07 dejó
+abierto por no poder hacer exactamente eso.
+
+**0. Inventario.** La rama `audit/stockflow-full-review` ya tenía su PR
+(#388) mergeado el 2026-09-14 — no había nada pendiente que retomar, así que
+esta sesión reinició la rama desde `main` en vez de apilar sobre historia ya
+mergeada (regla del propio runner de la tarea). `main` ya traía todo lo que
+este archivo documenta hasta el 2026-09-15 (columna Factura incluida) más un
+`Update base44 packages` sin relación.
+
+**1. Ya cerrado, sólo pendiente de confirmar con el MCP conectado:**
+releído `list_entity_schemas` para `MachinerySale` — 8 campos incluido
+`invoice_number`, `create`/`update`/`delete` en `role:admin` — y para
+`Membership` — ausente. Los dos "pendiente, sin credenciales" que las
+secciones de arriba dejaron abiertos (2026-09-07/09 y 2026-09-10) están
+confirmados cerrados; ver las notas insertadas en esas secciones.
+
+**2. Workflows: sin deriva.** `GET /api/apps/{app_id}/workflows?include_archived=true`
+confirma que los tres crons de licencia retirados (`Check Account Lifecycle
+Daily`, `Expire Trials Daily`, `Process Monthly Renewal Daily`) siguen
+`archived` desde el 2026-09-11 — no volvieron a aparecer activos pese a que
+`base44-builder[bot]` ya los había reintroducido una vez en el repo (commit
+`f5a9437`, 2026-09-06). Los otros tres workflows (`Send Lifecycle Emails`,
+`Trial Reactivation Emails Daily`, `Sync Product Stock on Movement`) siguen
+`active` con `last_run_status: success`.
+
+**3. Corrección sobre el hallazgo #3 de la auditoría 2026-09-07 — el
+`SupplierPayment.amount` NO estaba comprometido.** Esa auditoría escribió
+que "`useSupplierPayments` hace exactamente lo mismo [que `MachinerySale`]
+con `SupplierPayment.amount` — el campo que 'Pagos a Proveedores' también
+trata como sensible". Releído `permissionRegistry.js` línea por línea para
+este módulo: **ninguna** de las trece acciones de `Pagos a Proveedores`
+lleva `sensitive: true`, y `edit_amount` (la única acción relacionada con
+`amount` en el `deniedActionable` de almacenista) gatea sólo la **edición**,
+no la **lectura** — `SupplierPayments.jsx:496` muestra `p.amount` sin
+ningún `can()` alrededor, para cualquier usuario con `Pagos a
+Proveedores:view` (que almacenista tiene por defecto: no está en la lista
+de denegados). Es decir: `amount` nunca estuvo diseñado como campo oculto
+para almacenista en este módulo — a diferencia de `Utilidad` (`view`/
+`view_withdrawals` sí llevan `sensitive: true`) o de `Venta de Maquinaria`
+(`financials` sí lo lleva). El hallazgo de 2026-09-07 confundió "el módulo
+maneja dinero" con "el campo está gateado" sin releer el registro. **No hay
+nada que arreglar aquí** — se deja escrito para que nadie vuelva a
+"cerrarlo" sin necesidad.
+
+**4. Cerrado — lectura sin redactar de `MachinerySale.cost`.** Este sí era
+real (a diferencia del punto 3): `useMachinerySales`
+(`src/hooks/queries/index.js`) llamaba `base44.entities.MachinerySale.filter(...)`
+directo desde el cliente, así que `cost` viajaba al navegador para
+**cualquier** usuario con acceso a la página, y `MachinerySales.jsx` sólo
+ocultaba la columna con `{canSeeFinancials && ...}` — el JSON ya había
+llegado, recuperable desde el panel de red o el caché de React Query. Con
+el MCP de Base44 conectado ya no aplicaba la razón por la que esto se dejó
+sin arreglar el 2026-09-07 ("requiere inventar una arquitectura de lectura
+redactada que nadie ha probado en este repo, y esta sesión no puede
+desplegar ni probar contra Base44 en vivo").
+
+Arreglo, mismo patrón de siempre pero para lectura en vez de escritura:
+nuevo handler `listMachinerySalesSafe` en el grupo **ya existente**
+`base44/functions/machinerySales/` (no suma al tope de 47/47 del módulo
+11 — es una acción nueva dentro de un grupo, no un endpoint nuevo, igual
+que `switchBusinessSafe` no lo sumó dentro de `business/`). Resuelve
+`business_id` de `auth.me()`, nunca del cuerpo; comprueba `hasPermission(...,
+'Venta de Maquinaria', 'financials')`; si falta, quita `cost` de cada fila
+antes de responder (no lo pone en `0` — lo quita, para que ni siquiera un
+`0` sugiera "sin costo capturado" cuando en realidad es "no autorizado a
+verlo"). `sale_price` **no** se redacta: no es `financials` (el vendedor
+necesita saber en cuánto vendió). Quitar `cost` también corta la
+posibilidad de que el cliente derive `profit`/`commission` con la
+aritmética de `machinerySales.js` — sin costo no hay utilidad que calcular,
+que es justo el efecto que se quería.
+
+`useMachinerySales` ahora llama `base44.functions.invoke('machinerySales',
+{action: 'listMachinerySalesSafe'})` en vez de `.filter()` directo. La UI
+no cambió: `MachinerySales.jsx` ya gateaba el renderizado de costo/utilidad/
+comisión con `canSeeFinancials`, así que un `s.cost` ausente en la fila no
+rompe nada — simplemente nunca se lee para esos usuarios, igual que antes,
+sólo que ahora tampoco llega.
+
+**El mismo patrón NO se replicó para `SupplierPayment`** — no hace falta,
+por el punto 3: no hay ningún campo ahí que el diseño quiera oculto a
+lectura. Sistémico ya no es la palabra correcta para este hallazgo: era
+un caso, no una clase.
+
+**5. Cerrado — gap nuevo, encontrado por un sub-agente de este mismo
+barrido: `seedAndDedupeCatalog` (`src/lib/seedCatalog.js`) escribía
+`Rubro`/`FundAccount` directo, sin pasar por `catalogSettings`.** Este
+helper corre en `Rubros.jsx`, `FundAccounts.jsx` y `PettyCash.jsx` al
+montar, para sembrar los catálogos por defecto la primera vez que el
+negocio los usa (y auto-reparar duplicados de una posible carrera entre
+pestañas). Aunque la migración del 2026-08-18 ("parte 2") documentó
+`Rubro`/`FundAccount` como ya cubiertos por `createCatalogItemSafe` /
+`deleteCatalogItemSafe`, se refería a las acciones que dispara el propio
+usuario (guardar, editar, borrar) — este helper de arranque automático se
+quedó fuera y siguió llamando `base44.entities[entity].create/delete(...)`
+directo, sin `hasPermission()` ni `write_blocked`.
+
+Severidad baja y acotada, no un hallazgo del tamaño del punto 4: el payload
+es enteramente fijo (`DEFAULT_RUBROS`/`DEFAULT_ACCOUNTS`, constantes del
+propio código, nunca controlado por quien llama), no hay fuga entre
+inquilinos (ya vive dentro del `business_id` propio), y no hay escalación
+de privilegio (crea filas `is_system: true` idénticas a las que cualquier
+negocio nuevo ya tendría). El gap real es sólo `write_blocked`: un negocio
+`suspended`/`view_only` con el catálogo todavía vacío seguía sembrando
+filas nuevas en cuanto alguien abría `Rubros.jsx`/`FundAccounts.jsx`/
+`PettyCash.jsx`, saltándose la licencia por completo.
+
+Arreglo deliberadamente más angosto que enrutar por `createCatalogItemSafe`:
+enrutar por ahí exigiría además `hasPermission(..., 'create')`, y un
+almacenista sin ese permiso (denegado explícitamente por su admin) que
+abre `PettyCash.jsx` por primera vez necesita que el catálogo exista para
+que la página funcione — nadie necesita un permiso granular para que el
+catálogo *exista*, sólo para crear/editar/borrar rubros él mismo (mismo
+razonamiento que la sección de `AppSession` de arriba: no todo write
+directo es el hueco que el patrón Safe-function existe para cerrar). Se
+añadió sólo el chequeo que sí falta — lee `Business.billing_status` (ya
+legible por el cliente vía RLS normal) antes de sembrar, y si está
+`suspended`/`view_only` devuelve la lista vacía sin escribir nada — sin
+tocar el chequeo de permiso, que no aplica aquí.
+
+**Verificado:** `npm ci`, `npm run lint` (eslint + `validate:functions`,
+47/47 — el nuevo handler es una acción dentro de `machinerySales/`, no un
+grupo nuevo, así que el tope no se movió), `npm run build`, `npm run
+validate:rls` (30 entidades, 22 con inquilino — sin cambio, ningún archivo
+`.jsonc` se tocó esta vez), `npm run generate:permission-manifests` (190
+claves, 56 denegadas — sin cambio de contenido más allá del timestamp,
+descartado sin commitear), `deno lint base44/functions/` (179 archivos,
+limpio — binario bajado de la release de GitHub, misma vía que el módulo
+15 documenta), `deno test --allow-env
+base44/tests/machinery_sales_fields_test.ts` (10/10, sin cambios — este
+hallazgo no tocó `_fields.ts`). `npm audit`: 1 advertencia (`xlsx`, sin fix
+— mismo estado aceptado desde 2026-08-10). Secrets: limpio, sin `.env*`
+trackeado. Un sub-agente de exploración de sólo lectura repitió el barrido
+de "¿algún `base44.entities.X.create/update/delete` directo sin cubrir?"
+sobre todo `src/` y confirmó que, fuera de los dos hallazgos de arriba
+(#4 y #5) y los ya documentados y deliberadamente diferidos
+(`SupportTickets.jsx`, `ProductFormDialog.jsx:161`, `AppSession`,
+`Settings.jsx`'s self-delete de `User`), no queda ningún write directo sin
+cubrir.
+
+**No verificado, y por qué:** `deno test` sobre `integration_test.ts` /
+`permissions_safe_functions_test.ts` — siguen bloqueados por `deno.land`,
+no por el binario (módulo 15); corren en CI. Una sesión de navegador como
+`ventas.baristop@gmail.com` confirmando en vivo que `listMachinerySalesSafe`
+efectivamente le devuelve la fila sin `cost` — no hay forma de autenticar
+como ese usuario desde el MCP (que opera como dueño de la cuenta, no como
+un usuario final de un negocio), así que "el MCP está conectado" cierra el
+gap de esquema/deploy que las pasadas anteriores no podían cerrar, pero no
+sustituye una sesión de navegador real; sigue siendo el mismo límite que
+declara el resto de este archivo. UI/UX visual, cross-device y Core Web
+Vitals tampoco se re-verificaron esta noche — mismo límite de siempre (sin
+`VITE_BASE44_APP_ID` ni navegador en este sandbox); `npm run test:smoke`
+tampoco corre aquí (módulo 12).
+
+**Pendiente de deploy:** `listMachinerySalesSafe` es código de función
+nuevo (`base44/functions/machinerySales/`) — hace falta `npm run deploy`
+después de mergear para que exista en el backend (ningún cambio de
+entidad, así que `deploy:entities` no aplica esta vez), y `npm run
+deploy:site` para que `useMachinerySales` lo use en producción en vez del
+código anterior. Esta sesión sí tiene el MCP de Base44 conectado, pero
+`run_command` opera dentro del sandbox de la app (útil para inspeccionar,
+no documentado aquí como equivalente a la CLI autenticada con la que este
+repo normalmente deploya desde una terminal del operador) — el deploy en
+sí se deja para el mismo flujo de siempre, y se avisa en el reporte al
+dueño.
