@@ -21,6 +21,20 @@ export async function seedAndDedupeCatalog({ entity, businessId, defaults, keyOf
 
   // Sembrar predeterminados solo cuando no existe ninguno todavía.
   if (!data || data.length === 0) {
+    // No sembrar en un negocio suspendido/view_only: es la misma invariante
+    // 'write_blocked' que createCatalogItemSafe ya exige para una escritura
+    // pedida por el usuario. Los predeterminados son datos fijos, no
+    // controlados por quien llama, así que no hace falta re-chequear
+    // hasPermission() aquí (nadie necesita un permiso granular para que el
+    // catálogo exista) — pero sí la licencia, porque de lo contrario esta
+    // ruta de arranque automático escribía en cualquier negocio suspendido
+    // sin pasar por ningún gate (auditoría 2026-09-21).
+    const businesses = await base44.entities.Business.filter({ id: businessId });
+    const billingStatus = businesses?.[0]?.billing_status || "active";
+    if (billingStatus === "view_only" || billingStatus === "suspended") {
+      return [];
+    }
+
     await Promise.all(
       defaults.map((d) =>
         Entity.create({ ...d, active: true, is_system: true, business_id: businessId })

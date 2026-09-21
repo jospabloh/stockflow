@@ -46,15 +46,22 @@ export function useSupplierPayments(businessId) {
 export function useMachinerySales(businessId) {
   return useQuery({
     queryKey: ["MachinerySale", businessId],
-    queryFn: () =>
-      // Ordenado por -created_date y no por -sale_date: una venta en trámite
-      // todavía no tiene fecha, y ordenar por un campo vacío la mandaría al
-      // fondo de la lista justo cuando es la que hay que terminar de capturar.
-      base44.entities.MachinerySale.filter(
-        { business_id: businessId },
-        "-created_date",
-        1000
-      ),
+    queryFn: async () => {
+      // Vía listMachinerySalesSafe, no una llamada directa a la entidad: el
+      // backend redacta `cost` cuando quien pregunta no tiene
+      // 'Venta de Maquinaria:financials', para que ese número nunca llegue al
+      // navegador en primer lugar (antes viajaba completo y
+      // MachinerySales.jsx sólo ocultaba la columna con un `if` — recuperable
+      // desde el panel de red o el caché de React Query; ver CLAUDE.md,
+      // auditoría 2026-09-07, hallazgo #3, cerrado 2026-09-21).
+      const resp = await base44.functions.invoke("machinerySales", {
+        action: "listMachinerySalesSafe",
+      });
+      if (!resp?.data?.success) {
+        throw new Error(resp?.data?.error || "No se pudieron cargar las ventas de maquinaria");
+      }
+      return resp.data.sales;
+    },
     enabled: !!businessId,
   });
 }
