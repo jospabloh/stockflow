@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Pencil, AlertTriangle, Shield } from "lucide-react";
+import { Plus, Trash2, Pencil, AlertTriangle, Shield, Download } from "lucide-react";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { createButtonProps, createTableProps } from "@/lib/a11y";
 import {
@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { exportImportFormat, categoriesToImportRows } from "@/lib/exportImportFormat";
 
 export default function Categories() {
   const { businessId } = useBusinessContext();
@@ -144,6 +145,18 @@ export default function Categories() {
       <Card className="border-0 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="font-semibold text-slate-700 text-lg">Categorías</h1>
+          <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              if (categories.length === 0) { toast.error("No hay categorías para exportar"); return; }
+              exportImportFormat("categories", categoriesToImportRows(categories), "categorias_import");
+              toast.success("CSV descargado en formato de importación");
+            }}
+          >
+            <Download className="h-4 w-4 mr-1" /> CSV importación
+          </Button>
           {can('Categorias', 'create') && (
           <Button
             size="sm"
@@ -154,6 +167,7 @@ export default function Categories() {
             <Plus className="h-4 w-4 mr-1" /> Nueva
           </Button>
           )}
+          </div>
         </div>
         <Table {...createTableProps('categories-table')}>
           <TableHeader>

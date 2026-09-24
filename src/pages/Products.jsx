@@ -6,7 +6,7 @@ import { useProducts, useCategories, useInvalidateEntities } from "@/hooks/queri
 import { LoadingOverlay } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Download } from "lucide-react";
 import SelectWrapper from "@/components/wrappers/SelectWrapper";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import {
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import ProductTable from "@/components/products/ProductTable";
 import ExportMenu from "@/components/common/ExportMenu";
+import { exportImportFormat, productsToImportRows } from "@/lib/exportImportFormat";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -170,6 +171,16 @@ export default function Products() {
             variant="outline"
             size="default"
           />
+          <Button
+            variant="outline"
+            size="default"
+            onClick={() => {
+              exportImportFormat("products", productsToImportRows(filteredProducts, categories), "productos_import");
+              toast.success("CSV descargado en formato de importación");
+            }}
+          >
+            <Download className="h-4 w-4 mr-1" /> CSV importación
+          </Button>
           {can('Productos', 'create') && (
             <Button className="bg-brand-600 hover:bg-brand-700" onClick={() => navigate("/Products/new")}>
               <Plus className="h-4 w-4 mr-1" /> Nuevo Producto
