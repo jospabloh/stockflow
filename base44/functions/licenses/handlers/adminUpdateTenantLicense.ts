@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { userLimitFor } from './_planLimits.ts';
 
 const ALLOWED_FIELDS = [
   'billing_status',
@@ -17,7 +18,6 @@ const ALLOWED_FIELDS = [
 ];
 
 const BOOLEAN_FIELDS = ['auto_renewal'];
-const PLAN_LIMITS = { start: 4, growth: 10, pro: 20 };
 
 function datesEqual(a, b) {
   try {
@@ -74,7 +74,7 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     if (sanitized.license_plan && !('licensed_user_limit' in sanitized)) {
-      sanitized.licensed_user_limit = PLAN_LIMITS[sanitized.license_plan] || 4;
+      sanitized.licensed_user_limit = userLimitFor(sanitized.license_plan);
     }
 
     console.log('[adminUpdateTenantLicense] updating', business_id, 'with', sanitized);

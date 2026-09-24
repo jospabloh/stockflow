@@ -1947,3 +1947,20 @@ aquí y en `acaciaControl` `emails.sendFollowup`, manda una **copia aparte a
 La bienvenida de Baristop Durango se mandó a mano desde Gmail el 2026-09-24 y su
 fila se marcó `sent` para que el código viejo desplegado no la repitiera.
 **Pendiente: `npm run deploy`** — sin él, nada de esto corre.
+
+## Usuarios por plan: la app decía 4 / 10 / 20 y la web 2 / 5 / ilimitados (2026-09-24)
+
+Había **tres** tablas distintas: la web (Start 2 · Growth 5 · Pro ilimitados),
+la app (4 / 10 / 20, en `adminUpdateTenantLicense`, `LicenseAdmin.jsx` y el
+`default` de `Business.licensed_user_limit`) y la ayuda (4 / 8 / 20). Manda la
+web, que es donde se contrata. Ahora hay una sola fuente por runtime:
+`src/lib/planLimits.js` y `base44/functions/licenses/handlers/_planLimits.ts`
+(`999` = ilimitado, se muestra «Ilimitados»); `base44/tests/plan_limits_test.ts`
+falla si se separan entre sí o de los números publicados.
+
+Los 3 `Business` vivos (todos Start) se pasaron de 4 a 2 en producción el mismo
+día. **El límite sigue sin aplicarse en ningún lado** — sólo se muestra. Baristop
+Distribuidora queda en 2/2; un tercer usuario todavía puede unirse.
+Cambiar el `default` del `.jsonc` requiere `npm run deploy:entities` para llegar
+al backend; mientras tanto no importa, porque `initTenantTrial` escribe el
+límite explícito.

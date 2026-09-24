@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { userLimitFor } from './_planLimits.ts';
 
 /**
  * Called right after a new business is created.
@@ -25,7 +26,7 @@ export async function handle(req: Request): Promise<Response> {
       trial_end_at: trialEnd.toISOString(),
       billing_status: 'trial',
       license_plan: 'start',
-      licensed_user_limit: 4,
+      licensed_user_limit: userLimitFor('start'),
     });
 
     // Queue trial_welcome email — non-fatal if it fails

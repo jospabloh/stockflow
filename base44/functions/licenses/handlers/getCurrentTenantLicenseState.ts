@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { userLimitFor } from './_planLimits.ts';
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -115,7 +116,7 @@ export async function handle(req: Request): Promise<Response> {
       trial_start_at: biz.trial_start_at || null,
       trial_end_at: biz.trial_end_at || null,
       license_plan: biz.license_plan || 'start',
-      licensed_user_limit: biz.licensed_user_limit || 4,
+      licensed_user_limit: biz.licensed_user_limit || userLimitFor(biz.license_plan),
       active_user_count: tenantUsers.length,
       license_activated_at: biz.license_activated_at || null,
       next_renewal_at: nextRenewalAt,
