@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { checkProductDuplicate, duplicateErrorMessage } from '../../../shared/productDuplicateCheck.ts';
 
 // SECURITY: Explicit whitelist — wholesale_min_qty removed (now lives in Category)
 const ALLOWED_UPDATE_FIELDS = new Set([
@@ -91,6 +92,21 @@ export async function handle(req: Request): Promise<Response> {
     }
     if (sanitized.purchase_price != null && sanitized.purchase_price < 0) {
       return Response.json({ success: false, error: 'El precio de compra no puede ser negativo' }, { status: 400 });
+    }
+
+    // DUPLICATE CHECK — only if name, sku, or barcode are being changed
+    if (sanitized.name != null || sanitized.sku != null || sanitized.barcode != null) {
+      const dup = await checkProductDuplicate(
+        base44,
+        user.business_id,
+        sanitized.name ?? product.name,
+        sanitized.sku ?? product.sku,
+        sanitized.barcode ?? product.barcode,
+        product_id
+      );
+      if (dup.duplicate) {
+        return Response.json({ success: false, error: duplicateErrorMessage(dup) }, { status: 409 });
+      }
     }
 
     if (Object.keys(sanitized).length === 0) {

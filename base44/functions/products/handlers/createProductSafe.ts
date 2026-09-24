@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { checkProductDuplicate, duplicateErrorMessage } from '../../../shared/productDuplicateCheck.ts';
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -40,6 +41,12 @@ export async function handle(req: Request): Promise<Response> {
 
     if (purchase_price != null && purchase_price < 0) {
       return Response.json({ success: false, error: 'El precio de compra no puede ser negativo' }, { status: 400 });
+    }
+
+    // DUPLICATE CHECK — name (case-insensitive), SKU, barcode
+    const dup = await checkProductDuplicate(base44, business_id, name, sku, barcode);
+    if (dup.duplicate) {
+      return Response.json({ success: false, error: duplicateErrorMessage(dup) }, { status: 409 });
     }
 
     // LICENSE CHECK

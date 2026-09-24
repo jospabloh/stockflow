@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { buildDuplicateIndex, checkAgainstIndex, addToIndex, duplicateErrorMessage } from '../../../shared/productDuplicateCheck.ts';
 
 /**
  * importItemsSafe — Importación segura de Productos, Clientes o Categorías.
@@ -55,6 +56,10 @@ export async function handle(req: Request): Promise<Response> {
 
       const VALID_UNITS = ['pieza', 'kg', 'litro', 'metro', 'caja', 'paquete'];
 
+      // Load existing products for duplicate detection
+      const existingProducts = await base44.asServiceRole.entities.Product.filter({ business_id: businessId });
+      const dupIndex = buildDuplicateIndex(existingProducts);
+
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const rowNum = i + 2; // 1-based, row 1 is header
@@ -88,6 +93,15 @@ export async function handle(req: Request): Promise<Response> {
           }
         }
 
+        // DUPLICATE CHECK — against existing products and earlier rows in this batch
+        const rowSku = (row['sku'] || '').trim();
+        const rowBarcode = (row['codigo_barras'] || '').trim();
+        const dup = checkAgainstIndex(dupIndex, nombre, rowSku, rowBarcode);
+        if (dup.duplicate) {
+          results.push({ row: rowNum, nombre, status: 'error', message: `Duplicado: ${duplicateErrorMessage(dup).replace('Ya existe un producto con el mismo ', 'ya existe un producto con el mismo ')}` });
+          continue;
+        }
+
         const product = {
           name: nombre,
           sku: (row['sku'] || '').trim(),
@@ -104,6 +118,9 @@ export async function handle(req: Request): Promise<Response> {
           business_id: businessId,
           ...(categoryId ? { category: categoryId } : {}),
         };
+
+        // Add to duplicate index so subsequent rows in this batch are checked against it
+        addToIndex(dupIndex, product.name, product.sku, product.barcode);
 
         // Cross-tenant guard: double-check businessId matches
         const created = await base44.asServiceRole.entities.Product.create(product);
