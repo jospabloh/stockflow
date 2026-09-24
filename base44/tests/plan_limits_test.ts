@@ -3,6 +3,7 @@
 // the server and client copies from drifting apart again.
 import * as server from '../functions/licenses/handlers/_planLimits.ts';
 import * as client from '../../src/lib/planLimits.js';
+import * as serverBusiness from '../functions/business/handlers/_planLimits.ts';
 
 function eq(a: unknown, b: unknown, msg: string) {
   if (a !== b) throw new Error(`${msg}: got ${a}, want ${b}`);
@@ -31,4 +32,20 @@ Deno.test('unknown or missing plan falls back to Start, never unlimited', () => 
 Deno.test('unlimited displays as a word, not 999', () => {
   eq(client.formatUserLimit(client.UNLIMITED_USERS), 'Ilimitados', 'pro');
   eq(client.formatUserLimit(2), '2', 'start');
+});
+
+Deno.test('the business/ server copy matches licenses/', () => {
+  eq(JSON.stringify(serverBusiness.PLAN_LIMITS), JSON.stringify(server.PLAN_LIMITS), 'maps');
+  for (const p of ['start', 'growth', 'pro', 'founder', undefined]) {
+    eq(serverBusiness.userLimitFor(p), server.userLimitFor(p), `userLimitFor(${p})`);
+    eq(JSON.stringify(serverBusiness.nextPlanFor(p)), JSON.stringify(server.nextPlanFor(p)), `nextPlanFor(${p})`);
+  }
+});
+
+Deno.test('a full plan recommends the next tier up, and Pro has none', () => {
+  eq(server.nextPlanFor('start')?.id, 'growth', 'start → growth');
+  eq(server.nextPlanFor('growth')?.id, 'pro', 'growth → pro');
+  eq(server.nextPlanFor('pro'), null, 'pro is the top');
+  eq(client.nextPlanFor('start')?.label, 'Growth', 'client start');
+  eq(client.nextPlanFor('growth')?.label, 'Pro', 'client growth');
 });

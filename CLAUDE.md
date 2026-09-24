@@ -1959,8 +1959,16 @@ web, que es donde se contrata. Ahora hay una sola fuente por runtime:
 falla si se separan entre sí o de los números publicados.
 
 Los 3 `Business` vivos (todos Start) se pasaron de 4 a 2 en producción el mismo
-día. **El límite sigue sin aplicarse en ningún lado** — sólo se muestra. Baristop
-Distribuidora queda en 2/2; un tercer usuario todavía puede unirse.
+día. **Y ahora se aplica**: `joinBusinessSafe` responde 403
+`user_limit_reached` (con `next_plan`/`next_plan_label`) cuando el negocio ya
+usa todos sus asientos; la pantalla de unirse lo explica sin gastar uno de los
+5 intentos del código, y Configuración muestra al admin, junto al código de
+invitación, que su plan está lleno y a qué plan subir. Nadie existente se
+expulsa: un negocio que ya esté por encima de su límite sólo deja de aceptar
+altas. Dos altas simultáneas por el último asiento pueden pasar las dos —
+aceptado. **Los planes difieren sólo en usuarios**, no en funcionalidades (la
+ayuda de la app ya lo decía; la web se corrigió para no prometer SKUs,
+multi-almacén ni API que no existen).
 Cambiar el `default` del `.jsonc` requiere `npm run deploy:entities` para llegar
 al backend; mientras tanto no importa, porque `initTenantTrial` escribe el
 límite explícito.
