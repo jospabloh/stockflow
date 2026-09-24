@@ -90,7 +90,7 @@
       "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "licensed_user_limit": {
-      "default": 4,
+      "default": 2,
       "type": "number",
       "rls": { "write": { "user_condition": { "role": "admin" } } }
     },

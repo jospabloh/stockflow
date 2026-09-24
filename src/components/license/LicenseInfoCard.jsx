@@ -1,5 +1,6 @@
 import React from "react";
 import { useLicense } from "@/lib/LicenseContext";
+import { formatUserLimit } from "@/lib/planLimits";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, CheckCircle, Lock, AlertTriangle, Zap, Users } from "lucide-react";
@@ -65,7 +66,7 @@ export default function LicenseInfoCard() {
           <p className="text-xs text-slate-500 font-semibold mb-1">Límite de Usuarios</p>
           <div className="flex items-center gap-1">
             <Users className="h-4 w-4 text-brand-500" />
-            <p className="text-sm font-medium text-slate-700">{licensedUserLimit}</p>
+            <p className="text-sm font-medium text-slate-700">{formatUserLimit(licensedUserLimit)}</p>
           </div>
         </div>
 
@@ -74,7 +75,7 @@ export default function LicenseInfoCard() {
           <div className="p-3 bg-white rounded-lg border border-slate-200">
             <p className="text-xs text-slate-500 font-semibold mb-1">Usuarios Activos</p>
             <p className={`text-sm font-medium ${activeUserCount >= licensedUserLimit ? "text-rose-600" : "text-slate-700"}`}>
-              {activeUserCount}/{licensedUserLimit}
+              {activeUserCount}/{formatUserLimit(licensedUserLimit)}
             </p>
           </div>
         )}

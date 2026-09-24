@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useLicense } from "@/lib/LicenseContext";
+import { PLAN_USER_LIMITS, userLimitFor, formatUserLimit } from "@/lib/planLimits";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,7 +92,7 @@ export default function LicenseAdmin() {
     setEditForm({
       billing_status: biz.billing_status,
       license_plan: biz.license_plan || "start",
-      licensed_user_limit: biz.licensed_user_limit || 4,
+      licensed_user_limit: biz.licensed_user_limit || userLimitFor(biz.license_plan),
       payment_reference: biz.payment_reference || "",
       activation_notes: biz.activation_notes || "",
       auto_renewal: biz.auto_renewal ?? false,
@@ -257,7 +258,7 @@ export default function LicenseAdmin() {
                           <div className="flex items-center gap-1">
                             <Users className="h-3.5 w-3.5 text-muted-foreground" />
                             <span className={biz.active_user_count >= biz.licensed_user_limit ? "text-rose-600 font-semibold" : ""}>
-                              {biz.active_user_count}/{biz.licensed_user_limit}
+                              {biz.active_user_count}/{formatUserLimit(biz.licensed_user_limit)}
                             </span>
                           </div>
                         </td>
@@ -342,17 +343,16 @@ export default function LicenseAdmin() {
               <Select
                 value={editForm.license_plan || "start"}
                 onValueChange={v => {
-                  const limits = { start: 4, growth: 10, pro: 20 };
-                  setEditForm(f => ({ ...f, license_plan: v, licensed_user_limit: limits[v] || 4 }));
+                  setEditForm(f => ({ ...f, license_plan: v, licensed_user_limit: userLimitFor(v) }));
                 }}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="start">Start — 4 usuarios</SelectItem>
-                  <SelectItem value="growth">Growth — 10 usuarios</SelectItem>
-                  <SelectItem value="pro">Pro — 20 usuarios</SelectItem>
+                  <SelectItem value="start">Start — {PLAN_USER_LIMITS.start} usuarios</SelectItem>
+                  <SelectItem value="growth">Growth — {PLAN_USER_LIMITS.growth} usuarios</SelectItem>
+                  <SelectItem value="pro">Pro — usuarios ilimitados</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -361,8 +361,8 @@ export default function LicenseAdmin() {
               <Input
                 type="number"
                 min="1"
-                value={editForm.licensed_user_limit || 4}
-                onChange={e => setEditForm(f => ({ ...f, licensed_user_limit: parseInt(e.target.value) || 4 }))}
+                value={editForm.licensed_user_limit || userLimitFor(editForm.license_plan)}
+                onChange={e => setEditForm(f => ({ ...f, licensed_user_limit: parseInt(e.target.value) || userLimitFor(f.license_plan) }))}
                 className="mt-1"
               />
             </div>

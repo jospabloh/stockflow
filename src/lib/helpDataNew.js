@@ -1202,9 +1202,9 @@ Cuando un nuevo negocio se crea en StockFlow:
 
 | Plan | Usuarios máximos |
 |------|------------------|
-| **Start** | 4 usuarios |
-| **Growth** | 10 usuarios |
-| **Pro** | 20 usuarios |
+| **Start** | 2 usuarios |
+| **Growth** | 5 usuarios |
+| **Pro** | Usuarios ilimitados |
 
 > Los planes difieren en capacidad de usuarios, no en funcionalidades disponibles.
 

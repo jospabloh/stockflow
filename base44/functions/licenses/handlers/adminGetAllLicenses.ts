@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { userLimitFor } from './_planLimits.ts';
 
 /**
  * Platform admin only: returns all businesses with license info.
@@ -49,7 +50,7 @@ export async function handle(req: Request): Promise<Response> {
         created_by: biz.created_by || '',
         billing_status: billingStatus,
         license_plan: biz.license_plan || 'start',
-        licensed_user_limit: biz.licensed_user_limit || 4,
+        licensed_user_limit: biz.licensed_user_limit || userLimitFor(biz.license_plan),
         trial_start_at: biz.trial_start_at || null,
         trial_end_at: biz.trial_end_at || null,
         trial_days_left: trialDaysLeft,

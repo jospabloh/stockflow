@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { nextPlanFor, userLimitFor } from './_planLimits.ts';
 
 // joinBusinessSafe — server-side counterpart of the "Unirme a un equipo" flow
 // in src/pages/BusinessSetup.jsx.
@@ -57,6 +58,25 @@ export async function handle(req: Request): Promise<Response> {
     // mueve nada y no es un error.
     if (user.business_id && user.business_id !== business.id) {
       return Response.json({ error: 'already_in_a_business' }, { status: 409 });
+    }
+
+    // Seat limit per plan (2026-09-24). Re-redeeming your own business's code
+    // is a no-op, so it never counts against the limit. Two joins racing on
+    // the last seat can both pass this read; accepted — the next join is
+    // blocked and the admin sees the overage.
+    if (user.business_id !== business.id) {
+      const limit = business.licensed_user_limit || userLimitFor(business.license_plan);
+      const members = await sr.entities.User.filter({ business_id: business.id });
+      if (members.length >= limit) {
+        const next = nextPlanFor(business.license_plan);
+        return Response.json({
+          error: 'user_limit_reached',
+          limit,
+          plan: business.license_plan ?? null,
+          next_plan: next?.id ?? null,
+          next_plan_label: next?.label ?? null,
+        }, { status: 403 });
+      }
     }
 
     const role = user.business_id === business.id ? (user.role || 'almacenista') : 'almacenista';

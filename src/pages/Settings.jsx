@@ -15,6 +15,8 @@ import TeamMembersManager from "@/components/settings/TeamMembersManager";
 import ReferralPanel from "@/components/settings/ReferralPanel";
 import { useBusinessContext } from "@/components/BusinessContext";
 import LicenseInfoCard from "@/components/license/LicenseInfoCard";
+import { useLicense } from "@/lib/LicenseContext";
+import { nextPlanFor } from "@/lib/planLimits";
 import { toast } from "sonner";
 
 export default function Settings() {
@@ -571,6 +573,7 @@ export default function Settings() {
                   </button>
                 </div>
                 <p className="text-xs text-slate-400">Al registrarse, los usuarios seleccionan "Unirme a un equipo" e ingresan este código. Entran con rol <strong>Almacenista</strong> por defecto.</p>
+                <SeatLimitNotice />
                 <div className="flex items-center justify-between pt-2 border-t border-brand-100">
                   <div className="flex items-center gap-3">
                     <Switch
@@ -990,3 +993,21 @@ export default function Settings() {
       </div>
       );
       }
+// Shown next to the invite code once the plan's seats are used up: joining
+// is blocked server-side (joinBusinessSafe → user_limit_reached), so the
+// admin needs to know why a teammate can't get in and what to upgrade to.
+function SeatLimitNotice() {
+  const { activeUserCount, licensedUserLimit, licensePlan, isPlatformAdmin } = useLicense();
+  if (isPlatformAdmin || activeUserCount == null || activeUserCount < licensedUserLimit) return null;
+  const next = nextPlanFor(licensePlan);
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+      Tu plan incluye {licensedUserLimit} usuarios y ya los estás usando, así que nadie más puede unirse con este código.
+      {next && (
+        <> Para agregar más, sube al plan <strong>{next.label}</strong>{" "}
+          (<a href="https://www.acaciaco.com.mx/stockflow#planes" target="_blank" rel="noopener noreferrer" className="underline">ver planes</a>).
+        </>
+      )}
+    </div>
+  );
+}

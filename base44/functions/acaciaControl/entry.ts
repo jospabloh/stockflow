@@ -112,6 +112,14 @@ Deno.serve(async (req) => {
         if (!to || !subject || !html) return Response.json({ error: 'params.to/subject/html required' }, { status: 400 });
         await sr.integrations.Core.SendEmail({ to, subject, body: html, from_name: 'ACACIA' });
         const sent_at = new Date().toISOString();
+        // Core.SendEmail has no bcc: the platform owner gets a separate copy.
+        // Best-effort — a failed copy never fails the customer's send.
+        const ownerEmail = Deno.env.get('PLATFORM_OWNER_EMAIL');
+        if (ownerEmail && ownerEmail !== to) {
+          try {
+            await sr.integrations.Core.SendEmail({ to: ownerEmail, subject: `[Copia → ${to}] ${subject}`, body: html, from_name: 'ACACIA' });
+          } catch { /* owner copy best-effort */ }
+        }
         const log = params.log;
         if (log && log.entity && log.row && typeof log.row === 'object') {
           try { await sr.entities[log.entity].create({ ...log.row, sent_at }); } catch { /* audit best-effort */ }

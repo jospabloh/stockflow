@@ -105,19 +105,7 @@ export default function BusinessSetup() {
        });
        const data = joinResp?.data;
        if (!data?.success) {
-         const attempts = joinAttempts + 1;
-         setJoinAttempts(attempts);
-         if (data?.error === 'code_disabled') {
-           toast.error("Este código de invitación está desactivado. Contacta al administrador.");
-         } else if (data?.error === 'business_inactive') {
-           toast.error("Este negocio no está activo. Contacta al administrador.");
-         } else if (attempts >= 5) {
-           setJoinCooldown(60);
-           toast.error("5 intentos fallidos. Bloqueado por 60 segundos.");
-         } else {
-           toast.error(`Código no válido. ${5 - attempts} intento(s) restantes.`);
-         }
-         setLoading(false);
+         handleJoinFailure(data);
          return;
        }
        const business = data.business;
@@ -133,11 +121,41 @@ export default function BusinessSetup() {
        toast.success(`¡Bienvenido a ${business.name}!`);
        navigate("/Dashboard");
      } catch (error) {
+       // functions.invoke throws on non-2xx; the server's error code is in the body.
+       const data = error?.response?.data;
+       if (data?.error) {
+         handleJoinFailure(data);
+         return;
+       }
        console.error("Join error:", error);
        toast.error(`Error: ${error.message || 'Algo salió mal'}`);
        setLoading(false);
      }
    };
+
+   function handleJoinFailure(data) {
+     if (data?.error === 'user_limit_reached') {
+       const next = data.next_plan_label ? ` Pide al administrador que suba al plan ${data.next_plan_label}.` : '';
+       toast.error(`Este negocio ya usa los ${data.limit} usuarios de su plan.${next}`);
+     } else if (data?.error === 'already_in_a_business') {
+       toast.error("Tu cuenta ya pertenece a otro negocio.");
+     } else if (data?.error === 'code_disabled') {
+       toast.error("Este código de invitación está desactivado. Contacta al administrador.");
+     } else if (data?.error === 'business_inactive') {
+       toast.error("Este negocio no está activo. Contacta al administrador.");
+     } else {
+       // Only an invalid code counts toward the 5-attempt lockout.
+       const attempts = joinAttempts + 1;
+       setJoinAttempts(attempts);
+       if (attempts >= 5) {
+         setJoinCooldown(60);
+         toast.error("5 intentos fallidos. Bloqueado por 60 segundos.");
+       } else {
+         toast.error(`Código no válido. ${5 - attempts} intento(s) restantes.`);
+       }
+     }
+     setLoading(false);
+   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-brand-50/40 flex flex-col items-center justify-center p-4">
