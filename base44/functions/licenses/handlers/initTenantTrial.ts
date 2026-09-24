@@ -4,6 +4,14 @@ import { userLimitFor } from './_planLimits.ts';
 /**
  * Called right after a new business is created.
  * Sets up the 30-day trial using server-side time.
+ *
+ * ONE-SHOT: it only runs on a business whose trial was never started
+ * (`trial_start_at` empty) and that is still on its schema default
+ * `billing_status: 'trial'`, and only for that business's owner/admin. Without
+ * those checks any member (an almacenista included) could call it again at will
+ * and reset a view_only/suspended/active business back to a fresh 30-day trial —
+ * i.e. skip billing forever. Everything after the initial trial belongs to
+ * Mission Control's lifecycle cron and the platform-owner license functions.
  */
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -16,6 +24,13 @@ export async function handle(req: Request): Promise<Response> {
 
     if (!business_id) return Response.json({ error: 'business_id is required' }, { status: 400 });
     if (business_id !== user.business_id) return Response.json({ error: 'Forbidden' }, { status: 403 });
+    if (user.role !== 'owner' && user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+
+    const business = await base44.asServiceRole.entities.Business.get(business_id).catch(() => null);
+    if (!business) return Response.json({ error: 'Business not found' }, { status: 404 });
+    if (business.trial_start_at || (business.billing_status && business.billing_status !== 'trial')) {
+      return Response.json({ error: 'trial_already_started' }, { status: 409 });
+    }
 
     const now = new Date();
     const trialEnd = new Date(now);

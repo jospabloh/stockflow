@@ -2052,3 +2052,28 @@ código viejo; un 403 propio de la acción = código nuevo.
 este archivo registra una caída en junio que dice lo contrario). Con este
 cambio ya no importa para la seguridad — la rama sólo la satisfacen la
 plataforma y el servicio.
+
+## Escáner de seguridad de Base44 (2026-09-24): tres hallazgos cerrados
+
+- **`initTenantTrial` reiniciaba la prueba a voluntad.** Cualquier miembro del
+  negocio (almacenista incluido) podía llamarlo otra vez y devolver un negocio
+  `view_only`/`suspended`/`active` a `trial` con 30 días nuevos. Ahora es de un
+  solo uso: pide rol `owner`/`admin` y responde 409 `trial_already_started` si
+  `trial_start_at` ya existe o `billing_status` ya no es el `trial` por defecto.
+- **`syncProductStock` escribía `Product.stock` sin autenticar a nadie**, con el
+  movimiento tomado del cuerpo de la petición. Ahora es un no-op para todo
+  evento. `deleteMovementSafe` escribe él mismo el stock revertido para todos
+  los tipos (antes sólo para `adjustment`), y nada en el código cambia
+  `Movement.quantity`, así que la rama `update` no tenía llamador. El workflow
+  "Sync Product Stock on Movement" sigue en el backend y ahora es inofensivo;
+  se puede archivar desde el panel. **Deploya las dos funciones juntas**: con
+  `deleteMovementSafe` nuevo y `syncProductStock` viejo, un borrado se revierte
+  dos veces.
+- **`Core.InvokeLLM` se llamaba desde el navegador** (entrevista de soporte,
+  `src/lib/aiIntake.js`), así que cualquier sesión podía correr prompts
+  arbitrarios con los créditos de la app. Ahora pasa por `business` →
+  `aiIntakeTurn`, con prompt, esquema y tope de preguntas fijos en el servidor
+  (acción dentro de un grupo existente: 47/47 sin cambio). **Sigue en el
+  cliente:** `Core.UploadFile` (logo en Configuración, adjuntos del chat de
+  ayuda) y el agente del chat de ayuda — si se desactivan las integraciones del
+  lado del cliente en Base44, esos dos se rompen.
