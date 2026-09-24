@@ -23,10 +23,11 @@
       "type": "string",
       "enum": [
         "admin",
+        "owner",
         "almacenista"
       ],
       "default": "almacenista",
-      "description": "Rol del usuario: admin (acceso total), almacenista (productos, movimientos, cotizaciones y clientes)",
+      "description": "Rol del usuario: owner (administrador de SU negocio), almacenista (productos, movimientos, cotizaciones y clientes), admin (reservado a la plataforma: la rama user_condition role:admin de cada RLS no está acotada al negocio)",
       "rls": { "write": { "user_condition": { "role": "admin" } } }
     },
     "business_id": {

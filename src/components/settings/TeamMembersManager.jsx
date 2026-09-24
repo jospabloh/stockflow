@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { ShieldCheck, RefreshCw, ChevronDown } from "lucide-react";
+import { appRole } from "@/lib/roles";
 
 const ROLE_LABELS = {
   admin: { label: "Admin", color: "bg-brand-100 text-brand-700 border-brand-200" },
@@ -80,7 +81,7 @@ export default function TeamMembersManager({ businessId, currentUserId }) {
       <div className="rounded-xl border border-border overflow-hidden">
         {members.map((member, idx) => {
           const isSelf = member.id === currentUserId;
-          const role = member.role || "almacenista";
+          const role = appRole(member.role) || "almacenista";
           const roleInfo = ROLE_LABELS[role] || { label: role, color: "bg-slate-100 text-slate-600 border-slate-200" };
           const isBusy = changingRole === member.id;
 

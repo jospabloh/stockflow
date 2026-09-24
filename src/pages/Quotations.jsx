@@ -34,6 +34,7 @@ import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import VirtualizedQuotationTable, { derivePaymentState } from "@/components/tables/VirtualizedQuotationTable";
 import OnDemandPendingPanel from "@/components/quotations/OnDemandPendingPanel";
 import QuotationsFinancialSummaryBar from "@/components/quotations/QuotationsFinancialSummaryBar";
+import { isBusinessAdmin } from "@/lib/roles";
 
 const statusConfig = {
   draft: { label: "Borrador", color: "bg-slate-100 text-slate-700", dot: "bg-slate-400", desc: "Cotización en edición" },
@@ -110,7 +111,6 @@ export default function Quotations() {
   const location = useLocation();
   const { can } = usePermissions();
   const { businessId, user } = useBusinessContext();
-  const userRole = user?.role || null;
   const invalidate = useInvalidateEntities();
   const quotationsQuery = useQuotations(businessId);
   const quotations = quotationsQuery.data ?? [];
@@ -539,7 +539,7 @@ export default function Quotations() {
         canSend={can('Cotizaciones', 'send')}
         canExport={can('Cotizaciones', 'export')}
         canDelete={can('Cotizaciones', 'delete')}
-        canRevertPayment={userRole === 'admin'}
+        canRevertPayment={isBusinessAdmin(user)}
         onRevertPayment={(q) => setRevertPayQuotation(q)}
         onEdit={handleEdit}
         onPreview={async (q) => {

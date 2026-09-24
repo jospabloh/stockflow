@@ -60,7 +60,7 @@ export async function handle(req: Request): Promise<Response> {
     const caller = await base44.auth.me();
 
     if (!caller) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (caller.role !== 'admin') return Response.json({ error: 'Forbidden: solo admins pueden cambiar roles' }, { status: 403 });
+    if (caller.role !== 'admin' && caller.role !== 'owner') return Response.json({ error: 'Forbidden: solo admins pueden cambiar roles' }, { status: 403 });
 
     const { target_user_id, new_role } = await req.json();
 
@@ -87,7 +87,8 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     // Update role at platform level
-    await base44.asServiceRole.entities.User.update(target_user_id, { role: new_role });
+    // The app's 'admin' is stored as 'owner' — see createBusinessSafe.
+    await base44.asServiceRole.entities.User.update(target_user_id, { role: new_role === 'admin' ? 'owner' : new_role });
 
     // Upsert permission profile
     const business_id = caller.business_id;

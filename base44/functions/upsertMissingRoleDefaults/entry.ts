@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Allow tenant admin or platform owner
-    if (user.role !== 'admin' && (!PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL)) {
+    if (user.role !== 'admin' && user.role !== 'owner' && (!PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL)) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 

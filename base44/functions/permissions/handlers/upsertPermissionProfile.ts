@@ -9,7 +9,7 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (user.role !== 'admin') {
+    if (user.role !== 'admin' && user.role !== 'owner') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
@@ -20,18 +20,19 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     // Buscar perfil existente
-    const existing = await base44.entities.PermissionProfile.filter({
+    // PermissionProfile writes are admin-only in RLS; the gate is the role check above.
+    const existing = await base44.asServiceRole.entities.PermissionProfile.filter({
       role_key,
       business_id: user.business_id,
     });
 
     let result;
     if (existing && existing.length > 0) {
-      result = await base44.entities.PermissionProfile.update(existing[0].id, {
+      result = await base44.asServiceRole.entities.PermissionProfile.update(existing[0].id, {
         permissions,
       });
     } else {
-      result = await base44.entities.PermissionProfile.create({
+      result = await base44.asServiceRole.entities.PermissionProfile.create({
         role_key,
         business_id: user.business_id,
         permissions,

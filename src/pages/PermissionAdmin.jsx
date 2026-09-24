@@ -12,6 +12,7 @@ import { Shield, RefreshCw, Download } from "lucide-react";
 import { toast } from "sonner";
 import UnifiedPermissionMatrix from "@/components/permissions/UnifiedPermissionMatrix";
 import { PERMISSION_MATRIX } from "@/components/permissions/UnifiedPermissionMatrix";
+import { isBusinessAdmin } from "@/lib/roles";
 
 
 
@@ -87,7 +88,7 @@ export default function PermissionAdmin() {
 
   useEffect(() => {
     if (loadingUser) return;
-    if (!isPlatformAdmin && user?.role !== 'admin') return;
+    if (!isPlatformAdmin && !isBusinessAdmin(user)) return;
     seedProfiles().then(() => loadProfiles());
   }, [loadingUser, isPlatformAdmin, user, businessId]);
 
@@ -157,7 +158,7 @@ export default function PermissionAdmin() {
     );
   }
 
-  if (!isPlatformAdmin && user?.role !== 'admin') {
+  if (!isPlatformAdmin && !isBusinessAdmin(user)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-64 gap-4">
         <Shield className="h-12 w-12 text-rose-300" />
@@ -177,7 +178,7 @@ export default function PermissionAdmin() {
           <p className="text-sm text-muted-foreground mt-0.5">Configura qué puede ver y hacer cada rol en el sistema.</p>
         </div>
         <div className="flex gap-2">
-          {(isPlatformAdmin || user?.role === 'admin') && (
+          {(isPlatformAdmin || isBusinessAdmin(user)) && (
             <Button
               variant="outline"
               onClick={async () => {

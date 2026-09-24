@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     }
 
     // Admins and almacenistas can update stock
-    if (user.role !== 'admin' && user.role !== 'almacenista') {
+    if (user.role !== 'admin' && user.role !== 'owner' && user.role !== 'almacenista') {
       return Response.json({ error: 'Forbidden: insufficient role' }, { status: 403 });
     }
 

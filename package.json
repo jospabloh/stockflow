@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint . --quiet && npm run validate:functions",
+    "lint": "eslint . --quiet && npm run validate:functions && npm run validate:roles",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
@@ -21,6 +21,7 @@
     "deploy:site": "node scripts/base44-deploy.mjs --site",
     "deploy:entities": "node scripts/base44-deploy.mjs --entities",
     "functions:audit": "node scripts/base44-audit.mjs",
+    "validate:roles": "node scripts/validate-roles.mjs",
     "validate:functions": "node scripts/validate-functions.mjs",
     "test:smoke": "playwright test"
   },

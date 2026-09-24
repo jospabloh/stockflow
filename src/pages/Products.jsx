@@ -24,12 +24,13 @@ import ExportMenu from "@/components/common/ExportMenu";
 import { exportImportFormat, productsToImportRows } from "@/lib/exportImportFormat";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { isBusinessAdmin } from "@/lib/roles";
 
 export default function Products() {
   const navigate = useNavigate();
   const { can } = usePermissions();
   const { businessId, user } = useBusinessContext();
-  const isAdmin = user?.role === "admin";
+  const isAdmin = isBusinessAdmin(user);
   const invalidate = useInvalidateEntities();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");

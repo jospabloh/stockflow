@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { base44 } from "@/api/base44Client";
 import { getDefaultsForRole } from "./permissionRegistry";
 import { getPermissionModule } from "./permissionModuleMap";
+import { appRole } from "@/lib/roles";
 
 const PermissionContext = createContext(null);
 
@@ -22,7 +23,7 @@ export function PermissionProvider({ children }) {
     try {
       const meResult = await base44.auth.me();
       setUserEmail(meResult?.email || null);
-      setUserRole(meResult?.role || null);
+      setUserRole(appRole(meResult?.role) || null);
     } catch (_) {
       setUserEmail(null);
       setUserRole(null);

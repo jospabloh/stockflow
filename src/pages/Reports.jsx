@@ -11,6 +11,7 @@ import OperationalReports from "@/components/reports/OperationalReports";
 import PredictiveReports from "@/components/reports/PredictiveReports";
 import SupplierPaymentsReportChart from "@/components/dashboard/SupplierPaymentsReportChart";
 import UnbilledNonCashInvoiceReport from "@/components/reports/UnbilledNonCashInvoiceReport";
+import { isBusinessAdmin } from "@/lib/roles";
 
 export default function Reports() {
   const { can } = usePermissions();
@@ -27,7 +28,7 @@ export default function Reports() {
 
   useEffect(() => {
     base44.auth.me().then(async (u) => {
-      const admin = u?.role === "admin";
+      const admin = isBusinessAdmin(u);
       const bId = u?.business_id;
       setIsAdmin(admin);
       setBusinessId(bId);

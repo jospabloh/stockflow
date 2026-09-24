@@ -96,7 +96,11 @@ export async function handle(req: Request): Promise<Response> {
     // the business we just created for exactly this caller.
     await sr.entities.User.update(user.id, {
       business_id: business.id,
-      role: 'admin',
+      // 'owner', NOT built-in 'admin': every RLS rule carries a
+      // user_condition:{role:"admin"} branch (the service-role tier) that is
+      // NOT scoped to a tenant, so a business admin stored as 'admin' could
+      // read and write every other business (verified live 2026-09-24).
+      role: 'owner',
     });
 
     return Response.json({ success: true, business });

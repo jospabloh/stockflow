@@ -173,7 +173,7 @@ export async function handle(req: Request): Promise<Response> {
       try {
         const tenantUsers = await base44.asServiceRole.entities.User.filter({ business_id });
         const admins = tenantUsers
-          .filter((u) => u.role === 'admin' && u.email)
+          .filter((u) => (u.role === 'admin' || u.role === 'owner') && u.email)
           .map((u) => ({ email: u.email, full_name: u.full_name || null }));
 
         if (admins.length > 0) {
