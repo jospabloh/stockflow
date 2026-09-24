@@ -83,23 +83,14 @@ export async function handle(req: Request): Promise<Response> {
     // Garantizar no negativos
     if (revertedStock < 0) revertedStock = 0;
 
-    // Para entry/exit/return: eliminar primero — la automación syncProductStock
-    // revierte el efecto del movimiento automáticamente en el evento 'delete'.
-    // No se llama Product.update explícitamente para no duplicar la reversión.
-    //
-    // Para adjustment: la automación aplica -qty como delta, que puede no coincidir
-    // con el stock previo al ajuste. Por eso sí se actualiza explícitamente aquí,
-    // DESPUÉS de eliminar, para que el Product.update sea la escritura final.
-    const isAdjustment = movement.type === 'adjustment';
-
-    // Eliminar el movimiento (dispara automación para entry/exit/return)
+    // Eliminar el movimiento y escribir el stock revertido AQUÍ, para todos los
+    // tipos. Antes entry/exit/return dependían de que la automatización
+    // syncProductStock revirtiera el efecto en el evento 'delete'; esa función
+    // leía el movimiento del cuerpo de la petición sin autenticar a nadie, así
+    // que cualquiera podía reescribir el stock de cualquier producto. Ahora es un
+    // no-op y ésta es la única escritura de la reversión.
     await base44.asServiceRole.entities.Movement.delete(movement_id);
-
-    if (isAdjustment) {
-      // Ajuste: sobreescribir el stock al valor correcto previo al ajuste,
-      // compensando lo que la automación haya aplicado tras el delete.
-      await base44.asServiceRole.entities.Product.update(product.id, { stock: revertedStock });
-    }
+    await base44.asServiceRole.entities.Product.update(product.id, { stock: revertedStock });
 
     // TENANT-SCOPED: Reverse any system-generated petty cash income linked to this movement
     // Only relevant if this was a paid direct exit (not linked to a quotation)
