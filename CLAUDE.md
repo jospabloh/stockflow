@@ -2021,6 +2021,32 @@ como están escritas.
    sea `PLATFORM_OWNER_EMAIL` — hoy Roseta, Karime y el usuario de prueba.
 3. Repetir la prueba con el usuario de prueba: ya no debe ver nada ajeno.
 
+**Cerrado y verificado en vivo, 2026-09-24 19:1x UTC.** Tras publicar, la
+migración pasó a Roseta, Karime y el usuario de prueba a `owner` (releído en
+`User`); el mismo usuario de prueba, ahora `owner`, ve **0** filas en
+`Business`, `Product`, `Quotation`, `Client`, `PettyCashMovement`,
+`SupplierPayment`, `MachinerySale`, `PermissionProfile` y `EmailNotification`
+— antes veía los 4 negocios, 226 productos y 498 cotizaciones. **No
+verificado:** que Roseta y Karime operen normal en su propio negocio como
+`owner` (no hay sesión suya desde aquí); si algo de administración les falla,
+es la primera sospecha.
+
+### `npm run deploy` dijo «47 unchanged» y NO desplegó (2026-09-24)
+
+Con el #396 ya en `main` y el pull hecho, `functions deploy --force` (CLI 0.1.15
+y otra vez con 0.1.20) reportó `unchanged` para **todas** las funciones
+agrupadas cuyo cambio vivía sólo en `handlers/` (`business`, `licenses`,
+`permissions`…); sólo subieron las tres de un archivo. En producción la acción
+nueva respondía `licenses: unknown action` — idéntico a un nombre inventado.
+Lo que la puso viva fue **Publish en el panel de Base44**; la copia de código
+que Base44 guarda (sincronizada desde GitHub) ya tenía todo. No se aisló la
+causa exacta: una acción de handler del 2026-09-21 sí había llegado antes.
+
+**La regla que queda:** después de desplegar funciones, **publica**, y
+comprueba por comportamiento, no por la salida de la CLI. La prueba más barata
+es llamar a una acción nueva sin permiso y leer el error: `unknown action` =
+código viejo; un 403 propio de la acción = código nuevo.
+
 **No resuelto:** si las funciones `asServiceRole` necesitan de verdad la rama
 `admin` (la documentación de Base44 dice que el rol de servicio se salta RLS;
 este archivo registra una caída en junio que dice lo contrario). Con este
