@@ -73,12 +73,18 @@ export async function handle(req: Request): Promise<Response> {
     // (e.g. validateBusinessOwnership-style logic) rely on. Business.create RLS
     // already allows `created_by_id: {{user.id}}`, so this does not depend on
     // the caller having any elevated role.
+    //
+    // NOTE: `status` is NOT passed here. After the Módulo 14 closure (2026-08-24),
+    // `Business.status` carries `rls.write: {role: admin}`. A brand-new user has
+    // role `almacenista` (the default), so explicitly sending `status: 'active'`
+    // was rejected by the field-level RLS and caused a 500. The field defaults to
+    // `'active'` in the schema, so omitting it produces the same result without
+    // the RLS violation.
     const business = await base44.entities.Business.create({
       name,
       phone,
       address,
       invite_code: generateInviteCode(),
-      status: 'active',
       tax_rate: 16,
       currency: 'MXN',
     });

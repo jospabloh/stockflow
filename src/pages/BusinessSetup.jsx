@@ -45,6 +45,10 @@ export default function BusinessSetup() {
         address: createForm.address,
       });
       if (!createResp?.data?.success) {
+        const errCode = createResp?.data?.error;
+        if (errCode === 'already_in_a_business') {
+          throw new Error('Ya perteneces a un negocio. Un usuario solo puede tener un negocio a la vez.');
+        }
         throw new Error(createResp?.data?.error || 'No se pudo crear el negocio');
       }
       const business = createResp.data.business;
@@ -67,7 +71,12 @@ export default function BusinessSetup() {
       navigate("/Dashboard");
     } catch (error) {
       console.error("Create business error:", error);
-      toast.error(`Error: ${error.message || 'Algo salió mal'}`);
+      const errCode = error?.response?.data?.error || error?.data?.error;
+      if (errCode === 'already_in_a_business') {
+        toast.error('Ya perteneces a un negocio. Un usuario solo puede tener un negocio a la vez.');
+      } else {
+        toast.error(`Error: ${error.message || 'Algo salió mal'}`);
+      }
     } finally {
       setLoading(false);
     }
