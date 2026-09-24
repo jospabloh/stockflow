@@ -32,7 +32,7 @@ export async function handle(req: Request): Promise<Response> {
     // Queue trial_welcome email — non-fatal if it fails
     try {
       const bizUsers = await base44.asServiceRole.entities.User.filter({ business_id });
-      const admin = bizUsers.find((u: any) => u.role === 'admin') || bizUsers[0];
+      const admin = bizUsers.find((u: any) => u.role === 'admin' || u.role === 'owner') || bizUsers[0];
       if (admin?.email) {
         await base44.asServiceRole.entities.EmailNotification.create({
           business_id,

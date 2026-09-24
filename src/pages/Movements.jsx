@@ -44,6 +44,7 @@ import MovementEditDialog from "@/components/movements/MovementEditDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import ExportMenu from "@/components/common/ExportMenu";
 import { toast } from "sonner";
+import { isBusinessAdmin } from "@/lib/roles";
 
 const typeConfig = {
   entry: { label: "Entrada", icon: ArrowDownLeft, color: "bg-emerald-100 text-emerald-700" },
@@ -57,7 +58,7 @@ export default function Movements() {
   const location = useLocation();
   const { can } = usePermissions();
   const { businessId, user } = useBusinessContext();
-  const isAdmin = user?.role === "admin";
+  const isAdmin = isBusinessAdmin(user);
   const canEditMovement = can('Movimientos', 'edit_reason');
   const canDeleteMovement = can('Movimientos', 'delete');
   const canConfirmPayment = can('Movimientos', 'confirm_payment');

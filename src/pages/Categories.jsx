@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { exportImportFormat, categoriesToImportRows } from "@/lib/exportImportFormat";
+import { isBusinessAdmin } from "@/lib/roles";
 
 export default function Categories() {
   const { businessId } = useBusinessContext();
@@ -42,7 +43,7 @@ export default function Categories() {
     const checkAndLoad = async () => {
       try {
         const u = await base44.auth.me();
-        setIsAdmin(u?.role === "admin");
+        setIsAdmin(isBusinessAdmin(u));
         
         if (businessId) {
           const cats = await base44.entities.Category.filter({ business_id: businessId });

@@ -289,7 +289,9 @@ export async function hasPermission(
   actionId: string,
 ): Promise<boolean> {
   if (!user) return false;
-  if (user.role === 'admin') return true;
+  // 'owner' = a business's admin (2026-09-24); built-in 'admin' is now
+  // reserved for the platform owner and the service role.
+  if (user.role === 'admin' || user.role === 'owner') return true;
   if (PLATFORM_OWNER_EMAIL && user.email === PLATFORM_OWNER_EMAIL) return true;
 
   const key = `${moduleName}:${actionId}`;

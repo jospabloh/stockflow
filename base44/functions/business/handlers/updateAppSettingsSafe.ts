@@ -15,7 +15,7 @@ export async function handle(req: Request): Promise<Response> {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (user.role !== 'admin') {
+    if (user.role !== 'admin' && user.role !== 'owner') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 

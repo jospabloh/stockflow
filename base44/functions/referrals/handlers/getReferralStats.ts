@@ -7,7 +7,7 @@ export async function handle(req: Request): Promise<Response> {
     if (!user || !user.business_id) {
       return Response.json({ error: 'No autenticado' }, { status: 401 });
     }
-    if (user.role !== 'admin') {
+    if (user.role !== 'admin' && user.role !== 'owner') {
       return Response.json({ error: 'Solo administradores pueden ver estadísticas de referidos' }, { status: 403 });
     }
 

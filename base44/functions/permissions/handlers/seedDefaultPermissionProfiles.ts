@@ -90,7 +90,7 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if ((!PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) && user.role !== 'admin') {
+    if ((!PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) && user.role !== 'admin' && user.role !== 'owner') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 

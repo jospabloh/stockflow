@@ -6,7 +6,7 @@ export async function handle(req: Request): Promise<Response> {
     const caller = await base44.auth.me();
 
     if (!caller) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (caller.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+    if (caller.role !== 'admin' && caller.role !== 'owner') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
     const members = await base44.asServiceRole.entities.User.filter({
       business_id: caller.business_id,

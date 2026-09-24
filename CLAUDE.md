@@ -176,6 +176,9 @@ The tenant branch still isolates **end users**: an `almacenista` never matches
 service-role/owner tier (same access the write rules already grant). Trade-off
 accepted 2026-06-17: a `role: admin` user could read across tenants via raw API
 (never through the app UI, which always filters by `business_id`).
+**That trade-off was wrong and is closed (2026-09-24)** — business admins were
+stored as `role: admin` too, so it applied to every customer, not just the
+platform. See "Dueños de negocio = `owner`" below.
 
 Correct rule for a business-scoped entity — **identical `$or` on all four ops**
 (mirrors the `Session` entity, whose `asServiceRole` access already works):
@@ -1972,3 +1975,54 @@ multi-almacén ni API que no existen).
 Cambiar el `default` del `.jsonc` requiere `npm run deploy:entities` para llegar
 al backend; mientras tanto no importa, porque `initTenantTrial` escribe el
 límite explícito.
+
+## Dueños de negocio = `owner`, no `admin` (2026-09-24)
+
+**Probado en vivo, no inferido.** Un usuario recién registrado que crea su
+negocio por `createBusinessSafe` quedaba con el `role: admin` de Base44 — el
+mismo que la plataforma — y la rama `user_condition:{role:"admin"}` de cada RLS
+no está acotada al negocio. Con un usuario desechable
+(`h.josepablo+sfrlstest0924@`): leyó los 4 negocios, 226 productos, 498
+cotizaciones, caja chica y pagos a proveedores de Baristop; se activó su propia
+licencia hasta 2030 (los candados de campo del módulo 14 no frenan a un
+`admin`); y escribió en ACACIA OWNER SANDBOX (revertido). Lo único que Base44 le
+negó fue cambiarse el rol: «Only platform users can update user roles».
+
+El arreglo: el admin de un negocio se guarda como **`owner`**; `admin` queda
+para el dueño de la plataforma y el rol de servicio, que es lo que la rama RLS
+siempre quiso decir. Las reglas RLS no cambian — pasan a ser correctas tal
+como están escritas.
+
+- `createBusinessSafe` asigna `owner`; `changeUserRole` guarda `owner` cuando la
+  UI pide «admin». El vocabulario de la app sigue siendo `admin`/`almacenista`
+  (perfiles `role_key`, registro de permisos): `appRole()` en `src/lib/roles.js`
+  traduce `owner → admin`, `isBusinessAdmin()` acepta los dos.
+- Las comprobaciones **de negocio** aceptan `admin || owner` (misma forma en
+  línea que ya usaba `applyInventoryAuditCorrection`), igual que
+  `hasPermission()` en las 9 copias de `_permissions.ts`.
+- Las **de plataforma** siguen en `admin` estricto y quedan, por fin, fuera del
+  alcance de un cliente: `cleanupSessions`, `syncAppVersionToDB`,
+  `initAppVersion`, `updateAppVersion`, `migrateWholesaleMinQtyToCategory`,
+  `courseComms/runReminders`.
+- `upsertPermissionProfile` escribía con la identidad del que llama; las
+  escrituras de `PermissionProfile` son sólo `admin`, así que ahora escribe como
+  servicio **después** de su propia comprobación de rol.
+- `npm run validate:roles` (dentro de `lint`) falla si alguna función asigna
+  `role: 'admin'` fuera de `upgradeOwnerToAdmin`/`restoreOwnerAdmin`.
+- Mission Control ya buscaba destinatarios de StockFlow con `['owner','admin']`.
+
+**Orden de despliegue — importa:**
+1. `npm run deploy:entities` (el enum de `User.role` gana `owner`; sin esto
+   Base44 rechaza el valor) y `npm run deploy` + `npm run deploy:site`. El
+   código acepta `admin` y `owner`, así que nadie pierde acceso en este paso.
+2. Como dueño de plataforma, en la consola de la app:
+   `base44.functions.invoke('licenses', { action: 'migrateBusinessAdminsToOwner' })`
+   (simulacro) y luego con `apply: true`. Pasa a `owner` a todo `admin` que no
+   sea `PLATFORM_OWNER_EMAIL` — hoy Roseta, Karime y el usuario de prueba.
+3. Repetir la prueba con el usuario de prueba: ya no debe ver nada ajeno.
+
+**No resuelto:** si las funciones `asServiceRole` necesitan de verdad la rama
+`admin` (la documentación de Base44 dice que el rol de servicio se salta RLS;
+este archivo registra una caída en junio que dice lo contrario). Con este
+cambio ya no importa para la seguridad — la rama sólo la satisfacen la
+plataforma y el servicio.

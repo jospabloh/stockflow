@@ -27,6 +27,7 @@ import UnpaidDetailModal from "@/components/dashboard/UnpaidDetailModal";
 import OnboardingWizard from "@/components/OnboardingWizard";
 import { computeSalesData } from "@/lib/finance/profitEngine";
 import { convertUTCToLocalDate, getDateStringMexico } from "@/lib/finance/period";
+import { isBusinessAdmin } from "@/lib/roles";
 
 // Función para obtener rango de fechas según período (México City timezone, respeta DST)
 function getDateRange(period) {
@@ -111,7 +112,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     base44.auth.me().then(async (u) => {
-      const admin = u?.role === "admin";
+      const admin = isBusinessAdmin(u);
       const bId = u?.business_id;
       setIsAdmin(admin);
       setDashboardBusinessId(bId);

@@ -30,7 +30,7 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     // Only admins can edit product details (almacenista uses updateProductStockSafe for stock only)
-    if (user.role !== 'admin') {
+    if (user.role !== 'admin' && user.role !== 'owner') {
       return Response.json({ error: 'Forbidden: admin role required' }, { status: 403 });
     }
 

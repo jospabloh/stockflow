@@ -56,6 +56,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { isBusinessAdmin } from "@/lib/roles";
 
 const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
@@ -274,7 +275,7 @@ export default function Layout({ children, currentPageName }) {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Navegación principal">
           {navItems
             .filter(item => !item.platformAdminOnly || isPlatformAdmin)
-            .filter(item => !item.adminOrPlatformAdmin || isPlatformAdmin || user?.role === 'admin')
+            .filter(item => !item.adminOrPlatformAdmin || isPlatformAdmin || isBusinessAdmin(user))
             .filter(item => {
               if (item.page) return canSee(item.page);
               if (item.submenu) return item.submenu.some(s => canSee(s.page));

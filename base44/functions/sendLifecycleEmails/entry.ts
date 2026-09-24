@@ -414,7 +414,7 @@ async function enqueueTrialReminders(base44) {
     const type = trialReminderFor(biz.trial_end_at, now);
     if (!type) continue;
     const users = await base44.asServiceRole.entities.User.filter({ business_id: biz.id });
-    const admins = users.filter((u) => u.role === 'admin' && u.email);
+    const admins = users.filter((u) => (u.role === 'admin' || u.role === 'owner') && u.email);
     for (const admin of admins) {
       const key = `${type}:${biz.id}:${admin.email}:${String(biz.trial_end_at).slice(0, 10)}`;
       const existing = await base44.asServiceRole.entities.EmailNotification.filter({ idempotency_key: key });
