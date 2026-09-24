@@ -1917,3 +1917,33 @@ no documentado aquí como equivalente a la CLI autenticada con la que este
 repo normalmente deploya desde una terminal del operador) — el deploy en
 sí se deja para el mismo flujo de siempre, y se avisa en el reporte al
 dueño.
+
+## Correos del trial: nadie los encolaba, y la cola nunca se vaciaba (2026-09-24)
+
+Lo encontró el alta de **Baristop Durango** (`6ab550de342f0a40f5324ebc`, primer
+tenant en trial desde que se retiraron los crons nativos). Dos defectos que
+sólo se ven con un trial vivo:
+
+1. **`sendLifecycleEmails` nunca marcaba una fila como enviada.** Mandaba el
+   correo y dejaba el `EmailNotification` en `pending`, así que el cron diario
+   (15:00 UTC) lo habría reenviado todos los días. No se había notado porque
+   todas las filas anteriores las escribían otros caminos ya como `sent`. Ahora
+   marca `sent` / `failed` (+`retry_count`) / `skipped` (duplicado).
+2. **Nada encolaba los recordatorios del trial.** `trial_day_*`/`trial_expired`
+   los encolaban `expireTrials`/`checkAccountLifecycle` (retirados 2026-08-03), y
+   Mission Control no los cubre: su ciclo mira `license_expires_at`, que durante
+   un trial es `null`. `enqueueTrialReminders()` dentro del mismo cron los
+   encola por ventana de días (fecha local de México) con `idempotency_key`
+   atado a `trial_end_at`. **Sólo lee `billing_status`**, nunca lo escribe — la
+   misma línea que respeta `processTrialReactivationEmails`. No suma endpoint
+   (47/47).
+
+Además: las plantillas del trial llevan la fecha de fin y cómo pagar (Mercado
+Pago o transferencia vía WhatsApp, activación manual); el nombre del negocio se
+resuelve del `Business` (antes salía «tu negocio»); y cada correo al cliente,
+aquí y en `acaciaControl` `emails.sendFollowup`, manda una **copia aparte a
+`PLATFORM_OWNER_EMAIL`** — `Core.SendEmail` no tiene bcc.
+
+La bienvenida de Baristop Durango se mandó a mano desde Gmail el 2026-09-24 y su
+fila se marcó `sent` para que el código viejo desplegado no la repitiera.
+**Pendiente: `npm run deploy`** — sin él, nada de esto corre.

@@ -6,6 +6,12 @@ const APP_NAME = 'StockFlow';
 const BRAND_COLOR = '#4F46E5';
 const UPGRADE_URL = 'https://www.acaciaco.com.mx/stockflow';
 const MAX_RETRIES = 3;
+const WHATSAPP_URL = 'https://wa.me/524498958291';
+const WHATSAPP_DISPLAY = '449 895 8291';
+const DAY_MS = 86_400_000;
+// Mexico (Zona Centro) is a fixed UTC-6 year-round since 2022 — calendar days
+// for the trial countdown are counted in the customer's local date.
+const MX_OFFSET_MS = 6 * 60 * 60 * 1000;
 
 const PLAN_LABELS = {
   start: 'Start',
@@ -28,7 +34,7 @@ function formatDate(isoString) {
   if (!isoString) return '—';
   try {
     return new Date(isoString).toLocaleDateString('es-MX', {
-      day: 'numeric', month: 'long', year: 'numeric',
+      day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Mexico_City',
     });
   } catch (_) {
     return isoString;
@@ -63,8 +69,24 @@ function ctaButton(label, url) {
   </div>`;
 }
 
+// Payment instructions for every trial email. Activation is manual: the
+// platform owner validates the payment (Mercado Pago or bank transfer) and
+// activates the license from Mission Control. Deliberately no seat counts
+// here — the plan limits are defined on the public pricing page.
+function howToPay() {
+  return `<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:16px;margin:20px 0">
+    <p style="margin:0 0 8px;color:#111827;font-weight:700">Cómo activar tu licencia</p>
+    <p style="margin:0 0 8px;color:#374151;line-height:1.6">Planes: <strong>Start</strong> $799 · <strong>Growth</strong> $1,499 · <strong>Pro</strong> $2,299 MXN/mes. Detalle en <a href="${UPGRADE_URL}" style="color:${BRAND_COLOR}">acaciaco.com.mx/stockflow</a>.</p>
+    <ol style="margin:0 0 8px;padding-left:20px;color:#374151;line-height:1.6">
+      <li><strong>Mercado Pago:</strong> suscríbete al plan desde el botón «Suscribirse» de la página de planes.</li>
+      <li><strong>Transferencia:</strong> escríbenos por WhatsApp al <a href="${WHATSAPP_URL}" style="color:${BRAND_COLOR}">${WHATSAPP_DISPLAY}</a> y te compartimos los datos bancarios.</li>
+    </ol>
+    <p style="margin:0;color:#374151;line-height:1.6">Envíanos tu comprobante por WhatsApp. En cuanto validemos el pago activamos tu licencia y te llega un correo de confirmación.</p>
+  </div>`;
+}
+
 function getEmailTemplate(emailType, ctx) {
-  const { businessName, recipientName, licensePlan, appUrl, upgradeUrl, licenseExpiresAt, scheduledDeleteAt } = ctx;
+  const { businessName, recipientName, licensePlan, appUrl, upgradeUrl, licenseExpiresAt, scheduledDeleteAt, trialEndAt } = ctx;
   const name = businessName || 'tu negocio';
   const greetName = firstName(recipientName) || name;
   const planName = planLabel(licensePlan);
@@ -74,11 +96,11 @@ function getEmailTemplate(emailType, ctx) {
       return {
         subject: `Bienvenido a ${APP_NAME} — Tu prueba gratuita de 30 días ha comenzado`,
         html: wrap(`
-          <h2 style="color:#111827;margin-top:0">¡Bienvenido a ${APP_NAME}, ${name}!</h2>
-          <p style="color:#374151;line-height:1.6">Tu período de prueba gratuita de <strong>30 días</strong> ha comenzado. Durante este tiempo tienes acceso completo a todas las funciones de ${APP_NAME}.</p>
-          <p style="color:#374151;line-height:1.6">Puedes gestionar tu inventario, crear cotizaciones, registrar movimientos y mucho más.</p>
+          <h2 style="color:#111827;margin-top:0">¡Bienvenido a ${APP_NAME}, ${greetName}!</h2>
+          <p style="color:#374151;line-height:1.6">Tu período de prueba gratuita de <strong>30 días naturales</strong> para <strong>${name}</strong> ha comenzado. Durante este tiempo tienes acceso completo a todas las funciones de ${APP_NAME}.</p>
+          <p style="color:#374151;line-height:1.6">Tu prueba termina el <strong>${formatDate(trialEndAt)}</strong>. Te avisaremos antes del vencimiento. Si al terminar no se ha activado la licencia, la cuenta pasa a <strong>modo solo lectura</strong>: tu información se conserva y puedes consultarla, pero no registrar operaciones nuevas.</p>
+          ${howToPay()}
           ${ctaButton('Ir a mi cuenta', appUrl)}
-          <p style="color:#6b7280;font-size:13px">¿Tienes preguntas? Contáctanos en <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND_COLOR}">${SUPPORT_EMAIL}</a></p>
         `, appUrl),
       };
 
@@ -87,9 +109,9 @@ function getEmailTemplate(emailType, ctx) {
         subject: `15 días con ${APP_NAME} — ¿Cómo va tu experiencia?`,
         html: wrap(`
           <h2 style="color:#111827;margin-top:0">Ya llevas 15 días con ${APP_NAME}</h2>
-          <p style="color:#374151;line-height:1.6">Hola, ${name}. Esperamos que ${APP_NAME} esté ayudando a tu negocio. Te quedan <strong>15 días</strong> de prueba gratuita.</p>
+          <p style="color:#374151;line-height:1.6">Hola, ${greetName}. Esperamos que ${APP_NAME} esté ayudando a ${name}. Tu prueba gratuita termina el <strong>${formatDate(trialEndAt)}</strong>.</p>
           <p style="color:#374151;line-height:1.6">Si necesitas ayuda o tienes preguntas, estamos aquí para apoyarte.</p>
-          ${ctaButton('Ver planes y precios', upgradeUrl)}
+          ${howToPay()}
         `, appUrl),
       };
 
@@ -98,9 +120,8 @@ function getEmailTemplate(emailType, ctx) {
         subject: `Tu prueba de ${APP_NAME} termina en 5 días`,
         html: wrap(`
           <h2 style="color:#d97706;margin-top:0">⏰ Quedan 5 días de prueba</h2>
-          <p style="color:#374151;line-height:1.6">Hola, ${name}. Tu período de prueba gratuita termina en <strong>5 días</strong>. Para seguir usando ${APP_NAME} sin interrupciones, activa tu licencia.</p>
-          ${ctaButton('Activar licencia ahora', upgradeUrl)}
-          <p style="color:#6b7280;font-size:13px">¿Tienes preguntas sobre los planes? Escríbenos a <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND_COLOR}">${SUPPORT_EMAIL}</a></p>
+          <p style="color:#374151;line-height:1.6">Hola, ${greetName}. La prueba gratuita de ${name} termina el <strong>${formatDate(trialEndAt)}</strong>. Para seguir usando ${APP_NAME} sin interrupciones, activa tu licencia.</p>
+          ${howToPay()}
         `, appUrl),
       };
 
@@ -109,9 +130,8 @@ function getEmailTemplate(emailType, ctx) {
         subject: `Quedan solo 2 días de prueba en ${APP_NAME}`,
         html: wrap(`
           <h2 style="color:#dc2626;margin-top:0">🚨 Último aviso: 2 días restantes</h2>
-          <p style="color:#374151;line-height:1.6">Hola, ${name}. Tu prueba termina en <strong>2 días</strong>. Si no activas tu licencia, tu cuenta entrará en modo de solo lectura y no podrás registrar nuevas operaciones.</p>
-          ${ctaButton('Activar mi licencia', upgradeUrl)}
-          <p style="color:#6b7280;font-size:13px">Contáctanos en <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND_COLOR}">${SUPPORT_EMAIL}</a> si necesitas ayuda.</p>
+          <p style="color:#374151;line-height:1.6">Hola, ${greetName}. La prueba de ${name} termina el <strong>${formatDate(trialEndAt)}</strong>. Si no activas tu licencia, tu cuenta entrará en modo de solo lectura y no podrás registrar nuevas operaciones.</p>
+          ${howToPay()}
         `, appUrl),
       };
 
@@ -120,9 +140,8 @@ function getEmailTemplate(emailType, ctx) {
         subject: `Hoy es el último día de tu prueba en ${APP_NAME}`,
         html: wrap(`
           <h2 style="color:#dc2626;margin-top:0">🔴 Último día de prueba</h2>
-          <p style="color:#374151;line-height:1.6">Hola, ${name}. Hoy termina tu período de prueba gratuita. Después de hoy, tu cuenta pasará a modo de solo lectura.</p>
-          <p style="color:#374151;line-height:1.6">¡Activa tu licencia ahora para mantener acceso completo!</p>
-          ${ctaButton('Activar ahora', upgradeUrl)}
+          <p style="color:#374151;line-height:1.6">Hola, ${greetName}. Hoy termina el período de prueba gratuita de ${name}. Después de hoy, tu cuenta pasará a modo de solo lectura; tu información se conserva.</p>
+          ${howToPay()}
         `, appUrl),
       };
 
@@ -131,10 +150,9 @@ function getEmailTemplate(emailType, ctx) {
         subject: `Tu prueba de ${APP_NAME} ha expirado — Activa tu licencia`,
         html: wrap(`
           <h2 style="color:#dc2626;margin-top:0">Tu período de prueba ha terminado</h2>
-          <p style="color:#374151;line-height:1.6">Hola, ${name}. Tu prueba gratuita de ${APP_NAME} ha expirado. Tu cuenta ahora está en <strong>modo de solo lectura</strong> — puedes consultar tu información pero no registrar nuevas operaciones.</p>
-          <p style="color:#374151;line-height:1.6">Activa tu licencia para recuperar el acceso completo a todas las funciones.</p>
-          ${ctaButton('Activar mi licencia', upgradeUrl)}
-          <p style="color:#6b7280;font-size:13px">¿Necesitas más información? <a href="mailto:${SUPPORT_EMAIL}" style="color:${BRAND_COLOR}">${SUPPORT_EMAIL}</a></p>
+          <p style="color:#374151;line-height:1.6">Hola, ${greetName}. La prueba gratuita de ${name} terminó el ${formatDate(trialEndAt)}. Tu cuenta ahora está en <strong>modo de solo lectura</strong> — puedes consultar tu información pero no registrar nuevas operaciones.</p>
+          <p style="color:#374151;line-height:1.6">Activa tu licencia para recuperar el acceso completo. No se ha borrado nada.</p>
+          ${howToPay()}
         `, appUrl),
       };
 
@@ -362,6 +380,95 @@ function getEmailTemplate(emailType, ctx) {
   }
 }
 
+// Days before trial_end_at (customer's local calendar date) → email. Windows
+// rather than exact days so one missed cron run doesn't drop a reminder; the
+// idempotency key (keyed on the trial end date) keeps each one to a single send
+// per trial, and an extended trial re-qualifies with its new date.
+const TRIAL_REMINDERS = [
+  { type: 'trial_day_15', min: 13, max: 15 },
+  { type: 'trial_day_25', min: 3, max: 5 },
+  { type: 'trial_day_28', min: 1, max: 2 },
+  { type: 'trial_day_30', min: 0, max: 0 },
+  { type: 'trial_expired', min: -3, max: -1 },
+];
+
+function mxDateKey(ms) {
+  return new Date(ms - MX_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+function trialReminderFor(trialEndAt, now = new Date()) {
+  const end = new Date(trialEndAt).getTime();
+  if (Number.isNaN(end)) return null;
+  const daysLeft = Math.round(
+    (Date.parse(mxDateKey(end)) - Date.parse(mxDateKey(now.getTime()))) / DAY_MS
+  );
+  return TRIAL_REMINDERS.find((r) => daysLeft >= r.min && daysLeft <= r.max)?.type ?? null;
+}
+
+async function enqueueTrialReminders(base44) {
+  const now = new Date();
+  const trials = await base44.asServiceRole.entities.Business.filter({ billing_status: 'trial' });
+  let created = 0;
+  for (const biz of trials) {
+    if (!biz.trial_end_at || biz.archived_at) continue;
+    const type = trialReminderFor(biz.trial_end_at, now);
+    if (!type) continue;
+    const users = await base44.asServiceRole.entities.User.filter({ business_id: biz.id });
+    const admins = users.filter((u) => u.role === 'admin' && u.email);
+    for (const admin of admins) {
+      const key = `${type}:${biz.id}:${admin.email}:${String(biz.trial_end_at).slice(0, 10)}`;
+      const existing = await base44.asServiceRole.entities.EmailNotification.filter({ idempotency_key: key });
+      if (existing.length > 0) continue;
+      await base44.asServiceRole.entities.EmailNotification.create({
+        business_id: biz.id,
+        email_type: type,
+        recipient_email: admin.email,
+        user_id: admin.id,
+        status: 'pending',
+        retry_count: 0,
+        idempotency_key: key,
+      });
+      created++;
+    }
+  }
+  console.log(`[sendLifecycleEmails] queued ${created} trial reminder(s)`);
+  return created;
+}
+
+async function loadBusiness(base44, cache, id) {
+  if (!cache.has(id)) {
+    const rows = await base44.asServiceRole.entities.Business.filter({ id }).catch(() => []);
+    cache.set(id, rows[0] || null);
+  }
+  return cache.get(id);
+}
+
+// Inline jobs (no id) have no row to update; queued rows do.
+async function markRow(base44, job, patch) {
+  if (!job?.id) return;
+  try {
+    await base44.asServiceRole.entities.EmailNotification.update(job.id, patch);
+  } catch (err) {
+    console.error(`[sendLifecycleEmails] could not mark ${job.id} as ${patch.status}:`, (err as Error).message);
+  }
+}
+
+// Core.SendEmail has no bcc, so the platform owner gets a separate copy of
+// every customer email. Best-effort: never fails the customer send.
+async function sendOwnerCopy(base44, recipient, template) {
+  if (!PLATFORM_OWNER_EMAIL || recipient === PLATFORM_OWNER_EMAIL) return;
+  try {
+    await base44.asServiceRole.integrations.Core.SendEmail({
+      to: PLATFORM_OWNER_EMAIL,
+      subject: `[Copia → ${recipient}] ${template.subject}`,
+      body: template.html,
+      from_name: APP_NAME,
+    });
+  } catch (err) {
+    console.warn('[sendLifecycleEmails] owner copy failed:', (err as Error).message);
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -385,22 +492,37 @@ Deno.serve(async (req) => {
     const appUrl = Deno.env.get('APP_URL') || UPGRADE_URL;
 
     let finalBatch = [];
+    let queued = 0;
 
     if (Array.isArray(body.jobs) && body.jobs.length > 0) {
       finalBatch = body.jobs;
       console.log(`[sendLifecycleEmails] Using ${finalBatch.length} inline jobs from request body`);
     } else {
+      // Trial countdown. Nothing else queues these since the native trial crons
+      // were retired (2026-08-03) and Mission Control only tracks
+      // license_expires_at, which is null during a trial. Read-only on
+      // billing_status: this never transitions a license, it only emails.
       try {
-        const allNotifications = await base44.asServiceRole.entities.EmailNotification.list();
+        queued = await enqueueTrialReminders(base44);
+      } catch (err) {
+        console.error('[sendLifecycleEmails] enqueueTrialReminders failed:', (err as Error).message);
+      }
+      try {
+        const allNotifications = [
+          ...await base44.asServiceRole.entities.EmailNotification.filter({ status: 'pending' }),
+          ...await base44.asServiceRole.entities.EmailNotification.filter({ status: 'failed' }),
+        ];
         const toProcess = allNotifications.filter(
           (n) => n.status === 'pending' || (n.status === 'failed' && (n.retry_count || 0) < MAX_RETRIES)
         );
         const seenKeys = new Set();
         for (const n of toProcess) {
-          const key = `${n.business_id}:${n.email_type}:${n.recipient_email}`;
+          const key = n.idempotency_key || `${n.business_id}:${n.email_type}:${n.recipient_email}`;
           if (!seenKeys.has(key)) {
             seenKeys.add(key);
             finalBatch.push(n);
+          } else {
+            await markRow(base44, n, { status: 'skipped', skip_reason: `duplicate of ${key}` });
           }
         }
         console.log(`[sendLifecycleEmails] Using ${finalBatch.length} jobs from EmailNotification entity`);
@@ -413,17 +535,22 @@ Deno.serve(async (req) => {
     let sent = 0;
     let failed = 0;
     const errors = [];
+    const bizCache = new Map();
 
     for (const job of finalBatch) {
+      // Queued rows carry only ids; resolve the business and recipient name
+      // so the email names the business instead of "tu negocio".
+      const biz = job.business_id ? await loadBusiness(base44, bizCache, job.business_id) : null;
       const ctx = {
-        businessName: job.business_name || 'tu negocio',
+        businessName: job.business_name || biz?.name || 'tu negocio',
         recipientName: job.recipient_name || null,
-        licensePlan: job.license_plan || null,
+        licensePlan: job.license_plan || biz?.license_plan || null,
         appUrl,
         supportEmail: SUPPORT_EMAIL,
         upgradeUrl: UPGRADE_URL,
-        licenseExpiresAt: job.license_expires_at || null,
-        scheduledDeleteAt: job.scheduled_delete_at || null,
+        licenseExpiresAt: job.license_expires_at || biz?.license_expires_at || null,
+        scheduledDeleteAt: job.scheduled_delete_at || biz?.scheduled_delete_at || null,
+        trialEndAt: job.trial_end_at || biz?.trial_end_at || null,
       };
 
       const template = getEmailTemplate(job.email_type, ctx);
@@ -431,9 +558,11 @@ Deno.serve(async (req) => {
         console.warn(`[sendLifecycleEmails] Unknown email_type: ${job.email_type}`);
         failed++;
         errors.push({ type: job.email_type, recipient: job.recipient_email, error: 'Unknown email_type' });
+        await markRow(base44, job, { status: 'skipped', skip_reason: 'Unknown email_type' });
         continue;
       }
 
+      const attemptAt = new Date().toISOString();
       try {
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: job.recipient_email,
@@ -443,15 +572,22 @@ Deno.serve(async (req) => {
         });
         sent++;
         console.log(`[sendLifecycleEmails] Sent ${job.email_type} to ${job.recipient_email}`);
+        // Without this the row stays pending and the daily cron re-sends it forever.
+        await markRow(base44, job, { status: 'sent', sent_at: attemptAt, last_attempt_at: attemptAt, error_message: null });
+        await sendOwnerCopy(base44, job.recipient_email, template);
       } catch (err) {
         failed++;
-        errors.push({ type: job.email_type, recipient: job.recipient_email, error: String(err?.message || err) });
-        console.error(`[sendLifecycleEmails] Failed ${job.email_type} to ${job.recipient_email}:`, err?.message);
+        const msg = String(err?.message || err);
+        errors.push({ type: job.email_type, recipient: job.recipient_email, error: msg });
+        console.error(`[sendLifecycleEmails] Failed ${job.email_type} to ${job.recipient_email}:`, msg);
+        await markRow(base44, job, {
+          status: 'failed', retry_count: (job.retry_count || 0) + 1, last_attempt_at: attemptAt, error_message: msg,
+        });
       }
     }
 
     console.log(`[sendLifecycleEmails] sent=${sent} failed=${failed} batch=${finalBatch.length}`);
-    return Response.json({ success: true, sent, failed, batch_size: finalBatch.length, errors });
+    return Response.json({ success: true, sent, failed, queued, batch_size: finalBatch.length, errors });
 
   } catch (error) {
     console.error('[sendLifecycleEmails] Error:', error);
