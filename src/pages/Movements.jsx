@@ -60,7 +60,9 @@ export default function Movements() {
   const { businessId, user } = useBusinessContext();
   const isAdmin = isBusinessAdmin(user);
   const canEditMovement = can('Movimientos', 'edit_reason');
-  const canDeleteMovement = can('Movimientos', 'delete');
+  // deleteMovementSafe only lets owner/admin delete (it rewrites stock history),
+  // so the button follows the server, not the permission toggle.
+  const canDeleteMovement = isAdmin && can('Movimientos', 'delete');
   const canConfirmPayment = can('Movimientos', 'confirm_payment');
   const showActionsCol = canEditMovement || canDeleteMovement;
   const actionsColCount = (canEditMovement ? 1 : 0) + (canDeleteMovement ? 1 : 0);

@@ -2123,3 +2123,31 @@ sesión. Lo que no cambia:
   chat. Una variable nueva sólo la ve una sesión nueva.
 - El MCP de Base44 es otra cosa: su token no puede usarse para desplegar ni para
   leer esquemas vía `execute_api` («scoped to MCP»). La CLI sí.
+
+## Borrar movimientos y el «Stock inicial» (2026-09-25)
+
+Cierra los dos seguimientos que la auditoría del 2026-09-14 dejó anotados.
+
+- **Borrar un movimiento es sólo del dueño/admin, y ahora todo lo dice.**
+  `deleteMovementSafe` siempre exigió `owner`/`admin` (reescribe el historial de
+  stock), pero el registro concedía `Movimientos:delete` al almacenista: veía el
+  botón y el servidor le respondía 403. Se eligió que manda el servidor, no el
+  permiso. **No** se pasó el servidor a `hasPermission()`: los perfiles guardados
+  pueden traer `delete: true` explícito para almacenista, y eso habría dado el
+  borrado a todos los almacenistas existentes de golpe. Ahora
+  `Movimientos:delete` está en `deniedActionable`, la acción se llama «Eliminar
+  (solo admin)», y `Movements.jsx` muestra el botón con `isAdmin && can(...)`.
+- **El movimiento de «Stock inicial» lo crea `createProductSafe`.** Antes lo
+  escribía `ProductFormDialog.jsx` desde el navegador, y era la última escritura
+  directa de `Movement`. Se sigue creando con `stock_applied: true` (el stock ya
+  lo fijó el propio `Product.create`, así que `applyMovementStock` no lo vuelve a
+  sumar). Es best-effort: si falla, el producto ya está guardado. El asistente
+  de bienvenida (`OnboardingWizard.jsx`) también pasa por aquí y ahora deja su
+  movimiento, cosa que antes no hacía. `createProductSafe` gana además el
+  chequeo `Productos:create` que no tenía.
+- **`Movement.create/update/delete` pasan a sólo `role:admin`** (servicio). Ya no
+  queda ninguna escritura del navegador y los agentes sólo leen `Movement`.
+
+**Orden de deploy**: `npm run deploy` + Publish + `npm run deploy:site` antes de
+`npm run deploy:entities` — con la RLS nueva y el `ProductFormDialog` viejo, el
+navegador fallaría al escribir el movimiento inicial (el producto sí se guarda).

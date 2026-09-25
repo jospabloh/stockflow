@@ -153,7 +153,7 @@ export const PERMISSION_REGISTRY = {
       { id: "edit_payment", label: "Editar forma pago", category: "actionable", icon: "💳", description: "Modificar método de pago" },
       { id: "confirm_payment", label: "Confirmar pago", category: "actionable", icon: "✓", description: "Marcar movimientos como pagados" },
       { id: "edit_status", label: "Cambiar estado pago", category: "actionable", icon: "⚙️", description: "Marcar como pagado o pendiente" },
-      { id: "delete", label: "Eliminar", category: "actionable", icon: "🗑️", description: "Eliminar movimientos del registro" },
+      { id: "delete", label: "Eliminar (solo admin)", category: "actionable", icon: "🗑️", description: "Eliminar movimientos del registro. Sólo el dueño/admin del negocio: el servidor lo rechaza para cualquier otro rol" },
       { id: "export", label: "Exportar", category: "report", icon: "📥", description: "Exportar historial de movimientos en Excel/CSV" },
     ]
   },
@@ -345,6 +345,7 @@ export function getDefaultsForRole(role) {
             'Caja Chica:add_fund',
             'Caja Chica:delete',
             'Movimientos:adjustment',
+            'Movimientos:delete',
             'Pagos a Proveedores:edit_supplier',
             'Pagos a Proveedores:edit_amount',
             'Pagos a Proveedores:edit_date',

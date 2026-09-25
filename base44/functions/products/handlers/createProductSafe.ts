@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { checkProductDuplicate, duplicateErrorMessage } from '../../../shared/productDuplicateCheck.ts';
+import { hasPermission } from './_permissions.ts';
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -25,6 +26,13 @@ export async function handle(req: Request): Promise<Response> {
 
     if (business_id !== user.business_id) {
       return Response.json({ success: false, error: 'Unauthorized: business_id mismatch' }, { status: 403 });
+    }
+
+    if (!(await hasPermission(base44.asServiceRole, user, 'Productos', 'create'))) {
+      return Response.json(
+        { success: false, error: 'Forbidden: missing permission', permission: 'Productos:create' },
+        { status: 403 },
+      );
     }
 
     if (!name || !name.trim()) {
@@ -76,6 +84,34 @@ export async function handle(req: Request): Promise<Response> {
       image_url,
       status
     });
+
+    // Initial-stock movement. The stock is already set on the product above, so
+    // the movement is created with stock_applied=true: it records where the
+    // stock came from without applyMovementStock adding it a second time. It
+    // used to be written from the browser (ProductFormDialog), which kept
+    // Movement.create open to every tenant member. Best-effort: the product is
+    // already saved, and a missing history row must not turn that into an error.
+    const initialStock = Number(stock) || 0;
+    if (initialStock > 0) {
+      try {
+        const unitPrice = Number(purchase_price) || 0;
+        await base44.asServiceRole.entities.Movement.create({
+          product_id: product.id,
+          product_name: name,
+          type: 'entry',
+          quantity: initialStock,
+          unit_price: unitPrice,
+          total: initialStock * unitPrice,
+          reason: 'Stock inicial',
+          reference: 'Stock inicial',
+          stock_after: initialStock,
+          business_id,
+          stock_applied: true,
+        });
+      } catch (e) {
+        console.warn(`[createProductSafe] initial movement failed for ${product.id}: ${(e as Error).message}`);
+      }
+    }
 
     return Response.json({ success: true, product_id: product.id, product });
   } catch (error) {

@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-09-25T04:07:13.140Z
+// Generado: 2026-09-25T04:10:20.592Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -352,7 +352,7 @@ export const PERMISSION_REGISTRY: Record<string, {
     { id: "edit_payment", label: "Editar forma pago", category: "actionable" },
     { id: "confirm_payment", label: "Confirmar pago", category: "actionable" },
     { id: "edit_status", label: "Cambiar estado pago", category: "actionable" },
-    { id: "delete", label: "Eliminar", category: "actionable" },
+    { id: "delete", label: "Eliminar (solo admin)", category: "actionable" },
     { id: "export", label: "Exportar", category: "report" }
     ]
   },
@@ -790,7 +790,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Movimientos:edit_payment": true,
   "Movimientos:confirm_payment": true,
   "Movimientos:edit_status": true,
-  "Movimientos:delete": true,
+  "Movimientos:delete": false,
   "Movimientos:export": true,
   "Cotizaciones:view": true,
   "Cotizaciones:create": true,
