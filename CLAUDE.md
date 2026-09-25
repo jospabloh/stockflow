@@ -2098,3 +2098,28 @@ así que no le afecta, y ningún agente toca estas entidades.
 **Orden de deploy**: `npm run deploy` + Publish + `npm run deploy:site`
 **antes** de `npm run deploy:entities`. Con la RLS nueva y el frontend viejo, el
 navegador no puede crear tickets.
+
+## La sesión de Claude SÍ puede desplegar (2026-09-25)
+
+Varias secciones de arriba dicen «la CLI de Base44 no está instalada ni
+autenticada en el sandbox». **Ya no es cierto.** El entorno en la nube tiene
+`BASE44_ACCESS_TOKEN` y `BASE44_REFRESH_TOKEN` como variables de entorno (la CLI
+las lee en lugar de `~/.base44/auth/auth.json`), y `npx --yes base44@<versión del
+lockfile> whoami` responde `Logged in as: h.josepablo@gmail.com`. La CLI no viene
+en `node_modules`: se baja con `npx --yes`.
+
+Así que `npm run deploy`, `deploy:site` y `deploy:entities` corren desde la
+sesión. Lo que no cambia:
+
+- **`deploy:entities` sigue siendo destructivo**: pide confirmación del dueño
+  antes de correrlo, siempre, y lee la lista de entidades y el nombre de la app
+  antes de escribir "StockFlow".
+- **Comprueba por comportamiento, no por la salida de la CLI** (sección del
+  2026-09-24): `unknown action` = código viejo; hace falta **Publish** en el
+  panel si la CLI dijo `unchanged`.
+- **Si `whoami` falla**, el refresh token rotó o caducó: el dueño corre
+  `npx base44 login` en su Mac y vuelve a copiar los dos tokens de
+  `~/.base44/auth/auth.json` a las variables del entorno. Nunca se pegan en el
+  chat. Una variable nueva sólo la ve una sesión nueva.
+- El MCP de Base44 es otra cosa: su token no puede usarse para desplegar ni para
+  leer esquemas vía `execute_api` («scoped to MCP»). La CLI sí.
