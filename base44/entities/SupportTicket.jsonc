@@ -27,10 +27,7 @@
   "required": ["business_id", "subject"],
   "rls": {
     "create": {
-      "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
-      ]
+      "user_condition": { "role": "admin" }
     },
     "read": {
       "$or": [
@@ -39,10 +36,7 @@
       ]
     },
     "update": {
-      "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
-      ]
+      "user_condition": { "role": "admin" }
     },
     "delete": {
       "user_condition": { "role": "admin" }

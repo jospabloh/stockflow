@@ -44,8 +44,7 @@ function fmt(v) {
 
 export default function SupportTickets() {
   const { can } = usePermissions();
-  const { businessId, businessName } = useBusinessContext();
-  const [user, setUser] = useState(null);
+  const { businessId } = useBusinessContext();
   const [tickets, setTickets] = useState(null);
   const [view, setView] = useState("list"); // 'list' | 'new' | 'thread'
   const [active, setActive] = useState(null);
@@ -57,7 +56,6 @@ export default function SupportTickets() {
 
   const aiKind = AI_CATEGORY_KIND[form.category] || null;
 
-  useEffect(() => { base44.auth.me().then(setUser).catch(() => {}); }, []);
 
   const loadTickets = useCallback(async () => {
     if (!businessId) return;
@@ -75,7 +73,7 @@ export default function SupportTickets() {
       const rows = await base44.entities.SupportTicketMessage.filter({ ticket_id: t.id }, "created_date", 200);
       setMessages(rows ?? []);
       if (t.unread_for_tenant) {
-        base44.entities.SupportTicket.update(t.id, { unread_for_tenant: false }).catch(() => {});
+        base44.functions.invoke('business', { action: 'markSupportTicketReadSafe', ticket_id: t.id }).catch(() => {});
       }
     } catch (e) { toast.error(e.message); setMessages([]); }
   }
@@ -98,26 +96,18 @@ export default function SupportTickets() {
   async function createTicket(brief) {
     if (!form.subject.trim() || !form.description.trim()) { toast.error("Asunto y descripción son obligatorios."); return; }
     setBusy(true);
-    const now = new Date().toISOString();
     const original = form.description.trim();
     const body = brief ? composeTicketBody(original, brief) : original;
     try {
-      /** @type {Record<string, any>} */
-      const ticketPayload = {
-        business_id: businessId, business_name: businessName || "",
+      // El servidor re-deriva negocio, autor y permiso (Centro de Soporte:create).
+      const res = await base44.functions.invoke('business', {
+        action: 'createSupportTicketSafe',
         subject: form.subject.trim(), description: body,
-        category: form.category, priority: form.priority, status: "open",
-        created_by_id: user?.id, created_by_email: user?.email,
-        unread_for_owner: true, unread_for_tenant: false,
-        last_message_at: now, last_message_by_role: "tenant", messages_count: 1,
-      };
-      if (brief) ticketPayload.ai_brief = brief;
-      const ticket = await base44.entities.SupportTicket.create(ticketPayload);
-      await base44.entities.SupportTicketMessage.create({
-        ticket_id: ticket.id, business_id: businessId,
-        author_id: user?.id, author_email: user?.email, author_name: user?.full_name || user?.email,
-        author_role: "tenant", body, is_internal_note: false,
+        category: form.category, priority: form.priority,
+        ...(brief ? { ai_brief: brief } : {}),
       });
+      const ticket = res?.data?.ticket;
+      if (!ticket?.id) throw new Error(res?.data?.error || 'No se pudo crear el ticket');
       // Push en tiempo real a ACACIA Mission Control (no bloquea la UI). StockFlow
       // no puede alojar una función nueva (tope de 50 funciones de Base44), así que
       // le avisamos a Mission Control por HTTP con el id; MC lee el ticket real vía
@@ -136,18 +126,13 @@ export default function SupportTickets() {
   async function sendReply() {
     if (!reply.trim() || !active) return;
     setBusy(true);
-    const now = new Date().toISOString();
     try {
-      await base44.entities.SupportTicketMessage.create({
-        ticket_id: active.id, business_id: businessId,
-        author_id: user?.id, author_email: user?.email, author_name: user?.full_name || user?.email,
-        author_role: "tenant", body: reply.trim(), is_internal_note: false,
+      // El servidor relee el ticket, comprueba negocio y permiso (Centro de
+      // Soporte:reply) y calcula el conteo y el estado desde la fila guardada.
+      const res = await base44.functions.invoke('business', {
+        action: 'replySupportTicketSafe', ticket_id: active.id, body: reply.trim(),
       });
-      await base44.entities.SupportTicket.update(active.id, {
-        last_message_at: now, last_message_by_role: "tenant", unread_for_owner: true,
-        messages_count: (active.messages_count || (messages?.length ?? 0)) + 1,
-        status: active.status === "resolved" || active.status === "closed" ? "open" : active.status,
-      });
+      if (!res?.data?.success) throw new Error(res?.data?.error || 'No se pudo enviar la respuesta');
       setReply("");
       await openThread({ ...active, messages_count: (active.messages_count || 0) + 1 });
       await loadTickets();

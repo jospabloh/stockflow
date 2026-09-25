@@ -2077,3 +2077,24 @@ plataforma y el servicio.
   cliente:** `Core.UploadFile` (logo en Configuración, adjuntos del chat de
   ayuda) y el agente del chat de ayuda — si se desactivan las integraciones del
   lado del cliente en Base44, esos dos se rompen.
+
+## Centro de Soporte pasa por el servidor (2026-09-25)
+
+Cierra el `SupportTickets.jsx` que la auditoría del 2026-08-31 dejó diferido.
+Crear, responder y marcar como leído ya no escriben las entidades desde el
+navegador: van a `business` → `createSupportTicketSafe` /
+`replySupportTicketSafe` / `markSupportTicketReadSafe` (acciones de un grupo
+existente, 47/47 sin cambio). Cada una re-deriva negocio y autor de `auth.me()`
+y comprueba `Centro de Soporte:create` / `reply` / `view` con `hasPermission()`.
+Responder relee el ticket guardado para el conteo y el estado; uno `closed`
+responde 409. **Sin freno de facturación**: un negocio suspendido tiene que
+poder pedir ayuda.
+
+La RLS se cerró a juego: `SupportTicket.create/update` y
+`SupportTicketMessage.create` pasan a sólo `role:admin` (servicio/plataforma).
+La lectura no cambia. Mission Control escribe por `acaciaControl` como servicio,
+así que no le afecta, y ningún agente toca estas entidades.
+
+**Orden de deploy**: `npm run deploy` + Publish + `npm run deploy:site`
+**antes** de `npm run deploy:entities`. Con la RLS nueva y el frontend viejo, el
+navegador no puede crear tickets.
