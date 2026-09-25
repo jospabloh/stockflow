@@ -16,10 +16,7 @@
   "required": ["ticket_id", "business_id", "body"],
   "rls": {
     "create": {
-      "$or": [
-        { "$and": [ { "data.business_id": "{{user.data.business_id}}" }, { "data.is_internal_note": false } ] },
-        { "user_condition": { "role": "admin" } }
-      ]
+      "user_condition": { "role": "admin" }
     },
     "read": {
       "$or": [
