@@ -54,6 +54,13 @@ export default function BusinessSetup() {
       const business = createResp.data.business;
       // Initialize 30-day trial using server-side time
       await base44.functions.invoke('licenses', { action: 'initTenantTrial', business_id: business.id }).catch(() => {});
+      // Avisa a ACACIA Mission Control en tiempo real (no bloquea el alta). Igual
+      // que ticket-pull: sólo viaja el id; MC lee el negocio real por el puente
+      // acaciaControl y notifica al dueño de la plataforma y a soporte.
+      fetch('https://control.acaciaco.com.mx/api/ingest/tenant-pull', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ app: 'stockflow', tenantId: business.id }),
+      }).catch(() => {});
       // Seed default permission profiles (admin + almacenista) for the new business
       await base44.functions.invoke('permissions', { action: 'seedDefaultPermissionProfiles',}).catch(() => {});
       // Apply referral code if provided (non-fatal)

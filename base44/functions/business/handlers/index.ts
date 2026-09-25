@@ -7,6 +7,10 @@ import { handle as sendTestLifecycleEmails } from './sendTestLifecycleEmails.ts'
 import { handle as createBusinessSafe } from './createBusinessSafe.ts';
 import { handle as joinBusinessSafe } from './joinBusinessSafe.ts';
 import { handle as exportBusinessData } from './exportBusinessData.ts';
+import { handle as aiIntakeTurn } from './aiIntakeTurn.ts';
+import { handle as createSupportTicketSafe } from './createSupportTicketSafe.ts';
+import { handle as replySupportTicketSafe } from './replySupportTicketSafe.ts';
+import { handle as markSupportTicketReadSafe } from './markSupportTicketReadSafe.ts';
 
 type Handler = (req: Request) => Promise<Response>;
 
@@ -20,6 +24,10 @@ const HANDLERS: Record<string, Handler> = {
   createBusinessSafe,
   joinBusinessSafe,
   exportBusinessData,
+  aiIntakeTurn,
+  createSupportTicketSafe,
+  replySupportTicketSafe,
+  markSupportTicketReadSafe,
 };
 
 export function getHandler(action: string): Handler | undefined {

@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-09-09T20:51:37.687Z
+// Generado: 2026-09-25T04:07:13.328Z
 
-export const SNAPSHOT_VERSION = "2.18.25";
+export const SNAPSHOT_VERSION = "2.18.26";
 
-export const SNAPSHOT_RELEASE_DATE = "2026-09-09";
+export const SNAPSHOT_RELEASE_DATE = "2026-09-25";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 
-export const SNAPSHOT_GIT_LOG = "175ba6d Merge pull request #382 from jospabloh/dependabot/npm_and_yarn/npm-dependencies-c1d53e03cb\nf08ec8e Merge pull request #368 from jospabloh/dependabot/github_actions/github-actions-c923ae5b31\n9a349c2 Merge pull request #355 from jospabloh/automated/release-pr\nea1f052 chore: release and update documentation\n3ebb08e Merge pull request #383 from jospabloh/claude/stockflow-app-8xrhna\na2b97f7 Documentar el cierre del deploy y la deriva de RLS que duró dos días\n2b7e6c3 Bump the npm-dependencies group across 1 directory with 19 updates\n676cff2 Update base44 packages\na6aca45 Merge pull request #380 from jospabloh/claude/inspiring-newton-81g912\n0c76c48 Bump the github-actions group across 1 directory with 3 updates\n8725619 Address Codex review: close MachinerySale write RLS, remove stale lifecycle workflows\nb69ad2c Merge remote-tracking branch 'origin/main' into claude/inspiring-newton-81g912\ne047fe7 Rebase onto main (Venta de Maquinaria) + apply npm audit fix\nf5a9437 Migrated 6 workflow(s)\n781c731 Update base44 packages\n94d631f Merge pull request #378 from jospabloh/claude/stockflow-app-8xrhna\nd7ce186 Corregir el estado de deploy de Venta de Maquinaria: el esquema ya está vivo\n90d7048 Merge pull request #377 from jospabloh/claude/stockflow-app-8xrhna\nb005cc0 Venta de Maquinaria: un registro propio, no un producto de inventario\n6444679 Close three permission-enforcement bypasses (audit 2026-08-31)\n6b855c6 Update base44 packages\n99bdd7c Merge pull request #373 from jospabloh/claude/invitation-code-multi-tenant-s76ohx\n4a7426f Add Módulo 18: multi-tenant account switching and joining\ne90a305 Update base44 packages\n01d77c1 Merge pull request #371 from jospabloh/claude/theme-switcher-icon-wxx6c9";
+export const SNAPSHOT_GIT_LOG = "3e7227e Merge pull request #401 from jospabloh/claude/wonderful-albattani-i7xvrn\n3c59942 CLAUDE.md: the cloud session can deploy with the Base44 CLI now\n5ae9ff1 Merge pull request #400 from jospabloh/claude/wonderful-albattani-i7xvrn\nd13139f Route support ticket writes through server actions and close direct writes\nbc4816d Merge pull request #399 from jospabloh/claude/wonderful-albattani-i7xvrn\nc2048bc Close three Base44 scanner findings: trial reset, unauthenticated stock sync, client-side LLM\nc8660c4 Merge pull request #398 from jospabloh/claude/inspiring-feynman-hlzkwu\n9f8a675 Ping Mission Control when a business is created\n0249afb Merge pull request #397 from jospabloh/claude/inspiring-feynman-hlzkwu\n4c0f95c Document the owner-role rollout verification and the deploy gotcha\n96e9721 Merge pull request #396 from jospabloh/claude/inspiring-feynman-hlzkwu\nbf9ee1d Store business admins as role 'owner', not built-in 'admin'\nf3ae795 Merge pull request #395 from jospabloh/claude/inspiring-feynman-hlzkwu\n3cfea01 Block joining a business once its plan's seats are used\n133259b Align plan user limits with the pricing page (2 / 5 / unlimited)\nda83be2 Queue trial reminder emails and mark lifecycle emails as sent\n47eb318 Implementar validación de productos duplicados\n3ed2da3 Agregar exportación a CSV en productos y categorías\n548b2d5 Fix RLS error on business creation and improve setup error handling\n3d60d11 Update base44 packages\n72ff693 Close MachinerySale.cost unredacted-read gap; gate catalog seeding on billing status (#392)\n82d1284 Update base44 packages\n047cbbf Merge pull request #390 from jospabloh/claude/stockflow-app-8ctkar\n8cb06c5 Venta de Maquinaria: agregar columna Factura\nd4f028e Merge pull request #388 from jospabloh/audit/stockflow-full-review";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.18.25",
+  "Actualización a la versión 2.18.26",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.26",
+    date: "2026-09-25",
+    changes: [
+    "Actualización a la versión 2.18.26"
+    ]
+  },
   {
     version: "2.18.25",
     date: "2026-09-09",

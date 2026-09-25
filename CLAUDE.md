@@ -2021,8 +2021,105 @@ como están escritas.
    sea `PLATFORM_OWNER_EMAIL` — hoy Roseta, Karime y el usuario de prueba.
 3. Repetir la prueba con el usuario de prueba: ya no debe ver nada ajeno.
 
+**Cerrado y verificado en vivo, 2026-09-24 19:1x UTC.** Tras publicar, la
+migración pasó a Roseta, Karime y el usuario de prueba a `owner` (releído en
+`User`); el mismo usuario de prueba, ahora `owner`, ve **0** filas en
+`Business`, `Product`, `Quotation`, `Client`, `PettyCashMovement`,
+`SupplierPayment`, `MachinerySale`, `PermissionProfile` y `EmailNotification`
+— antes veía los 4 negocios, 226 productos y 498 cotizaciones. **No
+verificado:** que Roseta y Karime operen normal en su propio negocio como
+`owner` (no hay sesión suya desde aquí); si algo de administración les falla,
+es la primera sospecha.
+
+### `npm run deploy` dijo «47 unchanged» y NO desplegó (2026-09-24)
+
+Con el #396 ya en `main` y el pull hecho, `functions deploy --force` (CLI 0.1.15
+y otra vez con 0.1.20) reportó `unchanged` para **todas** las funciones
+agrupadas cuyo cambio vivía sólo en `handlers/` (`business`, `licenses`,
+`permissions`…); sólo subieron las tres de un archivo. En producción la acción
+nueva respondía `licenses: unknown action` — idéntico a un nombre inventado.
+Lo que la puso viva fue **Publish en el panel de Base44**; la copia de código
+que Base44 guarda (sincronizada desde GitHub) ya tenía todo. No se aisló la
+causa exacta: una acción de handler del 2026-09-21 sí había llegado antes.
+
+**La regla que queda:** después de desplegar funciones, **publica**, y
+comprueba por comportamiento, no por la salida de la CLI. La prueba más barata
+es llamar a una acción nueva sin permiso y leer el error: `unknown action` =
+código viejo; un 403 propio de la acción = código nuevo.
+
 **No resuelto:** si las funciones `asServiceRole` necesitan de verdad la rama
 `admin` (la documentación de Base44 dice que el rol de servicio se salta RLS;
 este archivo registra una caída en junio que dice lo contrario). Con este
 cambio ya no importa para la seguridad — la rama sólo la satisfacen la
 plataforma y el servicio.
+
+## Escáner de seguridad de Base44 (2026-09-24): tres hallazgos cerrados
+
+- **`initTenantTrial` reiniciaba la prueba a voluntad.** Cualquier miembro del
+  negocio (almacenista incluido) podía llamarlo otra vez y devolver un negocio
+  `view_only`/`suspended`/`active` a `trial` con 30 días nuevos. Ahora es de un
+  solo uso: pide rol `owner`/`admin` y responde 409 `trial_already_started` si
+  `trial_start_at` ya existe o `billing_status` ya no es el `trial` por defecto.
+- **`syncProductStock` escribía `Product.stock` sin autenticar a nadie**, con el
+  movimiento tomado del cuerpo de la petición. Ahora es un no-op para todo
+  evento. `deleteMovementSafe` escribe él mismo el stock revertido para todos
+  los tipos (antes sólo para `adjustment`), y nada en el código cambia
+  `Movement.quantity`, así que la rama `update` no tenía llamador. El workflow
+  "Sync Product Stock on Movement" sigue en el backend y ahora es inofensivo;
+  se puede archivar desde el panel. **Deploya las dos funciones juntas**: con
+  `deleteMovementSafe` nuevo y `syncProductStock` viejo, un borrado se revierte
+  dos veces.
+- **`Core.InvokeLLM` se llamaba desde el navegador** (entrevista de soporte,
+  `src/lib/aiIntake.js`), así que cualquier sesión podía correr prompts
+  arbitrarios con los créditos de la app. Ahora pasa por `business` →
+  `aiIntakeTurn`, con prompt, esquema y tope de preguntas fijos en el servidor
+  (acción dentro de un grupo existente: 47/47 sin cambio). **Sigue en el
+  cliente:** `Core.UploadFile` (logo en Configuración, adjuntos del chat de
+  ayuda) y el agente del chat de ayuda — si se desactivan las integraciones del
+  lado del cliente en Base44, esos dos se rompen.
+
+## Centro de Soporte pasa por el servidor (2026-09-25)
+
+Cierra el `SupportTickets.jsx` que la auditoría del 2026-08-31 dejó diferido.
+Crear, responder y marcar como leído ya no escriben las entidades desde el
+navegador: van a `business` → `createSupportTicketSafe` /
+`replySupportTicketSafe` / `markSupportTicketReadSafe` (acciones de un grupo
+existente, 47/47 sin cambio). Cada una re-deriva negocio y autor de `auth.me()`
+y comprueba `Centro de Soporte:create` / `reply` / `view` con `hasPermission()`.
+Responder relee el ticket guardado para el conteo y el estado; uno `closed`
+responde 409. **Sin freno de facturación**: un negocio suspendido tiene que
+poder pedir ayuda.
+
+La RLS se cerró a juego: `SupportTicket.create/update` y
+`SupportTicketMessage.create` pasan a sólo `role:admin` (servicio/plataforma).
+La lectura no cambia. Mission Control escribe por `acaciaControl` como servicio,
+así que no le afecta, y ningún agente toca estas entidades.
+
+**Orden de deploy**: `npm run deploy` + Publish + `npm run deploy:site`
+**antes** de `npm run deploy:entities`. Con la RLS nueva y el frontend viejo, el
+navegador no puede crear tickets.
+
+## La sesión de Claude SÍ puede desplegar (2026-09-25)
+
+Varias secciones de arriba dicen «la CLI de Base44 no está instalada ni
+autenticada en el sandbox». **Ya no es cierto.** El entorno en la nube tiene
+`BASE44_ACCESS_TOKEN` y `BASE44_REFRESH_TOKEN` como variables de entorno (la CLI
+las lee en lugar de `~/.base44/auth/auth.json`), y `npx --yes base44@<versión del
+lockfile> whoami` responde `Logged in as: h.josepablo@gmail.com`. La CLI no viene
+en `node_modules`: se baja con `npx --yes`.
+
+Así que `npm run deploy`, `deploy:site` y `deploy:entities` corren desde la
+sesión. Lo que no cambia:
+
+- **`deploy:entities` sigue siendo destructivo**: pide confirmación del dueño
+  antes de correrlo, siempre, y lee la lista de entidades y el nombre de la app
+  antes de escribir "StockFlow".
+- **Comprueba por comportamiento, no por la salida de la CLI** (sección del
+  2026-09-24): `unknown action` = código viejo; hace falta **Publish** en el
+  panel si la CLI dijo `unchanged`.
+- **Si `whoami` falla**, el refresh token rotó o caducó: el dueño corre
+  `npx base44 login` en su Mac y vuelve a copiar los dos tokens de
+  `~/.base44/auth/auth.json` a las variables del entorno. Nunca se pegan en el
+  chat. Una variable nueva sólo la ve una sesión nueva.
+- El MCP de Base44 es otra cosa: su token no puede usarse para desplegar ni para
+  leer esquemas vía `execute_api` («scoped to MCP»). La CLI sí.

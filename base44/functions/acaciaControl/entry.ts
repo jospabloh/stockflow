@@ -114,8 +114,10 @@ Deno.serve(async (req) => {
         const sent_at = new Date().toISOString();
         // Core.SendEmail has no bcc: the platform owner gets a separate copy.
         // Best-effort — a failed copy never fails the customer's send.
+        // `internal` = an ops notice MC already addresses to the owner (new
+        // ticket, new tenant): a copy on top would be a duplicate.
         const ownerEmail = Deno.env.get('PLATFORM_OWNER_EMAIL');
-        if (ownerEmail && ownerEmail !== to) {
+        if (ownerEmail && ownerEmail !== to && params.internal !== true) {
           try {
             await sr.integrations.Core.SendEmail({ to: ownerEmail, subject: `[Copia → ${to}] ${subject}`, body: html, from_name: 'ACACIA' });
           } catch { /* owner copy best-effort */ }

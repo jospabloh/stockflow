@@ -6,11 +6,11 @@ const BRAND_COLOR = '#4F46E5';
 const STALE_MANUAL_DAYS = 60;
 
 // AUTOGEN:VERSION_SNAPSHOT:BEGIN — regenerado por scripts/generateVersionHistorySnapshot.mjs
-const CURRENT_VERSION_IN_CODE = "2.18.25";
-const SNAPSHOT_RELEASE_DATE = "2026-09-09";
+const CURRENT_VERSION_IN_CODE = "2.18.26";
+const SNAPSHOT_RELEASE_DATE = "2026-09-25";
 const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 const SNAPSHOT_LATEST_CHANGES = [
-  "Actualización a la versión 2.18.25",
+  "Actualización a la versión 2.18.26",
 ];
 // AUTOGEN:VERSION_SNAPSHOT:END
 
