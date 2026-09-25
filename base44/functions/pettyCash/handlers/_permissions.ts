@@ -212,6 +212,7 @@ const ALMACENISTA_DENIED = new Set<string>([
   "Productos:cost_price",
   "Campañas:send",
   "Movimientos:adjustment",
+  "Movimientos:delete",
   "Cotizaciones:revert_payment",
   "Caja Chica:add_fund",
   "Caja Chica:delete",
