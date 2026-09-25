@@ -1,17 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-09-25T04:07:13.328Z
+// Generado: 2026-09-25T04:14:49.815Z
 
-export const SNAPSHOT_VERSION = "2.18.26";
+export const SNAPSHOT_VERSION = "2.18.27";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-09-25";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 
-export const SNAPSHOT_GIT_LOG = "3e7227e Merge pull request #401 from jospabloh/claude/wonderful-albattani-i7xvrn\n3c59942 CLAUDE.md: the cloud session can deploy with the Base44 CLI now\n5ae9ff1 Merge pull request #400 from jospabloh/claude/wonderful-albattani-i7xvrn\nd13139f Route support ticket writes through server actions and close direct writes\nbc4816d Merge pull request #399 from jospabloh/claude/wonderful-albattani-i7xvrn\nc2048bc Close three Base44 scanner findings: trial reset, unauthenticated stock sync, client-side LLM\nc8660c4 Merge pull request #398 from jospabloh/claude/inspiring-feynman-hlzkwu\n9f8a675 Ping Mission Control when a business is created\n0249afb Merge pull request #397 from jospabloh/claude/inspiring-feynman-hlzkwu\n4c0f95c Document the owner-role rollout verification and the deploy gotcha\n96e9721 Merge pull request #396 from jospabloh/claude/inspiring-feynman-hlzkwu\nbf9ee1d Store business admins as role 'owner', not built-in 'admin'\nf3ae795 Merge pull request #395 from jospabloh/claude/inspiring-feynman-hlzkwu\n3cfea01 Block joining a business once its plan's seats are used\n133259b Align plan user limits with the pricing page (2 / 5 / unlimited)\nda83be2 Queue trial reminder emails and mark lifecycle emails as sent\n47eb318 Implementar validación de productos duplicados\n3ed2da3 Agregar exportación a CSV en productos y categorías\n548b2d5 Fix RLS error on business creation and improve setup error handling\n3d60d11 Update base44 packages\n72ff693 Close MachinerySale.cost unredacted-read gap; gate catalog seeding on billing status (#392)\n82d1284 Update base44 packages\n047cbbf Merge pull request #390 from jospabloh/claude/stockflow-app-8ctkar\n8cb06c5 Venta de Maquinaria: agregar columna Factura\nd4f028e Merge pull request #388 from jospabloh/audit/stockflow-full-review";
+export const SNAPSHOT_GIT_LOG = "32a7953 Merge pull request #403 from jospabloh/claude/wonderful-albattani-i7xvrn\n0370733 Fix onboarding wizard product save: send retail_sale_price and check the response\n0453a7a Move initial-stock movement server-side, align movement delete with the server\n5445d76 Merge pull request #394 from jospabloh/dependabot/npm_and_yarn/npm-dependencies-eaea91f8a6\nc6fe43f Merge branch 'main' into dependabot/npm_and_yarn/npm-dependencies-eaea91f8a6\n292d474 Merge pull request #386 from jospabloh/automated/release-pr\n6aa9433 chore: release and update documentation\n3e7227e Merge pull request #401 from jospabloh/claude/wonderful-albattani-i7xvrn\n3c59942 CLAUDE.md: the cloud session can deploy with the Base44 CLI now\n5ae9ff1 Merge pull request #400 from jospabloh/claude/wonderful-albattani-i7xvrn\nd13139f Route support ticket writes through server actions and close direct writes\nbc4816d Merge pull request #399 from jospabloh/claude/wonderful-albattani-i7xvrn\nc2048bc Close three Base44 scanner findings: trial reset, unauthenticated stock sync, client-side LLM\nc8660c4 Merge pull request #398 from jospabloh/claude/inspiring-feynman-hlzkwu\n9f8a675 Ping Mission Control when a business is created\n0249afb Merge pull request #397 from jospabloh/claude/inspiring-feynman-hlzkwu\n4c0f95c Document the owner-role rollout verification and the deploy gotcha\nfacc7dc Bump the npm-dependencies group across 1 directory with 19 updates\n96e9721 Merge pull request #396 from jospabloh/claude/inspiring-feynman-hlzkwu\nbf9ee1d Store business admins as role 'owner', not built-in 'admin'\nf3ae795 Merge pull request #395 from jospabloh/claude/inspiring-feynman-hlzkwu\n3cfea01 Block joining a business once its plan's seats are used\n133259b Align plan user limits with the pricing page (2 / 5 / unlimited)\nda83be2 Queue trial reminder emails and mark lifecycle emails as sent\n47eb318 Implementar validación de productos duplicados";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Actualización a la versión 2.18.26",
+  "Actualización a la versión 2.18.27",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -19,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.27",
+    date: "2026-09-25",
+    changes: [
+    "Actualización a la versión 2.18.27"
+    ]
+  },
   {
     version: "2.18.26",
     date: "2026-09-25",
