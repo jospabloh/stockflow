@@ -2145,6 +2145,11 @@ Cierra los dos seguimientos que la auditoría del 2026-09-14 dejó anotados.
   de bienvenida (`OnboardingWizard.jsx`) también pasa por aquí y ahora deja su
   movimiento, cosa que antes no hacía. `createProductSafe` gana además el
   chequeo `Productos:create` que no tenía.
+  El asistente mandaba el precio como `price`, que `createProductSafe` ignora
+  (exige `retail_sale_price`), así que **ningún producto creado desde el
+  asistente se había guardado nunca** (el servidor responde 400 y el asistente
+  sólo mostraba un error genérico). Ahora manda `retail_sale_price`, lee la
+  respuesta y muestra el motivo real si el servidor rechaza.
 - **`Movement.create/update/delete` pasan a sólo `role:admin`** (servicio). Ya no
   queda ninguna escritura del navegador y los agentes sólo leen `Movement`.
 

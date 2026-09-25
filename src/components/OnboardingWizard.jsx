@@ -30,15 +30,20 @@ export default function OnboardingWizard({ inviteCode, onClose }) {
     if (!product.name.trim()) { setStep(3); return; }
     setSaving(true);
     try {
-      await base44.functions.invoke('products', { action: 'createProductSafe',
+      // createProductSafe requires retail_sale_price; this field used to be sent
+      // as `price`, which the server ignored, so every save was rejected.
+      const res = await base44.functions.invoke('products', { action: 'createProductSafe',
         name: product.name.trim(),
-        price: parseFloat(product.price) || 0,
+        retail_sale_price: parseFloat(product.price) || 0,
         stock: parseInt(product.stock) || 0,
         business_id: businessId,
       });
+      if (res?.data?.success === false) throw new Error(res.data.error);
       toast.success(`"${product.name}" agregado correctamente`);
-    } catch {
-      toast.error("No se pudo guardar el producto, pero puedes agregarlo después");
+    } catch (e) {
+      // A non-2xx arrives as a thrown HTTP error; the server's reason is in its body.
+      const reason = e?.response?.data?.error || e?.message;
+      toast.error(reason ? `No se pudo guardar el producto: ${reason}` : "No se pudo guardar el producto, pero puedes agregarlo después");
     } finally {
       setSaving(false);
       setStep(3);
