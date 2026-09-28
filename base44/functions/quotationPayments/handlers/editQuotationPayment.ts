@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { hasPermission } from './_permissions.ts';
 
 function isCash(method) {
   return String(method || '').trim().toLowerCase().includes('efectivo');
@@ -18,6 +19,18 @@ export async function handle(req: Request): Promise<Response> {
     const q = await base44.asServiceRole.entities.Quotation.get(quotation_id);
     if (!q) return Response.json({ error: 'Quotation not found' }, { status: 404 });
     if (q.business_id !== user.business_id) return Response.json({ error: 'Forbidden' }, { status: 403 });
+
+    const allowed = await hasPermission(base44.asServiceRole, user, 'Cotizaciones', 'edit_payment_record');
+    if (!allowed) {
+      return Response.json({ error: 'Forbidden: missing permission', permission: 'Cotizaciones:edit_payment_record' }, { status: 403 });
+    }
+
+    // LICENSE CHECK
+    const businesses = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const billingStatus = businesses[0]?.billing_status || 'active';
+    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+      return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
 
     const payments = Array.isArray(q.payments) ? q.payments : [];
     const idx = payments.findIndex(p => p.id === payment_id);

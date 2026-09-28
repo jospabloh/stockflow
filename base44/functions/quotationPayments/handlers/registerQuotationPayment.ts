@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { hasPermission } from './_permissions.ts';
 
 function normalizePaymentMethod(method) {
   return String(method || '').trim().toLowerCase().includes('efectivo');
@@ -41,6 +42,18 @@ export async function handle(req: Request): Promise<Response> {
 
     const q = quotations[0];
     if (q.business_id !== user.business_id) return Response.json({ error: 'Forbidden' }, { status: 403 });
+
+    const allowed = await hasPermission(base44.asServiceRole, user, 'Cotizaciones', 'confirm_payment');
+    if (!allowed) {
+      return Response.json({ error: 'Forbidden: missing permission', permission: 'Cotizaciones:confirm_payment' }, { status: 403 });
+    }
+
+    // LICENSE CHECK
+    const businesses = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const billingStatus = businesses[0]?.billing_status || 'active';
+    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+      return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
 
     const currentBalance = getBalance(q);
     const currentAmountPaid = getAmountPaid(q);

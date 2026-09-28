@@ -22,6 +22,13 @@ export async function handle(req: Request): Promise<Response> {
     if (q.business_id !== user.business_id) return Response.json({ error: 'Forbidden' }, { status: 403 });
     if (q.status !== 'converted') return Response.json({ error: 'Only converted quotations can be marked delivered' }, { status: 400 });
 
+    // LICENSE CHECK
+    const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const billingStatus = bizArr[0]?.billing_status || 'active';
+    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+      return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
     // Check for pending on-demand items
     const pendingOnDemand = (q.items || []).filter(
       item => item.is_on_demand && item.on_demand_status === 'pending'

@@ -41,6 +41,13 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // LICENSE CHECK
+    const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const billingStatus = bizArr[0]?.billing_status || 'active';
+    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+      return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
     // CRITICAL: Mass-assignment protection - whitelist allowed fields
     const sanitizedUpdates: Record<string, unknown> = {};
     for (const key of ALLOWED_FLAG_FIELDS) {
