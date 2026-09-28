@@ -2251,7 +2251,18 @@ cero drift en las 30 entidades.
 en este sandbox — corren en CI, que está verde). Una sesión de navegador como
 almacenista real confirmando en vivo que `edit_payment_record` ahora responde
 403 y que un negocio `view_only` ahora recibe `write_blocked` en los ocho
-handlers — mismo límite que declara el resto de este archivo. El deploy de
-este cambio (`npm run deploy`, sin cambios de entidad — no aplica
-`deploy:entities`) queda para después de mergear, siguiendo el mismo flujo que
-el resto de las secciones de este archivo.
+handlers — mismo límite que declara el resto de este archivo.
+
+**Deploy cerrado el mismo día, con evidencia de contenido — no sólo de la
+salida de la CLI.** Mergeado como PR #404 (`55deb6a`). `npm run deploy`
+reportó `47 unchanged`, incluidos `quotationPayments` y `quotations` — la
+misma señal que la sección del 2026-09-24 documenta como poco confiable
+para cambios que sólo tocan `handlers/`. Esta vez, en lugar de asumir que
+"unchanged" significaba "no se aplicó", se verificó por contenido: `base44
+functions pull` de los dos grupos contra una copia aislada del repo, diffed
+byte a byte contra el código fuente — idénticos en ambos. El deploy sí llegó
+al backend sin necesitar el paso manual de "Publish" en el panel que aquella
+sección sí necesitó. Queda como dato útil para la próxima vez que la CLI
+diga "unchanged" tras un cambio real: `functions pull <grupo>` a una copia
+aparte y comparar es más barato y más concluyente que asumir en cualquier
+dirección.
