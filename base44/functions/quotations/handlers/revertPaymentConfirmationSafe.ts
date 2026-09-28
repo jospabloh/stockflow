@@ -40,6 +40,13 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'La cotización no tiene pago confirmado que revertir' }, { status: 400 });
     }
 
+    // LICENSE CHECK
+    const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const billingStatus = bizArr[0]?.billing_status || 'active';
+    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+      return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
     // 1. Reverse every petty-cash movement linked to individual payment records
     const existingPayments = Array.isArray(q.payments) ? q.payments : [];
     for (const payment of existingPayments) {

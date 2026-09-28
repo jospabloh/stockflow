@@ -2156,3 +2156,102 @@ Cierra los dos seguimientos que la auditoría del 2026-09-14 dejó anotados.
 **Orden de deploy**: `npm run deploy` + Publish + `npm run deploy:site` antes de
 `npm run deploy:entities` — con la RLS nueva y el `ProductFormDialog` viejo, el
 navegador fallaría al escribir el movimiento inicial (el producto sí se guarda).
+
+## Auditoría completa 2026-09-28: `write_blocked` faltaba en 8 handlers de cotizaciones/pagos; `MachinerySale` confirmada sin drift; sin hallazgos nuevos de RLS/permisos/dependencias
+
+Barrido programado sobre `audit/stockflow-full-review` (rama reiniciada desde
+`main` porque el PR anterior de esa rama, #388, ya estaba mergeado —
+`git merge-base --is-ancestor` lo confirmó antes de tocar nada). Con el MCP de
+Base44 conectado, esta pasada pudo comparar programáticamente las 30
+`.jsonc` del repo contra `list_entity_schemas` en vivo (appId
+`69af971d0fdb362c9ae52ed3`) campo por campo, `rls` de las cuatro operaciones,
+`required` y `rls.write` por campo: **cero drift** en las 30 entidades. Cierra
+con evidencia dura la pregunta que varias secciones de arriba dejaron con
+"pendiente de confirmar" (`MachinerySale.invoice_number`, `create/update/delete`
+en `role:admin`, `Membership` ausente) — no hay que volver a preguntarlo hasta
+que algo cambie.
+
+**Hallazgo real, corregido — 8 handlers de dinero sin el candado de
+licencia `write_blocked`.** Todo el resto del repo sigue el patrón
+"auth → `business_id` → `hasPermission()` → `write_blocked` → escritura" en
+cada Safe function que toca dinero o stock; estos ocho se quedaron sin la
+última pieza (o, en tres casos, sin ninguna):
+
+- **`quotationPayments/handlers/` — sin NINGÚN chequeo server-side**, ni de
+  permiso ni de licencia. `registerQuotationPayment.ts`,
+  `editQuotationPayment.ts` y `deleteQuotationPayment.ts` sólo validaban
+  `business_id`. El cliente (`QuotationPaymentsSection.jsx`) sí gatea los
+  tres botones (`can('Cotizaciones','confirm_payment')` para registrar,
+  `can('Cotizaciones','edit_payment_record')` para editar/eliminar) pero
+  nada lo repetía en el servidor — el mismo bypass-por-devtools que este
+  archivo ha cerrado una y otra vez en otras entidades, aquí nunca cerrado
+  desde que la función se creó. Un negocio `suspended`/`view_only` podía
+  seguir registrando pagos en efectivo (que además crean un
+  `PettyCashMovement`), y un almacenista al que su admin le negó
+  `edit_payment_record` podía editar/borrar pagos igual. Arreglo: nuevo
+  `base44/functions/quotationPayments/handlers/_permissions.ts` (copia
+  AUTOGEN estándar, agregada a `AUTOGEN_TARGETS`), más el chequeo de
+  `hasPermission()` con la misma clave que ya usa el botón, más
+  `write_blocked` en los tres handlers, en ese orden.
+- **`quotations/handlers/` — 5 de 9 handlers de escritura sin `write_blocked`,
+  mientras sus hermanos en el mismo directorio sí lo tienen.**
+  `createQuotationSafe`, `cancelQuotationSafe` y `convertQuotationSafe` ya
+  bloqueaban `view_only`/`suspended`; `updateQuotationSafe`,
+  `updateQuotationFlagsSafe` (el propio "Confirmar Pago Total" que la
+  primera sección de este archivo documenta en detalle),
+  `deliverQuotationSafe`, `revertPaymentConfirmationSafe` y
+  `regenerateQuotation` no. El más grave de los cinco es
+  `deliverQuotationSafe`: crea `Movement` de salida y llama
+  `applyMovementStock` — una escritura real de inventario, alcanzable por un
+  inquilino suspendido. Se agregó sólo el bloque `// LICENSE CHECK` (idéntico
+  al de `cancelQuotationSafe`) a los cinco, sin tocar permisos — mismo criterio
+  que el resto del grupo, donde el `write_blocked` es universal pero
+  `hasPermission()` sólo se agrega cuando la acción tiene una clave granular
+  propia y nueva. **`partialReturnQuotation.ts` se revisó y se dejó
+  intacto**: ya trae su propio comentario `// LICENSE CHECK — returns are
+  allowed even in view_only (they correct existing data)` — es una exención
+  deliberada y documentada, no un descuido, y un subagente que la señaló como
+  "hallazgo" se verificó y se descartó antes de tocar el archivo.
+
+**Dos falsos positivos verificados y descartados antes de tocar código**
+(ambos de un sub-agente de exploración que se usó para el barrido de
+`base44.entities.X.create/update/delete` directo — su reporte se verificó
+línea por línea, no se aceptó de oídas): el `dangerouslySetInnerHTML` de
+`HelpCenter.jsx` renderiza únicamente `activeArticle.content`, que viene de
+`localHelpData` (array estático del repo, nunca de una entidad ni de input de
+usuario) — no hay XSS ahí pese a la apariencia. El de
+`BarcodeGenerator.jsx` construye el SVG a partir de anchos/altos numéricos
+calculados, nunca interpola el texto del código de barras crudo en un
+contexto de atributo — tampoco es explotable.
+
+**Limpieza menor:** `src/lib/helpDataWrapper.js` (1 línea, `export default
+localHelpData`) no tenía un solo importador en todo el repo — confirmado con
+grep antes de borrarlo. `helpDataExtension.js`/`helpDataNew.js`, que parecían
+igual de huérfanos a primera vista, en realidad se importan desde dentro de
+`helpData.js` — no se tocaron.
+
+**Verificado:** `npm ci`, `npm run lint` (eslint + `validate:functions` 47/47
+— la función nueva es un archivo de permisos dentro de un grupo existente, no
+un endpoint — + `validate:roles`), `npm run build`, `npm run validate:rls` (30
+entidades, 22 con inquilino, sin cambio), `npm run generate:permission-manifests`
+(190 claves, 57 denegadas — sólo el nuevo `quotationPayments/_permissions.ts`
+y el timestamp del manifiesto cambiaron de contenido), binario de `deno`
+descargado fresco de la release de GitHub (`v2.9.5`, misma vía que documenta
+el módulo 15) → `deno lint base44/functions/` (188 archivos, limpio) y
+`deno test --allow-env` sobre los tres archivos de test sin imports externos
+(`machinery_sales_fields_test.ts`, `owner_role_test.ts`, `plan_limits_test.ts`
+— 34/34 pasaron). `npm audit`: 1 advertencia (`xlsx`, sin fix — mismo estado
+aceptado desde 2026-08-10). Secrets: limpio, sin `.env*` trackeado. CI en
+`main` (`Deno CI` + `Production smoke test`) verde en la corrida más reciente
+antes de este cambio. Comparación de esquema desplegado vs. repo (arriba):
+cero drift en las 30 entidades.
+
+**No verificado:** `deno test` sobre `integration_test.ts` /
+`permissions_safe_functions_test.ts` (importan de `deno.land/std`, bloqueado
+en este sandbox — corren en CI, que está verde). Una sesión de navegador como
+almacenista real confirmando en vivo que `edit_payment_record` ahora responde
+403 y que un negocio `view_only` ahora recibe `write_blocked` en los ocho
+handlers — mismo límite que declara el resto de este archivo. El deploy de
+este cambio (`npm run deploy`, sin cambios de entidad — no aplica
+`deploy:entities`) queda para después de mergear, siguiendo el mismo flujo que
+el resto de las secciones de este archivo.
