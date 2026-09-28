@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { hasPermission } from './_permissions.ts';
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -36,6 +37,11 @@ export async function handle(req: Request): Promise<Response> {
     const contact = contactArr[0];
     if (!contact || contact.business_id !== user.business_id) {
       return Response.json({ success: false, error: 'Contacto no encontrado' }, { status: 404 });
+    }
+
+    // PERMISSION CHECK — RLS/role only isolate tenants; the granular key is enforced here.
+    if (!(await hasPermission(base44.asServiceRole, user, 'Inscripciones', 'create'))) {
+      return Response.json({ success: false, error: 'Forbidden: missing permission', permission: 'Inscripciones:create' }, { status: 403 });
     }
 
     // LICENSE CHECK

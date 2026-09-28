@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { hasPermission } from './_permissions.ts';
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -55,6 +56,11 @@ export async function handle(req: Request): Promise<Response> {
     });
     if (existingMovements.length > 0) {
       return Response.json({ error: 'Quotation already converted', already_converted: true }, { status: 400 });
+    }
+
+    // PERMISSION CHECK — the granular key is re-checked server-side (the UI gate alone is bypassable).
+    if (!(await hasPermission(base44.asServiceRole, user, 'Cotizaciones', 'convert'))) {
+      return Response.json({ success: false, error: 'Forbidden: missing permission', permission: 'Cotizaciones:convert' }, { status: 403 });
     }
 
     // LICENSE CHECK

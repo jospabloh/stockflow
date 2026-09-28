@@ -65,6 +65,11 @@ function ctaButton(label: string, url: string): string {
   </div>`;
 }
 
+// Business names are tenant-controlled: escape before HTML interpolation.
+function escapeHtml(s: unknown): string {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function getEmailTemplate(
   emailType: string,
   ctx: {
@@ -76,7 +81,7 @@ function getEmailTemplate(
   }
 ): { subject: string; html: string } | null {
   const { businessName, appUrl, upgradeUrl, licenseExpiresAt, scheduledDeleteAt } = ctx;
-  const name = businessName || 'tu negocio';
+  const name = escapeHtml(businessName || 'tu negocio');
 
   switch (emailType) {
     case 'trial_welcome':

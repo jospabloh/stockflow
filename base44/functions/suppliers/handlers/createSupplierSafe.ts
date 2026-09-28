@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { hasPermission } from './_permissions.ts';
 
 /**
  * Safe Supplier creation with business_id validation
@@ -32,6 +33,11 @@ export async function handle(req: Request): Promise<Response> {
         success: false, 
         error: `Unauthorized: business_id mismatch (expected: ${user.business_id}, got: ${business_id})` 
       }, { status: 403 });
+    }
+
+    // PERMISSION CHECK — RLS/role only isolate tenants; the granular key is enforced here.
+    if (!(await hasPermission(base44.asServiceRole, user, 'Proveedores', 'create'))) {
+      return Response.json({ success: false, error: 'Forbidden: missing permission', permission: 'Proveedores:create' }, { status: 403 });
     }
 
     // LICENSE CHECK

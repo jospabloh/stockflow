@@ -85,10 +85,15 @@ function howToPay() {
   </div>`;
 }
 
+// Business/recipient names are tenant-controlled: escape before HTML interpolation.
+function escapeHtml(s: unknown): string {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function getEmailTemplate(emailType, ctx) {
   const { businessName, recipientName, licensePlan, appUrl, upgradeUrl, licenseExpiresAt, scheduledDeleteAt, trialEndAt } = ctx;
-  const name = businessName || 'tu negocio';
-  const greetName = firstName(recipientName) || name;
+  const name = escapeHtml(businessName || 'tu negocio');
+  const greetName = escapeHtml(firstName(recipientName)) || name;
   const planName = planLabel(licensePlan);
 
   switch (emailType) {

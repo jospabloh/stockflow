@@ -2266,3 +2266,17 @@ sección sí necesitó. Queda como dato útil para la próxima vez que la CLI
 diga "unchanged" tras un cambio real: `functions pull <grupo>` a una copia
 aparte y comparar es más barato y más concluyente que asumir en cualquier
 dirección.
+
+## Escáner de seguridad 2026-09-28: 8 hallazgos cerrados (permisos granulares, parte 4)
+
+- **`updateProductStockSafe`** exige `Productos:edit_stock_quantity` (el rol solo no honraba la clave denegada al almacenista), el candado `write_blocked` y deja `InventoryAuditLog` (`direct_edit`), igual que `updateProductSafe`.
+- **Clientes**: `createClientSafe` exige `Clientes:create` y las claves `edit_force_*` si activa esas banderas; `updateClientSafe` exige la clave de **cada campo que cambia** (el formulario reenvía el registro entero, un valor sin cambios no pide clave).
+- **`sendCampaignEmails`** exige `Campañas:send`; `sendEnrollmentEmail` exige `Inscripciones:edit`.
+- **Cotizaciones**: create/regenerate/convert/cancel/partialReturn exigen su clave; `updateQuotationSafe` y `updateQuotationFlagsSafe` mapean campo → clave (solo lo que cambia). `deliverQuotationSafe` no tiene clave propia y no se tocó.
+- **Catálogos/CRM**: `createCategorySafe`, `createSupplierSafe`, contactos, cursos e inscripciones (create/update) exigen su clave; los `delete`/`update` de proveedores ya eran solo admin.
+- **`write_blocked`** añadido a `importItemsSafe` y `updateProductStockSafe` (`quotationPayments` ya lo tenía desde el 2026-09-28).
+- **Créditos**: `aiIntakeTurn` exige `Centro de Soporte:create`; `notifySupportIssue` exige negocio y acota longitudes.
+- **HTML en correos**: nombre del negocio/destinatario escapado en `sendLifecycleEmails`, `sendTestLifecycleEmails` y `processTrialReactivationEmails`.
+- Nuevas copias de `_permissions.ts` (8 grupos) registradas en `AUTOGEN_TARGETS`.
+
+**Verificado:** `npm run lint`, `validate:rls`, `build`, `deno lint base44/functions/` (196 archivos) y 3 suites de deno sin imports externos. **No verificado:** sesión real de almacenista; tests de `deno.land`. **Pendiente:** `npm run deploy` + Publish (comprobar por comportamiento: 403 con `permission` en el cuerpo = código nuevo).

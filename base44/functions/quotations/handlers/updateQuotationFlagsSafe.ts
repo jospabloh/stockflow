@@ -1,7 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { hasPermission } from './_permissions.ts';
 
 // Whitelist for quotation flag updates
 const ALLOWED_FLAG_FIELDS = ['invoice_status', 'invoice_number', 'in_route', 'delivered', 'paid', 'payment_method', 'payments', 'amount_paid', 'balance'];
+
+// Permission key required to change each flag (permissionRegistry.js › Cotizaciones).
+// in_route / delivered have no granular key of their own.
+const FIELD_PERMISSION: Record<string, string> = {
+  invoice_status: 'edit_invoice_status', invoice_number: 'edit_invoice_status',
+  paid: 'confirm_payment', payments: 'confirm_payment', amount_paid: 'confirm_payment', balance: 'confirm_payment',
+  payment_method: 'edit_payment_method',
+};
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -58,6 +67,22 @@ export async function handle(req: Request): Promise<Response> {
 
     if (Object.keys(sanitizedUpdates).length === 0) {
       return Response.json({ error: 'No valid fields to update' }, { status: 400 });
+    }
+
+    // PERMISSION CHECK — each CHANGED field needs its own granular key. The form
+    // resubmits the whole record, so an unchanged value never demands a key.
+    const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+    const neededKeys = new Set<string>();
+    for (const [key, value] of Object.entries(sanitizedUpdates)) {
+      const action = FIELD_PERMISSION[key];
+      if (!action || same(value, (quotation as Record<string, unknown>)[key])) continue;
+      neededKeys.add(key === 'status' && value !== 'cancelled' ? '' : action);
+    }
+    neededKeys.delete('');
+    for (const action of neededKeys) {
+      if (!(await hasPermission(base44.asServiceRole, user, 'Cotizaciones', action))) {
+        return Response.json({ success: false, error: 'Forbidden: missing permission', permission: `Cotizaciones:${action}` }, { status: 403 });
+      }
     }
 
     await base44.asServiceRole.entities.Quotation.update(quotation.id, sanitizedUpdates);

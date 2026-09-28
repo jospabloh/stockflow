@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { hasPermission } from './_permissions.ts';
 
 // Flujo de devolución parcial:
 // 1. Recibe quotation_id y los items devueltos (product_id + quantity)
@@ -47,6 +48,11 @@ export async function handle(req: Request): Promise<Response> {
 
     if (quotation.business_id !== user.business_id) return Response.json({ error: 'Forbidden' }, { status: 403 });
     if (quotation.status !== 'converted') return Response.json({ error: 'Solo se pueden hacer devoluciones de ventas concretadas' }, { status: 400 });
+
+    // PERMISSION CHECK — the granular key is re-checked server-side (the UI gate alone is bypassable).
+    if (!(await hasPermission(base44.asServiceRole, user, 'Cotizaciones', 'return'))) {
+      return Response.json({ success: false, error: 'Forbidden: missing permission', permission: 'Cotizaciones:return' }, { status: 403 });
+    }
 
     // LICENSE CHECK — returns are allowed even in view_only (they correct existing data)
     // Intentionally not blocking here: returns protect business from stuck stock

@@ -1,4 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { hasPermission } from './_permissions.ts';
+
+// Permission key required to change each field (permissionRegistry.js › Cotizaciones).
+const FIELD_PERMISSION: Record<string, string> = {
+  folio: 'edit_items', client_id: 'edit_client', client_name: 'edit_client', client_email: 'edit_client', client_phone: 'edit_client',
+  items: 'edit_items', subtotal: 'edit_items', tax: 'edit_items', total: 'edit_items',
+  notes: 'edit_notes', valid_until: 'edit_validity', payment_method: 'edit_payment_method',
+  invoice_status: 'edit_invoice_status', paid: 'confirm_payment', status: 'cancel', cancellation_reason: 'cancel',
+};
 
 // SECURITY: Explicit whitelist of updatable Quotation fields
 const ALLOWED_UPDATE_FIELDS = new Set([
@@ -78,6 +87,22 @@ export async function handle(req: Request): Promise<Response> {
         quotation: quotation,
         message: 'No valid fields to update'
       });
+    }
+
+    // PERMISSION CHECK — each CHANGED field needs its own granular key. The form
+    // resubmits the whole record, so an unchanged value never demands a key.
+    const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+    const neededKeys = new Set<string>();
+    for (const [key, value] of Object.entries(sanitized)) {
+      const action = FIELD_PERMISSION[key];
+      if (!action || same(value, (quotation as Record<string, unknown>)[key])) continue;
+      neededKeys.add(key === 'status' && value !== 'cancelled' ? '' : action);
+    }
+    neededKeys.delete('');
+    for (const action of neededKeys) {
+      if (!(await hasPermission(base44.asServiceRole, user, 'Cotizaciones', action))) {
+        return Response.json({ success: false, error: 'Forbidden: missing permission', permission: `Cotizaciones:${action}` }, { status: 403 });
+      }
     }
 
     // Use asServiceRole for the update — ownership already validated above
