@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { hasPermission } from './_permissions.ts';
 
 // aiIntakeTurn — one turn of the support intake interview (the "BA/PO" that
 // questions a requester before a ticket is escalated).
@@ -129,6 +130,10 @@ export async function handle(req: Request): Promise<Response> {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (!user.business_id) return Response.json({ error: 'Forbidden: no business_id' }, { status: 403 });
+    // Each turn spends LLM credits: only callers allowed to open a ticket may run the interview.
+    if (!(await hasPermission(base44.asServiceRole, user, 'Centro de Soporte', 'create'))) {
+      return Response.json({ error: 'Forbidden: missing permission', permission: 'Centro de Soporte:create' }, { status: 403 });
+    }
 
     const body = await req.json();
     const kind = body?.kind === 'bug' ? 'bug' : 'feature';

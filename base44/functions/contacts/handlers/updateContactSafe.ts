@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { hasPermission } from './_permissions.ts';
 
 // SECURITY: Explicit whitelist of updatable Contact fields (mass assignment protection)
 const ALLOWED_UPDATE_FIELDS = new Set([
@@ -60,6 +61,11 @@ export async function handle(req: Request): Promise<Response> {
     const newName = 'name' in sanitized ? sanitized.name : contact.name;
     if (!newName?.trim()) {
       return Response.json({ success: false, error: 'El nombre del contacto es requerido' }, { status: 400 });
+    }
+
+    // PERMISSION CHECK — RLS/role only isolate tenants; the granular key is enforced here.
+    if (!(await hasPermission(base44.asServiceRole, user, 'Contactos', 'edit'))) {
+      return Response.json({ success: false, error: 'Forbidden: missing permission', permission: 'Contactos:edit' }, { status: 403 });
     }
 
     // LICENSE CHECK

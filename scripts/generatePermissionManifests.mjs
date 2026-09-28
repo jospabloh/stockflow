@@ -107,6 +107,14 @@ const AUTOGEN_TARGETS = [
   { path: ['base44', 'functions', 'quotationPayments', 'handlers', '_permissions.ts'], block: blockWithDenied },
   { path: ['base44', 'functions', 'business', 'handlers', '_permissions.ts'], block: blockWithDenied },
   { path: ['base44', 'functions', 'machinerySales', 'handlers', '_permissions.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'categories', 'handlers', '_permissions.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'suppliers', 'handlers', '_permissions.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'contacts', 'handlers', '_permissions.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'courses', 'handlers', '_permissions.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'enrollments', 'handlers', '_permissions.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'clients', 'handlers', '_permissions.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'courseComms', 'handlers', '_permissions.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'updateProductStockSafe', '_permissions.ts'], block: blockWithDenied },
   { path: ['base44', 'functions', 'permissions', 'handlers', 'getPermissionProfiles.ts'], block: blockKeysOnly },
 ];
 

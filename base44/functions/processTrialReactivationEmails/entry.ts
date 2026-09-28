@@ -52,10 +52,15 @@ function firstName(fullName) {
 
 // ─── Email template (bilingual) ───────────────────────────────────────────────
 
+// User/business names are tenant-controlled: escape before HTML interpolation.
+function escapeHtml(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function buildEmailTemplate(user, business, daysLeft, appUrl, locale) {
   const isEnglish = locale && (locale.startsWith('en') || locale === 'en-US');
-  const name = firstName(user.full_name) || business.name || 'there';
-  const businessName = business.name || APP_NAME;
+  const name = escapeHtml(firstName(user.full_name) || business.name || 'there');
+  const businessName = escapeHtml(business.name || APP_NAME);
 
   const featureListEs = `
     <ul style="color:#374151;line-height:1.8;padding-left:20px">

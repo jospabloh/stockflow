@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { hasPermission } from './_permissions.ts';
 
 /**
  * Precise VAT calculation - extract VAT from included amounts
@@ -74,6 +75,11 @@ export async function handle(req: Request): Promise<Response> {
     // Only allow regeneration of draft quotations
     if (quotation.status !== 'draft') {
       return Response.json({ error: 'Only draft quotations can be regenerated' }, { status: 400 });
+    }
+
+    // PERMISSION CHECK — the granular key is re-checked server-side (the UI gate alone is bypassable).
+    if (!(await hasPermission(base44.asServiceRole, user, 'Cotizaciones', 'create'))) {
+      return Response.json({ success: false, error: 'Forbidden: missing permission', permission: 'Cotizaciones:create' }, { status: 403 });
     }
 
     // LICENSE CHECK

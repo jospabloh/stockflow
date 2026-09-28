@@ -37,6 +37,13 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'Usuario sin negocio asignado' }, { status: 400 });
     }
 
+    // LICENSE CHECK
+    const bizArr = await base44.asServiceRole.entities.Business.filter({ id: businessId });
+    const billingStatus = bizArr?.[0]?.billing_status || 'active';
+    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+      return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
     const { import_type, rows } = await req.json();
 
     if (!import_type || !Array.isArray(rows) || rows.length === 0) {

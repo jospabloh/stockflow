@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { hasPermission } from './_permissions.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -59,10 +60,37 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // PERMISSION CHECK — 'Productos:edit_stock_quantity' is denied to almacenista by
+    // default and revocable per profile; the role check above alone never honoured it.
+    if (!(await hasPermission(base44.asServiceRole, user, 'Productos', 'edit_stock_quantity'))) {
+      return Response.json({ error: 'Forbidden: missing permission', permission: 'Productos:edit_stock_quantity' }, { status: 403 });
+    }
+
+    // LICENSE CHECK
+    const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const billingStatus = bizArr?.[0]?.billing_status || 'active';
+    if (billingStatus === 'view_only' || billingStatus === 'suspended') {
+      return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
     // Update ONLY stock field
     await base44.asServiceRole.entities.Product.update(product.id, {
       stock: new_stock,
     });
+
+    // AUDIT TRAIL — same InventoryAuditLog entry updateProductSafe writes for a direct edit.
+    if (new_stock !== product.stock) {
+      await base44.asServiceRole.entities.InventoryAuditLog.create({
+        product_id: product.id,
+        product_name: product.name,
+        business_id: user.business_id,
+        event_type: 'direct_edit',
+        stock_before: product.stock ?? 0,
+        stock_after: new_stock,
+        notes: 'Stock editado directamente (updateProductStockSafe)',
+        performed_by: user.email,
+      }).catch((e: unknown) => console.error('[updateProductStockSafe] audit log failed', e));
+    }
 
     return Response.json({
       success: true,

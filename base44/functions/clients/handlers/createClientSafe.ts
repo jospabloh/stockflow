@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { hasPermission } from './_permissions.ts';
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -34,6 +35,16 @@ export async function handle(req: Request): Promise<Response> {
         success: false,
         error: 'No es posible activar "precio mayoreo" y "precio de compra" al mismo tiempo. Desactiva uno antes de activar el otro.'
       }, { status: 400 });
+    }
+
+    // PERMISSION CHECK — granular keys are enforced server-side, including the
+    // pricing-force flags (each one has its own key, denied per profile).
+    const denied = [];
+    if (!(await hasPermission(base44.asServiceRole, user, 'Clientes', 'create'))) denied.push('Clientes:create');
+    if (force_wholesale_all_products && !(await hasPermission(base44.asServiceRole, user, 'Clientes', 'edit_force_wholesale'))) denied.push('Clientes:edit_force_wholesale');
+    if (force_purchase_all_products && !(await hasPermission(base44.asServiceRole, user, 'Clientes', 'edit_force_purchase'))) denied.push('Clientes:edit_force_purchase');
+    if (denied.length > 0) {
+      return Response.json({ success: false, error: 'Forbidden: missing permission', permission: denied[0], permissions: denied }, { status: 403 });
     }
 
     // LICENSE CHECK

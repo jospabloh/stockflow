@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { campaignEmail } from './emailTemplates.ts';
+import { hasPermission } from './_permissions.ts';
 
 const MAX_RECIPIENTS = 300;
 
@@ -23,6 +24,11 @@ export async function handle(req: Request): Promise<Response> {
     }
     if (!message?.trim()) {
       return Response.json({ success: false, error: 'El mensaje es requerido' }, { status: 400 });
+    }
+
+    // PERMISSION CHECK — RLS/role only isolate tenants; the granular key is enforced here.
+    if (!(await hasPermission(base44.asServiceRole, user, 'Campañas', 'send'))) {
+      return Response.json({ success: false, error: 'Forbidden: missing permission', permission: 'Campañas:send' }, { status: 403 });
     }
 
     // LICENSE CHECK

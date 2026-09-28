@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { confirmationEmail, reminderEmail } from './emailTemplates.ts';
+import { hasPermission } from './_permissions.ts';
 
 // Envía un correo de confirmación o recordatorio a UNA inscripción (botón manual).
 export async function handle(req: Request): Promise<Response> {
@@ -28,6 +29,11 @@ export async function handle(req: Request): Promise<Response> {
     const to = (enrollment.contact_email || '').trim();
     if (!to) {
       return Response.json({ success: false, error: 'El contacto no tiene correo registrado' }, { status: 400 });
+    }
+
+    // PERMISSION CHECK — RLS/role only isolate tenants; the granular key is enforced here.
+    if (!(await hasPermission(base44.asServiceRole, user, 'Inscripciones', 'edit'))) {
+      return Response.json({ success: false, error: 'Forbidden: missing permission', permission: 'Inscripciones:edit' }, { status: 403 });
     }
 
     // LICENSE CHECK

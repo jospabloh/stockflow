@@ -1,4 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { hasPermission } from './_permissions.ts';
+
+// Permission key required to change each field (permissionRegistry.js › Clientes).
+const FIELD_PERMISSION: Record<string, string> = {
+  name: 'edit_name',
+  business_name: 'edit_business',
+  giro: 'edit_business',
+  phone: 'edit_contact',
+  email: 'edit_contact',
+  address: 'edit_address',
+  rfc: 'edit_rfc',
+  notes: 'edit_notes',
+  status: 'edit_status',
+  force_wholesale_all_products: 'edit_force_wholesale',
+  force_purchase_all_products: 'edit_force_purchase',
+};
+
+// The form resubmits the whole record; only a value that actually changes needs its key.
+const norm = (v: unknown) => (v === undefined || v === null || v === '' || v === false ? '' : JSON.stringify(v));
 
 // SECURITY: Explicit whitelist of updatable Client fields
 const ALLOWED_UPDATE_FIELDS = new Set([
@@ -73,6 +92,18 @@ export async function handle(req: Request): Promise<Response> {
         success: false,
         error: 'No es posible activar "precio mayoreo" y "precio de compra" al mismo tiempo. Desactiva uno antes de activar el otro.'
       }, { status: 400 });
+    }
+
+    // PERMISSION CHECK — every changed field needs its own granular key
+    // (the force-pricing flags are sensitive and can be revoked per profile).
+    const neededKeys = new Set<string>();
+    for (const key of Object.keys(sanitized)) {
+      if (norm(sanitized[key]) !== norm(client[key])) neededKeys.add(FIELD_PERMISSION[key]);
+    }
+    for (const action of neededKeys) {
+      if (!(await hasPermission(base44.asServiceRole, user, 'Clientes', action))) {
+        return Response.json({ success: false, error: 'Forbidden: missing permission', permission: `Clientes:${action}` }, { status: 403 });
+      }
     }
 
     // LICENSE CHECK

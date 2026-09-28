@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { hasPermission } from './_permissions.ts';
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -31,6 +32,11 @@ export async function handle(req: Request): Promise<Response> {
     // CRITICAL: Validate business_id ownership
     if (quotation.business_id !== user.business_id) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // PERMISSION CHECK — the granular key is re-checked server-side (the UI gate alone is bypassable).
+    if (!(await hasPermission(base44.asServiceRole, user, 'Cotizaciones', 'cancel'))) {
+      return Response.json({ success: false, error: 'Forbidden: missing permission', permission: 'Cotizaciones:cancel' }, { status: 403 });
     }
 
     // LICENSE CHECK

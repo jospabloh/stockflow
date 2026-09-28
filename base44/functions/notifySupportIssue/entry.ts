@@ -6,9 +6,14 @@ Deno.serve(async (req) => {
         const user = await base44.auth.me();
         if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const { issue_type, description, user_name, user_email } = await req.json();
-        const reporter_name = user_name || user?.full_name || 'Desconocido';
-        const reporter_email = user_email || user?.email || 'No disponible';
+        // Each call sends a mail on the platform's email credits: users need a tenant,
+        // and free-text fields are length-capped so a session can't push arbitrary bulk.
+        if (!user.business_id) return Response.json({ error: 'Forbidden: no business_id' }, { status: 403 });
+
+        const { issue_type, description: rawDescription, user_name, user_email } = await req.json();
+        const description = String(rawDescription || '').slice(0, 4000);
+        const reporter_name = String(user_name || user?.full_name || 'Desconocido').slice(0, 120);
+        const reporter_email = String(user_email || user?.email || 'No disponible').slice(0, 200);
 
         const escapeHtml = (str) => String(str)
             .replace(/&/g, '&amp;')

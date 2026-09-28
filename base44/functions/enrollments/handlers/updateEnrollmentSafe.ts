@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { hasPermission } from './_permissions.ts';
 
 // SECURITY: Explicit whitelist. course_id/contact_id (and their snapshots) are
 // set at creation and intentionally immutable here.
@@ -54,6 +55,11 @@ export async function handle(req: Request): Promise<Response> {
 
     if (Object.keys(sanitized).length === 0) {
       return Response.json({ success: true, enrollment_id, enrollment, message: 'No valid fields to update' });
+    }
+
+    // PERMISSION CHECK — RLS/role only isolate tenants; the granular key is enforced here.
+    if (!(await hasPermission(base44.asServiceRole, user, 'Inscripciones', 'edit'))) {
+      return Response.json({ success: false, error: 'Forbidden: missing permission', permission: 'Inscripciones:edit' }, { status: 403 });
     }
 
     // LICENSE CHECK
