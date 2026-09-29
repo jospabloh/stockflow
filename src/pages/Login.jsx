@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/lib/AuthContext';
 import AuthLayout from '@/components/AuthLayout';
 import GoogleIcon from '@/components/GoogleIcon';
+import VerifyEmailStep, { needsEmailVerification } from '@/components/VerifyEmailStep';
 import { getRememberedIdentity, clearRememberedIdentity } from '@/lib/lastIdentity';
 
 const Login = () => {
@@ -18,6 +19,7 @@ const Login = () => {
   const [email, setEmail] = useState(remembered?.email || '');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   const from = location.state?.from?.pathname || '/';
 
@@ -38,7 +40,12 @@ const Login = () => {
       toast.success('Sesión iniciada');
       navigate(from, { replace: true });
     } catch (error) {
-      toast.error(error?.message || 'Correo o contraseña incorrectos');
+      if (needsEmailVerification(error)) {
+        toast.message('Falta verificar tu correo. Escribe el código que te enviamos.');
+        setVerifying(true);
+      } else {
+        toast.error(error?.message || 'Correo o contraseña incorrectos');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -61,6 +68,14 @@ const Login = () => {
         </>
       }
     >
+      {verifying ? (
+        <VerifyEmailStep
+          email={email.trim()}
+          password={password}
+          onVerified={(r) => navigate(r?.needsLogin ? '/login' : from, { replace: true })}
+          onCancel={() => setVerifying(false)}
+        />
+      ) : (<>
       {/* One-tap returning user card */}
       {remembered && (remembered.name || remembered.email) && (
         <div className="mb-6 rounded-xl border border-border bg-muted/40 p-4">
@@ -163,6 +178,7 @@ const Login = () => {
           Iniciar sesión
         </Button>
       </form>
+      </>)}
     </AuthLayout>
   );
 };

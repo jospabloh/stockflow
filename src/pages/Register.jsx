@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/lib/AuthContext';
 import AuthLayout from '@/components/AuthLayout';
 import GoogleIcon from '@/components/GoogleIcon';
+import VerifyEmailStep from '@/components/VerifyEmailStep';
 
 const Register = () => {
   const { register, login, loginWithProvider, isAuthenticated } = useAuth();
@@ -16,6 +17,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   if (isAuthenticated) return <Navigate to="/" replace />;
 
@@ -34,8 +36,8 @@ const Register = () => {
         toast.success('Cuenta creada');
         navigate('/', { replace: true });
       } catch {
-        toast.success('Cuenta creada. Revisa tu correo para verificarla e inicia sesión.');
-        navigate('/login', { replace: true });
+        toast.success('Cuenta creada. Escribe el código que te enviamos por correo.');
+        setVerifying(true);
       }
     } catch (error) {
       toast.error(error?.message || 'No se pudo crear la cuenta');
@@ -58,6 +60,14 @@ const Register = () => {
         </>
       }
     >
+      {verifying ? (
+        <VerifyEmailStep
+          email={email.trim()}
+          password={password}
+          onVerified={(r) => navigate(r?.needsLogin ? '/login' : '/', { replace: true })}
+          onCancel={() => { setVerifying(false); setPassword(''); setConfirm(''); }}
+        />
+      ) : (<>
       {/* Google OAuth */}
       <Button
         type="button"
@@ -132,6 +142,7 @@ const Register = () => {
           Crear cuenta
         </Button>
       </form>
+      </>)}
     </AuthLayout>
   );
 };

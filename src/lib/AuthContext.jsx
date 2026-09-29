@@ -139,6 +139,15 @@ export const AuthProvider = ({ children }) => {
     return base44.auth.register(params);
   };
 
+  // Confirms the emailed OTP after register(); the caller then logs in.
+  const verifyOtp = async (email, otpCode) => {
+    return base44.auth.verifyOtp({ email, otpCode });
+  };
+
+  const resendOtp = async (email) => {
+    return base44.auth.resendOtp(email);
+  };
+
   // Sends a password-reset email to the given address.
   const requestPasswordReset = async (email) => {
     return base44.auth.resetPasswordRequest(email);
@@ -188,6 +197,8 @@ export const AuthProvider = ({ children }) => {
       authConfig,
       login,
       register,
+      verifyOtp,
+      resendOtp,
       requestPasswordReset,
       resetPassword,
       loginWithProvider,
