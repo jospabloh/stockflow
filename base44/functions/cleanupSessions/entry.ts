@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.35';
 
+const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -11,9 +13,11 @@ Deno.serve(async (req) => {
       body?.['x-cron-secret'] === cronSecretEnv
     );
     if (!validCron) {
-      // Permitir también a un admin autenticado para diagnóstico manual.
+      // Revoca sesiones de TODOS los tenants: el disparo manual es sólo del dueño de la
+      // plataforma (falla cerrado si PLATFORM_OWNER_EMAIL no está puesto), no de cualquier
+      // role 'admin' — un admin de tenant legado podría cerrar sesiones de otros negocios.
       const user = await base44.auth.me().catch(() => null);
-      if (!user || user.role !== 'admin') {
+      if (!user || !PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
