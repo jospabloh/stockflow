@@ -7,7 +7,10 @@ export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { token, action, client_notes } = body;
+    // `client_notes` is deliberately NOT read: this endpoint is anonymous (token only), and
+    // letting it overwrite Quotation.notes let anyone holding the link rewrite the business's
+    // internal notes. The public page never sent it (PublicQuotation.jsx sends token + action).
+    const { token, action } = body;
 
     if (!token) return Response.json({ error: 'token is required' }, { status: 400 });
     if (!action || !['accepted', 'rejected'].includes(action)) {
@@ -34,7 +37,6 @@ export async function handle(req: Request): Promise<Response> {
 
     const newStatus = action === 'accepted' ? 'accepted' : 'cancelled';
     const updatePayload: Record<string, unknown> = { status: newStatus };
-    if (client_notes) updatePayload.notes = client_notes;
 
     await base44.asServiceRole.entities.Quotation.update(q.id, updatePayload);
 

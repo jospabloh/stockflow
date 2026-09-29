@@ -1,12 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    // Platform-wide AppVersion record: platform owner only (fails closed if the secret is unset).
+    // Built-in role 'admin' is not enough — legacy tenant admins may still carry it.
+    if (!user || !PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) {
+      return Response.json({ error: 'Forbidden: platform owner only' }, { status: 403 });
     }
 
     const { version, release_notes } = await req.json();
