@@ -61,6 +61,22 @@ export async function handle(req: Request): Promise<Response> {
       console.warn('[initTenantTrial] Failed to queue trial_welcome email');
     }
 
+    // Tell Mission Control about the new tenant from the SERVER. The browser
+    // ping in BusinessSetup.jsx is fire-and-forget and can be lost (ad blocker,
+    // network, tab closed) — on 2026-09-29 a real signup only reached the owner
+    // through a manual sync. Idempotent on MC's side (known tenant / already
+    // alerted → no-op), so it is fine that both pings exist. Never fatal.
+    try {
+      await fetch('https://control.acaciaco.com.mx/api/ingest/tenant-pull', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ app: 'stockflow', tenantId: business_id }),
+        signal: AbortSignal.timeout(8000),
+      });
+    } catch (_) {
+      console.warn('[initTenantTrial] tenant-pull ping to Mission Control failed');
+    }
+
     return Response.json({
       success: true,
       trial_start_at: now.toISOString(),
