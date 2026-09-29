@@ -136,7 +136,10 @@ function run(args) {
 // recorrer 45 funciones, y separarlo hace que el paso que faltaba sea el que se
 // corre a propósito.
 const steps = deploySite
-  ? [['site', 'deploy', '--app-id', config.appId]]
+  // --yes: sin él la CLI aborta en modo no interactivo (sesión de Claude, CI) con
+  // «--yes is required in non-interactive mode». Desplegar el sitio no es destructivo,
+  // así que confirmar aquí no salta ninguna puerta; la de entidades sigue pidiendo el nombre.
+  ? [['site', 'deploy', '--app-id', config.appId, '--yes']]
   : [['functions', 'deploy', '--app-id', config.appId, '--force']];
 
 if (pushEntities) {
