@@ -57,7 +57,13 @@ export async function handle(req: Request): Promise<Response> {
     // Un usuario, un negocio: quien ya pertenece a uno no puede crear otro.
     // Se comprueba ANTES de crear el Business, para no dejar un negocio
     // huérfano con su código de invitación vivo y nadie dentro.
-    if (user.business_id) {
+    // La decisión sale de una lectura FRESCA del User guardado (módulo 22), no de
+    // la vista cacheada de auth.me(): con un `business_id` viejo (vacío) una
+    // segunda llamada pasaría y movería al usuario a un segundo negocio,
+    // dejando el primero inalcanzable. Falla cerrado si no se puede leer.
+    const fresh = (await base44.asServiceRole.entities.User.filter({ id: user.id }))[0];
+    if (!fresh) return Response.json({ error: 'Forbidden' }, { status: 403 });
+    if (fresh.business_id) {
       return Response.json({ error: 'already_in_a_business' }, { status: 409 });
     }
 
