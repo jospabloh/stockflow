@@ -32,10 +32,25 @@ for (const file of walk(ROOT)) {
   });
 }
 
+// A joiner only gets a business_id from resolveJoinRequest (after an owner/admin
+// approves) and a founder from createBusinessSafe. Any other User.update that
+// writes business_id would be a way around the approval.
+const BUSINESS_ID_WRITERS = new Set([
+  "base44/functions/business/handlers/createBusinessSafe.ts",
+  "base44/functions/business/handlers/resolveJoinRequest.ts",
+  "base44/functions/restoreOwnerAdmin/entry.ts", // platform-owner recovery
+]);
+const WRITES_BUSINESS_ID = /User\.update\([^)]*business_id/s;
+for (const file of walk(ROOT)) {
+  if (BUSINESS_ID_WRITERS.has(file) || file.includes("/tests/")) continue;
+  const code = readFileSync(file, "utf8").replace(/\/\/.*$/gm, "");
+  if (WRITES_BUSINESS_ID.test(code)) offenders.push(`${file}: writes User.business_id outside createBusinessSafe/resolveJoinRequest`);
+}
+
 if (offenders.length) {
-  console.error("✗ Built-in role 'admin' assigned outside the platform-owner functions:");
+  console.error("✗ Role/business assignment outside the sanctioned functions:");
   for (const o of offenders) console.error("  " + o);
-  console.error("  Business admins must be stored as role 'owner'.");
+  console.error("  Business admins must be stored as role 'owner'; joiners get business_id only from resolveJoinRequest.");
   process.exit(1);
 }
 console.log("✓ No business code assigns built-in role 'admin'.");

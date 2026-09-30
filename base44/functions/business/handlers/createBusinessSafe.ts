@@ -61,6 +61,15 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'already_in_a_business' }, { status: 409 });
     }
 
+    // Una solicitud pendiente para unirse a otro negocio también cuenta como
+    // "ya tienes un negocio": hay que cancelarla antes de crear uno propio, o el
+    // usuario acabaría con un negocio y una solicitud abierta al mismo tiempo
+    // (2026-09-30). Igual que arriba, se comprueba ANTES de crear el Business.
+    const pendingRequests = await base44.asServiceRole.entities.JoinRequest.filter({ user_id: user.id, status: 'pending' });
+    if (pendingRequests.length > 0) {
+      return Response.json({ error: 'pending_join_request' }, { status: 409 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const name = typeof body.name === 'string' ? body.name.trim() : '';
     if (!name) return Response.json({ error: 'name es requerido' }, { status: 400 });

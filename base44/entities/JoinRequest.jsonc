@@ -1,0 +1,59 @@
+{
+  "name": "JoinRequest",
+  "type": "object",
+  "description": "Solicitud de un usuario para unirse a un negocio con su código de invitación. Mientras esté 'pending' el usuario NO tiene business_id ni ve datos del negocio: el acceso solo lo concede el owner/admin del negocio al aprobarla (business:resolveJoinRequest). Crear, actualizar y borrar es solo del rol de servicio: ninguna escritura sale del navegador. Si se abriera la escritura a los miembros del negocio o al propio solicitante, alguien podría marcar su solicitud como aprobada o elegir su rol sin que el owner intervenga.",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio al que se pide entrar (lo resuelve el servidor a partir del código, nunca viene del cliente)"
+    },
+    "business_name": {
+      "type": "string",
+      "description": "Nombre del negocio, copiado al crear para poder mostrar 'esperando aprobación' sin leer el negocio"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID del usuario solicitante (sale de la sesión, nunca del cuerpo)"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Correo del solicitante, para que el administrador sepa a quién aprueba"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nombre del solicitante"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "approved", "rejected", "canceled"],
+      "default": "pending",
+      "description": "pending = esperando decisión; approved/rejected = decidió el administrador; canceled = la retiró el solicitante o quedó sin efecto"
+    },
+    "assigned_role": {
+      "type": "string",
+      "enum": ["admin", "almacenista"],
+      "description": "Rol de la app que el administrador eligió al aprobar (en base de datos 'admin' se guarda como owner)"
+    },
+    "decided_by_id": { "type": "string", "description": "ID de quien decidió" },
+    "decided_by_email": { "type": "string", "description": "Correo de quien decidió" },
+    "decided_at": { "type": "string", "format": "date-time", "description": "Momento de la decisión" }
+  },
+  "required": ["business_id", "user_id"],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": {
+      "$or": [
+        { "data.user_id": "{{user.id}}" },
+        {
+          "$and": [
+            { "data.business_id": "{{user.data.business_id}}" },
+            { "user_condition": { "role": "owner" } }
+          ]
+        },
+        { "user_condition": { "role": "admin" } }
+      ]
+    },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

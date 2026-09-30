@@ -8,7 +8,7 @@
   // data.business_id RLS branch on those same entities grants full read/write
   // regardless of role). All legitimate changes now flow through the
   // service-role backend functions business:createBusinessSafe (new business
-  // owner), business:joinBusinessSafe (invite-code join), and
+  // owner), business:resolveJoinRequest (a joiner gets business_id only once an owner/admin approves their JoinRequest; joinBusinessSafe just files it), and
   // permissions:changeUserRole (promote/demote an existing team member —
   // already service-role, unaffected by this lock).
   //

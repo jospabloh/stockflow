@@ -62,6 +62,11 @@ export async function handle(req: Request): Promise<Response> {
     if (!caller) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (caller.role !== 'admin' && caller.role !== 'owner') return Response.json({ error: 'Forbidden: solo admins pueden cambiar roles' }, { status: 403 });
 
+    // Sin negocio no hay a quién cambiarle el rol: evita que un `undefined`
+    // coincida con un usuario sin negocio (p. ej. un solicitante pendiente, que
+    // solo entra a un negocio por business:resolveJoinRequest).
+    if (!caller.business_id) return Response.json({ error: 'Forbidden: no business_id' }, { status: 403 });
+
     const { target_user_id, new_role } = await req.json();
 
     if (!target_user_id || !new_role) {

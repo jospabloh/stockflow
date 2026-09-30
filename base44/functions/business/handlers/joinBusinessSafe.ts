@@ -1,32 +1,30 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
-import { nextPlanFor, userLimitFor } from './_planLimits.ts';
+import { planJoin } from './_joinRequest.ts';
 
 // joinBusinessSafe — server-side counterpart of the "Unirme a un equipo" flow
 // in src/pages/BusinessSetup.jsx.
 //
-// Why this exists: joining a business used to validate the invite code
-// client-side and then set `business_id`/`role` on the caller directly via
-// `base44.auth.updateMe({ business_id, role: "almacenista" })`. Because User
-// had no field-level write RLS on those fields, a client could skip the
-// invite-code check entirely and call `updateMe({ business_id: '<any-id>' })`
-// directly to join ANY business without ever knowing its invite code — the
-// `data.business_id` RLS branch on all business-scoped entities grants full
-// read/write to any member regardless of role, so this alone is a full tenant
-// takeover, no role escalation required.
+// SOLICITUD, NO ACCESO (2026-09-30): redeeming a valid code no longer writes
+// `business_id`/`role` on the caller. It files a JoinRequest ('pending') and
+// the user keeps seeing nothing of the business until an owner/admin of THAT
+// business approves it and picks the role (business:resolveJoinRequest, the
+// only writer of business_id for a joiner). Before this, whoever held the code
+// (a forwarded WhatsApp message was enough) got read/write on the whole
+// business at once.
 //
-// This function re-derives the same invite-code validation the client used to
-// do, but authoritatively via base44.asServiceRole (bypassing any ambiguity in
-// what an unauthenticated-for-this-business caller can read directly), and is
-// now the ONLY sanctioned way business_id/role get set for a joining user.
+// Kept from before:
+//  - the code is validated server-side (asServiceRole), never by the client;
+//  - a user belongs to ONE business (409 already_in_a_business); redeeming the
+//    code of the business you already belong to is an idempotent no-op;
+//  - the seat limit is checked, but at APPROVAL time (resolveJoinRequest).
 //
-// DEPLOY ORDER: see createBusinessSafe.ts — deploy this function before the
-// User schema's field-level RLS lock on role/business_id.
+// New: a user with a pending request cannot file another one for a different
+// business (409 pending_request_exists) until they cancel it, and cannot
+// create a business (createBusinessSafe answers 409 too). Refiling for the
+// same business returns the existing request.
 //
-// UN USUARIO, UN NEGOCIO (2026-09-10): rechaza al caller que ya pertenece a
-// otro negocio. Redimir un código mueve el `business_id` activo, y sin el
-// selector de negocio (retirado, nunca llegó a producción) eso dejaría el
-// negocio anterior inalcanzable. Redimir el código del negocio en el que ya
-// estás sigue siendo idempotente, no un error.
+// DEPLOY ORDER: the JoinRequest entity must be deployed BEFORE this function
+// (deploy:entities, then deploy). Without it the create below fails (500).
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -53,39 +51,53 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'business_inactive' }, { status: 403 });
     }
 
-    // Un usuario, un negocio: quien ya pertenece a otro no puede unirse aquí.
-    // Redimir el código del negocio en el que YA estás es idempotente — no
-    // mueve nada y no es un error.
-    if (user.business_id && user.business_id !== business.id) {
-      return Response.json({ error: 'already_in_a_business' }, { status: 409 });
-    }
+    // Fresh read of the caller's own row: the decision below hinges on
+    // business_id, so don't trust the cached auth.me() view.
+    const fresh = (await sr.entities.User.filter({ id: user.id }))[0] || user;
+    const pending = await sr.entities.JoinRequest.filter({ user_id: user.id, status: 'pending' });
 
-    // Seat limit per plan (2026-09-24). Re-redeeming your own business's code
-    // is a no-op, so it never counts against the limit. Two joins racing on
-    // the last seat can both pass this read; accepted — the next join is
-    // blocked and the admin sees the overage.
-    if (user.business_id !== business.id) {
-      const limit = business.licensed_user_limit || userLimitFor(business.license_plan);
-      const members = await sr.entities.User.filter({ business_id: business.id });
-      if (members.length >= limit) {
-        const next = nextPlanFor(business.license_plan);
-        return Response.json({
-          error: 'user_limit_reached',
-          limit,
-          plan: business.license_plan ?? null,
-          next_plan: next?.id ?? null,
-          next_plan_label: next?.label ?? null,
-        }, { status: 403 });
-      }
-    }
-
-    const role = user.business_id === business.id ? (user.role || 'almacenista') : 'almacenista';
-    await sr.entities.User.update(user.id, {
-      business_id: business.id,
-      role,
+    const plan = planJoin({
+      userBusinessId: fresh.business_id,
+      targetBusinessId: business.id,
+      openRequest: pending[0],
     });
 
-    return Response.json({ success: true, business: { id: business.id, name: business.name } });
+    if (plan === 'already_in_a_business') {
+      return Response.json({ error: 'already_in_a_business' }, { status: 409 });
+    }
+    if (plan === 'already_member') {
+      return Response.json({ success: true, already_member: true, business: { id: business.id, name: business.name } });
+    }
+    if (plan === 'pending_request_exists') {
+      return Response.json({
+        error: 'pending_request_exists',
+        business: { id: pending[0].business_id, name: pending[0].business_name ?? null },
+      }, { status: 409 });
+    }
+    if (plan === 'same_request') {
+      return Response.json({
+        success: true,
+        pending: true,
+        business: { id: business.id, name: business.name },
+        request_id: pending[0].id,
+      });
+    }
+
+    const request = await sr.entities.JoinRequest.create({
+      business_id: business.id,
+      business_name: business.name || '',
+      user_id: user.id,
+      user_email: user.email || '',
+      user_name: user.full_name || '',
+      status: 'pending',
+    });
+
+    return Response.json({
+      success: true,
+      pending: true,
+      business: { id: business.id, name: business.name },
+      request_id: request.id,
+    });
   } catch (error) {
     console.error('[joinBusinessSafe]', error);
     return Response.json({ error: (error as Error).message }, { status: 500 });

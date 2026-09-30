@@ -2280,3 +2280,83 @@ dirección.
 - Nuevas copias de `_permissions.ts` (8 grupos) registradas en `AUTOGEN_TARGETS`.
 
 **Verificado:** `npm run lint`, `validate:rls`, `build`, `deno lint base44/functions/` (196 archivos) y 3 suites de deno sin imports externos. **No verificado:** sesión real de almacenista; tests de `deno.land`. **Pendiente:** `npm run deploy` + Publish (comprobar por comportamiento: 403 con `permission` en el cuerpo = código nuevo).
+
+## Unirse con el código es una SOLICITUD, no acceso (2026-09-30)
+
+Antes, `joinBusinessSafe` asignaba `business_id` y rol `almacenista` al instante
+a quien tuviera el código (un mensaje de WhatsApp reenviado bastaba para leer y
+escribir todo el negocio). Ahora:
+
+- **`joinBusinessSafe` crea una `JoinRequest` `pending`** y no escribe nada en
+  el `User`: sin `business_id`, el solicitante no ve datos. Conserva la
+  validación del código (`invalid_code`, `code_disabled`, `business_inactive`),
+  el 409 `already_in_a_business` y la idempotencia de redimir el código del
+  negocio propio (`already_member`). Un solicitante con solicitud pendiente
+  **no puede pedir otro negocio** (409 `pending_request_exists`) ni **crear uno**
+  (`createBusinessSafe` responde 409 `pending_join_request`); refiled del mismo
+  negocio devuelve la solicitud existente. Los 5 intentos de código siguen en
+  el cliente (`BusinessSetup.jsx`).
+- **Entidad nueva `JoinRequest`** (`base44/entities/JoinRequest.jsonc`): RLS de
+  4 operaciones; crear/actualizar/borrar solo `role:admin` (servicio), lectura
+  del propio solicitante, del `owner` de ese negocio (`$and` con `data.business_id`)
+  y de plataforma. **Exige `deploy:entities` ANTES que las funciones**: sin la
+  entidad, `joinBusinessSafe`/`createBusinessSafe`/`myJoinRequest` responden 500.
+  `validate:rls` pasa a 31 entidades, 23 con inquilino.
+- **Acciones nuevas dentro del grupo `business`** (sin endpoint nuevo, sigue
+  47/47): `myJoinRequest`, `cancelJoinRequest`, `listJoinRequests`,
+  `resolveJoinRequest`. La lógica de decisión vive en `_joinRequest.ts`
+  (sin imports, con `base44/tests/join_request_test.ts`).
+- **`resolveJoinRequest` es el único escritor de `business_id` de un joiner.**
+  Relee al llamador y la solicitud con `asServiceRole`; exige rol `owner`/`admin`
+  almacenado **y** `Configuracion:manage_team` (no hizo falta permiso nuevo; sin
+  el rol de admin, un almacenista con ese permiso podría repartir 'admin');
+  la solicitud debe ser de SU negocio (una ajena responde 404 igual que una
+  inexistente); el rol elegido va contra lista blanca (`admin` se guarda como
+  `owner`, `almacenista`; nunca rol de plataforma). Aprobar comprueba
+  `user_limit_reached` (la solicitud sigue pendiente) y que el solicitante siga
+  sin negocio (si ya está en otro, la solicitud se cancela con 409
+  `requester_unavailable`). Orden: usuario primero, solicitud después; un
+  reintento tras un fallo a medias solo termina de marcarla aprobada.
+- `changeUserRole` ahora rechaza a un llamador sin `business_id` (antes
+  `undefined === undefined` habría coincidido con un usuario sin negocio).
+- `npm run validate:roles` ahora también falla si otro archivo de
+  `base44/functions/` hace `User.update(... business_id ...)` fuera de
+  `createBusinessSafe`, `resolveJoinRequest` y `restoreOwnerAdmin`.
+- **Cliente:** `BusinessSetup.jsx` muestra "Solicitud enviada, esperando
+  aprobación" (leída de `myJoinRequest` al montar, sobrevive a recargar; revisa
+  cada 20 s, con "Revisar estado" y "Cancelar solicitud"; avisa si la rechazaron).
+  `Settings` → Equipo gana `JoinRequestsManager` junto al código: aprobar eligiendo
+  Almacenista/Admin, o rechazar.
+- Verificado por lectura, sin cambio: `createBusinessSafe` deja `role: 'owner'`
+  (nunca `admin` de plataforma), y el 409 de quien ya tiene negocio sigue antes
+  de crear el `Business`. `User.role/business_id` siguen con `rls.write` de
+  admin, así que `auth.updateMe` no salta la aprobación.
+- Paso de código de verificación (#412): revisado, flujo completo. Solo se
+  añadió que un login de cuenta no verificada reenvíe un código al abrir el paso
+  (antes dependía de que el usuario pulsara "Reenviar").
+
+**Verificado:** `npm run lint` (incluye `validate:functions` 47/47 y
+`validate:roles`), `npm run build`, `npm run validate:rls` (31/23),
+`npm run generate:permission-manifests` (sin claves nuevas; el diff de
+timestamp se descartó), `deno lint base44/functions/ base44/tests`,
+`deno test --allow-env` de los tests sin imports externos (incluidos los 11 de
+`join_request_test.ts`).
+
+**No verificado:** nada contra Base44 en vivo (los `entry.ts` importan
+`npm:@base44/sdk` y no se pueden ejecutar aquí; las pruebas cubren las reglas
+puras); que `JoinRequest.filter({ user_id, status })` y el orden `-created_date`
+se comporten como en las demás entidades; una sesión real de solicitante y de
+owner (aprobar, rechazar, cupo lleno, recarga en espera); que la regla de lectura
+con `$and` + `user_condition` se evalúe bien en la plataforma (los datos no se
+leen directo del cliente: todo va por funciones, así que no bloquea nada);
+`verifyOtp`/`resendOtp` reales.
+
+**Orden de despliegue:** (1) `npm run deploy:entities` (destructivo: pide escribir
+`StockFlow`; crea `JoinRequest`); (2) `npm run deploy` (funciones `business` y
+`permissions`); **Publish en el panel de Base44** (la CLI puede decir `unchanged`
+para cambios solo en `handlers/`); (3) `npm run deploy:site`. Comprobar por
+comportamiento: `business` con `{action:'listJoinRequests'}` sin sesión debe dar
+401 y con un almacenista 403 (no `unknown action`). Con el sitio nuevo y las
+funciones viejas, el solicitante vería un error tras unirse; con las funciones
+nuevas y el sitio viejo, `BusinessSetup` mostraría "Falló la asignación" aunque
+la solicitud sí se creó. Hacer los tres pasos en la misma ventana.
