@@ -16,7 +16,8 @@ import { isBusinessAdminRole, planResolution } from './_joinRequest.ts';
 //
 // Order on approve: user first, request second. If the second write fails the
 // request stays 'pending' and a retry lands on mode 'already_member', which
-// only finishes marking it.
+// reconciles the stored role with the selected one (if it differs) and
+// finishes marking it.
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
@@ -71,6 +72,12 @@ export async function handle(req: Request): Promise<Response> {
         business_id: caller.business_id,
         role: plan.storedRole,
       });
+    } else if (plan.mode === 'already_member' && requester?.role !== plan.storedRole) {
+      // Retry path: the first attempt wrote business_id but may have died
+      // before/while writing the role. Reconcile the stored role with the
+      // approver's selection (same User.update write as the original) so
+      // assigned_role below never disagrees with what the user actually has.
+      await sr.entities.User.update(request.user_id, { role: plan.storedRole });
     }
     const assigned = plan.storedRole === 'owner' ? 'admin' : 'almacenista';
     await sr.entities.JoinRequest.update(requestId, { status: 'approved', assigned_role: assigned, ...decided });

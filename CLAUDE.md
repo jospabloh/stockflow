@@ -2360,3 +2360,8 @@ comportamiento: `business` con `{action:'listJoinRequests'}` sin sesión debe da
 funciones viejas, el solicitante vería un error tras unirse; con las funciones
 nuevas y el sitio viejo, `BusinessSetup` mostraría "Falló la asignación" aunque
 la solicitud sí se creó. Hacer los tres pasos en la misma ventana.
+
+### Revisión de Codex sobre PR #414 (2026-09-30)
+
+`resolveJoinRequest`, rama de reintento (`already_member`): antes solo registraba `assigned_role`; ahora, si el rol guardado del solicitante difiere del que eligió quien aprueba, lo escribe con el mismo `User.update` del camino original (así `assigned_role` nunca contradice el rol real tras un fallo a medias). También se descartó la línea de comentario de redeploy suelta en `business/entry.ts`.
+Verificado: lint (con validate:functions y validate:roles), build, validate:rls (31/23), deno lint (201 archivos), deno test --allow-env base44 (76/0). No verificado: contra Base44 en vivo; no se desplegó.
