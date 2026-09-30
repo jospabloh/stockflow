@@ -6,6 +6,10 @@ import { handle as validateBusinessOwnership } from './validateBusinessOwnership
 import { handle as sendTestLifecycleEmails } from './sendTestLifecycleEmails.ts';
 import { handle as createBusinessSafe } from './createBusinessSafe.ts';
 import { handle as joinBusinessSafe } from './joinBusinessSafe.ts';
+import { handle as myJoinRequest } from './myJoinRequest.ts';
+import { handle as cancelJoinRequest } from './cancelJoinRequest.ts';
+import { handle as listJoinRequests } from './listJoinRequests.ts';
+import { handle as resolveJoinRequest } from './resolveJoinRequest.ts';
 import { handle as exportBusinessData } from './exportBusinessData.ts';
 import { handle as aiIntakeTurn } from './aiIntakeTurn.ts';
 import { handle as createSupportTicketSafe } from './createSupportTicketSafe.ts';
@@ -23,6 +27,10 @@ const HANDLERS: Record<string, Handler> = {
   sendTestLifecycleEmails,
   createBusinessSafe,
   joinBusinessSafe,
+  myJoinRequest,
+  cancelJoinRequest,
+  listJoinRequests,
+  resolveJoinRequest,
   exportBusinessData,
   aiIntakeTurn,
   createSupportTicketSafe,

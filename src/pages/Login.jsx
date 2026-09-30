@@ -12,7 +12,7 @@ import VerifyEmailStep, { needsEmailVerification } from '@/components/VerifyEmai
 import { getRememberedIdentity, clearRememberedIdentity } from '@/lib/lastIdentity';
 
 const Login = () => {
-  const { login, loginWithProvider, isAuthenticated } = useAuth();
+  const { login, loginWithProvider, resendOtp, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [remembered, setRemembered] = useState(() => getRememberedIdentity());
@@ -42,6 +42,9 @@ const Login = () => {
     } catch (error) {
       if (needsEmailVerification(error)) {
         toast.message('Falta verificar tu correo. Escribe el código que te enviamos.');
+        // El código original pudo vencer o perderse: manda uno nuevo (si falla,
+        // el paso de verificación sigue ofreciendo "Reenviar código").
+        resendOtp(email.trim()).catch(() => {});
         setVerifying(true);
       } else {
         toast.error(error?.message || 'Correo o contraseña incorrectos');

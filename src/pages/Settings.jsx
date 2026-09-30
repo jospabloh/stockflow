@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
 import TeamMembersManager from "@/components/settings/TeamMembersManager";
+import JoinRequestsManager from "@/components/settings/JoinRequestsManager";
 import ReferralPanel from "@/components/settings/ReferralPanel";
 import { useBusinessContext } from "@/components/BusinessContext";
 import LicenseInfoCard from "@/components/license/LicenseInfoCard";
@@ -36,6 +37,7 @@ export default function Settings() {
   const [confirmDeleteStep, setConfirmDeleteStep] = useState(0); // 0: initial, 1: warning, 2: confirm
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [teamRefresh, setTeamRefresh] = useState(0);
   const [_diagnosticBusinessId, setDiagnosticBusinessId] = useState(null);
   const [auditResult, setAuditResult] = useState(null);
   const [auditing, setAuditing] = useState(false);
@@ -572,7 +574,7 @@ export default function Settings() {
                     <Copy className="h-5 w-5" />
                   </button>
                 </div>
-                <p className="text-xs text-slate-400">Al registrarse, los usuarios seleccionan "Unirme a un equipo" e ingresan este código. Entran con rol <strong>Almacenista</strong> por defecto.</p>
+                <p className="text-xs text-slate-400">Al registrarse, los usuarios seleccionan "Unirme a un equipo" e ingresan este código. Su solicitud queda pendiente: <strong>tú la apruebas</strong> y eliges su rol (abajo, en "Solicitudes para unirse").</p>
                 <SeatLimitNotice />
                 <div className="flex items-center justify-between pt-2 border-t border-brand-100">
                   <div className="flex items-center gap-3">
@@ -596,13 +598,18 @@ export default function Settings() {
               </div>
             </Card>
 
+            {/* Pending join requests: approve (choosing the role) or reject */}
+            <Card className="border-0 shadow-sm p-6">
+              <JoinRequestsManager businessId={businessId} onApproved={() => setTeamRefresh((n) => n + 1)} />
+            </Card>
+
             {/* Members list with role management */}
             <Card className="border-0 shadow-sm p-6 space-y-4">
               <div>
                 <h3 className="font-semibold text-slate-700 text-lg">Miembros del Equipo</h3>
                 <p className="text-sm text-slate-500 mt-0.5">Gestiona los roles de los miembros de tu negocio. Los cambios aplican en su próximo inicio de sesión.</p>
               </div>
-              <TeamMembersManager businessId={businessId} currentUserId={currentUserId} />
+              <TeamMembersManager key={teamRefresh} businessId={businessId} currentUserId={currentUserId} />
               <div className="bg-slate-50 rounded-xl p-4 space-y-2">
                 <p className="text-sm font-semibold text-slate-700">Guía de roles</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
@@ -994,7 +1001,7 @@ export default function Settings() {
       );
       }
 // Shown next to the invite code once the plan's seats are used up: joining
-// is blocked server-side (joinBusinessSafe → user_limit_reached), so the
+// is blocked server-side (resolveJoinRequest → user_limit_reached), so the
 // admin needs to know why a teammate can't get in and what to upgrade to.
 function SeatLimitNotice() {
   const { activeUserCount, licensedUserLimit, licensePlan, isPlatformAdmin } = useLicense();
@@ -1002,7 +1009,7 @@ function SeatLimitNotice() {
   const next = nextPlanFor(licensePlan);
   return (
     <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
-      Tu plan incluye {licensedUserLimit} usuarios y ya los estás usando, así que nadie más puede unirse con este código.
+      Tu plan incluye {licensedUserLimit} usuarios y ya los estás usando, así que no podrás aprobar más solicitudes de este código.
       {next && (
         <> Para agregar más, sube al plan <strong>{next.label}</strong>{" "}
           (<a href="https://www.acaciaco.com.mx/stockflow#planes" target="_blank" rel="noopener noreferrer" className="underline">ver planes</a>).
