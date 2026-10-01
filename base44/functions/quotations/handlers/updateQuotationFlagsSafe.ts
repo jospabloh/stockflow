@@ -91,8 +91,6 @@ export async function handle(req: Request): Promise<Response> {
       }
     }
 
-    await base44.asServiceRole.entities.Quotation.update(quotation.id, sanitizedUpdates);
-
     // Tenant rule reconciliation for petty cash:
     // - Marking paid true
     // - Marking paid false
@@ -146,6 +144,10 @@ export async function handle(req: Request): Promise<Response> {
         ];
       }
     }
+
+    // Persist AFTER deriving amount_paid/balance/payments above — assigning them to
+    // sanitizedUpdates after the update left them unsaved (paid=true, amount_paid=0).
+    await base44.asServiceRole.entities.Quotation.update(quotation.id, sanitizedUpdates);
 
     if (shouldReconcilePettyCash && bizId) {
       const isCashPayment = paymentMethodAfter.toLowerCase().includes('efectivo');
