@@ -106,6 +106,19 @@ export async function handle(req: Request): Promise<Response> {
 
     const sr = base44.asServiceRole;
 
+    // `tenant_id` = id propio: la regla RLS `{id: {{user.data.business_id}}}` no
+    // empareja (devuelve [] / 404 al dueño); `data.tenant_id` sí, y read/update de
+    // Business la usan. Va ANTES de asignar al usuario y, si falla, se borra el
+    // negocio recién creado para no dejar un tenant a medias e inalcanzable.
+    // Solo el servicio puede escribirlo (candado de campo: role admin).
+    try {
+      await sr.entities.Business.update(business.id, { tenant_id: business.id });
+    } catch (e) {
+      console.error('[createBusinessSafe] tenant_id', e);
+      await sr.entities.Business.delete(business.id).catch(() => {});
+      return Response.json({ error: 'No se pudo crear el negocio' }, { status: 500 });
+    }
+
     // Grant business_id + admin tier via the service role — this is the one
     // privileged write this whole function exists to gate. Bounded to exactly
     // the business we just created for exactly this caller.
@@ -118,7 +131,7 @@ export async function handle(req: Request): Promise<Response> {
       role: 'owner',
     });
 
-    return Response.json({ success: true, business });
+    return Response.json({ success: true, business: { ...business, tenant_id: business.id } });
   } catch (error) {
     console.error('[createBusinessSafe]', error);
     return Response.json({ error: (error as Error).message }, { status: 500 });

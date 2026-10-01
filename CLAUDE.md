@@ -2365,3 +2365,9 @@ la solicitud sí se creó. Hacer los tres pasos en la misma ventana.
 
 `resolveJoinRequest`, rama de reintento (`already_member`): antes solo registraba `assigned_role`; ahora, si el rol guardado del solicitante difiere del que eligió quien aprueba, lo escribe con el mismo `User.update` del camino original (así `assigned_role` nunca contradice el rol real tras un fallo a medias). También se descartó la línea de comentario de redeploy suelta en `business/entry.ts`.
 Verificado: lint (con validate:functions y validate:roles), build, validate:rls (31/23), deno lint (201 archivos), deno test --allow-env base44 (76/0). No verificado: contra Base44 en vivo; no se desplegó.
+
+## `Business.tenant_id`: la regla `id` no empareja al dueño (2026-10-01)
+
+La regla RLS `{"id": "{{user.data.business_id}}"}` de `Business` devolvía `[]` (lista) y 404 (get) al propio dueño, así que Configuración > Equipo mostraba el código de invitación como "—", Configuración > Negocio salía sin nombre con un falso "Configuración incompleta", y la unión por solicitud (`listJoinRequests`/`resolveJoinRequest`) quedaba inutilizable. Una regla sobre `data.<campo>` con la misma plantilla sí empareja (comprobado con una entidad sonda).
+
+**Fix:** campo `Business.tenant_id` (= `id` del propio negocio) y `{"data.tenant_id": "{{user.data.business_id}}"}` en `read` y `update` (se conservan la rama `id` y la de admin; `create`/`delete` no cambian). `tenant_id` lleva candado de campo `write: {role: admin}`: sin él, un admin de negocio podría apuntarlo al id de otro negocio y leerlo. **Toda ruta que cree un `Business` debe fijar `tenant_id = business.id`** con rol de servicio, antes de asignar al usuario (hoy solo `createBusinessSafe`; si falla borra el negocio). Backfill 2026-10-01: los 4 negocios existentes (`update_entities`, solo ese campo).
