@@ -147,9 +147,10 @@ export async function handle(req: Request): Promise<Response> {
         // Reverse FIRST when un-paying or switching away from cash — those are
         // unconditional regardless of newlyCollected.
         if (!effectivePaid || !isCashPayment) {
-          await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+          await base44.asServiceRole.functions.invoke('pettyCash', {
             'x-cron-secret': Deno.env.get('CRON_SECRET'),
-            action: 'reverse',
+            action: 'syncCashSaleToPettyCash',
+            sync_action: 'reverse',
             origin_type: 'quotation',
             origin_id: quotation.id,
             amount: 0,
@@ -169,9 +170,10 @@ export async function handle(req: Request): Promise<Response> {
           // call entirely — calling syncCashSaleToPettyCash with amount 0 would
           // trigger shouldReverseForPaymentChange inside that function and DELETE
           // the existing cash entry, which is wrong (the quotation is still paid).
-          await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+          await base44.asServiceRole.functions.invoke('pettyCash', {
             'x-cron-secret': Deno.env.get('CRON_SECRET'),
-            action: 'reconcile',
+            action: 'syncCashSaleToPettyCash',
+            sync_action: 'reconcile',
             origin_type: 'quotation',
             origin_id: quotation.id,
             amount: newlyCollected,

@@ -89,7 +89,8 @@ export async function handle(req: Request): Promise<Response> {
       // que provocaba doble descuento. applyMovementStock aplica una sola vez.)
       // Best-effort: automatización + dailyStockReconcile son respaldo.
       try {
-        await base44.asServiceRole.functions.invoke('applyMovementStock', {
+        await base44.asServiceRole.functions.invoke('movements', {
+          action: 'applyMovementStock',
           movement_id: mov.id,
           business_id: q.business_id,
           'x-cron-secret': Deno.env.get('CRON_SECRET'),

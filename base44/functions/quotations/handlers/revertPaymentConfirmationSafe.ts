@@ -71,9 +71,10 @@ export async function handle(req: Request): Promise<Response> {
     // 3. Reverse the "full payment confirmed" petty-cash entry (origin_id = quotation.id)
     //    used by the quick "Confirmar Pago Total" flow via updateQuotationFlagsSafe.
     try {
-      await base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+      await base44.asServiceRole.functions.invoke('pettyCash', {
         'x-cron-secret': Deno.env.get('CRON_SECRET'),
-        action: 'reverse',
+        action: 'syncCashSaleToPettyCash',
+        sync_action: 'reverse',
         origin_type: 'quotation',
         origin_id: quotation_id,
         amount: 0,

@@ -156,3 +156,23 @@ repo; active workflows = 3). Removed 12 functions, none of which had a caller in
 `cleanupSessions`, `dailyPermissionAudit`, `dailyDocumentationAudit` and
 `sendCourseReminders` are deployed but have **no scheduler** — nothing runs them.
 Full analysis: ~/Documents/09_Proyectos_Cowork/Negocios_StockFlow_ConsolidacionFunciones/.
+
+## Wave 3 (branch `claude/consolidacion-ola-3`, pending deploy/verification)
+
+Moved verbatim into router handlers (old standalone functions stay deployed
+until verified in production, then are deleted):
+
+| Old function | New home |
+|---|---|
+| `applyMovementStock` | `movements` action `applyMovementStock` |
+| `syncCashSaleToPettyCash` | `pettyCash` action `syncCashSaleToPettyCash` |
+| `upgradeOwnerToAdmin`, `restoreOwnerAdmin` | `permissions` actions of the same name |
+
+**Contract change (backend-only, frontend untouched):** `syncCashSaleToPettyCash`
+already used `action` for `create|reverse|reconcile`. Behind the router `action`
+is the handler name, so the sub-action now travels in `sync_action`. All 13
+backend call sites (5 `applyMovementStock`, 8 `syncCashSaleToPettyCash`) were
+updated to `invoke('movements'|'pettyCash', { action: <handler>, ... })`.
+Anyone still calling the OLD functions (e.g. a panel automation) keeps working
+until they are deleted. Characterization tests:
+`base44/tests/ola3_stock_and_cash_test.ts` (run with `--allow-env --allow-read`).

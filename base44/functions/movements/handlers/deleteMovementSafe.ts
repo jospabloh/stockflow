@@ -95,9 +95,10 @@ export async function handle(req: Request): Promise<Response> {
     // TENANT-SCOPED: Reverse any system-generated petty cash income linked to this movement
     // Only relevant if this was a paid direct exit (not linked to a quotation)
     if (movement.type === 'exit' && !movement.quotation_id && movement.paid) {
-      base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+      base44.asServiceRole.functions.invoke('pettyCash', {
         'x-cron-secret': Deno.env.get('CRON_SECRET'),
-        action: 'reverse',
+        action: 'syncCashSaleToPettyCash',
+        sync_action: 'reverse',
         origin_type: 'movement',
         origin_id: movement_id,
         business_id: user.business_id,

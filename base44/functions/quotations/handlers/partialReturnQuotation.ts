@@ -89,7 +89,8 @@ export async function handle(req: Request): Promise<Response> {
       // Reintegro de stock síncrono y exactamente-una-vez (no depende del trigger).
       // Best-effort: automatización + dailyStockReconcile son respaldo.
       try {
-        await base44.asServiceRole.functions.invoke('applyMovementStock', {
+        await base44.asServiceRole.functions.invoke('movements', {
+          action: 'applyMovementStock',
           movement_id: mov.id,
           business_id: user.business_id,
           'x-cron-secret': Deno.env.get('CRON_SECRET'),

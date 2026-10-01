@@ -1,0 +1,25 @@
+{
+  "name": "applyMovementStock",
+  "purpose": "Aplica el efecto de UN movimiento sobre Product.stock exactamente una vez (idempotente vía stock_applied) — COPIA LEGADA: el código vive ahora en el handler movements/applyMovementStock",
+  "status": "deprecated",
+  "created": "2026-03-01",
+  "owner": "platform",
+  "triggers": [],
+  "auth": "cron_secret|user",
+  "tenant_scoped": true,
+  "entities": {
+    "reads": [
+      "Movement",
+      "Product"
+    ],
+    "writes": [
+      "Movement",
+      "Product"
+    ]
+  },
+  "tests": [
+    "base44/tests/ola3_stock_and_cash_test.ts"
+  ],
+  "actions": {},
+  "remove_when": "Ola 3 verificada en producción (Publish hecho, sin errores de 'movements' action applyMovementStock, invariantes sin diferencias) y confirmado que ninguna automatización del panel ni llamador externo invoca 'applyMovementStock'. Entonces borrar base44/functions/applyMovementStock/."
+}

@@ -104,7 +104,8 @@ export async function handle(req: Request): Promise<Response> {
     // Best-effort: si fallara, la automatización (idempotente) y dailyStockReconcile
     // actúan como respaldo; no se rompe el registro del movimiento.
     try {
-      await base44.asServiceRole.functions.invoke('applyMovementStock', {
+      await base44.asServiceRole.functions.invoke('movements', {
+        action: 'applyMovementStock',
         movement_id: movement.id,
         business_id,
         'x-cron-secret': Deno.env.get('CRON_SECRET'),
@@ -117,9 +118,10 @@ export async function handle(req: Request): Promise<Response> {
     // Skip when total is 0 (force_zero_price / internal transfer)
     const movementTotal = (movement.quantity || 0) * (movement.unit_price || 0);
     if (movement.type === 'exit' && !movement.quotation_id && movement.paid && movementTotal > 0) {
-      base44.asServiceRole.functions.invoke('syncCashSaleToPettyCash', {
+      base44.asServiceRole.functions.invoke('pettyCash', {
         'x-cron-secret': Deno.env.get('CRON_SECRET'),
-        action: 'reconcile',
+        action: 'syncCashSaleToPettyCash',
+        sync_action: 'reconcile',
         origin_type: 'movement',
         origin_id: movement.id,
         amount: movementTotal,

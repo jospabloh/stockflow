@@ -1,0 +1,71 @@
+{
+  "name": "movements",
+  "purpose": "Movimientos de inventario (crear, borrar, confirmar pago) y aplicación idempotente del delta de stock",
+  "status": "active",
+  "created": "2026-03-01",
+  "owner": "platform",
+  "triggers": [
+    "frontend",
+    "backend:quotations"
+  ],
+  "auth": "user",
+  "tenant_scoped": true,
+  "entities": {
+    "reads": [
+      "Business",
+      "Movement",
+      "PermissionProfile",
+      "Product",
+      "TenantRule"
+    ],
+    "writes": [
+      "Movement",
+      "PettyCashMovement",
+      "Product",
+      "TenantRule"
+    ]
+  },
+  "tests": [
+    "base44/tests/ola3_stock_and_cash_test.ts",
+    "base44/tests/owner_role_test.ts",
+    "base44/tests/permissions_safe_functions_test.ts"
+  ],
+  "actions": {
+    "createMovementSafe": {
+      "purpose": "createMovementSafe (ver handlers/createMovementSafe.ts)",
+      "callers": [
+        "src/components/movements/MovementFormDialog.jsx"
+      ]
+    },
+    "deleteMovementSafe": {
+      "purpose": "deleteMovementSafe (ver handlers/deleteMovementSafe.ts)",
+      "callers": [
+        "src/pages/Movements.jsx"
+      ]
+    },
+    "confirmMovementPaymentSafe": {
+      "purpose": "confirmMovementPaymentSafe (ver handlers/confirmMovementPaymentSafe.ts)",
+      "callers": [
+        "src/pages/Movements.jsx"
+      ]
+    },
+    "updateMovementPaymentDetailsSafe": {
+      "purpose": "updateMovementPaymentDetailsSafe (ver handlers/updateMovementPaymentDetailsSafe.ts)",
+      "callers": [
+        "src/components/movements/MovementEditDialog.jsx"
+      ]
+    },
+    "applyMovementStock": {
+      "purpose": "Aplica el efecto de UN movimiento sobre Product.stock exactamente una vez (idempotente vía stock_applied)",
+      "callers": [
+        "base44/functions/movements/handlers/createMovementSafe.ts",
+        "base44/functions/quotations/handlers/cancelQuotationSafe.ts",
+        "base44/functions/quotations/handlers/convertQuotationSafe.ts",
+        "base44/functions/quotations/handlers/deliverQuotationSafe.ts",
+        "base44/functions/quotations/handlers/partialReturnQuotation.ts"
+      ],
+      "auth": "cron_secret|user"
+    }
+  },
+  "remove_when": null
+}

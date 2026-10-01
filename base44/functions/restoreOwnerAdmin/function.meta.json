@@ -1,0 +1,22 @@
+{
+  "name": "restoreOwnerAdmin",
+  "purpose": "Restaura al dueño de plataforma como admin en el tenant ACACIA OWNER SANDBOX (reparación puntual) — COPIA LEGADA: el código vive ahora en el handler permissions/restoreOwnerAdmin",
+  "status": "deprecated",
+  "created": "2026-03-01",
+  "owner": "platform",
+  "triggers": [],
+  "auth": "user",
+  "tenant_scoped": false,
+  "entities": {
+    "reads": [
+      "Business",
+      "User"
+    ],
+    "writes": [
+      "User"
+    ]
+  },
+  "tests": [],
+  "actions": {},
+  "remove_when": "Ola 3 verificada en producción (Publish hecho, sin errores de 'permissions' action restoreOwnerAdmin, invariantes sin diferencias) y confirmado que ninguna automatización del panel ni llamador externo invoca 'restoreOwnerAdmin'. Entonces borrar base44/functions/restoreOwnerAdmin/."
+}

@@ -2008,7 +2008,7 @@ como están escritas.
   escrituras de `PermissionProfile` son sólo `admin`, así que ahora escribe como
   servicio **después** de su propia comprobación de rol.
 - `npm run validate:roles` (dentro de `lint`) falla si alguna función asigna
-  `role: 'admin'` fuera de `upgradeOwnerToAdmin`/`restoreOwnerAdmin`.
+  `role: 'admin'` fuera de `upgradeOwnerToAdmin`/`restoreOwnerAdmin` (ahora handlers del router `permissions`; copias legadas en `base44/functions/<fn>/` hasta verificar la ola 3).
 - Mission Control ya buscaba destinatarios de StockFlow con `['owner','admin']`.
 
 **Orden de despliegue — importa:**
