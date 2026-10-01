@@ -10,7 +10,9 @@ export async function handle(req: Request): Promise<Response> {
     const { quotation_id, payment_id } = await req.json();
     if (!quotation_id || !payment_id) return Response.json({ error: 'quotation_id and payment_id are required' }, { status: 400 });
 
-    const q = await base44.asServiceRole.entities.Quotation.get(quotation_id);
+    // filter (not get): get() throws on an unknown id and surfaced as a 500.
+    const quotations = await base44.asServiceRole.entities.Quotation.filter({ id: quotation_id });
+    const q = quotations[0];
     if (!q) return Response.json({ error: 'Quotation not found' }, { status: 404 });
     if (q.business_id !== user.business_id) return Response.json({ error: 'Forbidden' }, { status: 403 });
 

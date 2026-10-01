@@ -16,7 +16,9 @@ export async function handle(req: Request): Promise<Response> {
     if (!amount || Number(amount) <= 0) return Response.json({ error: 'amount must be > 0' }, { status: 400 });
     if (!payment_method) return Response.json({ error: 'payment_method is required' }, { status: 400 });
 
-    const q = await base44.asServiceRole.entities.Quotation.get(quotation_id);
+    // filter (not get): get() throws on an unknown id and surfaced as a 500.
+    const quotations = await base44.asServiceRole.entities.Quotation.filter({ id: quotation_id });
+    const q = quotations[0];
     if (!q) return Response.json({ error: 'Quotation not found' }, { status: 404 });
     if (q.business_id !== user.business_id) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
