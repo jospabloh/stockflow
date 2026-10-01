@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { hasPermission } from './_permissions.ts';
 
 // ---- EAN-13 logic (inlined — no local imports allowed in Deno functions) ----
 
@@ -55,6 +56,12 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     const product = products[0];
+
+    // Same key the UI gates the "Generar código" button on (ProductTable.jsx).
+    const allowed = await hasPermission(base44.asServiceRole, user, 'Productos', 'barcode');
+    if (!allowed) {
+      return Response.json({ success: false, error: 'Forbidden: missing permission', permission: 'Productos:barcode' }, { status: 403 });
+    }
 
     // Never overwrite an existing barcode
     if (product.barcode && product.barcode.trim() !== "") {
