@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { applyStockForMovement, stockWarning } from '../../../shared/applyStock.ts';
 import { hasPermission } from './_permissions.ts';
 import { validateMovementInput } from './_validation.ts';
 
@@ -31,6 +32,7 @@ function isCashMethod(method: string, allowed: string[] = DEFAULT_CASH_METHODS):
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
+    const stockFailures: Array<{ movement_id: string; product_name?: string; error?: string }> = [];
     const user = await base44.auth.me();
 
     if (!user) {
@@ -116,16 +118,10 @@ export async function handle(req: Request): Promise<Response> {
     // stock_applied, por lo que la automatización no lo duplica.
     // Best-effort: si fallara, la automatización (idempotente) y dailyStockReconcile
     // actúan como respaldo; no se rompe el registro del movimiento.
-    try {
-      await base44.asServiceRole.functions.invoke('movements', {
-        action: 'applyMovementStock',
-        movement_id: movement.id,
-        business_id,
-        'x-cron-secret': Deno.env.get('CRON_SECRET'),
-      });
-    } catch (e) {
-      console.log(`[createMovementSafe] applyMovementStock failed for ${movement.id}: ${(e as Error).message}`);
-    }
+    {
+        const r = await applyStockForMovement(base44, { movement_id: movement.id, business_id: business_id, product_id: movement.product_id, product_name: product_name, caller: 'createMovementSafe' });
+        if (!r.ok) stockFailures.push({ movement_id: movement.id, product_name: product_name, error: r.error });
+      }
 
     // If this is a paid direct exit, reconcile petty cash based on tenant rule + payment method
     // Skip when total is 0 (force_zero_price / internal transfer)
@@ -189,7 +185,7 @@ export async function handle(req: Request): Promise<Response> {
         .catch(() => {});
     }
 
-    return Response.json({ success: true, movement_id: movement.id, movement });
+    return Response.json({ success: true, movement_id: movement.id, movement, stock_warning: stockWarning(stockFailures) });
   } catch (error) {
     return Response.json({ success: false, error: (error as Error).message }, { status: 500 });
   }

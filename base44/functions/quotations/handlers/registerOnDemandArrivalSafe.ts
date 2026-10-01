@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { applyStockForMovement, stockWarning } from '../../../shared/applyStock.ts';
 import { hasPermission } from './_permissions.ts';
 
 /**
@@ -10,11 +11,9 @@ import { hasPermission } from './_permissions.ts';
  * 'Movimientos:entry' since this registers a stock entry, mirroring the
  * action id PettyCash/Movements already use for the same concept.
  *
- * Keeps the exact same write shape the client used (Movement created with
- * stock_applied:true + a direct Product.stock update, not
- * applyMovementStock — unlike deliverQuotationSafe's EXIT movements, this
- * was never routed through the stock-apply automation, so switching that now
- * would be an unrelated behavior change). Adds an idempotency guard
+ * Stock effect: the entry Movement is created and applied through
+ * applyMovementStock (stock_apply_state + retries) like every other writer;
+ * a failure is surfaced via stock_warning + a persistent alert. Adds an idempotency guard
  * (skip if an entry movement already exists for this quotation+item) since
  * this is not atomic and could be double-invoked, mirroring the pattern
  * deliverQuotationSafe already uses for its own EXIT movements.
@@ -82,9 +81,11 @@ export async function handle(req: Request): Promise<Response> {
     const currentStock = product.stock || 0;
     const newStock = currentStock + qty;
 
-    // El stock se actualiza a mano abajo, por eso se marca stock_applied=true
-    // (evita que applyMovementStock/automatización lo sume otra vez).
-    await base44.asServiceRole.entities.Movement.create({
+    // El stock lo aplica applyMovementStock (una sola vez, con estado y
+    // reintentos). Antes se creaba el Movement con stock_applied:true y luego
+    // se hacía Product.update: si la 2a escritura fallaba quedaba la marca en
+    // true con el stock sin aplicar, y nadie lo detectaba.
+    const mov = await base44.asServiceRole.entities.Movement.create({
       product_id: item.product_id,
       product_name: item.product_name,
       type: 'entry',
@@ -95,17 +96,23 @@ export async function handle(req: Request): Promise<Response> {
       stock_after: newStock,
       reason: `Entrada por pedido - Cotización #${quotation.folio || quotation.id}${notes ? ` — ${notes}` : ''}`,
       business_id: user.business_id,
-      stock_applied: true,
     });
 
-    await base44.asServiceRole.entities.Product.update(item.product_id, { stock: newStock });
+    const applied = await applyStockForMovement(base44, {
+      movement_id: mov.id,
+      business_id: user.business_id,
+      product_id: item.product_id,
+      product_name: item.product_name,
+      caller: 'registerOnDemandArrivalSafe',
+    });
+    const stockFailures = applied.ok ? [] : [{ movement_id: mov.id, product_name: item.product_name, error: applied.error }];
 
     const updatedItems = (quotation.items || []).map((it, idx) =>
       idx === Number(item_index) ? { ...it, on_demand_status: 'product_created' } : it
     );
     await base44.asServiceRole.entities.Quotation.update(quotation.id, { items: updatedItems });
 
-    return Response.json({ success: true, new_stock: newStock });
+    return Response.json({ success: true, new_stock: newStock, stock_warning: stockWarning(stockFailures) });
   } catch (error) {
     return Response.json({ success: false, error: (error as Error).message }, { status: 500 });
   }

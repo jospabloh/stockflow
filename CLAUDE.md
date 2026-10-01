@@ -2371,3 +2371,23 @@ Verificado: lint (con validate:functions y validate:roles), build, validate:rls 
 La regla RLS `{"id": "{{user.data.business_id}}"}` de `Business` devolvía `[]` (lista) y 404 (get) al propio dueño, así que Configuración > Equipo mostraba el código de invitación como "—", Configuración > Negocio salía sin nombre con un falso "Configuración incompleta", y la unión por solicitud (`listJoinRequests`/`resolveJoinRequest`) quedaba inutilizable. Una regla sobre `data.<campo>` con la misma plantilla sí empareja (comprobado con una entidad sonda).
 
 **Fix:** campo `Business.tenant_id` (= `id` del propio negocio) y `{"data.tenant_id": "{{user.data.business_id}}"}` en `read` y `update` (se conservan la rama `id` y la de admin; `create`/`delete` no cambian). `tenant_id` lleva candado de campo `write: {role: admin}`: sin él, un admin de negocio podría apuntarlo al id de otro negocio y leerlo. **Toda ruta que cree un `Business` debe fijar `tenant_id = business.id`** con rol de servicio, antes de asignar al usuario (hoy solo `createBusinessSafe`; si falla borra el negocio). Backfill 2026-10-01: los 4 negocios existentes (`update_entities`, solo ese campo).
+
+## Stock aplicado de forma confiable (fix stock-no-aplicado, 2026-10-01)
+
+`applyMovementStock` hacía dos escrituras sin red (`Product.update` y luego `Movement.update{stock_applied}`) y
+los escritores (`createMovementSafe`, `convertQuotationSafe`, `deliverQuotationSafe`, `cancelQuotationSafe`,
+`partialReturnQuotation`) se tragaban el error con `console.log`. Si la 2a escritura fallaba (429/5xx/timeout),
+el stock SÍ cambiaba pero el Movement quedaba con `stock_applied=false` y el usuario veía "éxito" (4 casos de
+Baristop, sep-2026; sus datos NO se tocan: solo se reportan).
+
+Ahora: `applyMovementStock` escribe `stock_apply_state='pending'` + `stock_before` ANTES de tocar el producto,
+reintenta cada escritura y se recupera de un fallo parcial con `stock_before` (nunca aplica dos veces; 409
+`needs_review` si no puede decidir; no reaplica movimientos históricos sin estado de más de 30 min).
+`shared/applyStock.ts` (`applyStockForMovement`) lo invoca, deja `stock_apply_state='failed'` + una alerta
+`InventoryAuditLog.event_type='stock_apply_failed'` y los endpoints devuelven `stock_warning` (el frontend
+muestra un toast) en lugar de éxito silencioso. `registerOnDemandArrivalSafe` ya no marca `stock_applied:true`
+antes de escribir el producto. `dailyStockReconcile` (ventana 25 h, correo al owner si quedan anomalías) reintenta de forma segura los `pending/failed` y
+solo ALERTA (una vez) los demás; nunca corrige históricos.
+**Orden de despliegue:** primero las entidades (`Movement`: stock_apply_state/stock_before/stock_apply_error;
+`InventoryAuditLog`: enum `stock_apply_failed`), después las funciones. Sin el esquema la plataforma descarta
+los campos nuevos en silencio y el código queda en modo degradado (sin recuperación automática, sin reintentos ciegos).

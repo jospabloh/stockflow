@@ -120,10 +120,16 @@ async function readSrc(rel: string): Promise<string | null> {
   }
 }
 
+// Los handlers importan ../../../shared/applyStock.ts (relativo): un data: URL no puede
+// resolver rutas relativas, así que se inlinea como otro data: URL.
+const SHARED_APPLY_STOCK_URL = "data:application/typescript;base64," +
+  btoa(unescape(encodeURIComponent(await Deno.readTextFile(new URL("../shared/applyStock.ts", import.meta.url)))));
+
 async function importRewritten(src: string): Promise<Row> {
   const rewritten = "// @ts-nocheck\n" +
     src
       .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK_URL}'`)
+      .replace(/from\s+['"](?:\.\.\/)+shared\/applyStock\.ts['"]/, `from '${SHARED_APPLY_STOCK_URL}'`)
       .replace("Deno.serve(", "globalThis.__serve(");
   const url = "data:application/typescript;base64," + btoa(unescape(encodeURIComponent(rewritten)));
   return await import(url);
@@ -197,7 +203,8 @@ Deno.test("hay al menos una variante cargada de cada funcion", () => {
 function stockDb(mov: Row, product: Row = { id: "p1", business_id: "b1", stock: 10 }) {
   const db = new FakeDb();
   db.seed("Product", [product]);
-  db.seed("Movement", [{ id: "m1", business_id: "b1", product_id: "p1", ...mov }]);
+  // created_date reciente: un movimiento SIN stock_apply_state y de más de 30 min se considera histórico (no se reaplica).
+  db.seed("Movement", [{ id: "m1", business_id: "b1", product_id: "p1", created_date: new Date().toISOString(), ...mov }]);
   return db;
 }
 

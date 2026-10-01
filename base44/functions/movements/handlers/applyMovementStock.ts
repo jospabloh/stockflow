@@ -1,4 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { withRetry, isTransient } from '../../../shared/applyStock.ts';
+
+// Un movimiento SIN stock_apply_state y creado hace más de esto es histórico
+// (aplicado por el flujo anterior o con la marca perdida): no se reaplica nunca
+// automáticamente porque duplicaría el efecto. Se reporta y se revisa a mano.
+const LEGACY_WINDOW_MS = 30 * 60 * 1000;
+
 
 /**
  * applyMovementStock — aplica el efecto de UN movimiento sobre Product.stock
@@ -14,6 +21,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  *   exit | return      → stock − quantity
  *   adjustment         → quantity   (valor ABSOLUTO, como indica la UI)
  * El stock nunca queda por debajo de 0.
+ *
+ * Robustez (fix stock-no-aplicado): escribe stock_apply_state='pending' +
+ * stock_before ANTES de tocar el producto, reintenta (429/5xx/red) cada
+ * escritura, y si encuentra un movimiento 'pending'/'failed' decide con
+ * stock_before si el producto ya fue escrito (solo pone la marca) o no (aplica);
+ * en cualquier otro caso responde 409 needs_review sin tocar nada.
  *
  * Autorización: igual que el resto de funciones internas — acepta CRON_SECRET
  * (scheduler / invocación service-role) o un usuario autenticado de su propio
@@ -85,27 +98,98 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     const qty = movement.quantity || 0;
-    let newStock = product.stock || 0;
-
-    if (movement.type === 'entry') {
-      newStock += qty;
-    } else if (movement.type === 'exit' || movement.type === 'return') {
-      newStock -= qty;
-    } else if (movement.type === 'adjustment') {
-      newStock = qty; // adjustment fija el stock final de forma absoluta
-    } else {
+    const stockNow = product.stock || 0;
+    const compute = (base: number) => {
+      let n = base;
+      if (movement.type === 'entry') n += qty;
+      else if (movement.type === 'exit' || movement.type === 'return') n -= qty;
+      else if (movement.type === 'adjustment') n = qty; // fija el stock final de forma absoluta
+      return n < 0 ? 0 : n;
+    };
+    if (!['entry', 'exit', 'return', 'adjustment'].includes(movement.type)) {
       return Response.json({ success: false, error: `Unknown movement type: ${movement.type}` }, { status: 400 });
     }
 
-    if (newStock < 0) newStock = 0;
+    const state = movement.stock_apply_state;
+    const retryable = (state === 'pending' || state === 'failed') && typeof movement.stock_before === 'number';
+    let baseStock = stockNow;
+    let productAlreadyWritten = false;
+    // ¿el estado quedó realmente persistido? Si el esquema de Movement aún no tiene
+    // los campos nuevos, la plataforma los descarta en silencio: sin estado NO hay
+    // recuperación segura y los llamadores no deben reintentar a ciegas.
+    let recoverable = retryable;
 
-    await base44.asServiceRole.entities.Product.update(movement.product_id, { stock: newStock });
-    await base44.asServiceRole.entities.Movement.update(movement_id, {
-      stock_applied: true,
-      stock_after: newStock,
-    });
+    if (retryable) {
+      // Recuperación: ¿el producto ya refleja este movimiento?
+      const before = movement.stock_before as number;
+      const expected = compute(before);
+      if (stockNow === before) {
+        baseStock = before; // la escritura del producto no ocurrió: aplicar
+      } else if (stockNow === expected) {
+        productAlreadyWritten = true; // ya escrito: solo falta la marca
+      } else {
+        return Response.json({
+          success: false, needs_review: true, product_written: null,
+          error: `needs_review: stock actual ${stockNow} no coincide con stock_before ${before} ni con el esperado ${expected}`,
+        }, { status: 409 });
+      }
+    } else if (state === 'pending' || state === 'failed') {
+      return Response.json({ success: false, needs_review: true, product_written: null, error: 'needs_review: movimiento pendiente sin stock_before' }, { status: 409 });
+    } else {
+      const age = Date.now() - Date.parse(movement.created_date || '');
+      if (Number.isFinite(age) && age > LEGACY_WINDOW_MS) {
+        return Response.json({
+          success: false, needs_review: true, product_written: null,
+          error: 'needs_review: movimiento histórico sin stock_apply_state; no se reaplica automáticamente',
+        }, { status: 409 });
+      }
+    }
 
-    return Response.json({ success: true, product_id: movement.product_id, new_stock: newStock });
+    const newStock = productAlreadyWritten ? stockNow : compute(baseStock);
+
+    // (a) rastro ANTES de tocar el producto
+    if (!retryable) {
+      try {
+        await withRetry(() => base44.asServiceRole.entities.Movement.update(movement_id, {
+          stock_apply_state: 'pending',
+          stock_before: stockNow,
+        }));
+      } catch (e) {
+        // Nada se escribió todavía: seguro devolver error.
+        return Response.json({ success: false, product_written: false, recoverable: false, error: `pending-mark failed: ${(e as Error).message}` }, { status: 500 });
+      }
+      try {
+        const chk = await withRetry(() => base44.asServiceRole.entities.Movement.get(movement_id));
+        recoverable = chk?.stock_apply_state === 'pending' && chk?.stock_before === stockNow;
+      } catch { recoverable = false; }
+      if (!recoverable) {
+        console.log(`[applyMovementStock] WARNING: stock_apply_state no se persistió para ${movement_id} (¿esquema Movement sin desplegar?). Modo degradado: sin recuperación automática.`);
+      }
+    }
+
+    // (b) escribir el producto
+    if (!productAlreadyWritten) {
+      try {
+        await withRetry(() => base44.asServiceRole.entities.Product.update(movement.product_id, { stock: newStock }));
+      } catch (e) {
+        // Un timeout puede haber escrito igualmente: el reintento lo resuelve con stock_before.
+        return Response.json({ success: false, product_written: null, recoverable, error: `Product.update failed: ${(e as Error).message}` }, { status: isTransient(e) ? 500 : 400 });
+      }
+    }
+
+    // (c) marca final
+    try {
+      await withRetry(() => base44.asServiceRole.entities.Movement.update(movement_id, {
+        stock_applied: true,
+        stock_apply_state: 'applied',
+        stock_after: newStock,
+        stock_apply_error: '',
+      }));
+    } catch (e) {
+      return Response.json({ success: false, product_written: true, recoverable, error: `Movement mark failed: ${(e as Error).message}` }, { status: 500 });
+    }
+
+    return Response.json({ success: true, product_id: movement.product_id, new_stock: newStock, recovered: productAlreadyWritten || undefined });
   } catch (error) {
     return Response.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
