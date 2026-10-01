@@ -1,6 +1,6 @@
 {
   "name": "Daily Stock Reconcile",
-  "description": "Reporte diario de SOLO LECTURA: movimientos de los últimos 2 días con stock_applied != true. No corrige nada. Corre 08:30 CDMX (14:30 UTC).",
+  "description": "Reporte diario de SOLO LECTURA: movimientos de las últimas 25 h con stock_applied != true; si hay anomalías avisa por correo al platform owner. No corrige nada. Corre 08:30 CDMX (14:30 UTC).",
   "trigger": {
     "condition": null,
     "config": {

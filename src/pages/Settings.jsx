@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, CheckCircle2, Minus, ShieldCheck, History, Gift, Download } from "lucide-react";
+import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, Minus, ShieldCheck, History, Gift, Download } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
@@ -41,7 +41,6 @@ export default function Settings() {
   const [_diagnosticBusinessId, setDiagnosticBusinessId] = useState(null);
   const [auditResult, setAuditResult] = useState(null);
   const [auditing, setAuditing] = useState(false);
-  const [fixingProductId, setFixingProductId] = useState(null);
   const [dismissedIds, setDismissedIds] = useState(() => {
     try {
       const raw = localStorage.getItem(`sf_audit_dismissed_${businessId}`);
@@ -707,7 +706,7 @@ export default function Settings() {
                       setAuditing(true);
                       setAuditResult(null);
                       try {
-                        const resp = await base44.functions.invoke('auditInventoryNow', {});
+                        const resp = await base44.functions.invoke('products', { action: 'auditInventory' });
                         setAuditResult(resp.data);
                       } catch (e) {
                         toast.error(`Error al auditar: ${e.message}`);
@@ -761,7 +760,6 @@ export default function Settings() {
                             {visible.map((d) => {
                               const badge = reasonLabel[d.reason_type] || reasonLabel.sync_error;
                               const isInflated = d.difference > 0;
-                              const isBusy = fixingProductId === d.product_id;
                               return (
                                 <div key={d.product_id} className="border-b border-border last:border-0 px-4 py-4 hover:bg-muted/20 space-y-2">
                                   <div className="flex items-start justify-between gap-3">
@@ -804,64 +802,9 @@ export default function Settings() {
                                     >
                                       <Minus className="h-3 w-3 mr-1" /> Ignorar
                                     </Button>
-                                    {d.can_auto_correct && (
-                                      <>
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-7 text-xs border-slate-300 text-slate-600 hover:bg-slate-50"
-                                          disabled={isBusy}
-                                          onClick={async () => {
-                                            setFixingProductId(d.product_id);
-                                            try {
-                                              await base44.functions.invoke('products', { action: 'applyInventoryAuditCorrection',
-                                                product_id: d.product_id,
-                                                action: 'accept_current',
-                                                expected_stock: d.expected_stock,
-                                              });
-                                              toast.success(`${d.product}: stock actual (${d.current_stock}) aceptado y reconciliado`);
-                                              dismissProduct(d.product_id);
-                                            } catch (e) {
-                                              toast.error(`Error: ${e.message}`);
-                                            } finally {
-                                              setFixingProductId(null);
-                                            }
-                                          }}
-                                        >
-                                          <CheckCircle2 className={`h-3.5 w-3.5 mr-1.5 ${isBusy ? 'animate-spin' : ''}`} />
-                                          Aceptar actual ({d.current_stock})
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          className="h-7 text-xs bg-brand-600 hover:bg-brand-700 text-white"
-                                          disabled={isBusy}
-                                          onClick={async () => {
-                                            setFixingProductId(d.product_id);
-                                            try {
-                                              await base44.functions.invoke('products', { action: 'applyInventoryAuditCorrection',
-                                                product_id: d.product_id,
-                                                action: 'revert_to_calculated',
-                                                expected_stock: d.expected_stock,
-                                              });
-                                              toast.success(`${d.product}: stock corregido a ${d.expected_stock}`);
-                                              dismissProduct(d.product_id);
-                                            } catch (e) {
-                                              toast.error(`Error: ${e.message}`);
-                                            } finally {
-                                              setFixingProductId(null);
-                                            }
-                                          }}
-                                        >
-                                          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isBusy ? 'animate-spin' : ''}`} />
-                                          Corregir a {d.expected_stock}
-                                        </Button>
-                                      </>
-                                    )}
-                                    {!d.can_auto_correct && (
-                                      <p className="text-xs text-slate-400 self-center">
-                                        Usa <strong>Movimientos → Ajuste</strong> para corregir manualmente.
+                                    <p className="text-xs text-slate-400 self-center">
+                                        Solo informativo: el stock historico no se corrige desde la auditoria. Usa <strong>Movimientos → Ajuste</strong> para corregir manualmente.
                                       </p>
-                                    )}
                                   </div>
                                 </div>
                               );

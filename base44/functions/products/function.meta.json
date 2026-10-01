@@ -1,0 +1,45 @@
+{
+  "name": "products",
+  "purpose": "Productos (alta, edición, borrado, códigos de barras, importación) y auditoría de inventario del tenant",
+  "status": "active",
+  "owner": "platform",
+  "triggers": [
+    "frontend"
+  ],
+  "auth": "user (cada handler valida usuario, tenant y permiso)",
+  "tenant_scoped": true,
+  "entities": {
+    "reads": [
+      "InventoryAuditLog",
+      "Movement",
+      "PermissionProfile",
+      "Product"
+    ],
+    "writes": [
+      "InventoryAuditLog",
+      "Movement",
+      "Product"
+    ]
+  },
+  "tests": [
+    "base44/tests/procesos_control_test.ts"
+  ],
+  "actions": {
+    "auditInventory": {
+      "purpose": "Auditoría de inventario del tenant, SOLO LECTURA: compara Product.stock con el último stock_after de los Movement y clasifica las diferencias (direct_edit, sync_error, no_movements, legacy_bug). Restaura el antiguo auditInventoryNow. Requiere permiso Configuracion:audit_inventory. Pagina Movement/Product/InventoryAuditLog (sin topes fijos).",
+      "entities": ["InventoryAuditLog", "Movement", "PermissionProfile", "Product"],
+      "callers": ["src/pages/Settings.jsx (botón 'Auditar inventario')"]
+    },
+    "applyInventoryAuditCorrection": {
+      "purpose": "DESHABILITADA (regla: el stock pasado no se modifica, solo se reporta). Responde 403 audit_correction_disabled y no escribe nada. Rehabilitarla requiere PR aparte aprobado por JP: recalcular expected_stock en servidor y rechazar no_movements/legacy_bug.",
+      "entities": ["InventoryAuditLog", "Movement", "Product"],
+      "callers": []
+    },
+    "createProductSafe": { "purpose": "ver handlers/createProductSafe.ts", "callers": ["frontend"] },
+    "updateProductSafe": { "purpose": "ver handlers/updateProductSafe.ts", "callers": ["frontend"] },
+    "deleteProductSafe": { "purpose": "ver handlers/deleteProductSafe.ts", "callers": ["frontend"] },
+    "generateBarcodeSafe": { "purpose": "ver handlers/generateBarcodeSafe.ts", "callers": ["frontend"] },
+    "updateProductBarcodeSafe": { "purpose": "ver handlers/updateProductBarcodeSafe.ts", "callers": ["frontend"] },
+    "importItemsSafe": { "purpose": "ver handlers/importItemsSafe.ts", "callers": ["frontend"] }
+  }
+}
