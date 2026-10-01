@@ -1,0 +1,124 @@
+{
+  "name": "quotations",
+  "purpose": "Ciclo de vida de cotizaciones (crear, convertir, entregar, cancelar, devolver, pagos)",
+  "status": "active",
+  "created": "2026-03-01",
+  "owner": "platform",
+  "triggers": [
+    "frontend"
+  ],
+  "auth": "user",
+  "tenant_scoped": true,
+  "entities": {
+    "reads": [
+      "Business",
+      "Category",
+      "Client",
+      "Movement",
+      "PermissionProfile",
+      "PettyCashMovement",
+      "Product",
+      "Quotation",
+      "TenantRule"
+    ],
+    "writes": [
+      "Movement",
+      "PettyCashMovement",
+      "Product",
+      "Quotation",
+      "TenantRule"
+    ]
+  },
+  "tests": [
+    "base44/tests/integration_test.ts",
+    "base44/tests/owner_role_test.ts"
+  ],
+  "actions": {
+    "createQuotationSafe": {
+      "purpose": "createQuotationSafe (ver handlers/createQuotationSafe.ts)",
+      "callers": [
+        "src/components/quotations/QuotationFormDialog.jsx"
+      ]
+    },
+    "updateQuotationSafe": {
+      "purpose": "updateQuotationSafe (ver handlers/updateQuotationSafe.ts)",
+      "callers": [
+        "src/components/quotations/QuotationFormDialog.jsx"
+      ]
+    },
+    "updateQuotationFlagsSafe": {
+      "purpose": "updateQuotationFlagsSafe (ver handlers/updateQuotationFlagsSafe.ts)",
+      "callers": [
+        "src/components/reports/UnbilledNonCashInvoiceReport.jsx",
+        "src/pages/Quotations.jsx"
+      ]
+    },
+    "cancelQuotationSafe": {
+      "purpose": "cancelQuotationSafe (ver handlers/cancelQuotationSafe.ts)",
+      "callers": [
+        "src/pages/Quotations.jsx"
+      ]
+    },
+    "convertQuotationSafe": {
+      "purpose": "convertQuotationSafe (ver handlers/convertQuotationSafe.ts)",
+      "callers": [
+        "src/pages/Quotations.jsx"
+      ]
+    },
+    "deliverQuotationSafe": {
+      "purpose": "deliverQuotationSafe (ver handlers/deliverQuotationSafe.ts)",
+      "callers": [
+        "src/pages/Quotations.jsx"
+      ]
+    },
+    "regenerateQuotation": {
+      "purpose": "regenerateQuotation (ver handlers/regenerateQuotation.ts)",
+      "callers": [
+        "src/pages/Quotations.jsx"
+      ]
+    },
+    "partialReturnQuotation": {
+      "purpose": "partialReturnQuotation (ver handlers/partialReturnQuotation.ts)",
+      "callers": [
+        "src/components/quotations/PartialReturnDialog.jsx"
+      ]
+    },
+    "calculateQuotationWithTransport": {
+      "purpose": "calculateQuotationWithTransport (ver handlers/calculateQuotationWithTransport.ts)",
+      "callers": [
+        "src/components/quotations/QuotationFormDialog.jsx"
+      ]
+    },
+    "respondToPublicQuotation": {
+      "purpose": "respondToPublicQuotation (ver handlers/respondToPublicQuotation.ts)",
+      "callers": [
+        "src/pages/PublicQuotation.jsx"
+      ]
+    },
+    "getPublicQuotation": {
+      "purpose": "getPublicQuotation (ver handlers/getPublicQuotation.ts)",
+      "callers": [
+        "src/pages/PublicQuotation.jsx"
+      ]
+    },
+    "revertPaymentConfirmationSafe": {
+      "purpose": "revertPaymentConfirmationSafe (ver handlers/revertPaymentConfirmationSafe.ts)",
+      "callers": [
+        "src/pages/Quotations.jsx"
+      ]
+    },
+    "registerOnDemandArrivalSafe": {
+      "purpose": "registerOnDemandArrivalSafe (ver handlers/registerOnDemandArrivalSafe.ts)",
+      "callers": [
+        "src/components/quotations/CreateFromOnDemandModal.jsx"
+      ]
+    },
+    "toggleQuotationShareSafe": {
+      "purpose": "toggleQuotationShareSafe (ver handlers/toggleQuotationShareSafe.ts)",
+      "callers": [
+        "src/components/quotations/QuotationPreviewDialog.jsx"
+      ]
+    }
+  },
+  "remove_when": null
+}

@@ -1,0 +1,65 @@
+{
+  "name": "pettyCash",
+  "purpose": "Caja chica (CRUD) y sincronización automática de ventas en efectivo con la regla de tenant cash_sales_to_petty_cash",
+  "status": "active",
+  "created": "2026-03-01",
+  "owner": "platform",
+  "triggers": [
+    "frontend",
+    "backend:movements",
+    "backend:quotations"
+  ],
+  "auth": "user",
+  "tenant_scoped": true,
+  "entities": {
+    "reads": [
+      "Business",
+      "PermissionProfile",
+      "PettyCashMovement",
+      "TenantRule"
+    ],
+    "writes": [
+      "PettyCashMovement",
+      "TenantRule"
+    ]
+  },
+  "tests": [
+    "base44/tests/ola3_stock_and_cash_test.ts",
+    "base44/tests/owner_role_test.ts",
+    "base44/tests/permissions_safe_functions_test.ts"
+  ],
+  "actions": {
+    "createPettyCashMovementSafe": {
+      "purpose": "createPettyCashMovementSafe (ver handlers/createPettyCashMovementSafe.ts)",
+      "callers": [
+        "src/components/petty-cash/PettyCashMovementForm.jsx"
+      ]
+    },
+    "updatePettyCashMovementSafe": {
+      "purpose": "updatePettyCashMovementSafe (ver handlers/updatePettyCashMovementSafe.ts)",
+      "callers": [
+        "src/components/petty-cash/PettyCashMovementForm.jsx"
+      ]
+    },
+    "deletePettyCashMovementSafe": {
+      "purpose": "deletePettyCashMovementSafe (ver handlers/deletePettyCashMovementSafe.ts)",
+      "callers": [
+        "src/pages/PettyCash.jsx"
+      ]
+    },
+    "syncCashSaleToPettyCash": {
+      "purpose": "Crea/actualiza/revierte la entrada de caja chica de una venta en efectivo (anti-duplicados). Sub-acción create|reverse|reconcile en sync_action",
+      "callers": [
+        "base44/functions/movements/handlers/confirmMovementPaymentSafe.ts",
+        "base44/functions/movements/handlers/createMovementSafe.ts",
+        "base44/functions/movements/handlers/deleteMovementSafe.ts",
+        "base44/functions/movements/handlers/updateMovementPaymentDetailsSafe.ts",
+        "base44/functions/quotations/handlers/cancelQuotationSafe.ts",
+        "base44/functions/quotations/handlers/revertPaymentConfirmationSafe.ts",
+        "base44/functions/quotations/handlers/updateQuotationFlagsSafe.ts"
+      ],
+      "auth": "cron_secret|user"
+    }
+  },
+  "remove_when": null
+}

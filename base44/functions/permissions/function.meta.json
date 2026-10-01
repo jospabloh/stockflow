@@ -1,0 +1,79 @@
+{
+  "name": "permissions",
+  "purpose": "Perfiles de permisos, roles de usuario y reparaciones de dueño de plataforma",
+  "status": "active",
+  "created": "2026-03-01",
+  "owner": "platform",
+  "triggers": [
+    "frontend"
+  ],
+  "auth": "user",
+  "tenant_scoped": true,
+  "entities": {
+    "reads": [
+      "Business",
+      "PermissionProfile",
+      "User"
+    ],
+    "writes": [
+      "PermissionProfile",
+      "User"
+    ]
+  },
+  "tests": [
+    "base44/tests/ola3_stock_and_cash_test.ts",
+    "base44/tests/owner_role_test.ts",
+    "base44/tests/permissions_safe_functions_test.ts"
+  ],
+  "actions": {
+    "getPermissionProfiles": {
+      "purpose": "getPermissionProfiles (ver handlers/getPermissionProfiles.ts)",
+      "callers": [
+        "src/lib/PermissionContext.jsx",
+        "src/pages/PermissionAdmin.jsx"
+      ]
+    },
+    "upsertPermissionProfile": {
+      "purpose": "upsertPermissionProfile (ver handlers/upsertPermissionProfile.ts)",
+      "callers": [
+        "src/pages/PermissionAdmin.jsx"
+      ]
+    },
+    "seedDefaultPermissionProfiles": {
+      "purpose": "seedDefaultPermissionProfiles (ver handlers/seedDefaultPermissionProfiles.ts)",
+      "callers": [
+        "src/pages/BusinessSetup.jsx",
+        "src/pages/PermissionAdmin.jsx"
+      ]
+    },
+    "backfillPermissionDefaults": {
+      "purpose": "backfillPermissionDefaults (ver handlers/backfillPermissionDefaults.ts)",
+      "callers": [
+        "src/pages/PermissionAdmin.jsx"
+      ]
+    },
+    "changeUserRole": {
+      "purpose": "changeUserRole (ver handlers/changeUserRole.ts)",
+      "callers": [
+        "src/components/settings/TeamMembersManager.jsx"
+      ]
+    },
+    "getTeamMembers": {
+      "purpose": "getTeamMembers (ver handlers/getTeamMembers.ts)",
+      "callers": [
+        "src/components/settings/TeamMembersManager.jsx"
+      ]
+    },
+    "upgradeOwnerToAdmin": {
+      "purpose": "Promueve al dueño de plataforma a role admin (reparación puntual)",
+      "callers": [],
+      "auth": "user"
+    },
+    "restoreOwnerAdmin": {
+      "purpose": "Restaura al dueño de plataforma como admin en el tenant ACACIA OWNER SANDBOX (reparación puntual)",
+      "callers": [],
+      "auth": "user"
+    }
+  },
+  "remove_when": null
+}

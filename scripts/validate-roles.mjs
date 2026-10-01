@@ -11,8 +11,10 @@ import { join } from "node:path";
 
 const ROOT = "base44/functions";
 const ALLOWED = new Set([
-  "base44/functions/upgradeOwnerToAdmin/entry.ts",
-  "base44/functions/restoreOwnerAdmin/entry.ts",
+  "base44/functions/upgradeOwnerToAdmin/entry.ts", // legacy standalone (se borra tras verificar ola 3)
+  "base44/functions/restoreOwnerAdmin/entry.ts", // legacy standalone (se borra tras verificar ola 3)
+  "base44/functions/permissions/handlers/upgradeOwnerToAdmin.ts",
+  "base44/functions/permissions/handlers/restoreOwnerAdmin.ts",
 ]);
 const ASSIGN = /\brole\s*:\s*['"]admin['"]/;
 
@@ -38,7 +40,8 @@ for (const file of walk(ROOT)) {
 const BUSINESS_ID_WRITERS = new Set([
   "base44/functions/business/handlers/createBusinessSafe.ts",
   "base44/functions/business/handlers/resolveJoinRequest.ts",
-  "base44/functions/restoreOwnerAdmin/entry.ts", // platform-owner recovery
+  "base44/functions/restoreOwnerAdmin/entry.ts", // platform-owner recovery (legacy standalone)
+  "base44/functions/permissions/handlers/restoreOwnerAdmin.ts", // platform-owner recovery
 ]);
 const WRITES_BUSINESS_ID = /User\.update\([^)]*business_id/s;
 for (const file of walk(ROOT)) {
