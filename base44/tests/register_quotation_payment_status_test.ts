@@ -1,7 +1,7 @@
 /**
- * registerQuotationPayment solo debe aceptar pagos sobre cotizaciones
- * `converted`. En borrador/enviada/aceptada/cancelada debe rechazar (400) sin
- * modificar la cotizacion ni crear movimientos de caja chica.
+ * registerQuotationPayment rechaza (400) pagos sobre cotizaciones `draft` o
+ * `cancelled`, sin modificar la cotizacion ni crear movimientos de caja chica.
+ * `sent` y `accepted` (anticipos) y `converted` siguen aceptando pagos.
  * SDK simulado en memoria (sin red ni datos reales).
  *
  * Run: deno test --allow-env --allow-read base44/tests/register_quotation_payment_status_test.ts
@@ -63,7 +63,7 @@ async function pay(status: string) {
   return { status: res.status, json: await res.json() as Row, q: tables.Quotation[0], cash: tables.PettyCashMovement ?? [] };
 }
 
-for (const st of ["draft", "sent", "accepted", "cancelled"]) {
+for (const st of ["draft", "cancelled"]) {
   Deno.test(`rechaza pago sobre cotizacion ${st}`, async () => {
     const r = await pay(st);
     assertEquals(r.status, 400);
@@ -78,3 +78,12 @@ Deno.test("acepta pago sobre cotizacion converted y registra caja", async () => 
   assertEquals(r.q.paid, true);
   assertEquals(r.cash.length, 1);
 });
+
+for (const st of ["sent", "accepted"]) {
+  Deno.test(`acepta anticipo sobre cotizacion ${st} y registra caja`, async () => {
+    const r = await pay(st);
+    assertEquals(r.status, 200);
+    assertEquals(r.q.paid, true);
+    assertEquals(r.cash.length, 1);
+  });
+}
