@@ -9,7 +9,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null); // me() throws when there is no valid session -> 401, not 500
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Admin-only guard
