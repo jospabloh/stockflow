@@ -35,6 +35,11 @@ export async function handle(req: Request): Promise<Response> {
       }, { status: 403 });
     }
 
+    // VALIDATION: name required (400, same as createClientSafe/createContactSafe)
+    if (typeof name !== 'string' || !name.trim()) {
+      return Response.json({ success: false, error: 'El nombre del proveedor es requerido' }, { status: 400 });
+    }
+
     // PERMISSION CHECK — RLS/role only isolate tenants; the granular key is enforced here.
     if (!(await hasPermission(base44.asServiceRole, user, 'Proveedores', 'create'))) {
       return Response.json({ success: false, error: 'Forbidden: missing permission', permission: 'Proveedores:create' }, { status: 403 });
