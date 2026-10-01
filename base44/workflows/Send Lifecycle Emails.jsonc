@@ -30,8 +30,10 @@
         "run_function": {
           "call": "invoke_backend_function",
           "with": {
-            "function_name": "sendLifecycleEmails",
-            "args": {}
+            "function_name": "jobs",
+            "args": {
+              "action": "sendLifecycleEmails"
+            }
           },
           "then": "end"
         }
