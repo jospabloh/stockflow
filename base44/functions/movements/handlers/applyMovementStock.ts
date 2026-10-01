@@ -27,6 +27,9 @@ const LEGACY_WINDOW_MS = 30 * 60 * 1000;
  * escritura, y si encuentra un movimiento 'pending'/'failed' decide con
  * stock_before si el producto ya fue escrito (solo pone la marca) o no (aplica);
  * en cualquier otro caso responde 409 needs_review sin tocar nada.
+ * Anti lost-update: relee Product.stock justo antes de escribir (rebasa si cambió) y
+ * cada reintento de Product.update relee primero (ya escrito -> solo marca; cambio de
+ * tercero -> 409 needs_review); nunca sobrescribe a ciegas con un valor viejo.
  *
  * Autorización: igual que el resto de funciones internas — acepta CRON_SECRET
  * (scheduler / invocación service-role) o un usuario autenticado de su propio
@@ -145,7 +148,7 @@ export async function handle(req: Request): Promise<Response> {
       }
     }
 
-    const newStock = productAlreadyWritten ? stockNow : compute(baseStock);
+    let newStock = productAlreadyWritten ? stockNow : compute(baseStock);
 
     // (a) rastro ANTES de tocar el producto
     if (!retryable) {
@@ -167,13 +170,81 @@ export async function handle(req: Request): Promise<Response> {
       }
     }
 
-    // (b) escribir el producto
+    // (a2) Anti lost-update: Product.update escribe un valor ABSOLUTO. Entre la lectura
+    // inicial y la escritura hubo round-trips (marca pending, relectura), así que otro
+    // movimiento del mismo producto pudo haber cambiado el stock. Se relee JUSTO antes de
+    // escribir y se recalcula sobre el valor fresco; nunca se sobrescribe a ciegas.
+    let beforeStock = retryable ? (movement.stock_before as number) : stockNow;
+    const readFresh = async () => ((await withRetry(() => base44.asServiceRole.entities.Product.get(movement.product_id)))?.stock || 0) as number;
     if (!productAlreadyWritten) {
-      try {
-        await withRetry(() => base44.asServiceRole.entities.Product.update(movement.product_id, { stock: newStock }));
-      } catch (e) {
+      let settled = false;
+      for (let i = 0; i < 3 && !settled; i++) {
+        let fresh: number;
+        try {
+          fresh = await readFresh();
+        } catch (e) {
+          return Response.json({ success: false, product_written: false, recoverable, error: `Product re-read failed: ${(e as Error).message}` }, { status: 500 });
+        }
+        if (fresh === baseStock) { settled = true; break; }
+        if (retryable) {
+          // Recuperación: el stock se movió desde que se decidió. ¿ya está escrito este movimiento?
+          if (fresh === compute(beforeStock)) { productAlreadyWritten = true; newStock = fresh; settled = true; break; }
+          return Response.json({
+            success: false, needs_review: true, product_written: null,
+            error: `needs_review: el stock cambió a ${fresh} durante la recuperación (stock_before ${beforeStock})`,
+          }, { status: 409 });
+        }
+        // Movimiento nuevo y producto sin escribir: otro movimiento concurrente cambió el stock.
+        // Rebasar: actualizar stock_before al valor fresco y recalcular.
+        console.log(`[applyMovementStock] stock concurrente en ${movement.product_id}: ${baseStock} -> ${fresh}; se recalcula`);
+        try {
+          await withRetry(() => base44.asServiceRole.entities.Movement.update(movement_id, { stock_apply_state: 'pending', stock_before: fresh }));
+        } catch (e) {
+          return Response.json({ success: false, product_written: false, recoverable: false, error: `pending-mark failed: ${(e as Error).message}` }, { status: 500 });
+        }
+        baseStock = fresh;
+        beforeStock = fresh;
+      }
+      if (!settled) {
+        // Contención persistente: no se escribió nada; el llamador puede reintentar.
+        return Response.json({ success: false, product_written: false, recoverable, error: 'stock del producto cambiando por movimientos concurrentes; reintenta' }, { status: 503 });
+      }
+      if (!productAlreadyWritten) newStock = compute(baseStock);
+    }
+
+    // (b) escribir el producto. Cada reintento tras un error transitorio relee primero:
+    // un timeout pudo haber escrito, o un tercero pudo haber cambiado el stock.
+    if (!productAlreadyWritten) {
+      let lastErr: unknown = null;
+      for (let i = 0; i < 3; i++) {
+        if (i > 0) {
+          await new Promise((r) => setTimeout(r, Deno.env.get('STOCK_APPLY_RETRY_MS') === '0' ? 0 : [300, 1000][i - 1]));
+          let cur: number;
+          try {
+            cur = await readFresh();
+          } catch (e) {
+            return Response.json({ success: false, product_written: null, recoverable, error: `Product re-read failed: ${(e as Error).message}` }, { status: 500 });
+          }
+          if (cur === newStock) { lastErr = null; break; } // la escritura anterior sí ocurrió
+          if (cur !== beforeStock) {
+            return Response.json({
+              success: false, needs_review: true, product_written: null,
+              error: `needs_review: el stock cambió a ${cur} (stock_before ${beforeStock}, esperado ${newStock}) tras un error de escritura`,
+            }, { status: 409 });
+          }
+        }
+        try {
+          await base44.asServiceRole.entities.Product.update(movement.product_id, { stock: newStock });
+          lastErr = null;
+          break;
+        } catch (e) {
+          lastErr = e;
+          if (!isTransient(e)) break;
+        }
+      }
+      if (lastErr) {
         // Un timeout puede haber escrito igualmente: el reintento lo resuelve con stock_before.
-        return Response.json({ success: false, product_written: null, recoverable, error: `Product.update failed: ${(e as Error).message}` }, { status: isTransient(e) ? 500 : 400 });
+        return Response.json({ success: false, product_written: null, recoverable, error: `Product.update failed: ${(lastErr as Error).message}` }, { status: isTransient(lastErr) ? 500 : 400 });
       }
     }
 

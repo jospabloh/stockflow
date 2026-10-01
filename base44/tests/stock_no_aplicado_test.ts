@@ -252,6 +252,75 @@ Deno.test("applyMovementStock: 'failed' con producto sin escribir (stock == stoc
   assertEquals(db.get("Movement", "m1").stock_applied, true);
 });
 
+Deno.test("applyMovementStock: escritura concurrente entre la marca pending y Product.update NO se pisa (lost-update)", async () => {
+  const db = baseDb(10);
+  db.seed("Movement", [{ id: "m1", business_id: "b1", product_id: "p1", type: "exit", quantity: 1 }]);
+  let injected = false;
+  db.fault = (t, op, _id, d) => {
+    // otra venta (-3) aterriza justo cuando se escribe la marca pending
+    if (!injected && t === "Movement" && op === "update" && d.stock_apply_state === "pending") {
+      injected = true;
+      db.get("Product", "p1").stock = 7;
+    }
+  };
+  const r = await run(db, null, apply, { movement_id: "m1", ...CRON });
+  assertEquals(r.status, 200);
+  assertEquals(db.get("Product", "p1").stock, 6); // 7 (concurrente) - 1; antes habría quedado en 9
+  assertEquals(db.get("Movement", "m1").stock_before, 7);
+  assertEquals(db.get("Movement", "m1").stock_after, 6);
+  assertEquals(db.get("Movement", "m1").stock_applied, true);
+});
+
+Deno.test("applyMovementStock: Product.update con timeout que SÍ escribió -> el reintento no duplica", async () => {
+  const db = baseDb(10);
+  db.seed("Movement", [{ id: "m1", business_id: "b1", product_id: "p1", type: "exit", quantity: 1 }]);
+  let n = 0, writes = 0;
+  db.fault = (t, op, _id, d) => {
+    if (t === "Product" && op === "update") {
+      writes++;
+      if (++n === 1) {
+        db.get("Product", "p1").stock = d.stock; // la plataforma escribió...
+        throw httpErr(504, "timeout"); // ...pero respondió timeout
+      }
+    }
+  };
+  const r = await run(db, null, apply, { movement_id: "m1", ...CRON });
+  assertEquals(r.status, 200);
+  assertEquals(writes, 1); // no se reescribió
+  assertEquals(db.get("Product", "p1").stock, 9);
+  assertEquals(db.get("Movement", "m1").stock_applied, true);
+});
+
+Deno.test("applyMovementStock: timeout que escribió + cambio de un tercero antes del reintento -> 409 needs_review, sin sobrescribir", async () => {
+  const db = baseDb(10);
+  db.seed("Movement", [{ id: "m1", business_id: "b1", product_id: "p1", type: "exit", quantity: 1 }]);
+  let n = 0;
+  db.fault = (t, op, _id, d) => {
+    if (t === "Product" && op === "update" && ++n === 1) {
+      db.get("Product", "p1").stock = d.stock; // escribió (9)
+      db.get("Product", "p1").stock = 5; // y un tercero movió el stock antes del reintento
+      throw httpErr(504, "timeout");
+    }
+  };
+  const r = await run(db, null, apply, { movement_id: "m1", ...CRON });
+  assertEquals(r.status, 409);
+  assertEquals(r.json.needs_review, true);
+  assertEquals(db.get("Product", "p1").stock, 5); // no se pisó
+  assertEquals(db.get("Movement", "m1").stock_applied, undefined);
+});
+
+Deno.test("applyMovementStock: Product.update falla transitorio SIN escribir y el stock sigue igual -> se reintenta y aplica una vez", async () => {
+  const db = baseDb(10);
+  db.seed("Movement", [{ id: "m1", business_id: "b1", product_id: "p1", type: "exit", quantity: 1 }]);
+  let n = 0;
+  db.fault = (t, op) => {
+    if (t === "Product" && op === "update" && ++n === 1) throw httpErr(503);
+  };
+  const r = await run(db, null, apply, { movement_id: "m1", ...CRON });
+  assertEquals(r.status, 200);
+  assertEquals(db.get("Product", "p1").stock, 9);
+});
+
 Deno.test("createMovementSafe: si falla aplicar el stock ya NO hay éxito silencioso (stock_warning + alerta + estado failed)", async () => {
   const db = baseDb(10);
   db.fault = (t, op, _id, d) => {
