@@ -4,8 +4,10 @@
 > (`POST /functions/v1/jobs`, body `{"action": "<nombre>"}`, mismo header `x-cron-secret`).
 > Actions: `sendLifecycleEmails`, `processTrialReactivationEmails`, `dailyPermissionAudit`,
 > `dailyDocumentationAudit`, `dailyStockReconcile`, `cleanupSessions`. Workflows en repo:
-> Send Lifecycle Emails, Trial Reactivation Emails Daily, Daily Stock Reconcile (solo lectura),
-> Cleanup Sessions Daily. `dailyPermissionAudit` y `dailyDocumentationAudit` escriben datos
+> Daily Stock Reconcile (solo lectura, apunta a `jobs`; sirve de prueba de que Base44 entrega `args`).
+> Send Lifecycle Emails y Trial Reactivation Emails Daily siguen apuntando a las funciones viejas hasta
+> confirmar esa entrega; luego se repuntan en un PR aparte. `cleanupSessions` existe como action pero NO
+> se programa: decisión del owner tras medir el impacto (>1000 sesiones viejas, cross-tenant). `dailyPermissionAudit` y `dailyDocumentationAudit` escriben datos
 > (PermissionProfile / AppChangelog / AppVersion) y NO se programan desde el repo: siguen como
 > crons HTTP del panel (actualizar su URL/body según el prompt de abajo).
 > Recordatorios de cursos: cron del panel -> `/functions/v1/courseComms`, body `{"action":"runReminders"}`

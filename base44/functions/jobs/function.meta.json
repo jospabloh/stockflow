@@ -73,7 +73,7 @@
       "entities": [
         "Session"
       ],
-      "callers": "workflow 'Cleanup Sessions Daily' (cron 30 8 * * * UTC, args {action}) o disparo manual del owner"
+      "callers": "disparo manual del owner (NO programado en repo; programarlo es decisión del owner tras medir impacto)"
     }
   },
   "remove_when": "Nunca como router. Borrar las 7 funciones sueltas (sendLifecycleEmails, processTrialReactivationEmails, dailyPermissionAudit, dailyDocumentationAudit, dailyStockReconcile, cleanupSessions, sendCourseReminders) tras 24 h de corridas exitosas por 'jobs' y repuntar los crons del panel (courseComms.runReminders para cursos)."
