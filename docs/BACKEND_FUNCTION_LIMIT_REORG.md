@@ -132,3 +132,27 @@ first. Clear room, then deploy:
    helpers with free slots.
 3. `npx base44 functions deploy --force` — the 13 routers now fit
    (30 + 13 = 43 ≤ 50). Expect `13 deployed, 30 unchanged, 0 errors`.
+
+## 2026-10-01 — Consolidation waves 1 and 2 (47 → 35)
+
+Verified against production first (`base44 functions list` = the same 47 as the
+repo; active workflows = 3). Removed 12 functions, none of which had a caller in
+`src/`, workflows, agents, other functions, other repos or Mission Control:
+
+- **Wave 1 (no callers / one-off):** `getAppState`, `getBusinessName`,
+  `getCorrectBusiness`, `generateUniqueBarcode`, `updateProductStockSafe`
+  (orphaned since aae8f74, 2026-04-20; it also set stock without a movement),
+  `initAppVersion`, `updateAppVersion`, `syncAppVersionToDB` (would roll the
+  version back to 2.8.1 if run), `upsertMissingRoleDefaults`,
+  `migrateWholesaleMinQtyToCategory`.
+- **Wave 2 (dead automations):** `syncProductStock` (deliberate no-op) together
+  with its workflow "Sync Product Stock on Movement" (archived in the panel), and
+  `onProductCreateValidate` (proof of concept, always 401 in automation context,
+  no trigger attached).
+
+`maxFunctions` lowered 47 → 40. Still pending: wave 3 (`applyMovementStock`,
+`syncCashSaleToPettyCash`, owner repairs → routers; needs tests first) and wave 4
+(`jobs` router for the cron functions). Note: `dailyStockReconcile`,
+`cleanupSessions`, `dailyPermissionAudit`, `dailyDocumentationAudit` and
+`sendCourseReminders` are deployed but have **no scheduler** — nothing runs them.
+Full analysis: ~/Documents/09_Proyectos_Cowork/Negocios_StockFlow_ConsolidacionFunciones/.

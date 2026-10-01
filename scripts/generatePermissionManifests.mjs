@@ -114,7 +114,6 @@ const AUTOGEN_TARGETS = [
   { path: ['base44', 'functions', 'enrollments', 'handlers', '_permissions.ts'], block: blockWithDenied },
   { path: ['base44', 'functions', 'clients', 'handlers', '_permissions.ts'], block: blockWithDenied },
   { path: ['base44', 'functions', 'courseComms', 'handlers', '_permissions.ts'], block: blockWithDenied },
-  { path: ['base44', 'functions', 'updateProductStockSafe', '_permissions.ts'], block: blockWithDenied },
   { path: ['base44', 'functions', 'permissions', 'handlers', 'getPermissionProfiles.ts'], block: blockKeysOnly },
 ];
 
