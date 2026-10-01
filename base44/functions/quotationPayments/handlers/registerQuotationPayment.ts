@@ -55,6 +55,12 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
     }
 
+    // Only converted (sale confirmed) quotations can receive payments; draft,
+    // sent, accepted or cancelled ones must not move money or petty cash.
+    if (q.status !== 'converted') {
+      return Response.json({ error: 'Solo se pueden registrar pagos en cotizaciones convertidas', status: q.status }, { status: 400 });
+    }
+
     const currentBalance = getBalance(q);
     const currentAmountPaid = getAmountPaid(q);
 
