@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { hasPermission } from './_permissions.ts';
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -7,9 +8,6 @@ export async function handle(req: Request): Promise<Response> {
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (user.role !== 'admin' && user.role !== 'owner') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const body = await req.json();
@@ -33,6 +31,11 @@ export async function handle(req: Request): Promise<Response> {
         `tried to delete client ${client_id} (business ${record.business_id})`
       );
       return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // PERMISSION CHECK — the granular registry key is enforced here, not just the role.
+    if (!(await hasPermission(base44.asServiceRole, user, 'Clientes', 'delete'))) {
+      return Response.json({ error: 'Forbidden: missing permission', permission: 'Clientes:delete' }, { status: 403 });
     }
 
     // Block if quotations reference this client
