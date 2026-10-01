@@ -22,7 +22,8 @@
     ]
   },
   "tests": [
-    "base44/tests/procesos_control_test.ts"
+    "base44/tests/procesos_control_test.ts",
+    "base44/tests/inventory_audit_correction_test.ts"
   ],
   "actions": {
     "auditInventory": {
@@ -31,9 +32,9 @@
       "callers": ["src/pages/Settings.jsx (botón 'Auditar inventario')"]
     },
     "applyInventoryAuditCorrection": {
-      "purpose": "DESHABILITADA (regla: el stock pasado no se modifica, solo se reporta). Responde 403 audit_correction_disabled y no escribe nada. Rehabilitarla requiere PR aparte aprobado por JP: recalcular expected_stock en servidor y rechazar no_movements/legacy_bug.",
+      "purpose": "Corrección manual de inventario desde la auditoría (nunca automática). Solo owner/admin del tenant y solo sobre productos de su negocio. Body: product_id, mode (accept_current|revert_to_calculated; distinto de action), expected_stock, current_stock, reason (obligatorio), confirm:true (obligatorio). Recalcula el esperado en el servidor, rechaza no_movements/legacy_bug/sin discrepancia y datos desactualizados (409). Registra Movement adjustment (stock_applied=true) y InventoryAuditLog system_correction con performed_by, stock_before, stock_after y notes (motivo); si el registro falla revierte el stock.",
       "entities": ["InventoryAuditLog", "Movement", "Product"],
-      "callers": []
+      "callers": ["src/pages/Settings.jsx (botones 'Aceptar actual' y 'Corregir a N' de Audit Inventario)"]
     },
     "createProductSafe": { "purpose": "ver handlers/createProductSafe.ts", "callers": ["frontend"] },
     "updateProductSafe": { "purpose": "ver handlers/updateProductSafe.ts", "callers": ["frontend"] },

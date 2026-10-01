@@ -7,8 +7,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, Minus, ShieldCheck, History, Gift, Download } from "lucide-react";
+import { Save, Building2, FileText, Upload, AlertTriangle, RefreshCw, Copy, Key, UserX, RotateCcw, Trash2, Globe, PackageSearch, Minus, ShieldCheck, History, Gift, Download, CheckCircle2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { createButtonProps } from "@/lib/a11y";
 import ImportProducts from "@/components/settings/ImportProducts";
 import TeamMembersManager from "@/components/settings/TeamMembersManager";
@@ -41,6 +50,11 @@ export default function Settings() {
   const [_diagnosticBusinessId, setDiagnosticBusinessId] = useState(null);
   const [auditResult, setAuditResult] = useState(null);
   const [auditing, setAuditing] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState(null);
+  // Corrección de inventario: nunca automática; requiere diálogo de confirmación + motivo.
+  const [pendingCorrection, setPendingCorrection] = useState(null); // { d, mode }
+  const [correctionReason, setCorrectionReason] = useState("");
+  const [fixingProductId, setFixingProductId] = useState(null);
   const [dismissedIds, setDismissedIds] = useState(() => {
     try {
       const raw = localStorage.getItem(`sf_audit_dismissed_${businessId}`);
@@ -63,6 +77,7 @@ export default function Settings() {
          const u = await base44.auth.me();
          setDiagnosticBusinessId(businessId);
          setCurrentUserId(u?.id);
+         setCurrentUserRole(u?.role ?? null);
          setCheckingAuth(false);
 
 
@@ -244,6 +259,37 @@ export default function Settings() {
   // irreversible delete — either permission alone is enough to need the tab.
   const canAccountTab = canDeleteAccount || canExportData;
   const canAuditInventory = can('Configuracion', 'audit_inventory');
+  // Solo owner/admin del negocio pueden corregir (el servidor lo vuelve a exigir).
+  const canCorrectInventory = currentUserRole === 'owner' || currentUserRole === 'admin';
+
+  const applyCorrection = async () => {
+    if (!pendingCorrection) return;
+    const { d, mode } = pendingCorrection;
+    setFixingProductId(d.product_id);
+    try {
+      // Ojo: 'action' lo usa el router; el modo de corrección viaja en 'mode'.
+      await base44.functions.invoke('products', {
+        action: 'applyInventoryAuditCorrection',
+        mode,
+        product_id: d.product_id,
+        expected_stock: d.expected_stock,
+        current_stock: d.current_stock,
+        reason: correctionReason.trim(),
+        confirm: true,
+      });
+      toast.success(mode === 'accept_current'
+        ? `${d.product}: stock actual (${d.current_stock}) aceptado y registrado`
+        : `${d.product}: stock corregido a ${d.expected_stock}`);
+      dismissProduct(d.product_id);
+      setPendingCorrection(null);
+      setCorrectionReason("");
+    } catch (e) {
+      const msg = e?.response?.data?.error || e.message;
+      toast.error(`Error: ${msg}`);
+    } finally {
+      setFixingProductId(null);
+    }
+  };
   const canReferrals = can('Configuracion', 'manage_referral');
   const canViewConfig = can('Configuracion', 'view');
   const anyConfigTab = canBusiness || canSat || canTeam || canImport || canAccountTab || canAuditInventory || canReferrals;
@@ -802,9 +848,36 @@ export default function Settings() {
                                     >
                                       <Minus className="h-3 w-3 mr-1" /> Ignorar
                                     </Button>
-                                    <p className="text-xs text-slate-400 self-center">
-                                        Solo informativo: el stock historico no se corrige desde la auditoria. Usa <strong>Movimientos → Ajuste</strong> para corregir manualmente.
+                                    {d.can_auto_correct && canCorrectInventory ? (
+                                      <>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="h-7 text-xs border-slate-300 text-slate-600 hover:bg-slate-50"
+                                          disabled={fixingProductId === d.product_id}
+                                          onClick={() => { setCorrectionReason(""); setPendingCorrection({ d, mode: 'accept_current' }); }}
+                                        >
+                                          <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                                          Aceptar actual ({d.current_stock})
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          className="h-7 text-xs bg-brand-600 hover:bg-brand-700 text-white"
+                                          disabled={fixingProductId === d.product_id}
+                                          onClick={() => { setCorrectionReason(""); setPendingCorrection({ d, mode: 'revert_to_calculated' }); }}
+                                        >
+                                          <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                                          Corregir a {d.expected_stock}
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <p className="text-xs text-slate-400 self-center">
+                                        {d.can_auto_correct
+                                          ? 'Solo el owner o un admin pueden corregir. '
+                                          : 'Este caso no se corrige desde la auditoría. '}
+                                        Usa <strong>Movimientos → Ajuste</strong> para corregir manualmente.
                                       </p>
+                                    )}
                                   </div>
                                 </div>
                               );
@@ -827,6 +900,41 @@ export default function Settings() {
           )}
 
           </Tabs>
+
+          {/* Confirmación explícita de corrección de inventario */}
+          <AlertDialog open={!!pendingCorrection} onOpenChange={(v) => { if (!v && !fixingProductId) setPendingCorrection(null); }}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {pendingCorrection?.mode === 'accept_current' ? 'Aceptar el stock actual' : 'Corregir el stock'}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {pendingCorrection && (pendingCorrection.mode === 'accept_current'
+                    ? `${pendingCorrection.d.product}: se aceptará el stock actual (${pendingCorrection.d.current_stock}) como correcto. El stock no cambia; la decisión queda registrada.`
+                    : `${pendingCorrection.d.product}: el stock pasará de ${pendingCorrection.d.current_stock} a ${pendingCorrection.d.expected_stock} (calculado por el historial de movimientos).`)}
+                  {' '}Se registrará quién lo hizo, cuándo, el valor antes y después y el motivo. Esta acción no se aplica automáticamente.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="py-2 space-y-1">
+                <Label className="text-xs text-slate-500">Motivo (obligatorio)</Label>
+                <Textarea
+                  value={correctionReason}
+                  onChange={(e) => setCorrectionReason(e.target.value)}
+                  maxLength={500}
+                  placeholder="Ej. Conteo físico del 01/10 confirma el stock"
+                />
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={!!fixingProductId}>Cancelar</AlertDialogCancel>
+                <Button
+                  disabled={!!fixingProductId || correctionReason.trim().length < 3}
+                  onClick={applyCorrection}
+                >
+                  {fixingProductId ? 'Aplicando...' : 'Confirmar corrección'}
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           {/* Delete Account Modal — Multi-step Flow */}
       {confirmDeleteAccount && (
