@@ -707,7 +707,7 @@ export default function Settings() {
                       setAuditing(true);
                       setAuditResult(null);
                       try {
-                        const resp = await base44.functions.invoke('auditInventoryNow', {});
+                        const resp = await base44.functions.invoke('products', { action: 'auditInventory' });
                         setAuditResult(resp.data);
                       } catch (e) {
                         toast.error(`Error al auditar: ${e.message}`);
@@ -816,7 +816,7 @@ export default function Settings() {
                                             try {
                                               await base44.functions.invoke('products', { action: 'applyInventoryAuditCorrection',
                                                 product_id: d.product_id,
-                                                action: 'accept_current',
+                                                correction: 'accept_current',
                                                 expected_stock: d.expected_stock,
                                               });
                                               toast.success(`${d.product}: stock actual (${d.current_stock}) aceptado y reconciliado`);
@@ -840,7 +840,7 @@ export default function Settings() {
                                             try {
                                               await base44.functions.invoke('products', { action: 'applyInventoryAuditCorrection',
                                                 product_id: d.product_id,
-                                                action: 'revert_to_calculated',
+                                                correction: 'revert_to_calculated',
                                                 expected_stock: d.expected_stock,
                                               });
                                               toast.success(`${d.product}: stock corregido a ${d.expected_stock}`);

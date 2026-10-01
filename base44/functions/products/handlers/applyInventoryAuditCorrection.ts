@@ -3,7 +3,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 /**
  * Aplica la corrección decidida por el admin durante la auditoría de inventario.
  *
- * Acciones:
+ * Contrato: el router `products` despacha por body.action ('applyInventoryAuditCorrection'),
+ * así que la decisión viaja en body.correction (antes colisionaba con 'action': el
+ * frontend mandaba la clave 'action' dos veces y ganaba la última, el router
+ * respondía 400 "unknown action" y los botones no hacían nada).
+ *
+ * Valores de `correction`:
  *   accept_current   — acepta el stock actual como correcto y registra la reconciliación
  *   revert_to_calculated — revierte product.stock al valor calculado desde movimientos
  *
@@ -25,9 +30,9 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { product_id, action, expected_stock, notes } = body as {
+    const { product_id, correction, expected_stock, notes } = body as {
       product_id?: string;
-      action?: 'accept_current' | 'revert_to_calculated';
+      correction?: 'accept_current' | 'revert_to_calculated';
       expected_stock?: number;
       notes?: string;
     };
@@ -35,8 +40,9 @@ export async function handle(req: Request): Promise<Response> {
     if (!product_id) {
       return Response.json({ error: 'product_id es requerido' }, { status: 400 });
     }
+    const action = correction;
     if (action !== 'accept_current' && action !== 'revert_to_calculated') {
-      return Response.json({ error: 'action debe ser accept_current o revert_to_calculated' }, { status: 400 });
+      return Response.json({ error: 'correction debe ser accept_current o revert_to_calculated' }, { status: 400 });
     }
     if (expected_stock === undefined || expected_stock === null) {
       return Response.json({ error: 'expected_stock es requerido' }, { status: 400 });

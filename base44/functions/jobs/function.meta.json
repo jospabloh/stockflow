@@ -62,11 +62,11 @@
       "callers": "cron HTTP del panel (NO programado en repo) o disparo manual del owner"
     },
     "dailyStockReconcile": {
-      "purpose": "Reporte SOLO LECTURA de Movement recientes (2 días) con stock_applied != true. No corrige.",
+      "purpose": "Reporte SOLO LECTURA de Movement de las últimas 25 h con stock_applied != true; avisa por correo al platform owner si hay anomalías. No corrige.",
       "entities": [
         "Movement"
       ],
-      "callers": "workflow 'Daily Stock Reconcile' (cron 0 8 * * * UTC, args {action}) o disparo manual del owner"
+      "callers": "workflow 'Daily Stock Reconcile' (cron 30 14 * * * UTC = 08:30 CDMX, args {action}) o disparo manual del owner; envía correo a PLATFORM_OWNER_EMAIL solo si hay anomalías"
     },
     "cleanupSessions": {
       "purpose": "Revoca Session active/passive con last_seen > 30 días (cross-tenant).",
