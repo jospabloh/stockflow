@@ -69,7 +69,7 @@ the same winner), and neutralizes the rest using the same "zero the amount, anno
 delete" convention as the manual COT-260707-0001 fix. A duplicate can still exist for the few
 hundred ms between two concurrent writes, but it cannot survive past the losing request's own
 return — including when that request is the one that created it. See
-`base44/functions/syncCashSaleToPettyCash/entry.ts` (`reconcileDuplicates`/`pickSurvivor`).
+`base44/functions/pettyCash/handlers/syncCashSaleToPettyCash.ts` (`reconcileDuplicates`/`pickSurvivor`).
 
 **Correction (same day, caught by automated PR review before it caused any real harm):** the
 first version of this fix ran `reconcileDuplicates` unconditionally, which silently overrode a
