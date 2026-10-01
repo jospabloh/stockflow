@@ -1,0 +1,42 @@
+{
+  "function": "licenses",
+  "module": "26 acacia-app-standard",
+  "purpose": "Router de licencias/trial de tenants (estado, activación admin, confirmación de pago, trial inicial, migración de admins).",
+  "status": "existente; tocado en ola 4 solo para repuntar el despacho de emails de sendLifecycleEmails a jobs.sendLifecycleEmails",
+  "triggers": [
+    "frontend functions.invoke('licenses', {action})"
+  ],
+  "auth": "por handler (sesión de usuario / platform owner)",
+  "tenant_scoped": true,
+  "entities": [
+    "Business",
+    "EmailNotification",
+    "User"
+  ],
+  "tests": [
+    "ninguno específico"
+  ],
+  "actions": {
+    "adminGetAllLicenses": {
+      "callers": "frontend LicenseAdmin"
+    },
+    "adminUpdateTenantLicense": {
+      "callers": "frontend LicenseAdmin",
+      "calls": "POST /functions/v1/jobs action sendLifecycleEmails (license_activated)"
+    },
+    "getCurrentTenantLicenseState": {
+      "callers": "frontend"
+    },
+    "confirmRenewalPayment": {
+      "callers": "frontend LicenseAdmin",
+      "calls": "jobs.sendLifecycleEmails vía asServiceRole.functions.invoke (payment_received)"
+    },
+    "initTenantTrial": {
+      "callers": "frontend"
+    },
+    "migrateBusinessAdminsToOwner": {
+      "callers": "manual"
+    }
+  },
+  "remove_when": "No aplica"
+}

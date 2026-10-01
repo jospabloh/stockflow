@@ -1,5 +1,18 @@
 # Automatizaciones Nocturnas StockFlow — Setup
 
+> **Ola 4 (router `jobs`)**: todas las tareas programadas viven ahora en la función `jobs`
+> (`POST /functions/v1/jobs`, body `{"action": "<nombre>"}`, mismo header `x-cron-secret`).
+> Actions: `sendLifecycleEmails`, `processTrialReactivationEmails`, `dailyPermissionAudit`,
+> `dailyDocumentationAudit`, `dailyStockReconcile`, `cleanupSessions`. Workflows en repo:
+> Daily Stock Reconcile (solo lectura, apunta a `jobs`; sirve de prueba de que Base44 entrega `args`).
+> Send Lifecycle Emails y Trial Reactivation Emails Daily siguen apuntando a las funciones viejas hasta
+> confirmar esa entrega; luego se repuntan en un PR aparte. `cleanupSessions` existe como action pero NO
+> se programa: decisión del owner tras medir el impacto (>1000 sesiones viejas, cross-tenant). `dailyPermissionAudit` y `dailyDocumentationAudit` escriben datos
+> (PermissionProfile / AppChangelog / AppVersion) y NO se programan desde el repo: siguen como
+> crons HTTP del panel (actualizar su URL/body según el prompt de abajo).
+> Recordatorios de cursos: cron del panel -> `/functions/v1/courseComms`, body `{"action":"runReminders"}`
+> (reemplaza al wrapper `sendCourseReminders`).
+
 Este documento contiene el **prompt exacto** para configurar los dos cron jobs nocturnos
 en Base44, y los pasos de verificación post-deploy.
 
@@ -32,11 +45,11 @@ CRON 1 — dailyPermissionAudit
 - Horario: cada día a las 09:00 hora Ciudad de México (15:00 UTC invierno / 14:00 UTC verano).
   Si el scheduler no admite zona horaria usa: 15:00 UTC fijo. Expresión cron: 0 9 * * *
 - Método: POST
-- URL: ${APP_URL}/functions/v1/dailyPermissionAudit
+- URL: ${APP_URL}/functions/v1/jobs   (router; antes /functions/v1/dailyPermissionAudit)
 - Headers:
     Content-Type: application/json
     x-cron-secret: ${CRON_SECRET}
-- Body: {}
+- Body: {"action":"dailyPermissionAudit"}
 - Qué hace:
     * Recorre todos los negocios (Business) × roles (admin, almacenista)
     * Para cada par, verifica que exista un PermissionProfile en BD
@@ -49,11 +62,11 @@ CRON 2 — dailyDocumentationAudit
 - Horario: cada día a las 09:15 hora Ciudad de México (15:15 UTC invierno / 14:15 UTC verano).
   Si el scheduler no admite zona horaria usa: 15:15 UTC fijo. Expresión cron: 15 9 * * *
 - Método: POST
-- URL: ${APP_URL}/functions/v1/dailyDocumentationAudit
+- URL: ${APP_URL}/functions/v1/jobs   (router; antes /functions/v1/dailyDocumentationAudit)
 - Headers:
     Content-Type: application/json
     x-cron-secret: ${CRON_SECRET}
-- Body: {}
+- Body: {"action":"dailyDocumentationAudit"}
 - Requiere secreto adicional: ANTHROPIC_API_KEY_SF configurado como variable de entorno.
 - Qué hace:
     * Compara la versión en código (SNAPSHOT_VERSION baked en la función) vs AppChangelog en BD
@@ -96,12 +109,12 @@ Ejecutar en la raíz del proyecto:
 npm run generate:all
 
 # O individualmente:
-npm run generate:permission-manifests   # → permissionManifests.ts + dailyPermissionAudit
-npm run generate:version-snapshot       # → versionHistorySnapshot.ts + dailyDocumentationAudit
+npm run generate:permission-manifests   # → permissionManifests.ts + jobs/handlers/dailyPermissionAudit.ts
+npm run generate:version-snapshot       # → versionHistorySnapshot.ts + jobs/handlers/dailyDocumentationAudit.ts
 ```
 
 Committer los cambios (incluye los archivos `.ts` actualizados en `src/generated/` y
-los `entry.ts` de las funciones). Base44 desplegará automáticamente en el siguiente push.
+los handlers de `base44/functions/jobs/handlers/`). Base44 desplegará automáticamente en el siguiente push.
 
 ---
 
@@ -110,8 +123,8 @@ los `entry.ts` de las funciones). Base44 desplegará automáticamente en el sigu
 | Archivo | Propósito |
 |---|---|
 | `base44/entities/AppChangelog.jsonc` | Entidad BD para historial de versiones |
-| `base44/functions/dailyPermissionAudit/entry.ts` | Función Deno — cron 09:00 |
-| `base44/functions/dailyDocumentationAudit/entry.ts` | Función Deno — cron 09:15 |
+| `base44/functions/jobs/handlers/dailyPermissionAudit.ts` | Handler del router `jobs` — cron 09:00 |
+| `base44/functions/jobs/handlers/dailyDocumentationAudit.ts` | Handler del router `jobs` — cron 09:15 |
 | `scripts/generatePermissionManifests.mjs` | Regenera permisos desde permissionRegistry.js |
 | `scripts/generateVersionHistorySnapshot.mjs` | Regenera snapshot de versión desde appConfig.js + git |
 | `src/generated/permissionManifests.ts` | Artefacto generado — permisos tipados para el frontend |
@@ -136,3 +149,11 @@ los `entry.ts` de las funciones). Base44 desplegará automáticamente en el sigu
   │           └── AppChangelog.create() + AppVersion.update()
   └── Email → h.josepablo@gmail.com
 ```
+
+## Llamadores de licenses (ola 4)
+
+`confirmRenewalPayment` y `adminUpdateTenantLicense` siguen invocando la funcion vieja
+`sendLifecycleEmails` (no `jobs`). Motivo: `asServiceRole.invoke` no envia `x-cron-secret`
+y no esta verificado que la autorizacion de la action de `jobs` se comporte igual que la
+de la funcion vieja. Migrarlos solo tras verificarlo en preview con un caso real.
+Los rechazos de las actions de `jobs` son 401 (no 403).

@@ -63,7 +63,7 @@ El campo \`STOCKFLOW_UPGRADE_URL\` usaba \`import.meta.env\` sin protección de 
 
 La matriz de permisos fue extendida de **155 a 169 claves canónicas** (+14 nuevas correspondientes a los módulos Cursos, Inscripciones, Campañas y Contactos agregados en versiones anteriores).
 
-Los manifiestos generados (\`src/generated/permissionManifests.ts\`) y la auditoría nocturna de permisos (\`dailyPermissionAudit/entry.ts\`) fueron regenerados para reflejar las 169 claves.
+Los manifiestos generados (\`src/generated/permissionManifests.ts\`) y la auditoría nocturna de permisos (\`jobs/handlers/dailyPermissionAudit.ts\`) fueron regenerados para reflejar las 169 claves.
 
 ---
 

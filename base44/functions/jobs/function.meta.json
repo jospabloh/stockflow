@@ -1,0 +1,80 @@
+{
+  "function": "jobs",
+  "module": "26 acacia-app-standard",
+  "purpose": "Router de trabajos programados/cron de plataforma (consolida 6 funciones sueltas en 1 endpoint). Despacha por body.action; cada handler conserva VERBATIM su validación x-cron-secret / platform-owner.",
+  "status": "new — ola 4 de consolidación (pendiente de deploy/publish); las 6 funciones sueltas originales siguen desplegadas hasta verificar 24 h",
+  "triggers": [
+    "workflows programados (base44/workflows/*.jsonc con function_name 'jobs')",
+    "invocación backend→backend (licenses)",
+    "manual por platform owner"
+  ],
+  "auth": "x-cron-secret (header o body['x-cron-secret']) == CRON_SECRET, o usuario con email == PLATFORM_OWNER_EMAIL. Validado dentro de cada handler; acción desconocida -> 400.",
+  "tenant_scoped": false,
+  "cross_tenant_by_design": true,
+  "entities": [
+    "AppChangelog",
+    "AppSettings",
+    "AppVersion",
+    "Business",
+    "EmailNotification",
+    "Movement",
+    "PermissionProfile",
+    "Session",
+    "User"
+  ],
+  "tests": [
+    "base44/tests/jobs_router_test.ts (estático: registro de actions, workflows y llamadores)"
+  ],
+  "actions": {
+    "sendLifecycleEmails": {
+      "purpose": "Motor de emails de ciclo de vida (EmailNotification con idempotencia/reintentos). Procesa jobs inline en body.jobs o el barrido diario.",
+      "entities": [
+        "Business",
+        "EmailNotification",
+        "User"
+      ],
+      "callers": "workflow 'Send Lifecycle Emails' (cron 0 15 * * * UTC, args {action}); licenses.confirmRenewalPayment (invoke asServiceRole, sin x-cron-secret); licenses.adminUpdateTenantLicense (fetch /functions/v1/jobs con x-cron-secret + Authorization)"
+    },
+    "processTrialReactivationEmails": {
+      "purpose": "Email 'te extrañamos' a trials activos inactivos >24 h (máx 3 por trial, idempotente).",
+      "entities": [
+        "AppSettings",
+        "Business",
+        "EmailNotification",
+        "User"
+      ],
+      "callers": "workflow 'Trial Reactivation Emails Daily' (cron 0 16 * * * UTC, args {action})"
+    },
+    "dailyPermissionAudit": {
+      "purpose": "Auditoría de PermissionProfile por Business x rol (crea/completa claves canónicas) + email al owner. Escribe PermissionProfile.",
+      "entities": [
+        "Business",
+        "PermissionProfile"
+      ],
+      "callers": "cron HTTP del panel (NO programado en repo; ver NIGHTLY_AUTOMATIONS_SETUP.md) o disparo manual del owner"
+    },
+    "dailyDocumentationAudit": {
+      "purpose": "Compara versión en código vs AppChangelog/AppVersion, genera changelog (Anthropic) si falta, email al owner. Escribe AppChangelog/AppVersion.",
+      "entities": [
+        "AppChangelog",
+        "AppVersion"
+      ],
+      "callers": "cron HTTP del panel (NO programado en repo) o disparo manual del owner"
+    },
+    "dailyStockReconcile": {
+      "purpose": "Reporte SOLO LECTURA de Movement recientes (2 días) con stock_applied != true. No corrige.",
+      "entities": [
+        "Movement"
+      ],
+      "callers": "workflow 'Daily Stock Reconcile' (cron 0 8 * * * UTC, args {action}) o disparo manual del owner"
+    },
+    "cleanupSessions": {
+      "purpose": "Revoca Session active/passive con last_seen > 30 días (cross-tenant).",
+      "entities": [
+        "Session"
+      ],
+      "callers": "disparo manual del owner (NO programado en repo; programarlo es decisión del owner tras medir impacto)"
+    }
+  },
+  "remove_when": "Nunca como router. Borrar las 7 funciones sueltas (sendLifecycleEmails, processTrialReactivationEmails, dailyPermissionAudit, dailyDocumentationAudit, dailyStockReconcile, cleanupSessions, sendCourseReminders) tras 24 h de corridas exitosas por 'jobs' y repuntar los crons del panel (courseComms.runReminders para cursos)."
+}
