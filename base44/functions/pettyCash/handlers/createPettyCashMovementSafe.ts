@@ -19,7 +19,7 @@ const MOVEMENT_TYPE_ACTION: Record<string, string> = {
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null);
 
     if (!user) {
       return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });

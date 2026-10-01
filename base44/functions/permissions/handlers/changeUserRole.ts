@@ -57,7 +57,7 @@ const ADMIN_PERMISSIONS = Object.fromEntries(
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const caller = await base44.auth.me();
+    const caller = await base44.auth.me().catch(() => null);
 
     if (!caller) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (caller.role !== 'admin' && caller.role !== 'owner') return Response.json({ error: 'Forbidden: solo admins pueden cambiar roles' }, { status: 403 });

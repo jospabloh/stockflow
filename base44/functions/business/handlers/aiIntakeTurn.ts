@@ -127,7 +127,7 @@ function conversationBlock(subject: string, description: string, history: Array<
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (!user.business_id) return Response.json({ error: 'Forbidden: no business_id' }, { status: 403 });
     // Each turn spends LLM credits: only callers allowed to open a ticket may run the interview.

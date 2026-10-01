@@ -51,7 +51,7 @@ const generateInviteCode = () => {
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Un usuario, un negocio: quien ya pertenece a uno no puede crear otro.
