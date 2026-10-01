@@ -47,6 +47,12 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
     }
 
+    // IDEMPOTENCY: a quotation that is already cancelled must not be processed again
+    // (would re-run payment/petty-cash cleanup and overwrite cancellation_reason).
+    if (quotation.status === 'cancelled') {
+      return Response.json({ success: false, error: 'already_cancelled', quotation_id }, { status: 409 });
+    }
+
     // PHASE 1: If converted, revert stock — net balance approach
     // This handles cases where partial returns were already processed:
     // We calculate net exits (exits - existing returns) per product and only restore that net amount.
@@ -208,6 +214,7 @@ export async function handle(req: Request): Promise<Response> {
          status: 'cancelled',
          cancellation_reason: cancellation_reason || '',
          payments: [], // Clear all payments on cancellation
+         paid: false, // a cancelled quotation cannot stay flagged as paid
          amount_paid: 0,
          balance: quotation.total || 0,
        });

@@ -127,3 +127,31 @@ Deno.test("referencia exacta: 'entry' con prefijo de otro folio no se descuenta"
   await cancel(db);
   assertEquals(db.t.Product[0].stock, 100);
 });
+
+Deno.test("cancelar una venta pagada deja paid=false, sin pagos y saldo = total", async () => {
+  const db = base([{ type: "exit", quantity: 10, reference: "COT-1" }], 90);
+  Object.assign(db.t.Quotation[0], {
+    paid: true, amount_paid: 100, balance: 0,
+    payments: [{ amount: 100, payment_method: "transferencia" }],
+  });
+  const r = await cancel(db);
+  assertEquals(r.status, 200);
+  const q = db.t.Quotation[0];
+  assertEquals(q.status, "cancelled");
+  assertEquals(q.paid, false);
+  assertEquals(q.amount_paid, 0);
+  assertEquals(q.balance, 100);
+  assertEquals(q.payments, []);
+});
+
+Deno.test("recancelar una cotizacion ya cancelada es 409 y no toca stock ni datos", async () => {
+  const db = base([{ type: "exit", quantity: 10, reference: "COT-1" }], 90);
+  assertEquals((await cancel(db)).status, 200);
+  assertEquals(db.t.Product[0].stock, 100);
+  const movs = db.t.Movement.length;
+  const r = await cancel(db);
+  assertEquals(r.status, 409);
+  assertEquals(r.json.error, "already_cancelled");
+  assertEquals(db.t.Product[0].stock, 100);
+  assertEquals(db.t.Movement.length, movs);
+});
