@@ -46,7 +46,8 @@ Deno.test("entry.ts del router responde 400 a action desconocida", async () => {
   assert(entry.includes("status: 400"));
 });
 
-const LEGACY_WORKFLOWS_KEPT = ["Send Lifecycle Emails.jsonc", "Trial Reactivation Emails Daily.jsonc"];
+// Tras #420 los 3 workflows apuntan al router jobs; ya no hay workflows legacy.
+const LEGACY_WORKFLOWS_KEPT: string[] = [];
 
 Deno.test("workflows de jobs usan function_name 'jobs' con action registrada", async () => {
   const dir = new URL("../../base44/workflows/", import.meta.url);
@@ -59,14 +60,12 @@ Deno.test("workflows de jobs usan function_name 'jobs' con action registrada", a
       const m = txt.match(/"action":\s*"(\w+)"/);
       assert(m && ACTIONS.includes(m[1]), `${f.name}: action inválida`);
     }
-    // Los dos workflows de correo siguen apuntando a las funciones viejas hasta
-    // verificar que Base44 entrega 'args' como body de la función (ver PR).
     for (const a of ACTIONS) {
       if (LEGACY_WORKFLOWS_KEPT.includes(f.name) && (a === "sendLifecycleEmails" || a === "processTrialReactivationEmails")) continue;
       assert(!txt.includes(`"function_name": "${a}"`), `${f.name} sigue apuntando a la función vieja ${a}`);
     }
   }
-  assertEquals(found, 1); // solo Daily Stock Reconcile (solo lectura)
+  assertEquals(found, 3); // Daily Stock Reconcile, Send Lifecycle Emails, Trial Reactivation Emails Daily
 });
 
 Deno.test("dailyStockReconcile sigue siendo de solo lectura", async () => {
