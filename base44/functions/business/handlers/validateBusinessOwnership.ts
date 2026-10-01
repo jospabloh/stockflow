@@ -6,9 +6,17 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'Method not allowed' }, { status: 405 });
     }
 
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    
+    // No/invalid session: createClientFromRequest or auth.me() throw instead of
+    // returning null, which the generic catch below turned into a 500.
+    let base44: any;
+    let user: any = null;
+    try {
+      base44 = createClientFromRequest(req);
+      user = await base44.auth.me();
+    } catch (error) {
+      console.error('[validateBusinessOwnership] auth error', error);
+    }
+
     if (!user || !user.business_id) {
       return Response.json({ error: 'Unauthorized or no business assigned' }, { status: 401 });
     }
