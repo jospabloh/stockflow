@@ -6,7 +6,7 @@ const ALLOWED_FIELDS = ['name', 'contact_name', 'email', 'phone', 'address', 'rf
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null); // sin sesion el SDK lanza: debe ser 401, no 500
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
