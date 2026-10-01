@@ -31,9 +31,9 @@
       "callers": ["src/pages/Settings.jsx (botón 'Auditar inventario')"]
     },
     "applyInventoryAuditCorrection": {
-      "purpose": "Aplica la decisión de un admin sobre UNA discrepancia detectada por la auditoría. La decisión viaja en body.correction ('accept_current' | 'revert_to_calculated'); body.action es solo el nombre de la action del router.",
+      "purpose": "DESHABILITADA (regla: el stock pasado no se modifica, solo se reporta). Responde 403 audit_correction_disabled y no escribe nada. Rehabilitarla requiere PR aparte aprobado por JP: recalcular expected_stock en servidor y rechazar no_movements/legacy_bug.",
       "entities": ["InventoryAuditLog", "Movement", "Product"],
-      "callers": ["src/pages/Settings.jsx (botones 'Aceptar actual' / 'Corregir a N')"]
+      "callers": []
     },
     "createProductSafe": { "purpose": "ver handlers/createProductSafe.ts", "callers": ["frontend"] },
     "updateProductSafe": { "purpose": "ver handlers/updateProductSafe.ts", "callers": ["frontend"] },

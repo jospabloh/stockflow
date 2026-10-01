@@ -201,39 +201,25 @@ Deno.test("auditInventory: 401 sin sesión, 403 sin permiso, 200 con permiso", a
 // applyInventoryAuditCorrection: contrato "correction" (antes colisionaba con action)
 // ---------------------------------------------------------------------------
 
-Deno.test("applyInventoryAuditCorrection acepta body.correction (revert_to_calculated)", async () => {
-  const db = auditDb();
-  const r = await call(correction, db, OWNER, {
-    action: "applyInventoryAuditCorrection",
-    product_id: "pBad",
-    correction: "revert_to_calculated",
-    expected_stock: 7,
-  });
-  assertEquals(r.status, 200);
-  assertEquals(r.json.stock_after, 7);
-  assertEquals(db.rows("Product").find((p) => p.id === "pBad")!.stock, 7);
-  assertEquals(db.rows("InventoryAuditLog").length, 1);
-});
-
-Deno.test("applyInventoryAuditCorrection accept_current no cambia el stock", async () => {
-  const db = auditDb();
-  const r = await call(correction, db, OWNER, {
-    action: "applyInventoryAuditCorrection",
-    product_id: "pBad",
-    correction: "accept_current",
-    expected_stock: 7,
-  });
-  assertEquals(r.status, 200);
-  assertEquals(db.rows("Product").find((p) => p.id === "pBad")!.stock, 10);
-});
-
-Deno.test("applyInventoryAuditCorrection sin correction responde 400", async () => {
-  const r = await call(correction, auditDb(), OWNER, {
-    action: "applyInventoryAuditCorrection",
-    product_id: "pBad",
-    expected_stock: 7,
-  });
-  assertEquals(r.status, 400);
+Deno.test("applyInventoryAuditCorrection esta deshabilitada: 403 y no escribe nada (incluye expected_stock arbitrario)", async () => {
+  for (const corr of ["revert_to_calculated", "accept_current"]) {
+    for (const exp of [7, 0, -5, 999999, "abc"]) {
+      const db = auditDb();
+      const stockAntes = db.rows("Product").find((p) => p.id === "pBad")!.stock;
+      const movsAntes = db.rows("Movement").length;
+      const r = await call(correction, db, OWNER, {
+        action: "applyInventoryAuditCorrection",
+        product_id: "pBad",
+        correction: corr,
+        expected_stock: exp,
+      });
+      assertEquals(r.status, 403);
+      assertEquals(r.json.code, "audit_correction_disabled");
+      assertEquals(db.rows("Product").find((p) => p.id === "pBad")!.stock, stockAntes);
+      assertEquals(db.rows("Movement").length, movsAntes);
+      assertEquals(db.rows("InventoryAuditLog").length, 0);
+    }
+  }
 });
 
 Deno.test("frontend: ninguna llamada a functions.invoke repite la clave action ni llama auditInventoryNow", async () => {
@@ -245,9 +231,11 @@ Deno.test("frontend: ninguna llamada a functions.invoke repite la clave action n
     n++;
     assertEquals((m[1].match(/(?<![\w.])action\s*:/g) ?? []).length, 1, `clave action repetida: ${m[0]}`);
   }
-  assert(n >= 3, "esperaba auditInventory + 2 correcciones");
+  assert(n >= 1, "esperaba la llamada auditInventory");
   assert(src.includes("action: 'auditInventory'"));
-  assertEquals((src.match(/correction: '(accept_current|revert_to_calculated)'/g) ?? []).length, 2);
+  // La UI ya no puede escribir stock desde la auditoria
+  assert(!src.includes("applyInventoryAuditCorrection"));
+  assert(!src.includes("Corregir a"));
 });
 
 // ---------------------------------------------------------------------------

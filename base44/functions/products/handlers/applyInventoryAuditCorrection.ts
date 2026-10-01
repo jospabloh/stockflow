@@ -3,12 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 /**
  * Aplica la corrección decidida por el admin durante la auditoría de inventario.
  *
- * Contrato: el router `products` despacha por body.action ('applyInventoryAuditCorrection'),
- * así que la decisión viaja en body.correction (antes colisionaba con 'action': el
- * frontend mandaba la clave 'action' dos veces y ganaba la última, el router
- * respondía 400 "unknown action" y los botones no hacían nada).
- *
- * Valores de `correction`:
+ * Acciones:
  *   accept_current   — acepta el stock actual como correcto y registra la reconciliación
  *   revert_to_calculated — revierte product.stock al valor calculado desde movimientos
  *
@@ -29,10 +24,19 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'Solo administradores pueden aplicar correcciones de auditoría' }, { status: 403 });
     }
 
+    // DESHABILITADA por regla de JP: el stock pasado NO se modifica, solo se reporta.
+    // Esta action ya no escribe nada (ni Product, ni Movement, ni InventoryAuditLog).
+    // Rehabilitarla requiere un PR aparte aprobado explicitamente: recalcular expected_stock
+    // en el servidor (misma logica que auditInventory) y rechazar no_movements/legacy_bug.
+    return Response.json(
+      { error: 'Las correcciones de auditoria estan deshabilitadas: el stock historico solo se reporta, no se modifica. Usa Movimientos -> Ajuste.', code: 'audit_correction_disabled' },
+      { status: 403 },
+    );
+
     const body = await req.json().catch(() => ({}));
-    const { product_id, correction, expected_stock, notes } = body as {
+    const { product_id, action, expected_stock, notes } = body as {
       product_id?: string;
-      correction?: 'accept_current' | 'revert_to_calculated';
+      action?: 'accept_current' | 'revert_to_calculated';
       expected_stock?: number;
       notes?: string;
     };
@@ -40,9 +44,8 @@ export async function handle(req: Request): Promise<Response> {
     if (!product_id) {
       return Response.json({ error: 'product_id es requerido' }, { status: 400 });
     }
-    const action = correction;
     if (action !== 'accept_current' && action !== 'revert_to_calculated') {
-      return Response.json({ error: 'correction debe ser accept_current o revert_to_calculated' }, { status: 400 });
+      return Response.json({ error: 'action debe ser accept_current o revert_to_calculated' }, { status: 400 });
     }
     if (expected_stock === undefined || expected_stock === null) {
       return Response.json({ error: 'expected_stock es requerido' }, { status: 400 });
