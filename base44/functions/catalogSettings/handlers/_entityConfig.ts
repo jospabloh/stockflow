@@ -56,3 +56,8 @@ export const ENTITY_CONFIG: Record<string, CatalogEntityConfig> = {
 export function getEntityConfig(entity: string): CatalogEntityConfig | undefined {
   return ENTITY_CONFIG[entity];
 }
+
+/** Built-in catalog records (Rubro / FundAccount seeded with is_system=true) must never be deleted. */
+export function isProtectedSystemRecord(record: Record<string, unknown> | null | undefined): boolean {
+  return record?.is_system === true;
+}

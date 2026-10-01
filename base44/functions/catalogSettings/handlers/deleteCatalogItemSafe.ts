@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { hasPermission } from './_permissions.ts';
-import { getEntityConfig } from './_entityConfig.ts';
+import { getEntityConfig, isProtectedSystemRecord } from './_entityConfig.ts';
 
 /**
  * Safe delete for Rubro / PaymentMethod / FundAccount.
@@ -32,6 +32,10 @@ export async function handle(req: Request): Promise<Response> {
     }
     if (record.business_id !== user.business_id) {
       return Response.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    }
+
+    if (isProtectedSystemRecord(record)) {
+      return Response.json({ success: false, error: 'system_record_protected' }, { status: 403 });
     }
 
     const allowed = await hasPermission(base44.asServiceRole, user, config.module, config.deleteAction);
