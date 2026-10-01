@@ -118,3 +118,12 @@ Deno.test("movimientos 'return' heredados siguen descontandose", async () => {
   await cancel(db);
   assertEquals(db.t.Product[0].stock, 100);
 });
+
+Deno.test("referencia exacta: 'entry' con prefijo de otro folio no se descuenta", async () => {
+  const db = base([
+    { type: "exit", quantity: 10, reference: "COT-1" },
+    { type: "entry", quantity: 4, reference: "Devolución COT-10" },
+  ], 90);
+  await cancel(db);
+  assertEquals(db.t.Product[0].stock, 100);
+});

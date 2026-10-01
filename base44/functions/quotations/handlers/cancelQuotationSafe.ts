@@ -79,7 +79,7 @@ export async function handle(req: Request): Promise<Response> {
             netByProduct[mov.product_id].quantity += mov.quantity;
           } else if (
             mov.type === 'return' ||
-            (mov.type === 'entry' && (mov.reference || '').startsWith(`Devolución ${quotation.folio}`))
+            (mov.type === 'entry' && mov.reference === `Devolución ${quotation.folio}`)
           ) {
             // Already returned — subtract from what needs to be restored.
             // partialReturnQuotation records returns as 'entry' movements with
