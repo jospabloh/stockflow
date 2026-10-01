@@ -3,7 +3,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    // Sin sesión auth.me() lanza: tratarlo como no autenticado (401), no 500.
+    const user = await base44.auth.me().catch(() => null);
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
