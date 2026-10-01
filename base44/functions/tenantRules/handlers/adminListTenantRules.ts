@@ -6,6 +6,7 @@ const KNOWN_RULE_KEYS = [
   'allow_manual_petty_cash_edit_delete',
   'special_delivery_flow',
   'custom_pricing_override',
+  'enable_granular_permissions',
 ];
 
 export async function handle(req: Request): Promise<Response> {
