@@ -66,7 +66,7 @@
       "callers": "cron HTTP del panel (NO programado en repo) o disparo manual del owner"
     },
     "dailyStockReconcile": {
-      "purpose": "Auditoría de stock (ventana 25 h): reintenta de forma segura movimientos con stock_apply_state pending/failed (vía applyMovementStock) y alerta (InventoryAuditLog stock_apply_failed, una vez) los demás sin aplicar; nunca corrige históricos.",
+      "purpose": "Auditoría de stock (ventana 25 h; correo al owner si quedan anomalías; solo alerta (InventoryAuditLog stock_apply_failed, una vez por movimiento); no reintenta, no sana, no escribe Movement/Product); nunca corrige históricos.",
       "entities": [
         "InventoryAuditLog",
         "Movement"

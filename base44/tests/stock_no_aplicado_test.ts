@@ -119,6 +119,7 @@ const apply = await load("functions/movements/handlers/applyMovementStock.ts");
 const createMov = await load("functions/movements/handlers/createMovementSafe.ts");
 const convert = await load("functions/quotations/handlers/convertQuotationSafe.ts");
 const onDemand = await load("functions/quotations/handlers/registerOnDemandArrivalSafe.ts");
+const deleteMov = await load("functions/movements/handlers/deleteMovementSafe.ts");
 const reconcile = await load("functions/jobs/handlers/dailyStockReconcile.ts");
 
 type Ctx = { db: FakeDb; user: Row | null };
@@ -518,4 +519,41 @@ Deno.test("recuperación segura: ya escrito y sin otros movimientos posteriores 
   assertEquals(r.json.recovered, true);
   assertEquals(db.get("Product", "p1").stock, 8);
   assertEquals(db.get("Movement", "mSale").stock_applied, true);
+});
+
+Deno.test("deleteMovementSafe: movimiento failed/pending sin confirmar -> 409 needs_review, no borra ni revierte stock", async () => {
+  for (const state of ["failed", "pending"]) {
+    const db = baseDb(10); // el producto NUNCA se escribió: sigue en 10
+    db.seed("Movement", [{
+      id: "mBad", business_id: "b1", product_id: "p1", type: "exit", quantity: 2,
+      stock_apply_state: state, stock_applied: false, stock_before: 10,
+    }]);
+    const r = await run(db, owner, deleteMov, { movement_id: "mBad" });
+    assertEquals(r.status, 409);
+    assertEquals(r.json.needs_review, true);
+    assertEquals(db.get("Product", "p1").stock, 10); // sin +2 espurio
+    assertEquals(db.rows("Movement").length, 1);
+  }
+});
+
+Deno.test("deleteMovementSafe: sin estado (los 4 de Baristop, stock_applied=false pero stock SÍ cambió) conserva el comportamiento actual", async () => {
+  const db = baseDb(8); // exit x2 sí se aplicó (10 -> 8)
+  db.seed("Movement", [{
+    id: "mOld", business_id: "b1", product_id: "p1", type: "exit", quantity: 2, stock_applied: false,
+  }]);
+  const r = await run(db, owner, deleteMov, { movement_id: "mOld" });
+  assertEquals(r.status, 200);
+  assertEquals(db.get("Product", "p1").stock, 10);
+  assertEquals(db.rows("Movement").length, 0);
+});
+
+Deno.test("deleteMovementSafe: estado 'failed' pero stock_applied=true (confirmado) se revierte normalmente", async () => {
+  const db = baseDb(8);
+  db.seed("Movement", [{
+    id: "mOk", business_id: "b1", product_id: "p1", type: "exit", quantity: 2,
+    stock_apply_state: "failed", stock_applied: true,
+  }]);
+  const r = await run(db, owner, deleteMov, { movement_id: "mOk" });
+  assertEquals(r.status, 200);
+  assertEquals(db.get("Product", "p1").stock, 10);
 });

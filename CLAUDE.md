@@ -2386,8 +2386,8 @@ reintenta cada escritura y se recupera de un fallo parcial con `stock_before` (n
 `shared/applyStock.ts` (`applyStockForMovement`) lo invoca, deja `stock_apply_state='failed'` + una alerta
 `InventoryAuditLog.event_type='stock_apply_failed'` y los endpoints devuelven `stock_warning` (el frontend
 muestra un toast) en lugar de éxito silencioso. `registerOnDemandArrivalSafe` ya no marca `stock_applied:true`
-antes de escribir el producto. `dailyStockReconcile` (ventana 25 h, correo al owner si quedan anomalías) reintenta de forma segura los `pending/failed` y
-solo ALERTA (una vez) los demás; nunca corrige históricos.
+antes de escribir el producto. `dailyStockReconcile` (ventana 25 h; correo al owner si quedan anomalías; solo alerta (InventoryAuditLog stock_apply_failed, una vez por movimiento); no reintenta, no sana, no escribe Movement/Product); nunca corrige históricos.
+`deleteMovementSafe` responde 409 `needs_review` (sin borrar ni revertir) si el movimiento está `pending/failed` sin `stock_applied:true`; sin estado (los 4 de Baristop) se comporta como siempre.
 **Orden de despliegue:** primero las entidades (`Movement`: stock_apply_state/stock_before/stock_apply_error;
 `InventoryAuditLog`: enum `stock_apply_failed`), después las funciones. Sin el esquema la plataforma descarta
 los campos nuevos en silencio y el código queda en modo degradado (sin recuperación automática, sin reintentos ciegos).
