@@ -55,6 +55,10 @@
       ],
       "type": "string"
     },
+    "stock_pending_at": {
+      "description": "Momento (ISO) en que se escribi\u00f3 la marca pending; permite probar que nadie m\u00e1s toc\u00f3 el producto antes de recuperar un movimiento.",
+      "type": "string"
+    },
     "stock_before": {
       "description": "Stock del producto justo antes de aplicar este movimiento (permite reintentar sin aplicar dos veces).",
       "type": "number"

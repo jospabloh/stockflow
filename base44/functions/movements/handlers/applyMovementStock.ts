@@ -6,6 +6,46 @@ import { withRetry, isTransient } from '../../../shared/applyStock.ts';
 // automáticamente porque duplicaría el efecto. Se reporta y se revisa a mano.
 const LEGACY_WINDOW_MS = 30 * 60 * 1000;
 
+const ACTIVE_STATES = ['pending', 'applied', 'failed'];
+const ts = (v: unknown) => Date.parse(String(v || ''));
+
+/**
+ * Recuperación segura: devuelve un motivo (string) si NO se puede probar que ningún otro
+ * proceso tocó el stock del producto desde que este movimiento dejó su marca 'pending';
+ * null si es seguro decidir (reaplicar o solo marcar). Comparar valores (stock actual ==
+ * stock_before / esperado) NO basta: otros movimientos pueden devolver el stock a ese mismo
+ * valor (ABA) y el reintento duplicaría o marcaría en falso. Por eso, ante la duda, se
+ * responde needs_review y se deja a revisión humana (los fallos pasados solo se reportan).
+ */
+// deno-lint-ignore no-explicit-any
+async function recoveryBlocker(base44: any, movement: any, product: any, productWritten: boolean): Promise<string | null> {
+  // stock_pending_at lo escribe la marca pending; si el esquema aún no lo tiene, created_date
+  // (anterior a la marca) es una referencia más conservadora.
+  const ref = ts(movement.stock_pending_at || movement.created_date);
+  if (!Number.isFinite(ref)) return 'el movimiento no tiene marca de tiempo verificable';
+  if (!productWritten) {
+    const pu = ts(product.updated_date);
+    if (Number.isFinite(pu) && pu > ref) {
+      return `el producto se modificó (${product.updated_date}) después de la marca pendiente del movimiento`;
+    }
+  }
+  // deno-lint-ignore no-explicit-any
+  let others: any[];
+  try {
+    others = await withRetry(() => base44.asServiceRole.entities.Movement.filter({ product_id: movement.product_id }, '-updated_date', 500)) || [];
+  } catch (e) {
+    return `no se pudo verificar los movimientos del producto: ${(e as Error).message}`;
+  }
+  const touched = others.find((o) =>
+    o.id !== movement.id &&
+    (o.stock_applied === true || ACTIVE_STATES.includes(o.stock_apply_state)) &&
+    Math.max(ts(o.updated_date) || 0, ts(o.created_date) || 0) > ref
+  );
+  if (touched) {
+    return `otro movimiento del mismo producto (${touched.id}) cambió o intentó cambiar el stock después de este`;
+  }
+  return null;
+}
 
 /**
  * applyMovementStock — aplica el efecto de UN movimiento sobre Product.stock
@@ -25,8 +65,10 @@ const LEGACY_WINDOW_MS = 30 * 60 * 1000;
  * Robustez (fix stock-no-aplicado): escribe stock_apply_state='pending' +
  * stock_before ANTES de tocar el producto, reintenta (429/5xx/red) cada
  * escritura, y si encuentra un movimiento 'pending'/'failed' decide con
- * stock_before si el producto ya fue escrito (solo pone la marca) o no (aplica);
- * en cualquier otro caso responde 409 needs_review sin tocar nada.
+ * stock_before si el producto ya fue escrito (solo pone la marca) o no (aplica), PERO
+ * solo si prueba que ningún otro movimiento/escritura tocó el producto desde la marca
+ * pending (recoveryBlocker; comparar valores no basta por ABA); en cualquier otro caso
+ * responde 409 needs_review sin tocar nada.
  * Anti lost-update: relee Product.stock justo antes de escribir (rebasa si cambió) y
  * cada reintento de Product.update relee primero (ya escrito -> solo marca; cambio de
  * tercero -> 409 needs_review); nunca sobrescribe a ciegas con un valor viejo.
@@ -126,16 +168,23 @@ export async function handle(req: Request): Promise<Response> {
       // Recuperación: ¿el producto ya refleja este movimiento?
       const before = movement.stock_before as number;
       const expected = compute(before);
-      if (stockNow === before) {
-        baseStock = before; // la escritura del producto no ocurrió: aplicar
-      } else if (stockNow === expected) {
-        productAlreadyWritten = true; // ya escrito: solo falta la marca
-      } else {
+      const unwritten = stockNow === before;
+      if (!unwritten && stockNow !== expected) {
         return Response.json({
           success: false, needs_review: true, product_written: null,
           error: `needs_review: stock actual ${stockNow} no coincide con stock_before ${before} ni con el esperado ${expected}`,
         }, { status: 409 });
       }
+      // Coincidir en valor no prueba nada (ABA): solo se recupera si nadie más tocó el producto.
+      const blocker = await recoveryBlocker(base44, movement, product, !unwritten);
+      if (blocker) {
+        return Response.json({
+          success: false, needs_review: true, product_written: null,
+          error: `needs_review: no se puede probar que el stock siga intacto (${blocker}); no se corrige automáticamente`,
+        }, { status: 409 });
+      }
+      if (unwritten) baseStock = before; // la escritura del producto no ocurrió: aplicar
+      else productAlreadyWritten = true; // ya escrito y nadie más lo tocó: solo falta la marca
     } else if (state === 'pending' || state === 'failed') {
       return Response.json({ success: false, needs_review: true, product_written: null, error: 'needs_review: movimiento pendiente sin stock_before' }, { status: 409 });
     } else {
@@ -156,6 +205,7 @@ export async function handle(req: Request): Promise<Response> {
         await withRetry(() => base44.asServiceRole.entities.Movement.update(movement_id, {
           stock_apply_state: 'pending',
           stock_before: stockNow,
+          stock_pending_at: new Date().toISOString(),
         }));
       } catch (e) {
         // Nada se escribió todavía: seguro devolver error.
@@ -187,18 +237,17 @@ export async function handle(req: Request): Promise<Response> {
         }
         if (fresh === baseStock) { settled = true; break; }
         if (retryable) {
-          // Recuperación: el stock se movió desde que se decidió. ¿ya está escrito este movimiento?
-          if (fresh === compute(beforeStock)) { productAlreadyWritten = true; newStock = fresh; settled = true; break; }
+          // Recuperación: el stock se movió desde que se decidió. No se infiere por valor (ABA): revisión humana.
           return Response.json({
             success: false, needs_review: true, product_written: null,
-            error: `needs_review: el stock cambió a ${fresh} durante la recuperación (stock_before ${beforeStock})`,
+            error: `needs_review: el stock cambió a ${fresh} durante la recuperación (stock_before ${beforeStock}); no se corrige automáticamente`,
           }, { status: 409 });
         }
         // Movimiento nuevo y producto sin escribir: otro movimiento concurrente cambió el stock.
         // Rebasar: actualizar stock_before al valor fresco y recalcular.
         console.log(`[applyMovementStock] stock concurrente en ${movement.product_id}: ${baseStock} -> ${fresh}; se recalcula`);
         try {
-          await withRetry(() => base44.asServiceRole.entities.Movement.update(movement_id, { stock_apply_state: 'pending', stock_before: fresh }));
+          await withRetry(() => base44.asServiceRole.entities.Movement.update(movement_id, { stock_apply_state: 'pending', stock_before: fresh, stock_pending_at: new Date().toISOString() }));
         } catch (e) {
           return Response.json({ success: false, product_written: false, recoverable: false, error: `pending-mark failed: ${(e as Error).message}` }, { status: 500 });
         }

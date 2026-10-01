@@ -6,15 +6,14 @@
  * shared/applyStock.ts) contra una base en memoria con inyección de fallos
  * (simula el 429/5xx/timeout de plataforma entre las dos escrituras).
  *
- * Cómo se aísla el SDK: los fuentes se copian a un directorio temporal con el
- * import `npm:@base44/sdk@x` reescrito a un módulo falso; los imports
- * relativos (../../../shared/applyStock.ts, ./_permissions.ts) quedan intactos.
+ * Cómo se aísla el SDK: cada fuente se importa como data: URL con el import
+ * `npm:@base44/sdk@x` reescrito a un módulo falso (sin escribir a disco).
  *
  * Estas pruebas FALLAN con el código anterior (el error se tragaba, el
  * movimiento quedaba con stock_applied=false sin aviso, y un movimiento
  * histórico sin marca podía reaplicarse).
  *
- * Run: deno test -A base44/tests/stock_no_aplicado_test.ts
+ * Run (mismos flags que CI): deno test --allow-env --allow-read base44/tests/stock_no_aplicado_test.ts
  */
 import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 
@@ -78,6 +77,7 @@ class FakeDb {
         if (!r) return Promise.reject(new Error(`${table} ${id} not found`));
         for (const k of db.dropFields) delete patch[k];
         Object.assign(r, patch);
+        r.updated_date = new Date().toISOString();
         return Promise.resolve({ ...r });
       },
       delete: (id: string) => {
@@ -95,31 +95,25 @@ function httpErr(status: number, msg = "platform error") {
 }
 
 // ---------------------------------------------------------------- loader
-const MOCK = "import_mock_sdk.ts";
-const tmp = await Deno.makeTempDir({ prefix: "sf-stock-" });
-const root = new URL("../", import.meta.url); // base44/
-
-async function copyDir(rel: string, only?: string[]) {
-  const srcDir = new URL(rel, root);
-  const dst = `${tmp}/${rel}`;
-  await Deno.mkdir(dst, { recursive: true });
-  for await (const f of Deno.readDir(srcDir)) {
-    if (!f.isFile || !f.name.endsWith(".ts")) continue;
-    if (only && !only.includes(f.name)) continue;
-    let src = await Deno.readTextFile(new URL(f.name, srcDir));
-    src = src.replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${tmp.startsWith("/") ? "file://" : ""}${tmp}/${MOCK}'`);
-    await Deno.writeTextFile(`${dst}${f.name}`, "// @ts-nocheck\n" + src);
-  }
+// Sin escribir a disco (CI corre `deno test --allow-env --allow-read`): cada fuente se importa
+// como data: URL con el SDK reemplazado por un módulo falso; los imports relativos
+// (shared/applyStock.ts, ./_permissions.ts) se inlinean también como data: URL.
+const b64 = (src: string) => "data:application/typescript;base64," + btoa(unescape(encodeURIComponent(src)));
+const MOCK_SDK_URL = b64("export function createClientFromRequest(req) { return globalThis.__sf.client(req); }");
+const readSrc = (rel: string) => Deno.readTextFile(new URL(`../${rel}`, import.meta.url));
+const SHARED_URL = b64("// @ts-nocheck\n" + await readSrc("shared/applyStock.ts"));
+const permsUrls: Record<string, string> = {};
+for (const dir of ["movements", "quotations"]) {
+  permsUrls[dir] = b64("// @ts-nocheck\n" + await readSrc(`functions/${dir}/handlers/_permissions.ts`));
 }
-await Deno.writeTextFile(
-  `${tmp}/${MOCK}`,
-  "export function createClientFromRequest(req) { return globalThis.__sf.client(req); }",
-);
-await copyDir("shared/");
-await copyDir("functions/movements/handlers/");
-await copyDir("functions/quotations/handlers/");
-await copyDir("functions/jobs/handlers/", ["dailyStockReconcile.ts"]);
-const load = async (rel: string) => (await import(`file://${tmp}/${rel}`)).handle as (r: Request) => Promise<Response>;
+const load = async (rel: string) => {
+  const dir = rel.split("/")[1];
+  const src = "// @ts-nocheck\n" + (await readSrc(rel))
+    .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK_URL}'`)
+    .replace(/from\s+['"](?:\.\.\/)+shared\/applyStock\.ts['"]/, `from '${SHARED_URL}'`)
+    .replace(/from\s+['"]\.\/_permissions\.ts['"]/, `from '${permsUrls[dir]}'`);
+  return (await import(b64(src))).handle as (r: Request) => Promise<Response>;
+};
 
 const apply = await load("functions/movements/handlers/applyMovementStock.ts");
 const createMov = await load("functions/movements/handlers/createMovementSafe.ts");
@@ -396,26 +390,28 @@ Deno.test("registerOnDemandArrivalSafe: ya no deja stock_applied=true con el sto
   assertEquals(db.rows("InventoryAuditLog").length, 1);
 });
 
-Deno.test("dailyStockReconcile: sana pendientes recientes, SOLO alerta (una vez) sobre históricos y no toca datos pasados", async () => {
+Deno.test("dailyStockReconcile: NO sana nada (solo alerta una vez) y no toca datos ni stock", async () => {
   const db = baseDb(9);
   const old = new Date(Date.now() - 3 * 3600_000).toISOString();
   db.seed("Movement", [
-    // fallo reciente: producto ya escrito (10 -> 9), falta la marca
+    // fallo reciente con producto ya escrito (10 -> 9): ya NO se marca automáticamente, se reporta
     { id: "mA", business_id: "b1", product_id: "p1", type: "exit", quantity: 1, stock_apply_state: "failed", stock_before: 10, created_date: old },
-    // sin estado y sin marca, reciente pero fuera del periodo de gracia: no se corrige, se alerta
+    // sin estado y sin marca, fuera del periodo de gracia: no se corrige, se alerta
     { id: "mB", business_id: "b1", product_id: "p1", type: "exit", quantity: 1, stock_applied: false, created_date: old },
   ]);
   const r1 = await run(db, null, reconcile, { ...CRON });
   assertEquals(r1.status, 200);
-  assertEquals(db.get("Movement", "mA").stock_applied, true);
-  assertEquals(db.get("Product", "p1").stock, 9); // no se descontó otra vez
-  assertEquals(db.get("Movement", "mB").stock_applied, false); // dato intacto
-  assertEquals(r1.json.report.healed_ids, ["mA"]);
-  assertEquals(r1.json.report.unapplied_ids, ["mB"]);
-  assertEquals(db.rows("InventoryAuditLog").length, 1);
+  assertEquals(db.get("Movement", "mA").stock_applied, undefined); // intacto
+  assertEquals(db.get("Movement", "mA").stock_apply_state, "failed");
+  assertEquals(db.get("Product", "p1").stock, 9);
+  assertEquals(db.get("Movement", "mB").stock_applied, false);
+  assertEquals(r1.json.report.healed_ids, []);
+  assertEquals([...r1.json.report.unapplied_ids].sort(), ["mA", "mB"]);
+  assertEquals(db.rows("InventoryAuditLog").length, 2);
   const r2 = await run(db, null, reconcile, { ...CRON });
   assertEquals(r2.status, 200);
-  assertEquals(db.rows("InventoryAuditLog").length, 1); // sin alertas duplicadas
+  assertEquals(db.rows("InventoryAuditLog").length, 2); // sin alertas duplicadas
+  assertEquals(db.get("Product", "p1").stock, 9);
 });
 
 Deno.test("reconcile no puede reaplicar movimientos fuera de la ventana (los 4 de Baristop)", async () => {
@@ -448,4 +444,78 @@ Deno.test("modo degradado (esquema sin desplegar: la plataforma descarta stock_a
   const rc = await run(db, null, reconcile, { ...CRON });
   assertEquals(rc.status, 200);
   assertEquals(db.get("Product", "p1").stock, 13);
+});
+
+// ----------------------------------------------------------- regresión ABA
+const HOURS_AGO = (h: number) => new Date(Date.now() - h * 3600_000).toISOString();
+
+Deno.test("ABA (ya escrito): exit x2 escrito 10->8 con marca final fallida; luego entry +2 (8->10); la recuperación NO duplica -> 409 needs_review", async () => {
+  const db = baseDb(10);
+  db.seed("Movement", [{
+    id: "mSale", business_id: "b1", product_id: "p1", type: "exit", quantity: 2,
+    stock_apply_state: "failed", stock_before: 10, created_date: HOURS_AGO(5), stock_pending_at: HOURS_AGO(5),
+  }]);
+  db.get("Product", "p1").stock = 8; // la venta sí se escribió
+  // entrada legítima posterior (+2) que devuelve el stock a 10 = stock_before
+  const entry = db.insert("Movement", {
+    id: "mEntry", business_id: "b1", product_id: "p1", type: "entry", quantity: 2,
+    stock_applied: true, stock_apply_state: "applied", stock_before: 8, stock_after: 10, created_date: HOURS_AGO(1),
+  });
+  entry.updated_date = HOURS_AGO(1);
+  db.get("Product", "p1").stock = 10;
+  const r = await run(db, null, apply, { movement_id: "mSale", ...CRON });
+  assertEquals(r.status, 409);
+  assertEquals(r.json.needs_review, true);
+  assertEquals(db.get("Product", "p1").stock, 10); // no se descontó otra vez
+  assertEquals(db.get("Movement", "mSale").stock_applied, undefined);
+  // y el reconcile tampoco lo sana
+  const rc = await run(db, null, reconcile, { ...CRON });
+  assertEquals(rc.json.report.healed_ids, []);
+  assertEquals(db.get("Product", "p1").stock, 10);
+  assertEquals(db.get("Movement", "mSale").stock_applied, undefined);
+});
+
+Deno.test("ABA (marca en falso): movimiento nunca escrito, el stock coincide por casualidad con el esperado tras otros movimientos -> NO se marca aplicado", async () => {
+  const db = baseDb(10);
+  db.seed("Movement", [{
+    id: "mLost", business_id: "b1", product_id: "p1", type: "exit", quantity: 2,
+    stock_apply_state: "failed", stock_before: 10, created_date: HOURS_AGO(5), stock_pending_at: HOURS_AGO(5),
+  }]);
+  // nunca se escribió; otros movimientos llevaron el stock 10 -> 12 -> 8 (== esperado de mLost)
+  for (const [id, before, after] of [["mX", 10, 12], ["mY", 12, 8]] as const) {
+    const m = db.insert("Movement", { id, business_id: "b1", product_id: "p1", type: "entry", quantity: 1, stock_applied: true, stock_apply_state: "applied", stock_before: before, stock_after: after, created_date: HOURS_AGO(2) });
+    m.updated_date = HOURS_AGO(2);
+  }
+  db.get("Product", "p1").stock = 8;
+  const r = await run(db, null, apply, { movement_id: "mLost", ...CRON });
+  assertEquals(r.status, 409);
+  assertEquals(r.json.needs_review, true);
+  assertEquals(db.get("Movement", "mLost").stock_applied, undefined); // no se marcó en falso
+  assertEquals(db.get("Product", "p1").stock, 8);
+});
+
+Deno.test("ABA (producto editado por un tercero sin Movement): stock == stock_before pero el producto cambió después de la marca -> 409", async () => {
+  const db = baseDb(10);
+  db.seed("Movement", [{
+    id: "mLost", business_id: "b1", product_id: "p1", type: "exit", quantity: 2,
+    stock_apply_state: "failed", stock_before: 10, created_date: HOURS_AGO(5), stock_pending_at: HOURS_AGO(5),
+  }]);
+  db.get("Product", "p1").updated_date = HOURS_AGO(1); // edición manual posterior que dejó 10 otra vez
+  const r = await run(db, null, apply, { movement_id: "mLost", ...CRON });
+  assertEquals(r.status, 409);
+  assertEquals(db.get("Product", "p1").stock, 10);
+  assertEquals(db.get("Movement", "mLost").stock_applied, undefined);
+});
+
+Deno.test("recuperación segura: ya escrito y sin otros movimientos posteriores -> solo pone la marca (no duplica)", async () => {
+  const db = baseDb(8); // 10 -> 8 ya escrito
+  db.seed("Movement", [{
+    id: "mSale", business_id: "b1", product_id: "p1", type: "exit", quantity: 2,
+    stock_apply_state: "failed", stock_before: 10, created_date: HOURS_AGO(1), stock_pending_at: HOURS_AGO(1),
+  }]);
+  const r = await run(db, null, apply, { movement_id: "mSale", ...CRON });
+  assertEquals(r.status, 200);
+  assertEquals(r.json.recovered, true);
+  assertEquals(db.get("Product", "p1").stock, 8);
+  assertEquals(db.get("Movement", "mSale").stock_applied, true);
 });

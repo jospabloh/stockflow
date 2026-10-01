@@ -5,17 +5,25 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  *
  * Red de seguridad del modelo "aplicar exactamente-una-vez".
  *
+<<<<<<< HEAD
  * 1) Movimientos de la ventana con stock_apply_state 'pending'/'failed' y
  *    stock_applied != true: REINTENTA applyMovementStock, que es idempotente y
  *    decide con stock_before si el producto ya estaba escrito (solo pone la
  *    marca) o no (aplica); si no puede decidirlo responde 409 needs_review y no
  *    toca nada. Solo cubre movimientos nuevos (con estado).
+=======
+ * 1) Movimientos recientes con stock_apply_state 'pending'/'failed' y
+ *    stock_applied != true: NO se reintentan ni se sanan aquí (comparar valores de
+ *    stock no prueba que nadie más tocó el producto: ABA). Solo se REPORTAN con
+ *    alerta persistente; la recuperación segura es el reintento inmediato dentro de
+ *    applyStockForMovement.
+>>>>>>> eb68fb8 (fix(stock): recuperacion solo si se prueba que nadie mas toco el producto; reconcile solo alerta; tests sin escritura a disco)
  * 2) Movimientos sin estado y con stock_applied != true (histórico/legacy, o
  *    fallo de la primera escritura): NUNCA se corrigen aquí (riesgo de doble
  *    aplicación); se REPORTAN y se deja una alerta persistente (InventoryAuditLog
  *    stock_apply_failed) una sola vez por movimiento.
- * 3) Movimientos que siguen sin resolverse tras el reintento: alerta persistente.
  *
+<<<<<<< HEAD
  * Nunca modifica movimientos históricos ni stock de forma ciega.
  * Programación sugerida: 1×/día. Autorización: CRON_SECRET.
  *
@@ -27,6 +35,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  *   - Los Movement se leen paginados; si se alcanza el tope de seguridad se marca
  *     `truncated` y se avisa.
  *   - Un fallo al enviar el correo nunca hace fallar el job.
+=======
+ * Es de SOLO LECTURA sobre Movement/Product: nunca modifica movimientos ni stock.
+ * Programación: 1×/día. Autorización: CRON_SECRET.
+>>>>>>> eb68fb8 (fix(stock): recuperacion solo si se prueba que nadie mas toco el producto; reconcile solo alerta; tests sin escritura a disco)
  */
 const LOOKBACK_HOURS = 25;
 const PAGE_SIZE = 500;
@@ -84,30 +96,14 @@ export async function handle(req: Request): Promise<Response> {
     );
     const retryable = unapplied.filter((m) => m.stock_apply_state === 'pending' || m.stock_apply_state === 'failed');
 
-    // (1) reintentos seguros
+    // (1) NO se sana nada automáticamente: un fallo de un día anterior es un problema pasado y
+    // solo se REPORTA. La recuperación inmediata ocurre dentro de applyStockForMovement (segundos).
     const healed: string[] = [];
-    const stuck: Array<{ id: string; error: string }> = [];
-    for (const m of retryable) {
-      try {
-        const resp = await base44.asServiceRole.functions.invoke('movements', {
-          action: 'applyMovementStock',
-          movement_id: m.id,
-          business_id: m.business_id,
-          'x-cron-secret': cronSecretEnv,
-        });
-        const d = resp?.data ?? resp;
-        if (d?.success) healed.push(m.id);
-        else stuck.push({ id: m.id, error: String(d?.error || 'unknown') });
-      } catch (e) {
-        const err = e as { message?: string; response?: { data?: { error?: string } } };
-        stuck.push({ id: m.id, error: String(err?.response?.data?.error || err?.message || e) });
-      }
-    }
 
     // (2)+(3) alertas persistentes, una vez por movimiento
     const toAlert = [
       ...unapplied.filter((m) => !retryable.includes(m)).map((m) => ({ m, why: 'sin aplicar y sin estado (no se corrige automáticamente)' })),
-      ...stuck.map((s2) => ({ m: unapplied.find((x) => x.id === s2.id)!, why: `reintento fallido: ${s2.error}` })),
+      ...retryable.map((m) => ({ m, why: `estado '${m.stock_apply_state}' sin confirmar${m.stock_apply_error ? ` (${String(m.stock_apply_error).slice(0, 200)})` : ''}; no se reintenta ni se corrige automáticamente, requiere revisión` })),
     ];
     let alerted = 0;
     for (const { m, why } of toAlert) {

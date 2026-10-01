@@ -68,11 +68,11 @@ Deno.test("workflows de jobs usan function_name 'jobs' con action registrada", a
   assertEquals(found, 3); // Daily Stock Reconcile, Send Lifecycle Emails, Trial Reactivation Emails Daily
 });
 
-Deno.test("dailyStockReconcile no escribe Movement ni Product (solo reintenta via applyMovementStock y deja alertas)", async () => {
+Deno.test("dailyStockReconcile no escribe Movement ni Product ni reintenta/sana (solo alerta)", async () => {
   const src = await read("base44/functions/jobs/handlers/dailyStockReconcile.ts");
   assert(!/entities\.(Movement|Product)\.(update|create|delete|bulkCreate)\s*\(/.test(src));
   assert(!/\.(delete|bulkCreate)\s*\(/.test(src));
-  assert(src.includes("applyMovementStock"));
+  assert(!src.includes("applyMovementStock"), "el reconcile no debe invocar applyMovementStock (no sana nada)");
 });
 
 Deno.test("llamadores de licenses despachan al router jobs (funcion suelta borrada en ola 4b)", async () => {
