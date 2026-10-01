@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { hasPermission } from './_permissions.ts';
+import { validateQuotationCreate } from './_validation.ts';
 
 /**
  * Safe Quotation creation with business_id validation
@@ -46,6 +47,12 @@ export async function handle(req: Request): Promise<Response> {
     const billingStatus = biz?.billing_status || 'active';
     if (billingStatus === 'view_only' || billingStatus === 'suspended') {
       return Response.json({ success: false, error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
+    // VALIDATION: required fields / numeric ranges / enum (400 instead of a 500 from the entity layer)
+    const validationError = validateQuotationCreate(body);
+    if (validationError) {
+      return Response.json({ success: false, error: validationError }, { status: 400 });
     }
 
     // All validations passed, create the quotation — use asServiceRole to allow almacenista to bypass RLS

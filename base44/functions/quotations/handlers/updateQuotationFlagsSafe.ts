@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { hasPermission } from './_permissions.ts';
+import { validateInvoiceStatus } from './_validation.ts';
 
 // Whitelist for quotation flag updates
 const ALLOWED_FLAG_FIELDS = ['invoice_status', 'invoice_number', 'in_route', 'delivered', 'paid', 'payment_method', 'payments', 'amount_paid', 'balance'];
@@ -67,6 +68,11 @@ export async function handle(req: Request): Promise<Response> {
 
     if (Object.keys(sanitizedUpdates).length === 0) {
       return Response.json({ error: 'No valid fields to update' }, { status: 400 });
+    }
+
+    const invoiceStatusError = validateInvoiceStatus(sanitizedUpdates.invoice_status);
+    if (invoiceStatusError) {
+      return Response.json({ error: invoiceStatusError }, { status: 400 });
     }
 
     // PERMISSION CHECK — each CHANGED field needs its own granular key. The form
