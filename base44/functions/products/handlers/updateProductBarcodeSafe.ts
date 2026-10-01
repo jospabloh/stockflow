@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { hasPermission } from './_permissions.ts';
+import { checkProductDuplicate, duplicateErrorMessage } from '../../../shared/productDuplicateCheck.ts';
 
 /**
  * Safe write for Product.barcode — BarcodeGeneratorPage's handleSave() used
@@ -55,6 +56,14 @@ export async function handle(req: Request): Promise<Response> {
     const billingStatus = businesses?.[0]?.billing_status || 'active';
     if (billingStatus === 'view_only' || billingStatus === 'suspended') {
       return Response.json({ success: false, error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
+    // Same duplicate rule as createProductSafe / updateProductSafe, scoped to
+    // the barcode only (name/sku passed empty so pre-existing name/SKU
+    // duplicates never block a barcode edit). Excludes the product itself.
+    const dup = await checkProductDuplicate(base44, user.business_id, '', '', barcode, product_id);
+    if (dup.duplicate) {
+      return Response.json({ success: false, error: duplicateErrorMessage(dup) }, { status: 409 });
     }
 
     const updated = await base44.asServiceRole.entities.Product.update(product_id, { barcode: barcode.trim() });
