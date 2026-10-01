@@ -74,12 +74,13 @@ Deno.test("dailyStockReconcile sigue siendo de solo lectura", async () => {
   assert(!/\.(update|create|delete|bulkCreate)\s*\(/.test(src));
 });
 
-Deno.test("llamadores de licenses despachan a jobs con action", async () => {
+Deno.test("llamadores de licenses siguen en sendLifecycleEmails vieja (hasta verificar auth service-role contra jobs)", async () => {
   const c = await read("base44/functions/licenses/handlers/confirmRenewalPayment.ts");
-  assert(c.includes("invoke('jobs', { action: 'sendLifecycleEmails', jobs })"));
+  assert(c.includes("invoke('sendLifecycleEmails', { jobs })"));
+  assert(!c.includes("invoke('jobs'"));
   const a = await read("base44/functions/licenses/handlers/adminUpdateTenantLicense.ts");
-  assert(a.includes("/functions/v1/jobs"));
-  assert(a.includes("action: 'sendLifecycleEmails'"));
+  assert(a.includes("/functions/v1/sendLifecycleEmails"));
+  assert(!a.includes("/functions/v1/jobs"));
 });
 
 Deno.test("generadores escriben en la ruta nueva y no recrean las viejas", async () => {

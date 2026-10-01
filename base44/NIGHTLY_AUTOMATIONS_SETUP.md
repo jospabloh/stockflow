@@ -149,3 +149,11 @@ los handlers de `base44/functions/jobs/handlers/`). Base44 desplegará automáti
   │           └── AppChangelog.create() + AppVersion.update()
   └── Email → h.josepablo@gmail.com
 ```
+
+## Llamadores de licenses (ola 4)
+
+`confirmRenewalPayment` y `adminUpdateTenantLicense` siguen invocando la funcion vieja
+`sendLifecycleEmails` (no `jobs`). Motivo: `asServiceRole.invoke` no envia `x-cron-secret`
+y no esta verificado que la autorizacion de la action de `jobs` se comporte igual que la
+de la funcion vieja. Migrarlos solo tras verificarlo en preview con un caso real.
+Los rechazos de las actions de `jobs` son 401 (no 403).

@@ -45,7 +45,7 @@ export async function handle(req: Request): Promise<Response> {
 
     if (jobs.length > 0) {
       try {
-        dispatchResult = await base44.asServiceRole.functions.invoke('jobs', { action: 'sendLifecycleEmails', jobs });
+        dispatchResult = await base44.asServiceRole.functions.invoke('sendLifecycleEmails', { jobs });
         console.log('[confirmRenewalPayment] payment_received dispatched:', JSON.stringify(dispatchResult));
 
         // Audit log in EmailNotification
