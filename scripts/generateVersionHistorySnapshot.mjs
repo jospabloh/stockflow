@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Genera src/generated/versionHistorySnapshot.ts desde src/lib/appConfig.js y git log,
- * y actualiza el bloque AUTOGEN:VERSION_SNAPSHOT en dailyDocumentationAudit/entry.ts.
+ * y actualiza el bloque AUTOGEN:VERSION_SNAPSHOT en jobs/handlers/dailyDocumentationAudit.ts.
  *
  * Uso: npm run generate:version-snapshot
  */
@@ -70,8 +70,8 @@ const generatedDir = join(ROOT, 'src', 'generated');
 writeFileSync(join(generatedDir, 'versionHistorySnapshot.ts'), snapshotContent);
 console.log(`✅  src/generated/versionHistorySnapshot.ts generado (versión ${APP_VERSION})`);
 
-// --- 4. Actualizar bloque AUTOGEN en dailyDocumentationAudit/entry.ts ---
-const fnPath = join(ROOT, 'base44', 'functions', 'dailyDocumentationAudit', 'entry.ts');
+// --- 4. Actualizar bloque AUTOGEN en jobs/handlers/dailyDocumentationAudit.ts ---
+const fnPath = join(ROOT, 'base44', 'functions', 'jobs', 'handlers', 'dailyDocumentationAudit.ts');
 let fnSource = readFileSync(fnPath, 'utf8');
 
 const changesTs = latestEntry.changes.map(c => `  ${JSON.stringify(c)}`).join(',\n');
@@ -91,6 +91,6 @@ fnSource = fnSource.replace(
 );
 
 writeFileSync(fnPath, fnSource);
-console.log(`✅  base44/functions/dailyDocumentationAudit/entry.ts actualizado`);
+console.log(`✅  base44/functions/jobs/handlers/dailyDocumentationAudit.ts actualizado`);
 console.log(`   Versión snapshot: ${APP_VERSION} (${RELEASE_DATE})`);
 console.log(`   Git log: ${gitLog.split('\n').length} commits capturados`);

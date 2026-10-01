@@ -30,8 +30,8 @@
         "run_function": {
           "call": "invoke_backend_function",
           "with": {
-            "function_name": "processTrialReactivationEmails",
-            "args": {}
+            "function_name": "jobs",
+            "args": { "action": "processTrialReactivationEmails" }
           },
           "then": "end"
         }

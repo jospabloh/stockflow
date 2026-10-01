@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Genera src/generated/permissionManifests.ts desde src/lib/permissionRegistry.js
- * y actualiza el bloque AUTOGEN:CANONICAL_KEYS en dailyPermissionAudit/entry.ts.
+ * y actualiza el bloque AUTOGEN:CANONICAL_KEYS en jobs/handlers/dailyPermissionAudit.ts.
  *
  * Uso: npm run generate:permission-manifests
  */
@@ -95,7 +95,7 @@ ${canonicalKeysTs},
 // AUTOGEN:CANONICAL_KEYS:END`;
 
 const AUTOGEN_TARGETS = [
-  { path: ['base44', 'functions', 'dailyPermissionAudit', 'entry.ts'], block: blockWithDenied },
+  { path: ['base44', 'functions', 'jobs', 'handlers', 'dailyPermissionAudit.ts'], block: blockWithDenied },
   { path: ['base44', 'functions', 'permissions', 'handlers', 'backfillPermissionDefaults.ts'], block: blockWithDenied },
   { path: ['base44', 'functions', 'pettyCash', 'handlers', '_permissions.ts'], block: blockWithDenied },
   { path: ['base44', 'functions', 'utility', 'handlers', '_permissions.ts'], block: blockWithDenied },

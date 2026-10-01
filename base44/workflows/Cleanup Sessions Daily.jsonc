@@ -1,13 +1,13 @@
 {
-  "name": "Send Lifecycle Emails",
-  "description": "Send Lifecycle Emails",
+  "name": "Cleanup Sessions Daily",
+  "description": "Revoca Session (active/passive) con last_seen > 30 días. Corre 02:30 CDMX (08:30 UTC).",
   "trigger": {
     "condition": null,
     "config": {
       "trigger_type": "scheduled",
       "events": [],
       "schedule_mode": "recurring",
-      "cron_expression": "0 15 * * *",
+      "cron_expression": "30 8 * * *",
       "one_time_date": null,
       "timezone": "UTC",
       "interval_value": null,
@@ -21,7 +21,7 @@
   "definition": {
     "document": {
       "dsl": "1.0.0",
-      "name": "send_lifecycle_emails",
+      "name": "cleanup_sessions_daily",
       "version": "1.0",
       "namespace": "base44"
     },
@@ -31,14 +31,13 @@
           "call": "invoke_backend_function",
           "with": {
             "function_name": "jobs",
-            "args": { "action": "sendLifecycleEmails" }
+            "args": {
+              "action": "cleanupSessions"
+            }
           },
           "then": "end"
         }
       }
     ]
-  },
-  "x-base44-migrated-from-automation": {
-    "legacy_payload_function": "sendLifecycleEmails"
   }
 }
