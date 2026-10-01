@@ -157,10 +157,10 @@ repo; active workflows = 3). Removed 12 functions, none of which had a caller in
 `sendCourseReminders` are deployed but have **no scheduler** — nothing runs them.
 Full analysis: ~/Documents/09_Proyectos_Cowork/Negocios_StockFlow_ConsolidacionFunciones/.
 
-## Wave 3 (branch `claude/consolidacion-ola-3`, pending deploy/verification)
+## Wave 3 (PR #417, deployed and verified in production 2026-10-01)
 
 Moved verbatim into router handlers (old standalone functions stay deployed
-until verified in production, then are deleted):
+until verified in production, then are deleted — done in the follow-up PR that removes the four legacy directories):
 
 | Old function | New home |
 |---|---|
