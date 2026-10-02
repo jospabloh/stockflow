@@ -136,13 +136,20 @@ export async function handle(req: Request): Promise<Response> {
        // CRITICAL FIX: DO NOT auto-register petty cash on conversion
        // Petty cash income is only registered when payments are actually confirmed
        // This prevents the bug where the FULL amount was registered as cash when only partial payment was cash
+       // Preserve anticipos already registered (accepted/sent): amount_paid must equal
+       // sum(payments[]) — never reset it to 0 while keeping payments[].
+       const existingPayments = Array.isArray(quotation.payments) ? quotation.payments : [];
+       const paidSoFar = existingPayments.reduce((s, p) => s + (Number(p?.amount) || 0), 0);
+       const convTotal = quotation.total || 0;
+       const convAmountPaid = isZeroPrice ? convTotal : paidSoFar;
+       const convBalance = isZeroPrice ? 0 : Math.max(0, convTotal - paidSoFar);
        await base44.asServiceRole.entities.Quotation.update(quotation.id, {
          status: 'converted',
          payment_method: finalPaymentMethod,
-         paid: isZeroPrice ? true : false,
-         amount_paid: isZeroPrice ? (quotation.total || 0) : 0,
-         balance: isZeroPrice ? 0 : (quotation.total || 0),
-         payments: quotation.payments || [],
+         paid: isZeroPrice ? true : convBalance <= 0.01,
+         amount_paid: convAmountPaid,
+         balance: convBalance,
+         payments: existingPayments,
        });
 
       return Response.json({ success: true, quotation_id, stock_warning: stockWarning(stockFailures) });

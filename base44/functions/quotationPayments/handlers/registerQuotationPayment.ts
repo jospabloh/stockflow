@@ -6,11 +6,11 @@ function normalizePaymentMethod(method) {
 }
 
 function getBalance(q) {
-  const total = q.total || 0;
-  if (q.balance != null) return q.balance;
   if (q.paid) return 0;
-  const amountPaid = q.amount_paid != null ? q.amount_paid : 0;
-  return total - amountPaid;
+  // Derive from total - amount_paid. The stored `balance` cannot be trusted:
+  // createQuotationSafe never sets it, so the schema default (0) made every
+  // sent/accepted quotation look fully paid and rejected every anticipo.
+  return Math.max(0, (q.total || 0) - getAmountPaid(q));
 }
 
 function getAmountPaid(q) {

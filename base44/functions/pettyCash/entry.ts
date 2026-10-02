@@ -1,4 +1,5 @@
 import { getHandler } from './handlers/index.ts';
+import { mapAuthErrorTo401 } from './handlers/_authGuard.ts';
 
 Deno.serve(async (req) => {
   let action = '';
@@ -8,5 +9,5 @@ Deno.serve(async (req) => {
   } catch { /* no/invalid body */ }
   const handler = getHandler(action);
   if (!handler) return Response.json({ error: `pettyCash: unknown action '${action}'` }, { status: 400 });
-  return await handler(req);
+  return await mapAuthErrorTo401(await handler(req));
 });
