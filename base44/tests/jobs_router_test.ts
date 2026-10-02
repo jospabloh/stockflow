@@ -75,7 +75,7 @@ Deno.test("dailyStockReconcile sigue siendo de solo lectura", async () => {
 
 Deno.test("llamadores de licenses despachan al router jobs (funcion suelta borrada en ola 4b)", async () => {
   const c = await read("base44/functions/licenses/handlers/confirmRenewalPayment.ts");
-  assert(c.includes("invoke('jobs', { action: 'sendLifecycleEmails', jobs })"));
+  assert(c.includes("invoke('jobs', {") && c.includes("action: 'sendLifecycleEmails'") && c.includes("'x-cron-secret': Deno.env.get('CRON_SECRET')"));
   assert(!c.includes("invoke('sendLifecycleEmails'"));
   const a = await read("base44/functions/licenses/handlers/adminUpdateTenantLicense.ts");
   assert(a.includes("/functions/v1/jobs"));

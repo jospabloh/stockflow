@@ -197,8 +197,10 @@ export async function handle(req: Request): Promise<Response> {
           const sendResp = await fetch(`${appUrl}/functions/v1/jobs`, {
             method: 'POST',
             headers: sendHeaders,
-            body: JSON.stringify({ action: 'sendLifecycleEmails', jobs }),
+            // Secreto también en el body: el guard de jobs lo acepta ahí (compat. Base44) y no depende de que el header llegue.
+            body: JSON.stringify({ 'x-cron-secret': cronSecret, action: 'sendLifecycleEmails', jobs }),
           });
+          if (!sendResp.ok) console.error('[adminUpdateTenantLicense] jobs.sendLifecycleEmails HTTP', sendResp.status);
           const sendData = await sendResp.json();
           emailDispatch = { sent: sendData.sent ?? 0, failed: sendData.failed ?? 0 };
           console.log('[adminUpdateTenantLicense] license_activated emails dispatched:', JSON.stringify(emailDispatch));

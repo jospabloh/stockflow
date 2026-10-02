@@ -58,8 +58,17 @@ G.__sf = {
           invoke: async (name: string, payload: Row) => {
             ctx.invokes.push({ name, payload });
             if (name !== "jobs") throw new Error(`Function not found: ${name}`);
-            const res = await ctx.jobsHandle!(new Request("https://x.test/functions/v1/jobs", { method: "POST", body: JSON.stringify(payload) }));
-            return await res.json();
+            // Una llamada asServiceRole NO lleva la sesion del dueño: jobs ve user = null y solo
+            // acepta CRON_SECRET (header o body). Sin esto el guard devuelve 401 (como en produccion).
+            const savedUser = ctx.user;
+            ctx.user = null;
+            try {
+              const res = await ctx.jobsHandle!(new Request("https://x.test/functions/v1/jobs", { method: "POST", body: JSON.stringify(payload) }));
+              if (!res.ok) throw new Error(`Request failed with status code ${res.status}`);
+              return await res.json();
+            } finally {
+              ctx.user = savedUser;
+            }
           },
         },
         integrations: { Core: { SendEmail: (e: Row) => { ctx.emails.push(e); return Promise.resolve({}); } } },
@@ -127,6 +136,31 @@ Deno.test("confirmRenewalPayment despacha a jobs { action: 'sendLifecycleEmails'
   assert(ctx.emails.some((e) => e.to === "dueno@negocio.test"));
 });
 
+Deno.test("confirmRenewalPayment: la llamada de servicio a jobs lleva CRON_SECRET en el body (sin el, jobs responde 401)", async () => {
+  const ctx = freshCtx();
+  const res = await confirmRenewal(post({ business_id: "biz-1" }));
+  assertEquals(res.status, 200);
+  assertEquals(ctx.invokes[0].payload["x-cron-secret"], "test-secret");
+  const out = await res.json();
+  assertEquals(out.dispatch.error, undefined);
+  assertEquals(ctx.emails.filter((e) => e.to === "dueno@negocio.test").length, 1);
+  // El audit log solo se escribe si el despacho tuvo exito
+  assertEquals(ctx.tables.EmailNotification.some((r) => r.email_type === "payment_received" && r.status === "sent"), true);
+});
+
+Deno.test("confirmRenewalPayment: sin CRON_SECRET configurado el despacho falla y no se registra como enviado", async () => {
+  const ctx = freshCtx();
+  Deno.env.delete("CRON_SECRET");
+  try {
+    const out = await (await confirmRenewal(post({ business_id: "biz-1" }))).json();
+    assert(out.dispatch.error);
+    assertEquals(ctx.emails.length, 0);
+    assertEquals(ctx.tables.EmailNotification.length, 0);
+  } finally {
+    Deno.env.set("CRON_SECRET", "test-secret");
+  }
+});
+
 Deno.test("confirmRenewalPayment: no llama a la funcion suelta borrada", async () => {
   const ctx = freshCtx();
   await confirmRenewal(post({ business_id: "biz-1" }));
@@ -153,6 +187,7 @@ Deno.test("adminUpdateTenantLicense (activacion) hace fetch a /functions/v1/jobs
     const sent = JSON.parse(String(calls[0].init.body));
     assertEquals(sent.action, "sendLifecycleEmails");
     assertEquals(sent.jobs[0].email_type, "license_activated");
+    assertEquals(sent["x-cron-secret"], "test-secret");
     // deno-lint-ignore no-explicit-any
     const h = calls[0].init.headers as any;
     assertEquals(h["x-cron-secret"], "test-secret");

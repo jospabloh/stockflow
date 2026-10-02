@@ -45,7 +45,14 @@ export async function handle(req: Request): Promise<Response> {
 
     if (jobs.length > 0) {
       try {
-        dispatchResult = await base44.asServiceRole.functions.invoke('jobs', { action: 'sendLifecycleEmails', jobs });
+        // El guard de jobs.sendLifecycleEmails exige CRON_SECRET (header o body) o dueño de plataforma.
+        // asServiceRole.invoke no lleva sesión de dueño: sin el secreto la llamada da 401 y el correo no sale.
+        // Mismo patrón que movements/quotations -> pettyCash (secreto en el body).
+        dispatchResult = await base44.asServiceRole.functions.invoke('jobs', {
+          'x-cron-secret': Deno.env.get('CRON_SECRET'),
+          action: 'sendLifecycleEmails',
+          jobs,
+        });
         console.log('[confirmRenewalPayment] payment_received dispatched:', JSON.stringify(dispatchResult));
 
         // Audit log in EmailNotification
