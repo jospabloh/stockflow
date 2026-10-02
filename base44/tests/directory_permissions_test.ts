@@ -204,3 +204,21 @@ Deno.test("updateSupplierSafe: owner edita todo; rol sin perfil no edita", async
   assertEquals(u.status, 403);
   assertEquals(db.rows("Supplier")[0].name, "Dueno");
 });
+
+// ---- almacenista SIN perfil explicito: conserva el 403 previo -------------
+
+for (const d of DELETES) {
+  Deno.test(`${d.name}: almacenista SIN perfil (defaults) NO borra`, async () => {
+    const db = baseDb();
+    const r = await call(d.h, db, ALM, d.body);
+    assertEquals(r.status, 403);
+    assertEquals(db.rows(d.table).length, 1);
+  });
+}
+
+Deno.test("updateSupplierSafe: almacenista SIN perfil (defaults) no edita proveedores", async () => {
+  const db = baseDb();
+  const r = await call(updateSupplier, db, ALM, { supplier_id: "s1", updates: { name: "Nuevo", notes: "x" } });
+  assertEquals(r.status, 403);
+  assertEquals(db.rows("Supplier")[0].name, "Prov");
+});

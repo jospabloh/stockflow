@@ -380,6 +380,18 @@ export function getDefaultsForRole(role) {
             // el registro. El costo/utilidad/comisión quedan fuera por el
             // 'financials' sensitive de arriba, no por esta lista.
             'Venta de Maquinaria:delete',
+            // Borrar proveedores/clientes/contactos y editar proveedores era
+            // solo admin/owner (gate de rol). Al pasar esas funciones al
+            // permiso granular, el almacenista SIN perfil explicito conserva
+            // el comportamiento previo (403). Un perfil puede concederlo.
+            'Proveedores:edit_name',
+            'Proveedores:edit_contact',
+            'Proveedores:edit_address',
+            'Proveedores:edit_rfc',
+            'Proveedores:edit_notes',
+            'Proveedores:delete',
+            'Clientes:delete',
+            'Contactos:delete',
           ];
           defaults[key] = !deniedActionable.includes(key);
         } else if (action.category === 'report') {
