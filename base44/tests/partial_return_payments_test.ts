@@ -119,3 +119,20 @@ Deno.test("pago parcial 450 de 500, devolver 100: excedente 50 se ajusta y queda
   const q = db.t.Quotation[0];
   assertEquals([q.amount_paid, q.balance, q.paid, q.payments[1].amount], [400, 0, true, -50]);
 });
+
+Deno.test("legacy paid=true, amount_paid=0, payments=[]: se siembra pago base y sum(payments) = amount_paid = total nuevo", async () => {
+  const db = sale({ paid: true, amount_paid: 0, balance: 0, payment_method: "Efectivo", payments: [] });
+  const r = await ret(db);
+  assertEquals(r.status, 200);
+  const q = db.t.Quotation[0];
+  assertEquals(q.total, 400);
+  assertEquals(q.amount_paid, 400);
+  assertEquals(q.balance, 0);
+  assertEquals(q.paid, true);
+  assertEquals(q.payments.length, 2);
+  assertEquals(q.payments[0].amount, 500);
+  assertEquals(q.payments[0].notes, "Pago previo consolidado (legacy)");
+  assertEquals(q.payments[1].amount, -100);
+  assertEquals(q.payments.reduce((s: number, p: Row) => s + p.amount, 0), q.amount_paid);
+  assertEquals(q.payments.reduce((s: number, p: Row) => s + p.amount, 0), q.total);
+});

@@ -136,7 +136,20 @@ export async function handle(req: Request): Promise<Response> {
       // Excedente cobrado por encima del nuevo total: ajuste negativo (devolución) en el historial.
       newAmountPaid = oldAmountPaid - excess;
       const existing = Array.isArray(quotation.payments) ? quotation.payments : [];
+      // Legacy (paid=true, amount_paid=0, payments=[]): sembrar primero el cobro previo para que
+      // sum(payments) = amount_paid y el frontend (que prefiere payments[]) no reporte cobro negativo.
+      const base = (existing.length === 0 && oldAmountPaid > 0)
+        ? [{
+            id: crypto.randomUUID(),
+            amount: oldAmountPaid,
+            payment_method: quotation.payment_method || '',
+            paid_at: quotation.updated_date || new Date().toISOString(),
+            registered_by: user.id,
+            notes: 'Pago previo consolidado (legacy)',
+          }]
+        : [];
       paymentUpdate.payments = [
+        ...base,
         ...existing,
         {
           id: crypto.randomUUID(),
