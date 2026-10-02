@@ -55,6 +55,12 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
     }
 
+    // draft and cancelled quotations must not move money or petty cash.
+    // sent/accepted are allowed on purpose (anticipos / down payments).
+    if (q.status === 'draft' || q.status === 'cancelled') {
+      return Response.json({ error: 'No se pueden registrar pagos en cotizaciones en borrador o canceladas', status: q.status }, { status: 400 });
+    }
+
     const currentBalance = getBalance(q);
     const currentAmountPaid = getAmountPaid(q);
 
