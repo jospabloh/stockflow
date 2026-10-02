@@ -124,11 +124,54 @@ export async function handle(req: Request): Promise<Response> {
     const newTax = taxableTotal - (taxableTotal / 1.16);
     const newSubtotal = newTotal - newTax;
 
+    // Mantener consistentes amount_paid / balance / payments con el nuevo total.
+    // Cobrado hasta ahora (legacy: venta pagada sin amount_paid => se asume el total anterior).
+    const oldAmountPaid = quotation.amount_paid > 0
+      ? quotation.amount_paid
+      : (quotation.paid ? (quotation.total || 0) : 0);
+    const excess = Math.max(0, Math.round((oldAmountPaid - newTotal) * 100) / 100);
+    const paymentUpdate: Record<string, unknown> = {};
+    let newAmountPaid = oldAmountPaid;
+    if (excess > 0) {
+      // Excedente cobrado por encima del nuevo total: ajuste negativo (devolución) en el historial.
+      newAmountPaid = oldAmountPaid - excess;
+      const existing = Array.isArray(quotation.payments) ? quotation.payments : [];
+      // Legacy (paid=true, amount_paid=0, payments=[]): sembrar primero el cobro previo para que
+      // sum(payments) = amount_paid y el frontend (que prefiere payments[]) no reporte cobro negativo.
+      const base = (existing.length === 0 && oldAmountPaid > 0)
+        ? [{
+            id: crypto.randomUUID(),
+            amount: oldAmountPaid,
+            payment_method: quotation.payment_method || '',
+            paid_at: quotation.updated_date || new Date().toISOString(),
+            registered_by: user.id,
+            notes: 'Pago previo consolidado (legacy)',
+          }]
+        : [];
+      paymentUpdate.payments = [
+        ...base,
+        ...existing,
+        {
+          id: crypto.randomUUID(),
+          amount: -excess,
+          paid_at: new Date().toISOString(),
+          payment_method: quotation.payment_method || '',
+          notes: `Ajuste por devolución parcial — ${reason.trim()}`,
+          registered_by: user.id,
+        },
+      ];
+    }
+    const newBalance = Math.max(0, newTotal - newAmountPaid);
+
     await base44.asServiceRole.entities.Quotation.update(quotation.id, {
       items: updatedItems,
       total: newTotal,
       subtotal: newSubtotal,
       tax: newTax,
+      amount_paid: newAmountPaid,
+      balance: newBalance,
+      paid: quotation.paid === true || (newAmountPaid > 0 && newBalance <= 0),
+      ...paymentUpdate,
     });
 
     // TENANT-SCOPED: Caja chica — egreso por devolución de venta en efectivo
