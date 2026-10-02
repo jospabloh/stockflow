@@ -64,7 +64,7 @@ export type ApplyStockResult = {
 };
 
 function errMessage(e: Any): string {
-  const data = e?.response?.data;
+  const data = e?.response?.data ?? e?.data;
   return String(data?.error || data?.message || e?.message || e).slice(0, 500);
 }
 
@@ -96,13 +96,13 @@ export async function applyStockForMovement(
     // producto pudo haberse escrito (product_written true/null) solo cuando el estado
     // quedó persistido (recoverable), porque entonces applyMovementStock decide con
     // stock_before y no puede aplicar dos veces.
-    const rd = lastErr?.response?.data ?? {};
+    const rd = lastErr?.response?.data ?? lastErr?.data ?? {};
     const safeToRetry = rd.product_written === false || rd.recoverable === true;
     if (!isTransient(lastErr) || !safeToRetry) break;
     await new Promise((r) => setTimeout(r, delays()[0]));
   }
 
-  const rdata = lastErr?.response?.data ?? {};
+  const rdata = lastErr?.response?.data ?? lastErr?.data ?? {};
   const message = errMessage(lastErr);
   const result: ApplyStockResult = {
     ok: false,

@@ -16,6 +16,7 @@
  * Run (mismos flags que CI): deno test --allow-env --allow-read base44/tests/stock_no_aplicado_test.ts
  */
 import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { classifyProduct } from "../functions/products/handlers/_inventoryAudit.ts";
 
 // deno-lint-ignore no-explicit-any
 type Row = Record<string, any>;
@@ -139,8 +140,11 @@ G.__sf = {
           invoke: async (name: string, body: Row) => {
             if (name === "pettyCash") return { data: { success: true } };
             assertEquals(name, "movements");
+            G.__sf.invokes = (G.__sf.invokes ?? 0) + 1;
             const res = await apply(new Request("http://local.test/fn", { method: "POST", body: JSON.stringify(body) }));
             const data = await res.json();
+            // Forma Base44Error del SDK dentro de las funciones: .status/.data, SIN .response.
+            if (res.status >= 400 && G.__sf.errShape === "base44") throw Object.assign(new Error(`Request failed with status code ${res.status}`), { status: res.status, data });
             if (res.status >= 400) throw Object.assign(new Error(`Request failed with status code ${res.status}`), { response: { status: res.status, data } });
             return { data };
           },
@@ -598,4 +602,79 @@ Deno.test("INCIDENTE: Product.update falla 1 vez y luego funciona -> el stock se
   assertEquals(r.json.stock_warning, undefined);
   assertEquals(db.get("Product", "p1").stock, 20);
   assertEquals(db.rows("Movement")[0].stock_applied, true);
+});
+
+// ---- Forma de error Base44Error ({status, data}, sin .response) ----
+Deno.test("Base44Error {status,data}: un 500 product_written:false SÍ se reintenta y aplica una vez", async () => {
+  G.__sf.errShape = "base44";
+  G.__sf.invokes = 0;
+  try {
+    const db = baseDb(10);
+    // La marca 'pending' falla en el 1er invoke (500 product_written:false, sin tocar el producto) y la plataforma se recupera en el 2do.
+    db.fault = (t, op) => {
+      if (t === "Movement" && op === "update" && G.__sf.invokes < 2) throw httpErr(500);
+    };
+    const r = await run(db, owner, createMov, {
+      product_id: "p1", product_name: "Cafe", type: "entry", quantity: 10, unit_price: 1, total: 10, business_id: "b1", paid: false,
+    });
+    assertEquals(r.status, 200);
+    assertEquals(r.json.stock_warning, undefined);
+    assertEquals(G.__sf.invokes, 2, "segundo intento realizado");
+    assertEquals(db.get("Product", "p1").stock, 20);
+  } finally {
+    G.__sf.errShape = undefined;
+  }
+});
+
+Deno.test("Base44Error {status,data}: si falla siempre, stock_apply_error conserva la causa real", async () => {
+  G.__sf.errShape = "base44";
+  try {
+    const db = baseDb(10);
+    db.fault = (t, op) => {
+      if (t === "Product" && op === "update") throw httpErr(503, "causa-real-xyz");
+    };
+    await run(db, owner, createMov, {
+      product_id: "p1", product_name: "Cafe", type: "entry", quantity: 10, unit_price: 1, total: 10, business_id: "b1", paid: false,
+    });
+    const mov = db.rows("Movement")[0];
+    assertEquals(mov.stock_apply_state, "failed");
+    assert(String(mov.stock_apply_error).includes("causa-real-xyz"), `stock_apply_error=${mov.stock_apply_error}`);
+    assertEquals(db.get("Product", "p1").stock, 10);
+  } finally {
+    G.__sf.errShape = undefined;
+  }
+});
+
+// ---- Auditoría de inventario: las alertas stock_apply_failed no son ediciones directas ----
+const alertLog = { id: "a1", product_id: "p1", event_type: "stock_apply_failed", stock_before: 10, created_date: "2026-10-01T17:03:20Z" };
+Deno.test("auditoría: Movement failed (stock_after 20, producto 10) + alerta sigue siendo sync_error corregible", () => {
+  const e = classifyProduct(
+    { id: "p1", name: "Tisana", stock: 10 },
+    [{ id: "m1", product_id: "p1", type: "entry", quantity: 10, stock_after: 20, created_date: "2026-10-01T17:03:19Z" }],
+    [alertLog],
+  );
+  assertEquals(e?.reason_type, "sync_error");
+  assertEquals(e?.can_auto_correct, true);
+  assertEquals(e?.audit_log_entries.length, 0);
+  assert(!/editado directamente/.test(String(e?.reason_detail)));
+});
+
+Deno.test("auditoría: legacy_bug con alerta stock_apply_failed NO pasa a direct_edit ni a corregible", () => {
+  const e = classifyProduct(
+    { id: "p1", name: "Tisana", stock: 15 },
+    [{ id: "m1", product_id: "p1", type: "entry", quantity: 10, stock_after: 20, created_date: "2026-03-01T10:00:00Z" }],
+    [{ ...alertLog, created_date: "2026-10-01T17:03:20Z" }],
+  );
+  assertEquals(e?.reason_type, "legacy_bug");
+  assertEquals(e?.can_auto_correct, false);
+});
+
+Deno.test("auditoría: una edición directa real sigue contándose junto a una alerta", () => {
+  const e = classifyProduct(
+    { id: "p1", name: "Tisana", stock: 10 },
+    [{ id: "m1", product_id: "p1", type: "entry", quantity: 10, stock_after: 20, created_date: "2026-10-01T17:03:19Z" }],
+    [alertLog, { id: "a2", product_id: "p1", event_type: "direct_edit", stock_before: 20, stock_after: 10, performed_by: "x@y.com", created_date: "2026-10-01T18:00:00Z" }],
+  );
+  assertEquals(e?.reason_type, "direct_edit");
+  assertEquals(e?.audit_log_entries.length, 1);
 });
