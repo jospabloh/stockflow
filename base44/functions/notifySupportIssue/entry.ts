@@ -69,6 +69,8 @@ Deno.serve(async (req) => {
         return Response.json({ success: true });
     } catch (error: Error | unknown) {
         const err = error instanceof Error ? (error as Error).message : String(error);
+        // Sin sesion el SDK lanza 'Authentication required...': es 401, no 500.
+        if (/authentication required/i.test(err)) return Response.json({ error: 'Unauthorized' }, { status: 401 });
         return Response.json({ error: err }, { status: 500 });
     }
 });

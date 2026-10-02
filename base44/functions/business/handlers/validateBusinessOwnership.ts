@@ -7,7 +7,7 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null);
     
     if (!user || !user.business_id) {
       return Response.json({ error: 'Unauthorized or no business assigned' }, { status: 401 });
