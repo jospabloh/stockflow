@@ -45,8 +45,20 @@ export async function handle(req: Request): Promise<Response> {
 
     if (jobs.length > 0) {
       try {
-        dispatchResult = await base44.asServiceRole.functions.invoke('jobs', { action: 'sendLifecycleEmails', jobs });
+        // jobs.sendLifecycleEmails solo acepta x-cron-secret (header o body) o al platform owner;
+        // un invoke con service role no es ninguno, asi que el secreto va en el body.
+        dispatchResult = await base44.asServiceRole.functions.invoke('jobs', {
+          action: 'sendLifecycleEmails',
+          jobs,
+          'x-cron-secret': Deno.env.get('CRON_SECRET'),
+        });
         console.log('[confirmRenewalPayment] payment_received dispatched:', JSON.stringify(dispatchResult));
+        // Respuesta sin contador sent, o todo fallido: no es un envio exitoso.
+        // deno-lint-ignore no-explicit-any
+        const dr = dispatchResult as any;
+        if (!dr || typeof dr.sent !== 'number' || (dr.sent === 0 && (dr.failed ?? 0) > 0)) {
+          throw new Error(`jobs.sendLifecycleEmails no envio correos: ${JSON.stringify(dispatchResult)}`);
+        }
 
         // Audit log in EmailNotification
         const nowAudit = new Date().toISOString();
@@ -68,11 +80,15 @@ export async function handle(req: Request): Promise<Response> {
       }
     }
 
+    // deno-lint-ignore no-explicit-any
+    const dispatchFailed = jobs.length > 0 && Boolean((dispatchResult as any)?.error);
     return Response.json({
       success: true,
       business_id,
       recipients: admins.length,
       dispatch: dispatchResult,
+      // El pago queda confirmado aunque el correo falle, pero el fallo debe ser visible.
+      ...(dispatchFailed && { email_dispatch_failed: true }),
     });
 
   } catch (error) {
