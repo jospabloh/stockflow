@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { getPublicResponse } from './_publicResponse.ts';
 
 // Intentionally unauthenticated: the customer accepting/rejecting a shared
 // quotation has no Base44 account. Same public_token + public_link_enabled
@@ -9,12 +10,14 @@ export async function handle(req: Request): Promise<Response> {
     const body = await req.json();
     // `client_notes` is deliberately NOT read: this endpoint is anonymous (token only), and
     // letting it overwrite Quotation.notes let anyone holding the link rewrite the business's
-    // internal notes. The public page never sent it (PublicQuotation.jsx sends token + action).
-    const { token, action } = body;
+    // internal notes. The public page never sent it (PublicQuotation.jsx sends token + response).
+    const { token } = body;
+    // body.action is the router's handler name; the answer is body.response.
+    const response = getPublicResponse(body);
 
     if (!token) return Response.json({ error: 'token is required' }, { status: 400 });
-    if (!action || !['accepted', 'rejected'].includes(action)) {
-      return Response.json({ error: 'action must be "accepted" or "rejected"' }, { status: 400 });
+    if (!response) {
+      return Response.json({ error: 'response must be "accepted" or "rejected"' }, { status: 400 });
     }
 
     const quotations = await base44.asServiceRole.entities.Quotation.filter({
@@ -35,7 +38,7 @@ export async function handle(req: Request): Promise<Response> {
       );
     }
 
-    const newStatus = action === 'accepted' ? 'accepted' : 'cancelled';
+    const newStatus = response === 'accepted' ? 'accepted' : 'cancelled';
     const updatePayload: Record<string, unknown> = { status: newStatus };
 
     await base44.asServiceRole.entities.Quotation.update(q.id, updatePayload);

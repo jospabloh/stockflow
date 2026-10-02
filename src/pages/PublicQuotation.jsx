@@ -93,10 +93,10 @@ export default function PublicQuotation() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  async function handleRespond(action) {
+  async function handleRespond(response) {
     setResponding(true);
     try {
-      const res = await base44.functions.invoke('quotations', { action: 'respondToPublicQuotation', token, action });
+      const res = await base44.functions.invoke('quotations', { action: 'respondToPublicQuotation', token, response });
       if (res.data?.success) {
         setQuotation(prev => ({ ...prev, status: res.data.status }));
         setResponded(true);
