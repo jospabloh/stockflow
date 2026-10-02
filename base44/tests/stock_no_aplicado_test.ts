@@ -106,12 +106,14 @@ const permsUrls: Record<string, string> = {};
 for (const dir of ["movements", "quotations"]) {
   permsUrls[dir] = b64("// @ts-nocheck\n" + await readSrc(`functions/${dir}/handlers/_permissions.ts`));
 }
+const VALIDATION_URL = b64("// @ts-nocheck\n" + await readSrc("functions/movements/handlers/_validation.ts"));
 const load = async (rel: string) => {
   const dir = rel.split("/")[1];
   const src = "// @ts-nocheck\n" + (await readSrc(rel))
     .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK_URL}'`)
     .replace(/from\s+['"](?:\.\.\/)+shared\/applyStock\.ts['"]/, `from '${SHARED_URL}'`)
-    .replace(/from\s+['"]\.\/_permissions\.ts['"]/, `from '${permsUrls[dir]}'`);
+    .replace(/from\s+['"]\.\/_permissions\.ts['"]/, `from '${permsUrls[dir]}'`)
+    .replace(/from\s+['"]\.\/_validation\.ts['"]/, `from '${VALIDATION_URL}'`);
   return (await import(b64(src))).handle as (r: Request) => Promise<Response>;
 };
 
@@ -556,4 +558,44 @@ Deno.test("deleteMovementSafe: estado 'failed' pero stock_applied=true (confirma
   const r = await run(db, owner, deleteMov, { movement_id: "mOk" });
   assertEquals(r.status, 200);
   assertEquals(db.get("Product", "p1").stock, 10);
+});
+
+// ---- Incidente real Baristop 2026-10-01: Movement creado y Product.update nunca ocurre ----
+Deno.test("INCIDENTE: entrada x10 con Product.update fallando siempre -> stock intacto, Movement failed, stock_warning en español y alerta (nunca éxito silencioso)", async () => {
+  const db = baseDb(10);
+  db.fault = (t, op) => {
+    if (t === "Product" && op === "update") throw httpErr(503);
+  };
+  const r = await run(db, owner, createMov, {
+    product_id: "p1", product_name: "Tisana Ixil Fresa/Kiwi", type: "entry", quantity: 10, unit_price: 1, total: 10, business_id: "b1", paid: false,
+  });
+  assertEquals(r.status, 200);
+  assert(r.json.stock_warning, "no debe haber éxito silencioso");
+  assert(/stock/i.test(String(r.json.stock_warning.message)), "aviso en español que menciona el stock");
+  assertEquals(r.json.stock_warning.failures.length, 1);
+  assertEquals(db.get("Product", "p1").stock, 10, "el producto no se tocó");
+  const mov = db.rows("Movement")[0];
+  assert(mov.stock_applied !== true);
+  assertEquals(mov.stock_apply_state, "failed");
+  const alerts = db.rows("InventoryAuditLog");
+  assertEquals(alerts.length, 1);
+  assertEquals(alerts[0].event_type, "stock_apply_failed");
+  // la conciliación diaria lo reporta (y no lo toca)
+  const rec = await run(db, null, reconcile, { ...CRON });
+  assertEquals(rec.status, 200);
+});
+
+Deno.test("INCIDENTE: Product.update falla 1 vez y luego funciona -> el stock se aplica con reintento, sin aviso", async () => {
+  const db = baseDb(10);
+  let n = 0;
+  db.fault = (t, op) => {
+    if (t === "Product" && op === "update" && ++n === 1) throw httpErr(503);
+  };
+  const r = await run(db, owner, createMov, {
+    product_id: "p1", product_name: "Tisana Ixil Fresa/Kiwi", type: "entry", quantity: 10, unit_price: 1, total: 10, business_id: "b1", paid: false,
+  });
+  assertEquals(r.status, 200);
+  assertEquals(r.json.stock_warning, undefined);
+  assertEquals(db.get("Product", "p1").stock, 20);
+  assertEquals(db.rows("Movement")[0].stock_applied, true);
 });

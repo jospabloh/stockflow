@@ -5,26 +5,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  *
  * Red de seguridad del modelo "aplicar exactamente-una-vez".
  *
-<<<<<<< HEAD
- * 1) Movimientos de la ventana con stock_apply_state 'pending'/'failed' y
- *    stock_applied != true: REINTENTA applyMovementStock, que es idempotente y
- *    decide con stock_before si el producto ya estaba escrito (solo pone la
- *    marca) o no (aplica); si no puede decidirlo responde 409 needs_review y no
- *    toca nada. Solo cubre movimientos nuevos (con estado).
-=======
  * 1) Movimientos recientes con stock_apply_state 'pending'/'failed' y
  *    stock_applied != true: NO se reintentan ni se sanan aquí (comparar valores de
  *    stock no prueba que nadie más tocó el producto: ABA). Solo se REPORTAN con
  *    alerta persistente; la recuperación segura es el reintento inmediato dentro de
  *    applyStockForMovement.
->>>>>>> eb68fb8 (fix(stock): recuperacion solo si se prueba que nadie mas toco el producto; reconcile solo alerta; tests sin escritura a disco)
  * 2) Movimientos sin estado y con stock_applied != true (histórico/legacy, o
  *    fallo de la primera escritura): NUNCA se corrigen aquí (riesgo de doble
  *    aplicación); se REPORTAN y se deja una alerta persistente (InventoryAuditLog
  *    stock_apply_failed) una sola vez por movimiento.
  *
-<<<<<<< HEAD
- * Nunca modifica movimientos históricos ni stock de forma ciega.
+ * Es de SOLO LECTURA sobre Movement/Product: nunca los modifica (solo escribe alertas).
  * Programación sugerida: 1×/día. Autorización: CRON_SECRET.
  *
  * Avisos:
@@ -35,10 +26,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  *   - Los Movement se leen paginados; si se alcanza el tope de seguridad se marca
  *     `truncated` y se avisa.
  *   - Un fallo al enviar el correo nunca hace fallar el job.
-=======
- * Es de SOLO LECTURA sobre Movement/Product: nunca modifica movimientos ni stock.
- * Programación: 1×/día. Autorización: CRON_SECRET.
->>>>>>> eb68fb8 (fix(stock): recuperacion solo si se prueba que nadie mas toco el producto; reconcile solo alerta; tests sin escritura a disco)
  */
 const LOOKBACK_HOURS = 25;
 const PAGE_SIZE = 500;
