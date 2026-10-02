@@ -201,6 +201,14 @@ const CANONICAL_KEYS: string[] = [
 ];
 
 const ALMACENISTA_DENIED = new Set<string>([
+  "Proveedores:edit_name",
+  "Proveedores:edit_contact",
+  "Proveedores:edit_address",
+  "Proveedores:edit_rfc",
+  "Proveedores:edit_notes",
+  "Proveedores:delete",
+  "Clientes:delete",
+  "Contactos:delete",
   "Dashboard:stat_total_value",
   "Dashboard:sales_cost",
   "Dashboard:sales_actual_profit",

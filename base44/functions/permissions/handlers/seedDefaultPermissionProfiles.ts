@@ -49,6 +49,14 @@ const CANONICAL_KEYS: string[] = [
 
 // Sensitive keys that almacenista should NOT have by default
 const ALMACENISTA_DENIED = new Set([
+  "Proveedores:edit_name",
+  "Proveedores:edit_contact",
+  "Proveedores:edit_address",
+  "Proveedores:edit_rfc",
+  "Proveedores:edit_notes",
+  "Proveedores:delete",
+  "Clientes:delete",
+  "Contactos:delete",
   "Dashboard:stat_total_value","Dashboard:supplier_payments_section","Dashboard:financial",
   "Dashboard:sales_cost","Dashboard:sales_actual_profit","Dashboard:sales_net_profit",
   "Dashboard:unpaid_detail",

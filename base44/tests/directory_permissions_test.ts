@@ -6,6 +6,10 @@
  * `role !== admin/owner` y nunca llamaban hasPermission, a diferencia de los create/update
  * hermanos.
  *
+ * NOTA: los handlers llevan una compuerta temporal por rol (DIRECTORY_ROLE_GATE=true) hasta que
+ * JP decida; las pruebas 'sin compuerta' cargan el mismo codigo con la constante en false para fijar
+ * la logica granular, y las 'con compuerta' fijan lo que realmente se despliega.
+ *
  * Usa los handlers REALES con un cliente SDK simulado en memoria. No toca red ni datos reales.
  *
  * Run: deno test -A base44/tests/directory_permissions_test.ts
@@ -67,23 +71,36 @@ const MOCK_SDK_URL = "data:application/typescript;base64," +
 const ROOT = new URL("../../", import.meta.url);
 const tmp = await Deno.makeTempDir();
 
-async function loadHandle(rel: string): Promise<(req: Request) => Promise<Response>> {
+async function loadHandle(rel: string, gate = true): Promise<(req: Request) => Promise<Response>> {
   const abs = new URL(rel, ROOT);
   const src = await Deno.readTextFile(abs);
   const rewritten = "// @ts-nocheck\n" +
     src
       .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK_URL}'`)
-      .replace(/from\s+'\.\/(\w+\.ts)'/g, (_m, f) => `from '${new URL(f, abs).href}'`);
-  const file = `${tmp}/${rel.replace(/\W/g, "_")}.ts`;
+      .replace(/from\s+'\.\/(\w+\.ts)'/g, (_m, f) => `from '${new URL(f, abs).href}'`)
+      .replace("const DIRECTORY_ROLE_GATE = true;", `const DIRECTORY_ROLE_GATE = ${gate};`);
+  const file = `${tmp}/${rel.replace(/\W/g, "_")}${gate ? "" : "_nogate"}.ts`;
   await Deno.writeTextFile(file, rewritten);
   const mod = await import(`file://${file}?${Math.random()}`);
   return mod.handle;
 }
 
-const updateSupplier = await loadHandle("base44/functions/suppliers/handlers/updateSupplierSafe.ts");
-const deleteSupplier = await loadHandle("base44/functions/suppliers/handlers/deleteSupplierSafe.ts");
-const deleteClient = await loadHandle("base44/functions/clients/handlers/deleteClientSafe.ts");
-const deleteContact = await loadHandle("base44/functions/contacts/handlers/deleteContactSafe.ts");
+const P = {
+  updateSupplier: "base44/functions/suppliers/handlers/updateSupplierSafe.ts",
+  deleteSupplier: "base44/functions/suppliers/handlers/deleteSupplierSafe.ts",
+  deleteClient: "base44/functions/clients/handlers/deleteClientSafe.ts",
+  deleteContact: "base44/functions/contacts/handlers/deleteContactSafe.ts",
+};
+// Handlers tal como se despliegan (compuerta por rol activa) y con la compuerta apagada
+// (lo que habria tras la decision de JP y la migracion de perfiles).
+const updateSupplier = await loadHandle(P.updateSupplier, false);
+const deleteSupplier = await loadHandle(P.deleteSupplier, false);
+const deleteClient = await loadHandle(P.deleteClient, false);
+const deleteContact = await loadHandle(P.deleteContact, false);
+const gatedUpdateSupplier = await loadHandle(P.updateSupplier);
+const gatedDeleteSupplier = await loadHandle(P.deleteSupplier);
+const gatedDeleteClient = await loadHandle(P.deleteClient);
+const gatedDeleteContact = await loadHandle(P.deleteContact);
 
 async function call(h: (r: Request) => Promise<Response>, db: FakeDb, user: Row | null, body: Row) {
   G.__sf.ctx = { db, user } as Ctx;
@@ -107,6 +124,12 @@ function baseDb(profile?: Record<string, boolean>) {
 
 // ---- deletes -------------------------------------------------------------
 
+const GATED: Record<string, (r: Request) => Promise<Response>> = {
+  deleteSupplierSafe: gatedDeleteSupplier,
+  deleteClientSafe: gatedDeleteClient,
+  deleteContactSafe: gatedDeleteContact,
+};
+
 const DELETES = [
   { name: "deleteSupplierSafe", h: deleteSupplier, body: { supplier_id: "s1" }, table: "Supplier", key: "Proveedores:delete" },
   { name: "deleteClientSafe", h: deleteClient, body: { client_id: "c1" }, table: "Client", key: "Clientes:delete" },
@@ -114,7 +137,7 @@ const DELETES = [
 ];
 
 for (const d of DELETES) {
-  Deno.test(`${d.name}: almacenista con el permiso ${d.key} denegado en su perfil NO borra`, async () => {
+  Deno.test(`[sin compuerta] ${d.name}: almacenista con el permiso ${d.key} denegado en su perfil NO borra`, async () => {
     const db = baseDb({ [d.key]: false });
     const r = await call(d.h, db, ALM, d.body);
     assertEquals(r.status, 403);
@@ -122,7 +145,7 @@ for (const d of DELETES) {
     assertEquals(db.rows(d.table).length, 1);
   });
 
-  Deno.test(`${d.name}: almacenista con ${d.key} concedido SI borra`, async () => {
+  Deno.test(`[sin compuerta] ${d.name}: almacenista con ${d.key} concedido SI borra`, async () => {
     const db = baseDb({ [d.key]: true });
     const r = await call(d.h, db, ALM, d.body);
     assertEquals(r.status, 200);
@@ -168,7 +191,7 @@ Deno.test("deleteContactSafe: write_blocked se mantiene para tenants view_only",
 
 // ---- updateSupplierSafe --------------------------------------------------
 
-Deno.test("updateSupplierSafe: almacenista sin Proveedores:edit_name no puede renombrar", async () => {
+Deno.test("[sin compuerta] updateSupplierSafe: almacenista sin Proveedores:edit_name no puede renombrar", async () => {
   const db = baseDb({ "Proveedores:edit_name": false });
   const r = await call(updateSupplier, db, ALM, { supplier_id: "s1", updates: { name: "Nuevo" } });
   assertEquals(r.status, 403);
@@ -176,7 +199,7 @@ Deno.test("updateSupplierSafe: almacenista sin Proveedores:edit_name no puede re
   assertEquals(db.rows("Supplier")[0].name, "Prov");
 });
 
-Deno.test("updateSupplierSafe: con solo edit_notes concedido, cambiar notas SI y nombre NO", async () => {
+Deno.test("[sin compuerta] updateSupplierSafe: con solo edit_notes concedido, cambiar notas SI y nombre NO", async () => {
   const db = baseDb({ "Proveedores:edit_name": false, "Proveedores:edit_notes": true });
   const ok = await call(updateSupplier, db, ALM, { supplier_id: "s1", updates: { notes: "otra" } });
   assertEquals(ok.status, 200);
@@ -186,7 +209,7 @@ Deno.test("updateSupplierSafe: con solo edit_notes concedido, cambiar notas SI y
   assertEquals(db.rows("Supplier")[0].name, "Prov");
 });
 
-Deno.test("updateSupplierSafe: el formulario reenvia el registro completo; valores sin cambio no exigen permiso", async () => {
+Deno.test("[sin compuerta] updateSupplierSafe: el formulario reenvia el registro completo; valores sin cambio no exigen permiso", async () => {
   const db = baseDb({ "Proveedores:edit_name": false, "Proveedores:edit_notes": true });
   const r = await call(updateSupplier, db, ALM, {
     supplier_id: "s1",
@@ -196,7 +219,7 @@ Deno.test("updateSupplierSafe: el formulario reenvia el registro completo; valor
   assertEquals(db.rows("Supplier")[0].notes, "cambio");
 });
 
-Deno.test("updateSupplierSafe: owner edita todo; rol sin perfil no edita", async () => {
+Deno.test("[sin compuerta] updateSupplierSafe: owner edita todo; rol sin perfil no edita", async () => {
   const db = baseDb();
   const o = await call(updateSupplier, db, OWNER, { supplier_id: "s1", updates: { name: "Dueno", rfc: "Z" } });
   assertEquals(o.status, 200);
@@ -216,9 +239,47 @@ for (const d of DELETES) {
   });
 }
 
-Deno.test("updateSupplierSafe: almacenista SIN perfil (defaults) no edita proveedores", async () => {
+Deno.test("[sin compuerta] updateSupplierSafe: almacenista SIN perfil (defaults) no edita proveedores", async () => {
   const db = baseDb();
   const r = await call(updateSupplier, db, ALM, { supplier_id: "s1", updates: { name: "Nuevo", notes: "x" } });
   assertEquals(r.status, 403);
   assertEquals(db.rows("Supplier")[0].name, "Prov");
+});
+
+// ---- compuerta por rol desplegada: estado REAL de prod ---------------------
+// Los perfiles almacenista de prod fueron sembrados con estas 8 claves en true (default viejo).
+const SEEDED_TRUE: Record<string, boolean> = {
+  "Proveedores:edit_name": true, "Proveedores:edit_contact": true, "Proveedores:edit_address": true,
+  "Proveedores:edit_rfc": true, "Proveedores:edit_notes": true, "Proveedores:delete": true,
+  "Clientes:delete": true, "Contactos:delete": true,
+};
+
+for (const d of DELETES) {
+  Deno.test(`[compuerta] ${d.name}: almacenista con perfil sembrado en true (estado de prod) conserva el 403`, async () => {
+    const db = baseDb(SEEDED_TRUE);
+    const r = await call(GATED[d.name], db, ALM, d.body);
+    assertEquals(r.status, 403);
+    assertEquals(db.rows(d.table).length, 1);
+  });
+  Deno.test(`[compuerta] ${d.name}: owner y admin siguen borrando`, async () => {
+    for (const u of [OWNER, { ...OWNER, role: "admin" }]) {
+      const db = baseDb(SEEDED_TRUE);
+      const r = await call(GATED[d.name], db, u, d.body);
+      assertEquals(r.status, 200);
+      assertEquals(db.rows(d.table).length, 0);
+    }
+  });
+}
+
+Deno.test("[compuerta] updateSupplierSafe: almacenista con perfil sembrado en true NO edita (403 previo)", async () => {
+  const db = baseDb(SEEDED_TRUE);
+  const r = await call(gatedUpdateSupplier, db, ALM, { supplier_id: "s1", updates: { name: "Nuevo", notes: "x" } });
+  assertEquals(r.status, 403);
+  assertEquals(db.rows("Supplier")[0].name, "Prov");
+});
+
+Deno.test("[compuerta] updateSupplierSafe: owner sigue editando", async () => {
+  const db = baseDb(SEEDED_TRUE);
+  const r = await call(gatedUpdateSupplier, db, OWNER, { supplier_id: "s1", updates: { name: "Dueno" } });
+  assertEquals(r.status, 200);
 });

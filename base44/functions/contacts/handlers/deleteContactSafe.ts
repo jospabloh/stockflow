@@ -1,6 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { hasPermission } from './_permissions.ts';
 
+// Compuerta por rol TEMPORAL (decision de JP pendiente). Los perfiles almacenista de prod fueron
+// sembrados con estas claves en true (default viejo), y hasPermission() respeta el true explicito
+// antes de ALMACENISTA_DENIED; quitar la compuerta daria a ese rol borrar/editar sin que nadie lo
+// haya concedido. Con true se conserva el 403 previo para todo rol distinto de admin/owner.
+// Ponerla en false solo tras migrar esos perfiles (ver descripcion del PR).
+const DIRECTORY_ROLE_GATE = true;
+
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
@@ -8,6 +15,9 @@ export async function handle(req: Request): Promise<Response> {
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (DIRECTORY_ROLE_GATE && user.role !== 'admin' && user.role !== 'owner') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const body = await req.json();
