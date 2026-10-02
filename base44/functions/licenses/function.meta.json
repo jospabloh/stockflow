@@ -2,7 +2,7 @@
   "function": "licenses",
   "module": "26 acacia-app-standard",
   "purpose": "Router de licencias/trial de tenants (estado, activación admin, confirmación de pago, trial inicial, migración de admins).",
-  "status": "existente; tocado en ola 4 solo para repuntar el despacho de emails de sendLifecycleEmails a jobs.sendLifecycleEmails",
+  "status": "existente; en ola 4b (tren 3) el despacho de emails pasa de la funcion suelta sendLifecycleEmails (borrada) a jobs.sendLifecycleEmails",
   "triggers": [
     "frontend functions.invoke('licenses', {action})"
   ],

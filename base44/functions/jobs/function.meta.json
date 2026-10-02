@@ -2,7 +2,7 @@
   "function": "jobs",
   "module": "26 acacia-app-standard",
   "purpose": "Router de trabajos programados/cron de plataforma (consolida 6 funciones sueltas en 1 endpoint). Despacha por body.action; cada handler conserva VERBATIM su validación x-cron-secret / platform-owner.",
-  "status": "new — ola 4 de consolidación (pendiente de deploy/publish); las 6 funciones sueltas originales siguen desplegadas hasta verificar 24 h",
+  "status": "activo en produccion (ola 4); las 7 funciones sueltas originales fueron borradas en ola 4b (tren 3)",
   "triggers": [
     "workflows programados (base44/workflows/*.jsonc con function_name 'jobs')",
     "invocación backend→backend (licenses)",
@@ -23,7 +23,8 @@
     "User"
   ],
   "tests": [
-    "base44/tests/jobs_router_test.ts (estático: registro de actions, workflows y llamadores)"
+    "base44/tests/jobs_router_test.ts (estático: registro de actions, workflows y llamadores)",
+    "base44/tests/licenses_to_jobs_route_test.ts (ruta licenses -> jobs con handlers reales y cliente simulado)"
   ],
   "actions": {
     "sendLifecycleEmails": {
@@ -33,7 +34,7 @@
         "EmailNotification",
         "User"
       ],
-      "callers": "workflow 'Send Lifecycle Emails' (cron 0 15 * * * UTC, args {action}); licenses.confirmRenewalPayment (invoke asServiceRole, sin x-cron-secret); licenses.adminUpdateTenantLicense (fetch /functions/v1/jobs con x-cron-secret + Authorization)"
+      "callers": "workflow 'Send Lifecycle Emails' (cron 0 15 * * * UTC, args {action}); licenses.confirmRenewalPayment (invoke('jobs', {action,jobs}) via asServiceRole); licenses.adminUpdateTenantLicense (fetch /functions/v1/jobs con x-cron-secret + Authorization)"
     },
     "processTrialReactivationEmails": {
       "purpose": "Email 'te extrañamos' a trials activos inactivos >24 h (máx 3 por trial, idempotente).",
@@ -76,5 +77,5 @@
       "callers": "disparo manual del owner (NO programado en repo; programarlo es decisión del owner tras medir impacto)"
     }
   },
-  "remove_when": "Nunca como router. Borrar las 7 funciones sueltas (sendLifecycleEmails, processTrialReactivationEmails, dailyPermissionAudit, dailyDocumentationAudit, dailyStockReconcile, cleanupSessions, sendCourseReminders) tras 24 h de corridas exitosas por 'jobs' y repuntar los crons del panel (courseComms.runReminders para cursos)."
+  "remove_when": "Nunca como router. Las 7 funciones sueltas (sendLifecycleEmails, processTrialReactivationEmails, dailyPermissionAudit, dailyDocumentationAudit, dailyStockReconcile, cleanupSessions, sendCourseReminders) ya fueron borradas (ola 4b); sendCourseReminders la cubre courseComms.runReminders."
 }

@@ -176,3 +176,18 @@ updated to `invoke('movements'|'pettyCash', { action: <handler>, ... })`.
 Anyone still calling the OLD functions (e.g. a panel automation) keeps working
 until they are deleted. Characterization tests:
 `base44/tests/ola3_stock_and_cash_test.ts` (run with `--allow-env --allow-read`).
+
+## Wave 4b (tren 3): standalone cron functions removed
+
+The `jobs` router has served the three scheduled workflows since wave 4. The seven
+standalone functions it replaces were deleted from the repo:
+`sendLifecycleEmails`, `processTrialReactivationEmails`, `cleanupSessions`,
+`dailyDocumentationAudit`, `dailyPermissionAudit`, `dailyStockReconcile` (all now
+`jobs` actions) and `sendCourseReminders` (a pure wrapper; `courseComms.runReminders`
+covers it). Backend callers moved to `jobs`: `licenses.confirmRenewalPayment`
+(`invoke('jobs', { action: 'sendLifecycleEmails', jobs })`) and
+`licenses.adminUpdateTenantLicense` (`fetch /functions/v1/jobs`). The generators
+(`generate:permission-manifests`, `generate:version-snapshot`) already write into
+`jobs/handlers/*` and do not recreate the old directories. Function count 32 -> 25
+(ceiling `maxFunctions` stays 40). Any panel cron still pointing at an old function
+name must be re-pointed to `/functions/v1/jobs`.

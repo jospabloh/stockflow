@@ -194,10 +194,10 @@ export async function handle(req: Request): Promise<Response> {
           const authHeader = req.headers.get('authorization');
           if (authHeader) sendHeaders['Authorization'] = authHeader;
 
-          const sendResp = await fetch(`${appUrl}/functions/v1/sendLifecycleEmails`, {
+          const sendResp = await fetch(`${appUrl}/functions/v1/jobs`, {
             method: 'POST',
             headers: sendHeaders,
-            body: JSON.stringify({ jobs }),
+            body: JSON.stringify({ action: 'sendLifecycleEmails', jobs }),
           });
           const sendData = await sendResp.json();
           emailDispatch = { sent: sendData.sent ?? 0, failed: sendData.failed ?? 0 };
