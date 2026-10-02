@@ -123,3 +123,13 @@ Deno.test("devolucion valida sigue funcionando", async () => {
   assertEquals(db.t.Quotation[0].items[0].quantity, 1);
   assertEquals(db.t.Quotation[0].total, 100);
 });
+
+Deno.test("rechaza product_id repetido aunque la suma no exceda lo vendido", async () => {
+  const db = mk();
+  const r = await ret(db, [item(1), item(1)]); // 1 + 1 <= 3 vendidos
+  assertEquals(r.status, 400);
+  assertEquals(db.t.Product[0].stock, 93);
+  assertEquals(db.t.Movement.length, 0);
+  assertEquals(db.t.Quotation[0].total, 300);
+  assertEquals(db.t.Quotation[0].items[0].quantity, 3);
+});
