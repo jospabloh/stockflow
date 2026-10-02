@@ -4,9 +4,10 @@
 > (`POST /functions/v1/jobs`, body `{"action": "<nombre>"}`, mismo header `x-cron-secret`).
 > Actions: `sendLifecycleEmails`, `processTrialReactivationEmails`, `dailyPermissionAudit`,
 > `dailyDocumentationAudit`, `dailyStockReconcile`, `cleanupSessions`. Workflows en repo:
-> Daily Stock Reconcile (solo lectura, apunta a `jobs`; sirve de prueba de que Base44 entrega `args`).
-> Send Lifecycle Emails y Trial Reactivation Emails Daily siguen apuntando a las funciones viejas hasta
-> confirmar esa entrega; luego se repuntan en un PR aparte. `cleanupSessions` existe como action pero NO
+> Los 3 workflows del repo (Daily Stock Reconcile, Send Lifecycle Emails, Trial Reactivation Emails Daily)
+> apuntan a `jobs`. Las funciones sueltas viejas ya NO existen (borradas en ola 4b): cualquier cron HTTP del
+> panel que aun apunte a `/functions/v1/<nombre viejo>` debe repuntarse a `/functions/v1/jobs` con el body de arriba.
+> `cleanupSessions` existe como action pero NO
 > se programa: decisión del owner tras medir el impacto (>1000 sesiones viejas, cross-tenant). `dailyPermissionAudit` y `dailyDocumentationAudit` escriben datos
 > (PermissionProfile / AppChangelog / AppVersion) y NO se programan desde el repo: siguen como
 > crons HTTP del panel (actualizar su URL/body según el prompt de abajo).
@@ -150,10 +151,10 @@ los handlers de `base44/functions/jobs/handlers/`). Base44 desplegará automáti
   └── Email → h.josepablo@gmail.com
 ```
 
-## Llamadores de licenses (ola 4)
+## Llamadores de licenses (ola 4b)
 
-`confirmRenewalPayment` y `adminUpdateTenantLicense` siguen invocando la funcion vieja
-`sendLifecycleEmails` (no `jobs`). Motivo: `asServiceRole.invoke` no envia `x-cron-secret`
-y no esta verificado que la autorizacion de la action de `jobs` se comporte igual que la
-de la funcion vieja. Migrarlos solo tras verificarlo en preview con un caso real.
+`confirmRenewalPayment` (`asServiceRole.functions.invoke('jobs', { action: 'sendLifecycleEmails', jobs })`) y
+`adminUpdateTenantLicense` (`fetch /functions/v1/jobs` con `x-cron-secret` + `Authorization` y body
+`{ action: 'sendLifecycleEmails', jobs }`) despachan al router `jobs`. El handler es el mismo codigo de la
+funcion vieja (misma autenticacion: x-cron-secret o platform owner). Prueba: `base44/tests/licenses_to_jobs_route_test.ts`.
 Los rechazos de las actions de `jobs` son 401 (no 403).
