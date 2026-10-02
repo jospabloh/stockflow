@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { hasPermission } from './_permissions.ts';
+import { validateQuotationUpdates } from './_validation.ts';
 
 // Permission key required to change each field (permissionRegistry.js › Cotizaciones).
 const FIELD_PERMISSION: Record<string, string> = {
@@ -87,6 +88,11 @@ export async function handle(req: Request): Promise<Response> {
         quotation: quotation,
         message: 'No valid fields to update'
       });
+    }
+
+    const validationError = validateQuotationUpdates(sanitized);
+    if (validationError) {
+      return Response.json({ error: validationError }, { status: 400 });
     }
 
     // PERMISSION CHECK — each CHANGED field needs its own granular key. The form

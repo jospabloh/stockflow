@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { hasPermission } from './_permissions.ts';
+import { validatePettyCashAmount } from './_validation.ts';
 
 /**
  * Safe PettyCashMovement creation — enforces the granular permission key
@@ -52,8 +53,9 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ success: false, error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
     }
 
-    if (!amount || amount <= 0) {
-      return Response.json({ success: false, error: 'El monto debe ser mayor a cero' }, { status: 400 });
+    const amountError = validatePettyCashAmount(amount);
+    if (amountError) {
+      return Response.json({ success: false, error: amountError }, { status: 400 });
     }
     if (!description || !String(description).trim()) {
       return Response.json({ success: false, error: 'Debes capturar una descripción' }, { status: 400 });
