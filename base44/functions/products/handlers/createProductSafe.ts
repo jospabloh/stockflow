@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { checkProductDuplicate, duplicateErrorMessage } from '../../../shared/productDuplicateCheck.ts';
+import { validateProductStock } from '../../../shared/productStockValidation.ts';
 import { hasPermission } from './_permissions.ts';
 
 export async function handle(req: Request): Promise<Response> {
@@ -49,6 +50,11 @@ export async function handle(req: Request): Promise<Response> {
 
     if (purchase_price != null && purchase_price < 0) {
       return Response.json({ success: false, error: 'El precio de compra no puede ser negativo' }, { status: 400 });
+    }
+
+    const stockError = validateProductStock(stock);
+    if (stockError) {
+      return Response.json({ success: false, error: stockError }, { status: 400 });
     }
 
     // DUPLICATE CHECK — name (case-insensitive), SKU, barcode

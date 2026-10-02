@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { checkProductDuplicate, duplicateErrorMessage } from '../../../shared/productDuplicateCheck.ts';
+import { validateProductStock } from '../../../shared/productStockValidation.ts';
 
 // SECURITY: Explicit whitelist — wholesale_min_qty removed (now lives in Category)
 const ALLOWED_UPDATE_FIELDS = new Set([
@@ -92,6 +93,11 @@ export async function handle(req: Request): Promise<Response> {
     }
     if (sanitized.purchase_price != null && sanitized.purchase_price < 0) {
       return Response.json({ success: false, error: 'El precio de compra no puede ser negativo' }, { status: 400 });
+    }
+
+    const stockError = validateProductStock(sanitized.stock);
+    if (stockError) {
+      return Response.json({ success: false, error: stockError }, { status: 400 });
     }
 
     // DUPLICATE CHECK — only if name, sku, or barcode are being changed
