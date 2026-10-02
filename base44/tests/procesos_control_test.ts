@@ -110,7 +110,6 @@ async function loadHandle(rel: string): Promise<(req: Request) => Promise<Respon
 }
 
 const audit = await loadHandle("base44/functions/products/handlers/auditInventory.ts");
-const correction = await loadHandle("base44/functions/products/handlers/applyInventoryAuditCorrection.ts");
 const reconcile = await loadHandle("base44/functions/jobs/handlers/dailyStockReconcile.ts");
 
 function req(body: Row) {
@@ -198,29 +197,8 @@ Deno.test("auditInventory: 401 sin sesión, 403 sin permiso, 200 con permiso", a
 });
 
 // ---------------------------------------------------------------------------
-// applyInventoryAuditCorrection: contrato "correction" (antes colisionaba con action)
+// applyInventoryAuditCorrection: ver inventory_audit_correction_test.ts; aqui solo el frontend
 // ---------------------------------------------------------------------------
-
-Deno.test("applyInventoryAuditCorrection esta deshabilitada: 403 y no escribe nada (incluye expected_stock arbitrario)", async () => {
-  for (const corr of ["revert_to_calculated", "accept_current"]) {
-    for (const exp of [7, 0, -5, 999999, "abc"]) {
-      const db = auditDb();
-      const stockAntes = db.rows("Product").find((p) => p.id === "pBad")!.stock;
-      const movsAntes = db.rows("Movement").length;
-      const r = await call(correction, db, OWNER, {
-        action: "applyInventoryAuditCorrection",
-        product_id: "pBad",
-        correction: corr,
-        expected_stock: exp,
-      });
-      assertEquals(r.status, 403);
-      assertEquals(r.json.code, "audit_correction_disabled");
-      assertEquals(db.rows("Product").find((p) => p.id === "pBad")!.stock, stockAntes);
-      assertEquals(db.rows("Movement").length, movsAntes);
-      assertEquals(db.rows("InventoryAuditLog").length, 0);
-    }
-  }
-});
 
 Deno.test("frontend: ninguna llamada a functions.invoke repite la clave action ni llama auditInventoryNow", async () => {
   const src = await Deno.readTextFile(new URL("src/pages/Settings.jsx", ROOT));
@@ -233,9 +211,7 @@ Deno.test("frontend: ninguna llamada a functions.invoke repite la clave action n
   }
   assert(n >= 1, "esperaba la llamada auditInventory");
   assert(src.includes("action: 'auditInventory'"));
-  // La UI ya no puede escribir stock desde la auditoria
-  assert(!src.includes("applyInventoryAuditCorrection"));
-  assert(!src.includes("Corregir a"));
+  // La correccion (applyInventoryAuditCorrection) se cubre en inventory_audit_correction_test.ts
 });
 
 // ---------------------------------------------------------------------------
