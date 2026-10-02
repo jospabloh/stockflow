@@ -32,7 +32,7 @@
       "callers": ["src/pages/Settings.jsx (botón 'Auditar inventario')"]
     },
     "applyInventoryAuditCorrection": {
-      "purpose": "Corrección manual de inventario desde la auditoría (nunca automática). Solo owner/admin del tenant y solo sobre productos de su negocio. Body: product_id, mode (accept_current|revert_to_calculated; distinto de action), expected_stock, current_stock, reason (obligatorio), confirm:true (obligatorio). Recalcula el esperado en el servidor, rechaza no_movements/legacy_bug/sin discrepancia y datos desactualizados (409). Registra Movement adjustment (stock_applied=true) y InventoryAuditLog system_correction con performed_by, stock_before, stock_after y notes (motivo); si el registro falla revierte el stock.",
+      "purpose": "Corrección manual de inventario desde la auditoría (nunca automática). Solo owner/admin del tenant y solo sobre productos de su negocio. Body: product_id, mode (accept_current|revert_to_calculated; distinto de action), expected_stock, current_stock, reason (obligatorio), confirm:true (obligatorio). Recalcula el esperado en el servidor, rechaza no_movements/legacy_bug/sin discrepancia y datos desactualizados (409). Registra Movement adjustment (quantity = stock final absoluto, stock_applied=true) y InventoryAuditLog system_correction con performed_by, stock_before, stock_after y notes (motivo); si el registro falla revierte el stock.",
       "entities": ["InventoryAuditLog", "Movement", "Product"],
       "callers": ["src/pages/Settings.jsx (botones 'Aceptar actual' y 'Corregir a N' de Audit Inventario)"]
     },

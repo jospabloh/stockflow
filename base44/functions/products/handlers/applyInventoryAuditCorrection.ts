@@ -137,7 +137,7 @@ export async function handle(req: Request): Promise<Response> {
         product_id,
         product_name: product.name,
         type: 'adjustment',
-        quantity: delta,
+        quantity: finalStock, // 'adjustment' = stock final ABSOLUTO (convención del sistema); el delta queda en InventoryAuditLog
         unit_price: 0,
         total: 0,
         stock_after: finalStock,

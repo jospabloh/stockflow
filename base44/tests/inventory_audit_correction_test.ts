@@ -303,7 +303,7 @@ Deno.test("revert_to_calculated: fija el stock calculado y registra quien, antes
 
   const adj = db.rows("Movement").filter((m) => m.type === "adjustment");
   assertEquals(adj.length, 1);
-  assertEquals(adj[0].quantity, -3);
+  assertEquals(adj[0].quantity, 7); // absoluto = stock final
   assertEquals(adj[0].stock_after, 7);
   assertEquals(adj[0].stock_applied, true);
   assertEquals(adj[0].business_id, "b1");
@@ -322,7 +322,7 @@ Deno.test("accept_current: no cambia el stock, pero registra la decision", async
   assert(logs[0].notes.includes("accept_current") && logs[0].notes.includes("El conteo fisico dice 10"));
   const adj = db.rows("Movement").filter((m) => m.type === "adjustment");
   assertEquals(adj.length, 1);
-  assertEquals(adj[0].quantity, 0);
+  assertEquals(adj[0].quantity, 10); // absoluto = stock final
   assertEquals(adj[0].stock_after, 10);
 });
 
