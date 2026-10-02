@@ -15,7 +15,8 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     const body = await req.json();
-    const { name, business_id, description, color, wholesale_min_qty } = body;
+    const { business_id, description, color, wholesale_min_qty } = body;
+    const name = typeof body.name === 'string' ? body.name.trim() : '';
 
     if (!business_id) {
       return Response.json({ success: false, error: 'business_id is required' }, { status: 400 });
@@ -23,6 +24,10 @@ export async function handle(req: Request): Promise<Response> {
 
     if (business_id !== user.business_id) {
       return Response.json({ success: false, error: 'Unauthorized: business_id mismatch' }, { status: 403 });
+    }
+
+    if (!name) {
+      return Response.json({ success: false, error: 'El nombre de la categoría es obligatorio' }, { status: 400 });
     }
 
     if (wholesale_min_qty != null && Number(wholesale_min_qty) < 0) {
@@ -40,6 +45,13 @@ export async function handle(req: Request): Promise<Response> {
     const billingStatus = biz?.billing_status || 'active';
     if (billingStatus === 'view_only' || billingStatus === 'suspended') {
       return Response.json({ success: false, error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
+    }
+
+    // DUPLICATE CHECK — names are unique per tenant (case-insensitive, trimmed).
+    const existing = await base44.asServiceRole.entities.Category.filter({ business_id }, undefined, 5000);
+    const key = name.toLocaleLowerCase();
+    if ((existing || []).some((c: { name?: string }) => String(c.name ?? '').trim().toLocaleLowerCase() === key)) {
+      return Response.json({ success: false, error: 'Ya existe una categoría con ese nombre', code: 'duplicate_name' }, { status: 409 });
     }
 
     const category = await base44.entities.Category.create({
