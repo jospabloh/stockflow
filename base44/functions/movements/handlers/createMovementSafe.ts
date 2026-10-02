@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { hasPermission } from './_permissions.ts';
+import { validateMovementInput } from './_validation.ts';
 
 /**
  * Safe Movement creation with business_id validation
@@ -55,8 +56,13 @@ export async function handle(req: Request): Promise<Response> {
     if (!(await hasPermission(base44.asServiceRole, user, 'Movimientos', 'create'))) {
       return Response.json({ success: false, error: 'Forbidden: missing Movimientos:create permission' }, { status: 403 });
     }
+    // Reject unknown types before the per-type permission lookup (an unknown
+    // type used to leave typeAction undefined and skip that check).
     const typeAction = TYPE_TO_ACTION[type];
-    if (typeAction && !(await hasPermission(base44.asServiceRole, user, 'Movimientos', typeAction))) {
+    if (!typeAction) {
+      return Response.json({ success: false, error: `Invalid movement type: ${String(type)}` }, { status: 400 });
+    }
+    if (!(await hasPermission(base44.asServiceRole, user, 'Movimientos', typeAction))) {
       return Response.json({ success: false, error: `Forbidden: missing Movimientos:${typeAction} permission` }, { status: 403 });
     }
 
@@ -64,6 +70,7 @@ export async function handle(req: Request): Promise<Response> {
     // (validateBusinessOwnership) only pre-validates the first item and is
     // bypassable; enforce here so a crafted product_id from another tenant
     // can't be attached to this business's movement.
+    let currentStock: number | null = null;
     if (product_id) {
       const products = await base44.asServiceRole.entities.Product.filter({ id: product_id });
       const product = products[0];
@@ -73,6 +80,12 @@ export async function handle(req: Request): Promise<Response> {
       if (product.business_id !== user.business_id) {
         return Response.json({ success: false, error: 'Unauthorized: product belongs to a different business' }, { status: 403 });
       }
+      currentStock = product.stock || 0;
+    }
+
+    const invalid = validateMovementInput({ type, quantity }, currentStock);
+    if (invalid) {
+      return Response.json({ success: false, error: invalid.error }, { status: invalid.status });
     }
 
     const businesses = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
