@@ -57,11 +57,20 @@ export async function handle(req: Request): Promise<Response> {
     // LICENSE CHECK — returns are allowed even in view_only (they correct existing data)
     // Intentionally not blocking here: returns protect business from stuck stock
 
-    // Validate returned items exist in quotation
+    // Validate returned items exist in quotation.
+    // quantity debe ser entero > 0 (una cantidad negativa bajaba stock y subía el total);
+    // el acumulado por producto no puede exceder lo vendido; el precio se toma de la
+    // cotización (el unit_price del cliente se ignora).
+    const requested: Record<string, number> = {};
     for (const ri of returned_items) {
       const match = (quotation.items || []).find(i => i.product_id === ri.product_id);
       if (!match) return Response.json({ error: `Producto ${ri.product_name} no está en la cotización` }, { status: 400 });
-      if (ri.quantity > match.quantity) return Response.json({ error: `Cantidad devuelta mayor a la vendida para ${ri.product_name}` }, { status: 400 });
+      if (typeof ri.quantity !== 'number' || !Number.isInteger(ri.quantity) || ri.quantity <= 0) {
+        return Response.json({ error: `Cantidad inválida para ${ri.product_name}: debe ser un entero mayor a 0` }, { status: 400 });
+      }
+      requested[ri.product_id] = (requested[ri.product_id] || 0) + ri.quantity;
+      if (requested[ri.product_id] > match.quantity) return Response.json({ error: `Cantidad devuelta mayor a la vendida para ${ri.product_name}` }, { status: 400 });
+      ri.unit_price = match.unit_price;
     }
 
     // Create return movements and update stock
