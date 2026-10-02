@@ -3,7 +3,8 @@ import { reminderEmail } from './emailTemplates.ts';
 
 // Barre las inscripciones cuya próxima sesión es MAÑANA y aún no tienen recordatorio,
 // y les envía el correo de recordatorio. Pensado para el cron (guardado por CRON_SECRET);
-// también aceptable desde un admin. Corre global (todos los tenants) vía asServiceRole.
+// el disparo manual es SOLO del dueño de la plataforma (PLATFORM_OWNER_EMAIL), nunca de un
+// admin/owner de tenant (barre inscripciones de todos los tenants). Corre global (todos los tenants) vía asServiceRole.
 const REMINDABLE = new Set(['confirmado', 'pagado']);
 
 export async function handle(req: Request): Promise<Response> {
@@ -11,7 +12,8 @@ export async function handle(req: Request): Promise<Response> {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
 
-    // Auth: CRON_SECRET (header o body) o usuario admin.
+    // Auth: CRON_SECRET (header o body) o dueño de la plataforma. Un role:admin de tenant
+    // NO basta: el barrido envía correos a inscripciones de todos los tenants.
     const cronSecretEnv = Deno.env.get('CRON_SECRET');
     const validCron = cronSecretEnv && (
       req.headers.get('x-cron-secret') === cronSecretEnv ||
@@ -19,7 +21,8 @@ export async function handle(req: Request): Promise<Response> {
     );
     if (!validCron) {
       const user = await base44.auth.me().catch(() => null);
-      if (!user || user.role !== 'admin') {
+      const platformOwnerEmail = Deno.env.get('PLATFORM_OWNER_EMAIL');
+      if (!user || !platformOwnerEmail || user.email !== platformOwnerEmail) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
