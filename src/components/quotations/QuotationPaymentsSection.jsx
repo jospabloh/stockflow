@@ -9,10 +9,21 @@ import { toast } from "sonner";
 import { Plus, CreditCard, Pencil, Trash2 } from "lucide-react";
 import { useBusinessContext } from "@/components/BusinessContext";
 import { usePermissions } from "@/lib/PermissionContext";
-import { getQuotationAmountPaid as getAmountPaid, getQuotationBalance as getBalance } from "@/lib/quotationBalance";
 
 function fmt(n) {
   return (n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Compat helpers for old quotations without the new fields
+function getAmountPaid(q) {
+  if (q.amount_paid != null) return q.amount_paid;
+  return q.paid ? (q.total || 0) : 0;
+}
+
+function getBalance(q) {
+  if (q.balance != null) return q.balance;
+  if (q.paid) return 0;
+  return (q.total || 0) - getAmountPaid(q);
 }
 
 export default function QuotationPaymentsSection({ quotation, onPaymentRegistered }) {
@@ -27,7 +38,6 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
-  const [cashRuleEnabled, setCashRuleEnabled] = useState(false);
 
   const canRegisterPayment = can('Cotizaciones', 'confirm_payment');
   const canEditPaymentRecord = can('Cotizaciones', 'edit_payment_record');
@@ -37,10 +47,6 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
       base44.entities.PaymentMethod.filter({ business_id: businessId, active: true })
         .then(setPaymentMethods)
         .catch(() => {});
-      // Regla de tenant: solo con cash_sales_to_petty_cash encendida el pago en efectivo entra a caja chica.
-      base44.functions.invoke('tenantRules', { action: 'getCurrentTenantRuleMap' })
-        .then(res => setCashRuleEnabled(res?.data?.rules?.cash_sales_to_petty_cash?.enabled === true))
-        .catch(() => setCashRuleEnabled(false));
     }
   }, [businessId]);
 
@@ -124,11 +130,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
 
       if (!data.success) throw new Error(data.error || "Error al guardar");
 
-      // El registro devuelve petty_cash_movement_id (null si no se creó el ingreso); la edición no, y ahí se usa la regla.
-      const integratedToPettyCash = isCash && (
-        "petty_cash_movement_id" in data ? Boolean(data.petty_cash_movement_id) : cashRuleEnabled
-      );
-      const msg = integratedToPettyCash
+      const msg = isCash
         ? `✅ Pago de $${fmt(amt)} ${editingPayment ? "actualizado" : "registrado"} e integrado a caja chica`
         : `✅ Pago de $${fmt(amt)} ${editingPayment ? "actualizado" : "registrado"}`;
       toast.success(msg);
@@ -332,7 +334,7 @@ export default function QuotationPaymentsSection({ quotation, onPaymentRegistere
               />
             </div>
 
-            {isCash && cashRuleEnabled && (
+            {isCash && (
               <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg px-3 py-2">
                 <span className="text-sm text-emerald-700 dark:text-emerald-300">
                   💵 Este pago en efectivo se registrará automáticamente en caja chica.
