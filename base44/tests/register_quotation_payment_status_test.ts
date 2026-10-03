@@ -108,3 +108,12 @@ for (const st of ["sent", "accepted"]) {
     assertEquals(over.status, 400);
   });
 }
+
+// Regresion (flujo viejo "Confirmar Pago Total"): ventas converted con paid=true,
+// amount_paid=0, balance=total, payments=[]. La UI muestra Saldo=total y el boton
+// "Registrar Pago"; el backend debe seguir aceptando el pago (comportamiento de main).
+Deno.test("converted legacy paid=true amount_paid=0 balance=total sigue aceptando pago", async () => {
+  const r = await pay("converted", { paid: true, amount_paid: 0, balance: 100, payments: [] });
+  assertEquals(r.status, 200);
+  assertEquals(r.cash.length, 1);
+});

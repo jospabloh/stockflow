@@ -39,7 +39,8 @@ async function loadHandle(): Promise<(r: Request) => Promise<Response>> {
   const perms = await Deno.readTextFile(new URL("_permissions.ts", dir));
   const src = await Deno.readTextFile(new URL("convertQuotationSafe.ts", dir));
   const rewritten = "// @ts-nocheck\n" +
-    src.replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK}'`).replace("'./_permissions.ts'", `'${b64("// @ts-nocheck\n" + perms)}'`);
+    src.replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK}'`).replace("'./_permissions.ts'", `'${b64("// @ts-nocheck\n" + perms)}'`)
+    .replace("'../../../shared/applyStock.ts'", `'${new URL("../shared/applyStock.ts", import.meta.url).href}'`);
   return (await import(b64(rewritten))).handle;
 }
 const handle = await loadHandle();
