@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { hasPermission } from './_permissions.ts';
-import { isCashRuleEnabled } from './_cashRule.ts';
 
 function isCash(method) {
   return String(method || '').trim().toLowerCase().includes('efectivo');
@@ -92,10 +91,8 @@ export async function handle(req: Request): Promise<Response> {
           console.error('PettyCash delete error:', e?.message);
         }
       }
-    } else if (isCash(payment_method) && !oldPayment.petty_cash_movement_id &&
-      await isCashRuleEnabled(base44.asServiceRole, q.business_id)) {
-      // Was not cash before, now it is — create petty cash entry (solo con la regla
-      // cash_sales_to_petty_cash activa)
+    } else if (isCash(payment_method) && !oldPayment.petty_cash_movement_id) {
+      // Was not cash before, now it is — create petty cash entry
       const movDate = paid_at ? paid_at.split('T')[0] : new Date().toLocaleDateString('en-CA');
       try {
         const pcm = await base44.asServiceRole.entities.PettyCashMovement.create({

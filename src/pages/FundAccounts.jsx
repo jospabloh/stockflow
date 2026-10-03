@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { catalogDeleteErrorMessage } from "@/lib/catalogErrors";
 import { celebrate } from "@/lib/celebrate";
 import { seedAndDedupeCatalog } from "@/lib/seedCatalog";
 import { DEFAULT_ACCOUNTS } from "@/lib/catalogDefaults";
@@ -104,11 +103,11 @@ export default function FundAccounts() {
   const handleDelete = async (id) => {
     try {
       const resp = await base44.functions.invoke('catalogSettings', { action: 'deleteCatalogItemSafe', entity: 'FundAccount', record_id: id });
-      if (!resp?.data?.success) { toast.error(catalogDeleteErrorMessage(resp?.data, "No se pudo eliminar la cuenta")); return; }
+      if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo eliminar la cuenta"); return; }
       setAccounts(accounts.filter((a) => a.id !== id));
       toast.success("Cuenta eliminada");
     } catch (error) {
-      toast.error(catalogDeleteErrorMessage(error, `Error al eliminar: ${error.message}`));
+      toast.error(`Error al eliminar: ${error.message}`);
     }
   };
 
@@ -208,12 +207,12 @@ export default function FundAccounts() {
                     <Pencil className="h-4 w-4 text-slate-400" />
                   </Button>
                   )}
-                  {canDelete && !a.is_system && (
+                  {canDelete && (
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(a.id)} {...createButtonProps('delete')}>
                     <Trash2 className="h-4 w-4 text-slate-400" />
                   </Button>
                   )}
-                  {!canEdit && (!canDelete || a.is_system) && <span className="text-slate-300 text-xs">—</span>}
+                  {!canEdit && !canDelete && <span className="text-slate-300 text-xs">—</span>}
                 </TableCell>
               </TableRow>
             ))}

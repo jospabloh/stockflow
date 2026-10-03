@@ -64,15 +64,6 @@ export async function handle(req: Request): Promise<Response> {
     // el acumulado por producto no puede exceder lo vendido; el precio se toma de la
     // cotización (el unit_price del cliente se ignora).
     const requested: Record<string, number> = {};
-    // Un product_id no puede repetirse: con duplicados cuya suma no excede lo vendido se creaban
-    // 2 movimientos pero la cotización restaba solo el primero (stock y total desalineados).
-    const seenProducts = new Set<string>();
-    for (const ri of returned_items) {
-      if (seenProducts.has(ri.product_id)) {
-        return Response.json({ error: `Producto ${ri.product_name} repetido en returned_items: envía una sola línea por producto` }, { status: 400 });
-      }
-      seenProducts.add(ri.product_id);
-    }
     for (const ri of returned_items) {
       const match = (quotation.items || []).find(i => i.product_id === ri.product_id);
       if (!match) return Response.json({ error: `Producto ${ri.product_name} no está en la cotización` }, { status: 400 });

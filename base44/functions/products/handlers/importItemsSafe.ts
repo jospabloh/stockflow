@@ -203,11 +203,6 @@ export async function handle(req: Request): Promise<Response> {
 
     // ─── CATEGORÍAS ──────────────────────────────────────────────────────────
     else if (import_type === 'categories') {
-      // Names are unique per tenant (case-insensitive, trimmed) — also within the file itself.
-      const existingCatsForDup = await base44.asServiceRole.entities.Category.filter({ business_id: businessId }, undefined, 5000);
-      const usedNames = new Set<string>(
-        (existingCatsForDup || []).map((c: { name?: string }) => String(c.name ?? '').trim().toLocaleLowerCase()),
-      );
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const rowNum = i + 2;
@@ -218,16 +213,9 @@ export async function handle(req: Request): Promise<Response> {
           continue;
         }
 
-        const nameKey = nombre.toLocaleLowerCase();
-        if (usedNames.has(nameKey)) {
-          results.push({ row: rowNum, nombre, status: 'error', message: `Ya existe una categoría con el nombre "${nombre}"`, code: 'duplicate_name' });
-          continue;
-        }
-
         const minQtyRaw = (row['cantidad_minima_mayoreo'] || '').trim();
         const minQty = minQtyRaw !== '' ? parseFloat(minQtyRaw) : null;
 
-        usedNames.add(nameKey);
         await base44.asServiceRole.entities.Category.create({
           name: nombre,
           description: (row['descripcion'] || '').trim(),
