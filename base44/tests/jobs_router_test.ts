@@ -77,11 +77,12 @@ Deno.test("dailyStockReconcile no escribe Movement ni Product ni reintenta/sana 
 
 Deno.test("llamadores de licenses despachan al router jobs (funcion suelta borrada en ola 4b)", async () => {
   const c = await read("base44/functions/licenses/handlers/confirmRenewalPayment.ts");
-  assert(c.includes("invoke('jobs', { action: 'sendLifecycleEmails', jobs })"));
+  assert(c.includes("invoke('jobs', {") && c.includes("action: 'sendLifecycleEmails'") && c.includes("'x-cron-secret'"));
   assert(!c.includes("invoke('sendLifecycleEmails'"));
   const a = await read("base44/functions/licenses/handlers/adminUpdateTenantLicense.ts");
-  assert(a.includes("/functions/v1/jobs"));
-  assert(!a.includes("/functions/v1/sendLifecycleEmails"));
+  // fetch a /functions/v1/jobs devolvia 404: se despacha con invoke interno + x-cron-secret.
+  assert(a.includes("invoke('jobs', {") && a.includes("'x-cron-secret'"));
+  assert(!a.includes("/functions/v1/"));
   assert(a.includes("action: 'sendLifecycleEmails'"));
 });
 
