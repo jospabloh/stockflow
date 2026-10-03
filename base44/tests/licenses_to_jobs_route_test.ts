@@ -27,6 +27,9 @@ type Ctx = {
   emails: Row[];
   invokes: { name: string; payload: Row }[];
   jobsHandle: ((req: Request) => Promise<Response>) | null;
+  // 'axios': forma REAL del runtime desplegado (respuesta axios completa, con config/request circulares).
+  // 'unwrapped': datos directos (por si la plataforma cambia).
+  shape: "axios" | "unwrapped";
 };
 G.__sf = {
   ctx: null as Ctx | null,
@@ -65,8 +68,16 @@ G.__sf = {
             try {
               const res = await ctx.jobsHandle!(new Request("https://x.test/functions/jobs", { method: "POST", body: JSON.stringify(payload) }));
               const data = await res.json();
-              if (!res.ok) throw new Error(`Request failed with status code ${res.status}`);
-              return data;
+              if (!res.ok) {
+                // Como axios: el cuerpo del error viaja en e.response.data.
+                throw Object.assign(new Error(`Request failed with status code ${res.status}`), { response: { status: res.status, data } });
+              }
+              if (ctx.shape === "unwrapped") return data;
+              const config: Row = { url: "/functions/jobs", method: "post", headers: {} };
+              const request: Row = { method: "POST", path: "/functions/jobs", config };
+              config.request = request; // referencia circular: JSON.stringify(respuesta) lanza
+              request.res = { req: request };
+              return { data, status: res.status, statusText: "OK", headers: { "content-type": "application/json" }, config, request };
             } finally {
               ctx.user = saved;
             }
@@ -100,7 +111,7 @@ const jobsLifecycle = await loadHandle("base44/functions/jobs/handlers/sendLifec
 const confirmRenewal = await loadHandle("base44/functions/licenses/handlers/confirmRenewalPayment.ts");
 const adminUpdate = await loadHandle("base44/functions/licenses/handlers/adminUpdateTenantLicense.ts");
 
-function freshCtx(user: Row | null = OWNER): Ctx {
+function freshCtx(user: Row | null = OWNER, shape: Ctx["shape"] = "axios"): Ctx {
   const ctx: Ctx = {
     tables: {
       Business: [{ id: "biz-1", name: "Negocio Prueba", billing_status: "active", license_plan: "start", license_expires_at: "2027-01-01T00:00:00Z" }],
@@ -114,6 +125,7 @@ function freshCtx(user: Row | null = OWNER): Ctx {
     emails: [],
     invokes: [],
     jobsHandle: jobsLifecycle,
+    shape,
   };
   G.__sf.ctx = ctx;
   return ctx;
@@ -122,88 +134,131 @@ function freshCtx(user: Row | null = OWNER): Ctx {
 const post = (body: Row, headers: Record<string, string> = {}) =>
   new Request("https://x.test/f", { method: "POST", headers, body: JSON.stringify(body) });
 
-Deno.test("confirmRenewalPayment despacha a jobs { action: 'sendLifecycleEmails', jobs } y el correo sale", async () => {
-  const ctx = freshCtx();
-  const res = await confirmRenewal(post({ business_id: "biz-1" }));
-  assertEquals(res.status, 200);
-  assertEquals(ctx.invokes.length, 1);
-  assertEquals(ctx.invokes[0].name, "jobs");
-  assertEquals(ctx.invokes[0].payload.action, "sendLifecycleEmails");
-  assertEquals(ctx.invokes[0].payload.jobs.length, 1);
-  assertEquals(ctx.invokes[0].payload.jobs[0].email_type, "payment_received");
-  assertEquals(ctx.invokes[0].payload["x-cron-secret"], "test-secret");
-  const out = await res.json();
-  assertEquals(out.dispatch.sent, 1);
-  assertEquals(out.dispatch.failed, 0);
-  assert(ctx.emails.some((e) => e.to === "dueno@negocio.test"));
-});
-
-Deno.test("confirmRenewalPayment: no llama a la funcion suelta borrada", async () => {
-  const ctx = freshCtx();
-  await confirmRenewal(post({ business_id: "biz-1" }));
-  assert(ctx.invokes.every((i) => i.name === "jobs"));
-});
-
-Deno.test("adminUpdateTenantLicense (activacion) invoca jobs con x-cron-secret y el correo sale (sin fetch /functions/v1)", async () => {
-  const ctx = freshCtx();
-  ctx.tables.Business[0].billing_status = "trial";
-  const realFetch = globalThis.fetch;
-  let fetched = 0;
-  globalThis.fetch = (() => { fetched++; return Promise.resolve(new Response("nf", { status: 404 })); }) as typeof fetch;
-  try {
-    const res = await adminUpdate(post({ business_id: "biz-1", updates: { billing_status: "active" } }, { authorization: "Bearer tok" }));
+for (const shape of ["axios", "unwrapped"] as const) {
+  const fc = (user: Row | null = OWNER) => freshCtx(user, shape);
+  Deno.test(`[${shape}] confirmRenewalPayment despacha a jobs { action: 'sendLifecycleEmails', jobs } y el correo sale`, async () => {
+    const ctx = fc();
+    const res = await confirmRenewal(post({ business_id: "biz-1" }));
     assertEquals(res.status, 200);
-    assertEquals(fetched, 0);
     assertEquals(ctx.invokes.length, 1);
     assertEquals(ctx.invokes[0].name, "jobs");
     assertEquals(ctx.invokes[0].payload.action, "sendLifecycleEmails");
-    assertEquals(ctx.invokes[0].payload.jobs[0].email_type, "license_activated");
+    assertEquals(ctx.invokes[0].payload.jobs.length, 1);
+    assertEquals(ctx.invokes[0].payload.jobs[0].email_type, "payment_received");
     assertEquals(ctx.invokes[0].payload["x-cron-secret"], "test-secret");
     const out = await res.json();
-    assertEquals(out.email_dispatch.sent, 1);
+    assertEquals(out.dispatch.sent, 1);
+    assertEquals(out.dispatch.failed, 0);
     assert(ctx.emails.some((e) => e.to === "dueno@negocio.test"));
-  } finally {
-    globalThis.fetch = realFetch;
-  }
+    // sent>=1: queda el registro de auditoria y no se reporta fallo.
+    assertEquals(out.email_dispatch_failed, undefined);
+    assertEquals(ctx.tables.EmailNotification.length, 1);
+    assertEquals(ctx.tables.EmailNotification[0].status, "sent");
+  });
+
+  Deno.test(`[${shape}] confirmRenewalPayment: no llama a la funcion suelta borrada`, async () => {
+    const ctx = fc();
+    await confirmRenewal(post({ business_id: "biz-1" }));
+    assert(ctx.invokes.every((i) => i.name === "jobs"));
+  });
+
+  Deno.test(`[${shape}] adminUpdateTenantLicense (activacion) invoca jobs con x-cron-secret y el correo sale (sin fetch /functions/v1)`, async () => {
+    const ctx = fc();
+    ctx.tables.Business[0].billing_status = "trial";
+    const realFetch = globalThis.fetch;
+    let fetched = 0;
+    globalThis.fetch = (() => { fetched++; return Promise.resolve(new Response("nf", { status: 404 })); }) as typeof fetch;
+    try {
+      const res = await adminUpdate(post({ business_id: "biz-1", updates: { billing_status: "active" } }, { authorization: "Bearer tok" }));
+      assertEquals(res.status, 200);
+      assertEquals(fetched, 0);
+      assertEquals(ctx.invokes.length, 1);
+      assertEquals(ctx.invokes[0].name, "jobs");
+      assertEquals(ctx.invokes[0].payload.action, "sendLifecycleEmails");
+      assertEquals(ctx.invokes[0].payload.jobs[0].email_type, "license_activated");
+      assertEquals(ctx.invokes[0].payload["x-cron-secret"], "test-secret");
+      const out = await res.json();
+      assertEquals(out.email_dispatch.sent, 1);
+      assert(ctx.emails.some((e) => e.to === "dueno@negocio.test"));
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+
+  Deno.test(`[${shape}] licenses: si jobs rechaza el despacho (401), el fallo es visible y no se registra como enviado`, async () => {
+    const ctx = fc();
+    ctx.tables.Business[0].billing_status = "trial";
+    const saved = Deno.env.get("CRON_SECRET");
+    Deno.env.set("CRON_SECRET", "otro-secreto-de-jobs");
+    try {
+      // El handler de jobs ya cargado lee CRON_SECRET en cada request; el body lleva el secreto de licenses.
+      ctx.jobsHandle = async (_req: Request) => Response.json({ error: "Unauthorized" }, { status: 401 });
+      const r1 = await adminUpdate(post({ business_id: "biz-1", updates: { billing_status: "active" } }));
+      const o1 = await r1.json();
+      assertEquals(o1.email_dispatch.sent, 0);
+      assertEquals(o1.email_dispatch.failed, 1);
+      assert(String(o1.email_dispatch.error).includes("Unauthorized"));
+      ctx.tables.Business[0].billing_status = "active";
+      const r2 = await confirmRenewal(post({ business_id: "biz-1" }));
+      const o2 = await r2.json();
+      assertEquals(o2.email_dispatch_failed, true);
+      assert(String(o2.dispatch.error).includes("Unauthorized"));
+      assert(!String(o2.dispatch.error).includes("circular"));
+      assertEquals(ctx.tables.EmailNotification.length, 0);
+    } finally {
+      if (saved) Deno.env.set("CRON_SECRET", saved);
+    }
+  });
+
+  Deno.test(`[${shape}] confirmRenewalPayment: sin CRON_SECRET configurado el despacho falla y no se registra como enviado`, async () => {
+    const ctx = fc();
+    const saved = Deno.env.get("CRON_SECRET");
+    Deno.env.delete("CRON_SECRET");
+    try {
+      const out = await (await confirmRenewal(post({ business_id: "biz-1" }))).json();
+      assert(out.dispatch.error);
+      assertEquals(out.email_dispatch_failed, true);
+      assertEquals(ctx.emails.length, 0);
+      assertEquals(ctx.tables.EmailNotification.length, 0);
+    } finally {
+      if (saved) Deno.env.set("CRON_SECRET", saved);
+    }
+  });
+}
+
+Deno.test("el SDK simulado 'axios' reproduce la forma real: JSON.stringify de la respuesta cruda lanza", async () => {
+  const ctx = freshCtx(null, "axios");
+  const raw = await G.__sf.client().asServiceRole.functions.invoke("jobs", {
+    action: "sendLifecycleEmails",
+    jobs: [],
+    "x-cron-secret": "test-secret",
+  });
+  assertEquals(raw.status, 200);
+  assertEquals(raw.data.sent, 0);
+  let threw = false;
+  try { JSON.stringify(raw); } catch (e) { threw = String((e as Error).message).includes("circular"); }
+  assert(threw, "la respuesta simulada debe ser circular como la real");
+  assertEquals(ctx.invokes.length, 1);
 });
 
-Deno.test("licenses: si jobs rechaza el despacho (401), el fallo es visible y no se registra como enviado", async () => {
-  const ctx = freshCtx();
+Deno.test("confirmRenewalPayment (axios): sent>=1 -> EmailNotification y exito, sin error circular", async () => {
+  const ctx = freshCtx(OWNER, "axios");
+  const out = await (await confirmRenewal(post({ business_id: "biz-1" }))).json();
+  assertEquals(out.success, true);
+  assertEquals(out.dispatch.sent, 1);
+  assertEquals(out.dispatch.error, undefined);
+  assertEquals(out.email_dispatch_failed, undefined);
+  assertEquals(ctx.tables.EmailNotification.length, 1);
+});
+
+Deno.test("adminUpdateTenantLicense (axios): failed nunca es negativo", async () => {
+  const ctx = freshCtx(OWNER, "axios");
   ctx.tables.Business[0].billing_status = "trial";
-  const saved = Deno.env.get("CRON_SECRET");
-  Deno.env.set("CRON_SECRET", "otro-secreto-de-jobs");
-  try {
-    // El handler de jobs ya cargado lee CRON_SECRET en cada request; el body lleva el secreto de licenses.
-    ctx.jobsHandle = async (_req: Request) => Response.json({ error: "Unauthorized" }, { status: 401 });
-    const r1 = await adminUpdate(post({ business_id: "biz-1", updates: { billing_status: "active" } }));
-    const o1 = await r1.json();
-    assertEquals(o1.email_dispatch.sent, 0);
-    assertEquals(o1.email_dispatch.failed, -1);
-    assert(String(o1.email_dispatch.error).includes("401"));
-    ctx.tables.Business[0].billing_status = "active";
-    const r2 = await confirmRenewal(post({ business_id: "biz-1" }));
-    const o2 = await r2.json();
-    assertEquals(o2.email_dispatch_failed, true);
-    assert(String(o2.dispatch.error).includes("401"));
-    assertEquals(ctx.tables.EmailNotification.length, 0);
-  } finally {
-    if (saved) Deno.env.set("CRON_SECRET", saved);
-  }
-});
-
-Deno.test("confirmRenewalPayment: sin CRON_SECRET configurado el despacho falla y no se registra como enviado", async () => {
-  const ctx = freshCtx();
-  const saved = Deno.env.get("CRON_SECRET");
-  Deno.env.delete("CRON_SECRET");
-  try {
-    const out = await (await confirmRenewal(post({ business_id: "biz-1" }))).json();
-    assert(out.dispatch.error);
-    assertEquals(out.email_dispatch_failed, true);
-    assertEquals(ctx.emails.length, 0);
-    assertEquals(ctx.tables.EmailNotification.length, 0);
-  } finally {
-    if (saved) Deno.env.set("CRON_SECRET", saved);
-  }
+  ctx.jobsHandle = () => Promise.resolve(Response.json({ error: "boom" }, { status: 500 }));
+  const out = await (await adminUpdate(post({ business_id: "biz-1", updates: { billing_status: "active" } }))).json();
+  assertEquals(out.email_dispatch.sent, 0);
+  assert(out.email_dispatch.failed >= 0);
+  assert(String(out.email_dispatch.error).includes("boom"));
 });
 
 Deno.test("jobs.sendLifecycleEmails conserva la autenticacion de la funcion vieja", async () => {

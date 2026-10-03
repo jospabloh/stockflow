@@ -47,17 +47,22 @@ export async function handle(req: Request): Promise<Response> {
       try {
         // jobs.sendLifecycleEmails solo acepta x-cron-secret (header o body) o al platform owner;
         // un invoke con service role no es ninguno, asi que el secreto va en el body.
-        dispatchResult = await base44.asServiceRole.functions.invoke('jobs', {
+        // En el runtime desplegado invoke devuelve la respuesta axios completa ({data, status, config,
+        // request...}), con referencias circulares: nunca se serializa cruda. Patron de applyStock.ts.
+        const resp = await base44.asServiceRole.functions.invoke('jobs', {
           action: 'sendLifecycleEmails',
           jobs,
           'x-cron-secret': Deno.env.get('CRON_SECRET'),
         });
-        console.log('[confirmRenewalPayment] payment_received dispatched:', JSON.stringify(dispatchResult));
+        dispatchResult = resp?.data ?? resp;
+        // deno-lint-ignore no-explicit-any
+        const dr0 = dispatchResult as any;
+        console.log('[confirmRenewalPayment] payment_received dispatched:', JSON.stringify({ sent: dr0?.sent, failed: dr0?.failed }));
         // Respuesta sin contador sent, o todo fallido: no es un envio exitoso.
         // deno-lint-ignore no-explicit-any
         const dr = dispatchResult as any;
         if (!dr || typeof dr.sent !== 'number' || (dr.sent === 0 && (dr.failed ?? 0) > 0)) {
-          throw new Error(`jobs.sendLifecycleEmails no envio correos: ${JSON.stringify(dispatchResult)}`);
+          throw new Error(`jobs.sendLifecycleEmails no envio correos: sent=${dr?.sent} failed=${dr?.failed} error=${dr?.error ?? 'n/a'}`);
         }
 
         // Audit log in EmailNotification
@@ -75,8 +80,12 @@ export async function handle(req: Request): Promise<Response> {
           } catch (_) {}
         }
       } catch (sendErr) {
-        console.error('[confirmRenewalPayment] jobs.sendLifecycleEmails error:', (sendErr as Error).message);
-        dispatchResult = { error: (sendErr as Error).message };
+        // deno-lint-ignore no-explicit-any
+        const se = sendErr as any;
+        const errData = se?.response?.data ?? se?.data;
+        const sendMsg = String(errData?.error || errData?.message || se?.message || se).slice(0, 500);
+        console.error('[confirmRenewalPayment] jobs.sendLifecycleEmails error:', sendMsg);
+        dispatchResult = { error: sendMsg };
       }
     }
 
