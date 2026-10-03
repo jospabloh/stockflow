@@ -294,7 +294,8 @@ export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
     const user = await getAuthUser(base44);
-    if (!user || !PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) {
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) {
       return Response.json({ error: 'Forbidden: platform owner only' }, { status: 403 });
     }
 

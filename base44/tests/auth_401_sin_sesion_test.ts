@@ -25,10 +25,8 @@ async function* walk(dir: URL): AsyncGenerator<string> {
 }
 
 // Llamadas desnudas a auth.me() que son correctas (rutas relativas a base44/functions).
-const BARE_ALLOWED = new Set([
-  // Re-lectura tras haber autenticado al usuario (ya no es anonimo).
-  "permissions/handlers/upgradeOwnerToAdmin.ts",
-]);
+// Ninguna: upgradeOwnerToAdmin ya usa getAuthUser (antes era la unica excepcion).
+const BARE_ALLOWED = new Set<string>([]);
 
 // ---- helper ----
 Deno.test("getAuthUser: devuelve el usuario cuando hay sesion", async () => {
@@ -107,7 +105,6 @@ const NOT_USER_AUTH = new Set<string>([
   "pettyCash/handlers/syncCashSaleToPettyCash.ts",
   "movements/handlers/applyMovementStock.ts",
   "session/handlers/trackUserActivity.ts",
-  "business/handlers/sendTestLifecycleEmails.ts",
 ]);
 
 const handlerFiles: string[] = [];
