@@ -191,6 +191,21 @@ Deno.test("licenses: si jobs rechaza el despacho (401), el fallo es visible y no
   }
 });
 
+Deno.test("confirmRenewalPayment: sin CRON_SECRET configurado el despacho falla y no se registra como enviado", async () => {
+  const ctx = freshCtx();
+  const saved = Deno.env.get("CRON_SECRET");
+  Deno.env.delete("CRON_SECRET");
+  try {
+    const out = await (await confirmRenewal(post({ business_id: "biz-1" }))).json();
+    assert(out.dispatch.error);
+    assertEquals(out.email_dispatch_failed, true);
+    assertEquals(ctx.emails.length, 0);
+    assertEquals(ctx.tables.EmailNotification.length, 0);
+  } finally {
+    if (saved) Deno.env.set("CRON_SECRET", saved);
+  }
+});
+
 Deno.test("jobs.sendLifecycleEmails conserva la autenticacion de la funcion vieja", async () => {
   const job = { email_type: "payment_received", recipient_email: "a@b.test", business_id: "biz-1" };
   freshCtx(null);
