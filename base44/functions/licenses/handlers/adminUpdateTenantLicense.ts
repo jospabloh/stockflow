@@ -169,6 +169,7 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     let emailDispatch = null;
+    let attemptedEmails = 0;
     if (previousBillingStatus !== 'active' && fresh.billing_status === 'active') {
       try {
         const tenantUsers = await base44.asServiceRole.entities.User.filter({ business_id });
@@ -187,25 +188,30 @@ export async function handle(req: Request): Promise<Response> {
             license_expires_at: fresh.license_expires_at ?? null,
           }));
 
-          const appUrl = Deno.env.get('APP_URL');
-          const cronSecret = Deno.env.get('CRON_SECRET');
-          const sendHeaders = { 'Content-Type': 'application/json' };
-          if (cronSecret) sendHeaders['x-cron-secret'] = cronSecret;
-          const authHeader = req.headers.get('authorization');
-          if (authHeader) sendHeaders['Authorization'] = authHeader;
-
-          const sendResp = await fetch(`${appUrl}/functions/v1/jobs`, {
-            method: 'POST',
-            headers: sendHeaders,
-            body: JSON.stringify({ action: 'sendLifecycleEmails', jobs }),
+          // Invoke interno al router jobs (el fetch HTTP a la ruta v1 de jobs devolvia 404 en esta
+          // plataforma). jobs.sendLifecycleEmails exige x-cron-secret o platform owner.
+          attemptedEmails = jobs.length;
+          // invoke devuelve en el runtime la respuesta axios completa (circular): se desenvuelve
+          // con el patron de applyStock.ts y nunca se serializa cruda.
+          const resp = await base44.asServiceRole.functions.invoke('jobs', {
+            action: 'sendLifecycleEmails',
+            jobs,
+            'x-cron-secret': Deno.env.get('CRON_SECRET'),
           });
-          const sendData = await sendResp.json();
-          emailDispatch = { sent: sendData.sent ?? 0, failed: sendData.failed ?? 0 };
+          const sendData = resp?.data ?? resp;
+          if (!sendData || typeof sendData.sent !== 'number') {
+            throw new Error(`respuesta inesperada de jobs.sendLifecycleEmails: sent=${sendData?.sent} error=${sendData?.error ?? 'n/a'}`);
+          }
+          emailDispatch = { sent: sendData.sent, failed: sendData.failed ?? 0 };
           console.log('[adminUpdateTenantLicense] license_activated emails dispatched:', JSON.stringify(emailDispatch));
         }
       } catch (emailErr) {
-        console.error('[adminUpdateTenantLicense] email dispatch failed (non-fatal):', (emailErr as Error).message);
-        emailDispatch = { sent: 0, failed: -1 };
+        // deno-lint-ignore no-explicit-any
+        const ee = emailErr as any;
+        const errData = ee?.response?.data ?? ee?.data;
+        const emailMsg = String(errData?.error || errData?.message || ee?.message || ee).slice(0, 500);
+        console.error('[adminUpdateTenantLicense] email dispatch failed (non-fatal):', emailMsg);
+        emailDispatch = { sent: 0, failed: attemptedEmails, error: emailMsg };
       }
     }
 
