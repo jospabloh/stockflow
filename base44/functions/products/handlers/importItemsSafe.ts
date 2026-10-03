@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { buildDuplicateIndex, checkAgainstIndex, addToIndex, duplicateErrorMessage } from '../../../shared/productDuplicateCheck.ts';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 /**
  * importItemsSafe — Importación segura de Productos, Clientes o Categorías.
@@ -23,7 +24,7 @@ function parseBool(val) {
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getAuthUser(base44);
 
     if (!user) {
       return Response.json({ error: 'No autorizado' }, { status: 401 });

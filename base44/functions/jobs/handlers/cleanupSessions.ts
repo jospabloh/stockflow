@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.35';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
 
@@ -16,7 +17,7 @@ export async function handle(req: Request): Promise<Response> {
       // Revoca sesiones de TODOS los tenants: el disparo manual es sólo del dueño de la
       // plataforma (falla cerrado si PLATFORM_OWNER_EMAIL no está puesto), no de cualquier
       // role 'admin' — un admin de tenant legado podría cerrar sesiones de otros negocios.
-      const user = await base44.auth.me().catch(() => null);
+      const user = await getAuthUser(base44);
       if (!user || !PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }

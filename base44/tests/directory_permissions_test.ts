@@ -76,7 +76,7 @@ async function loadHandle(rel: string, gate = true): Promise<(req: Request) => P
   const src = await Deno.readTextFile(abs);
   const rewritten = "// @ts-nocheck\n" +
     src
-      .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK_URL}'`)
+      .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK_URL}'`).replace(/from\s+['"](?:\.\.\/)+shared\/authUser\.ts['"]/, `from '${new URL("../shared/authUser.ts", import.meta.url).href}'`)
       .replace(/from\s+'\.\/(\w+\.ts)'/g, (_m, f) => `from '${new URL(f, abs).href}'`)
       .replace("const DIRECTORY_ROLE_GATE = true;", `const DIRECTORY_ROLE_GATE = ${gate};`);
   const file = `${tmp}/${rel.replace(/\W/g, "_")}${gate ? "" : "_nogate"}.ts`;

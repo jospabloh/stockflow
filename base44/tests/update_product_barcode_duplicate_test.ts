@@ -46,7 +46,7 @@ const DUP = "data:application/typescript;base64," + btoa(unescape(encodeURICompo
 
 const src = await Deno.readTextFile(new URL("../functions/products/handlers/updateProductBarcodeSafe.ts", import.meta.url));
 const rewritten = "// @ts-nocheck\n" + src
-  .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${SDK}'`)
+  .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${SDK}'`).replace(/from\s+['"](?:\.\.\/)+shared\/authUser\.ts['"]/, `from '${new URL("../shared/authUser.ts", import.meta.url).href}'`)
   .replace(/from\s+['"]\.\/_permissions\.ts['"]/, `from '${PERM}'`)
   .replace(/from\s+['"]\.\.\/\.\.\/\.\.\/shared\/productDuplicateCheck\.ts['"]/, `from '${DUP}'`);
 const { handle } = await import("data:application/typescript;base64," + btoa(unescape(encodeURIComponent(rewritten))));

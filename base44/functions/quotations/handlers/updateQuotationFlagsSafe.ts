@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { hasPermission } from './_permissions.ts';
 import { validateInvoiceStatus } from './_validation.ts';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 // Whitelist for quotation flag updates
 const ALLOWED_FLAG_FIELDS = ['invoice_status', 'invoice_number', 'in_route', 'delivered', 'paid', 'payment_method', 'payments', 'amount_paid', 'balance'];
@@ -16,7 +17,7 @@ const FIELD_PERMISSION: Record<string, string> = {
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getAuthUser(base44);
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });

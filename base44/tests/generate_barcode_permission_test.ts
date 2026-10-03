@@ -27,7 +27,7 @@ const MOCK_SDK = "data:application/typescript;base64," +
 const handlersDir = new URL("../functions/products/handlers/", import.meta.url);
 const src = await Deno.readTextFile(new URL("generateBarcodeSafe.ts", handlersDir));
 const rewritten = "// @ts-nocheck\n" + src
-  .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK}'`)
+  .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK}'`).replace(/from\s+['"](?:\.\.\/)+shared\/authUser\.ts['"]/, `from '${new URL("../shared/authUser.ts", import.meta.url).href}'`)
   .replace(/from\s+['"]\.\/_permissions\.ts['"]/, `from '${new URL("_permissions.ts", handlersDir).href}'`);
 const mod = await import("data:application/typescript;base64," + btoa(unescape(encodeURIComponent(rewritten))));
 

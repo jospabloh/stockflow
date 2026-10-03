@@ -62,6 +62,7 @@ const MOCK_SDK_URL = "data:application/typescript;base64," + btoa(
 async function load(rel: string) {
   const src = await Deno.readTextFile(new URL(rel, import.meta.url));
   const out = "// @ts-nocheck\n" + src.replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK_URL}'`)
+    .replace(/from\s+['"](?:\.\.\/)+shared\/authUser\.ts['"]/, `from '${new URL("../shared/authUser.ts", import.meta.url).href}'`)
     .replace("'./_permissions.ts'", `'${new URL("../functions/quotationPayments/handlers/_permissions.ts", import.meta.url).href}'`)
     .replace("'./_cashRule.ts'", `'${new URL("../functions/quotationPayments/handlers/_cashRule.ts", import.meta.url).href}'`);
   const mod = await import("data:application/typescript;base64," + btoa(unescape(encodeURIComponent(out))));

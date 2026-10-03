@@ -1,16 +1,19 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { hasPermission } from './_permissions.ts';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getAuthUser(base44);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { quotation_id, payment_id } = await req.json();
     if (!quotation_id || !payment_id) return Response.json({ error: 'quotation_id and payment_id are required' }, { status: 400 });
 
-    const q = await base44.asServiceRole.entities.Quotation.get(quotation_id);
+    // filter (not get): get() throws on an unknown id and surfaced as a 500.
+    const quotations = await base44.asServiceRole.entities.Quotation.filter({ id: quotation_id });
+    const q = quotations[0];
     if (!q) return Response.json({ error: 'Quotation not found' }, { status: 404 });
     if (q.business_id !== user.business_id) return Response.json({ error: 'Forbidden' }, { status: 403 });
 

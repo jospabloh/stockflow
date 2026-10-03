@@ -95,7 +95,7 @@ async function loadHandle(rel: string): Promise<(req: Request) => Promise<Respon
   const src = await Deno.readTextFile(abs);
   const rewritten = "// @ts-nocheck\n" +
     src
-      .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK_URL}'`)
+      .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK_URL}'`).replace(/from\s+['"](?:\.\.\/)+shared\/authUser\.ts['"]/, `from '${new URL("../shared/authUser.ts", import.meta.url).href}'`)
       .replace(/from\s+['"]\.\/_permissions\.ts['"]/, `from '${PERM_URL}'`)
       .replace(/from\s+'\.\/(\w+\.ts)'/g, (_m, f) => `from '${new URL(f, abs).href}'`);
   const file = `${tmp}/${rel.replace(/\W/g, "_")}.ts`;

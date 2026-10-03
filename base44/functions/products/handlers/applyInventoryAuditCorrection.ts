@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { classifyProduct, CORRECTABLE_REASONS, fetchAll, type Row } from './_inventoryAudit.ts';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 /**
  * Aplica UNA corrección de inventario decidida por una persona desde la auditoría.
@@ -38,7 +39,7 @@ const MAX_REASON = 500;
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await getAuthUser(base44);
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });

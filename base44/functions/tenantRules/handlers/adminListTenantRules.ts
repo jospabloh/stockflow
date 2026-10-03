@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
 const KNOWN_RULE_KEYS = [
@@ -12,7 +13,7 @@ const KNOWN_RULE_KEYS = [
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getAuthUser(base44);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (!PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) return Response.json({ error: 'Forbidden: platform owner only' }, { status: 403 });
 

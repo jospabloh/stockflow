@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 const ALMACENISTA_PERMISSIONS = {
   'Dashboard:view': true, 'Dashboard:summary': true, 'Dashboard:low_stock': true,
@@ -57,7 +58,7 @@ const ADMIN_PERMISSIONS = Object.fromEntries(
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const caller = await base44.auth.me();
+    const caller = await getAuthUser(base44);
 
     if (!caller) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (caller.role !== 'admin' && caller.role !== 'owner') return Response.json({ error: 'Forbidden: solo admins pueden cambiar roles' }, { status: 403 });

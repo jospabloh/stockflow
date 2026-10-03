@@ -45,7 +45,7 @@ const PERM = "data:application/typescript;base64," +
 
 const src = await Deno.readTextFile(new URL("../functions/quotations/handlers/updateQuotationFlagsSafe.ts", import.meta.url));
 const rewritten = "// @ts-nocheck\n" + src
-  .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${SDK}'`)
+  .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${SDK}'`).replace(/from\s+['"](?:\.\.\/)+shared\/authUser\.ts['"]/, `from '${new URL("../shared/authUser.ts", import.meta.url).href}'`)
   // Reescribe TODOS los imports relativos: _permissions.ts va al stub; el resto, a URL de archivo.
   .replace(/from\s+['"]\.\/([\w-]+\.ts)['"]/g, (_m, f) =>
     f === "_permissions.ts"

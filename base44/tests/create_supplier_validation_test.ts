@@ -43,7 +43,7 @@ const PERM = "data:application/typescript;base64," +
 
 const src = await Deno.readTextFile(new URL("../functions/suppliers/handlers/createSupplierSafe.ts", import.meta.url));
 const rewritten = "// @ts-nocheck\n" + src
-  .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${SDK}'`)
+  .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${SDK}'`).replace(/from\s+['"](?:\.\.\/)+shared\/authUser\.ts['"]/, `from '${new URL("../shared/authUser.ts", import.meta.url).href}'`)
   .replace(/from\s+['"]\.\/_permissions\.ts['"]/, `from '${PERM}'`);
 const { handle } = await import("data:application/typescript;base64," + btoa(unescape(encodeURIComponent(rewritten))));
 

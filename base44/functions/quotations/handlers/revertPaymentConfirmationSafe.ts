@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 // Reverts a payment confirmation on a converted quotation WITHOUT cancelling
 // the sale. The quotation stays "converted" (stock already exited), but the
@@ -9,7 +10,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getAuthUser(base44);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Admin-only guard

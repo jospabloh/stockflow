@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { hasPermission } from './_permissions.ts';
 import { authorFields, CATEGORIES, clip, MAX_BODY, MAX_SUBJECT, PRIORITIES } from './_supportTicket.ts';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 // createSupportTicketSafe — opens a ticket plus its first message.
 //
@@ -12,7 +13,7 @@ import { authorFields, CATEGORIES, clip, MAX_BODY, MAX_SUBJECT, PRIORITIES } fro
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getAuthUser(base44);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     const businessId = user.business_id;
     if (!businessId) return Response.json({ error: 'Forbidden: no business_id' }, { status: 403 });

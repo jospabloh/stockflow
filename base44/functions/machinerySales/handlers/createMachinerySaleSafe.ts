@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { hasPermission } from './_permissions.ts';
 import { applyCost, normalizeFields, validate } from './_fields.ts';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 /**
  * Alta de una venta de maquinaria. Gateada por 'Venta de Maquinaria:create';
@@ -15,7 +16,7 @@ import { applyCost, normalizeFields, validate } from './_fields.ts';
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getAuthUser(base44);
 
     if (!user) {
       return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
