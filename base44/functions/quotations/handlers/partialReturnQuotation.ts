@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { applyStockForMovement, stockWarning } from '../../../shared/applyStock.ts';
 import { hasPermission } from './_permissions.ts';
 
 // Flujo de devolución parcial:
@@ -22,6 +23,7 @@ function isCashMethod(method: string, allowed: string[] = DEFAULT_CASH_METHODS):
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
+    const stockFailures: Array<{ movement_id: string; product_name?: string; error?: string }> = [];
      const user = await base44.auth.me();
      if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -97,15 +99,9 @@ export async function handle(req: Request): Promise<Response> {
       });
       // Reintegro de stock síncrono y exactamente-una-vez (no depende del trigger).
       // Best-effort: automatización + dailyStockReconcile son respaldo.
-      try {
-        await base44.asServiceRole.functions.invoke('movements', {
-          action: 'applyMovementStock',
-          movement_id: mov.id,
-          business_id: user.business_id,
-          'x-cron-secret': Deno.env.get('CRON_SECRET'),
-        });
-      } catch (e) {
-        console.log(`[partialReturnQuotation] applyMovementStock failed for ${mov.id}: ${(e as Error).message}`);
+      {
+        const r = await applyStockForMovement(base44, { movement_id: mov.id, business_id: user.business_id, product_id: mov.product_id, product_name: ri.product_name, caller: 'partialReturnQuotation' });
+        if (!r.ok) stockFailures.push({ movement_id: mov.id, product_name: ri.product_name, error: r.error });
       }
     }
 
@@ -224,7 +220,7 @@ export async function handle(req: Request): Promise<Response> {
       }
     }
 
-    return Response.json({ success: true, quotation_id, returned_count: returned_items.length });
+    return Response.json({ success: true, quotation_id, returned_count: returned_items.length, stock_warning: stockWarning(stockFailures) });
   } catch (error) {
     return Response.json({ error: (error as Error).message }, { status: 500 });
   }

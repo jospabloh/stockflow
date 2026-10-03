@@ -17,14 +17,17 @@
     "AppVersion",
     "Business",
     "EmailNotification",
+    "InventoryAuditLog",
     "Movement",
     "PermissionProfile",
+    "Product",
     "Session",
     "User"
   ],
   "tests": [
     "base44/tests/jobs_router_test.ts (estático: registro de actions, workflows y llamadores)",
-    "base44/tests/licenses_to_jobs_route_test.ts (ruta licenses -> jobs con handlers reales y cliente simulado)"
+    "base44/tests/licenses_to_jobs_route_test.ts (ruta licenses -> jobs con handlers reales y cliente simulado)",
+    "base44/tests/stock_no_aplicado_test.ts"
   ],
   "actions": {
     "sendLifecycleEmails": {
@@ -63,8 +66,9 @@
       "callers": "cron HTTP del panel (NO programado en repo) o disparo manual del owner"
     },
     "dailyStockReconcile": {
-      "purpose": "Reporte SOLO LECTURA de Movement de las últimas 25 h con stock_applied != true; avisa por correo al platform owner si hay anomalías. No corrige.",
+      "purpose": "Auditoría de stock (ventana 25 h; correo al owner si quedan anomalías; solo alerta (InventoryAuditLog stock_apply_failed, una vez por movimiento); no reintenta, no sana, no escribe Movement/Product); nunca corrige históricos.",
       "entities": [
+        "InventoryAuditLog",
         "Movement"
       ],
       "callers": "workflow 'Daily Stock Reconcile' (cron 30 14 * * * UTC = 08:30 CDMX, args {action}) o disparo manual del owner; envía correo a PLATFORM_OWNER_EMAIL solo si hay anomalías"

@@ -1,6 +1,6 @@
 {
   "name": "Daily Stock Reconcile",
-  "description": "Reporte diario de SOLO LECTURA: movimientos de las últimas 25 h con stock_applied != true; si hay anomalías avisa por correo al platform owner. No corrige nada. Corre 08:30 CDMX (14:30 UTC).",
+  "description": "Auditoría diaria de stock: movimientos con stock_applied != true (ventana 25 h; correo al owner si quedan anomalías; solo alerta (InventoryAuditLog stock_apply_failed, una vez por movimiento); no reintenta, no sana, no escribe Movement/Product). Corre 08:30 CDMX (14:30 UTC).",
   "trigger": {
     "condition": null,
     "config": {

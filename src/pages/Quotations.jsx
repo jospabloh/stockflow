@@ -281,6 +281,7 @@ export default function Quotations() {
       setConvertQuotation(null);
       setConvertPaymentMethod("");
       setConvertError("");
+      if (response.data?.stock_warning) toast.warning(response.data.stock_warning.message, { duration: 20000 });
       toast.success("✓ Cotización convertida en venta");
       invalidate("Quotation");
     } catch (error) {
@@ -318,6 +319,7 @@ export default function Quotations() {
 
       setCancelQuotation(null);
       setCancelReason("");
+      if (response.data?.stock_warning) toast.warning(response.data.stock_warning.message, { duration: 20000 });
       toast.success("✓ Cotización cancelada");
       invalidate("Quotation");
     } catch (error) {
@@ -629,6 +631,7 @@ export default function Quotations() {
               toast.error(response.data?.message || response.data?.error || "Error al marcar entregado");
               return;
             }
+            if (response.data?.stock_warning) toast.warning(response.data.stock_warning.message, { duration: 20000 });
             toast.success("✓ Pedido marcado como entregado");
             invalidate("Quotation");
           } else {

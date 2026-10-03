@@ -19,6 +19,7 @@
       "TenantRule"
     ],
     "writes": [
+      "InventoryAuditLog",
       "Movement",
       "PettyCashMovement",
       "Product",
@@ -28,7 +29,8 @@
   "tests": [
     "base44/tests/ola3_stock_and_cash_test.ts",
     "base44/tests/owner_role_test.ts",
-    "base44/tests/permissions_safe_functions_test.ts"
+    "base44/tests/permissions_safe_functions_test.ts",
+    "base44/tests/stock_no_aplicado_test.ts"
   ],
   "actions": {
     "createMovementSafe": {
@@ -56,7 +58,7 @@
       ]
     },
     "applyMovementStock": {
-      "purpose": "Aplica el efecto de UN movimiento sobre Product.stock exactamente una vez (idempotente vía stock_applied)",
+      "purpose": "Aplica el efecto de UN movimiento sobre Product.stock exactamente una vez (idempotente vía stock_applied; escribe stock_apply_state/stock_before antes de tocar el producto, reintenta 429/5xx y se recupera de un fallo parcial; 409 needs_review si no puede decidir; no reaplica movimientos históricos sin estado)",
       "callers": [
         "base44/functions/movements/handlers/createMovementSafe.ts",
         "base44/functions/quotations/handlers/cancelQuotationSafe.ts",

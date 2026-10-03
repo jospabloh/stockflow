@@ -44,6 +44,7 @@ export default function CreateFromOnDemandModal({ open, onOpenChange, quotation,
         return;
       }
 
+      if (resp?.data?.stock_warning) toast.warning(resp.data.stock_warning.message, { duration: 20000 });
       toast.success("✅ Entrada registrada. Stock actualizado.");
       onSuccess?.();
       onOpenChange(false);

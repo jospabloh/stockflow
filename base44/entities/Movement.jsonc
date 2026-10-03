@@ -42,6 +42,27 @@
       "description": "Stock resultante despu\u00e9s del movimiento",
       "type": "number"
     },
+    "stock_apply_error": {
+      "description": "\u00daltimo error al aplicar el stock de este movimiento (vac\u00edo si se aplic\u00f3 bien).",
+      "type": "string"
+    },
+    "stock_apply_state": {
+      "description": "Estado de la aplicaci\u00f3n del stock: pending (se va a escribir/ya se escribi\u00f3 el producto, falta la marca), applied o failed. Movimientos hist\u00f3ricos no lo tienen.",
+      "enum": [
+        "pending",
+        "applied",
+        "failed"
+      ],
+      "type": "string"
+    },
+    "stock_pending_at": {
+      "description": "Momento (ISO) en que se escribi\u00f3 la marca pending; permite probar que nadie m\u00e1s toc\u00f3 el producto antes de recuperar un movimiento.",
+      "type": "string"
+    },
+    "stock_before": {
+      "description": "Stock del producto justo antes de aplicar este movimiento (permite reintentar sin aplicar dos veces).",
+      "type": "number"
+    },
     "stock_applied": {
       "default": false,
       "description": "Marca si el efecto de este movimiento sobre el stock del producto ya fue aplicado (control de idempotencia, exactamente-una-vez).",

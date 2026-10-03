@@ -241,7 +241,13 @@ Deno.test("dailyStockReconcile: anomalía reciente -> un correo al platform owne
   assertEquals(r.emails[0].to, "owner@example.com");
   assert(r.emails[0].body.includes("mBad"));
   assert(r.emails[0].body.includes("&lt;Café&gt;"), "el contenido se escapa");
-  assertEquals(db.snapshot(), before, "solo lectura");
+  // deno-lint-ignore no-explicit-any
+  const after = JSON.parse(db.snapshot()) as any;
+  // deno-lint-ignore no-explicit-any
+  const prev = JSON.parse(before) as any;
+  assertEquals(after.Movement, prev.Movement, "no modifica Movement");
+  assertEquals(after.Product, prev.Product, "no modifica Product");
+  assertEquals((after.InventoryAuditLog ?? []).length, 1, "deja una alerta persistente");
 });
 
 Deno.test("dailyStockReconcile: sin anomalías no envía correo", async () => {

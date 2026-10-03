@@ -105,7 +105,7 @@ export function classifyProduct(product: Row, productMovementsRaw: Row[], auditL
   if (currentStock === adjustedExpected) return null;
 
   const relevantAuditLogs = auditLogs
-    .filter((l) => l.product_id === product.id && (!checkpointDate || (l.created_date || '') > checkpointDate))
+    .filter((l) => l.product_id === product.id && (l.event_type ?? 'direct_edit') === 'direct_edit' && (!checkpointDate || (l.created_date || '') > checkpointDate))
     .sort((a, b) => (a.created_date || '').localeCompare(b.created_date || ''));
 
   const netDirectEditChange = relevantAuditLogs.reduce(

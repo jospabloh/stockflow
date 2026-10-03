@@ -33,6 +33,22 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'No tienes permiso para eliminar este movimiento' }, { status: 403 });
     }
 
+    // Movimiento con estado de aplicación 'pending'/'failed' y sin confirmar: puede que el
+    // producto NUNCA se haya escrito (o que sí). Revertir su efecto a ciegas dejaría el stock
+    // desviado por qty, así que no se borra ni se revierte nada: requiere revisión humana.
+    // Los movimientos SIN estado (p. ej. los 4 de Baristop con stock_applied=false, cuyo stock
+    // SÍ cambió) conservan el comportamiento de siempre.
+    if (
+      (movement.stock_apply_state === 'pending' || movement.stock_apply_state === 'failed') &&
+      movement.stock_applied !== true
+    ) {
+      return Response.json({
+        success: false,
+        needs_review: true,
+        error: 'needs_review: este movimiento tiene el stock sin confirmar (pendiente/fallido); no se elimina ni se revierte automáticamente. Revisa el inventario del producto antes de eliminarlo.',
+      }, { status: 409 });
+    }
+
     // Obtener el producto actual
     const products = await base44.asServiceRole.entities.Product.filter({ id: movement.product_id });
     const product = products[0];

@@ -1,9 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { applyStockForMovement, stockWarning } from '../../../shared/applyStock.ts';
 import { hasPermission } from './_permissions.ts';
 
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
+    const stockFailures: Array<{ movement_id: string; product_name?: string; error?: string }> = [];
     const user = await base44.auth.me();
 
     if (!user) {
@@ -114,16 +116,10 @@ export async function handle(req: Request): Promise<Response> {
         });
         // Descuento de stock síncrono y exactamente-una-vez (no depende del trigger).
         // Best-effort: automatización + dailyStockReconcile son respaldo.
-        try {
-          await base44.asServiceRole.functions.invoke('movements', {
-            action: 'applyMovementStock',
-            movement_id: mov.id,
-            business_id: user.business_id,
-            'x-cron-secret': Deno.env.get('CRON_SECRET'),
-          });
-        } catch (e) {
-          console.log(`[convertQuotationSafe] applyMovementStock failed for ${mov.id}: ${e.message}`);
-        }
+        {
+        const r = await applyStockForMovement(base44, { movement_id: mov.id, business_id: user.business_id, product_id: mov.product_id, product_name: item.product_name, caller: 'convertQuotationSafe' });
+        if (!r.ok) stockFailures.push({ movement_id: mov.id, product_name: item.product_name, error: r.error });
+      }
       }
 
       // Check if client has force_zero_price — if so, mark as paid automatically with "Sin cargo"
@@ -149,7 +145,7 @@ export async function handle(req: Request): Promise<Response> {
          payments: quotation.payments || [],
        });
 
-      return Response.json({ success: true, quotation_id });
+      return Response.json({ success: true, quotation_id, stock_warning: stockWarning(stockFailures) });
     } catch (error) {
       return Response.json({ error: error.message || 'Conversion failed' }, { status: 500 });
     }
