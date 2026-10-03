@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { catalogDeleteErrorMessage } from "@/lib/catalogErrors";
 import { celebrate } from "@/lib/celebrate";
 import { seedAndDedupeCatalog } from "@/lib/seedCatalog";
 import { DEFAULT_RUBROS } from "@/lib/catalogDefaults";
@@ -124,11 +125,11 @@ export default function Rubros() {
   const handleDelete = async (id) => {
     try {
       const resp = await base44.functions.invoke('catalogSettings', { action: 'deleteCatalogItemSafe', entity: 'Rubro', record_id: id });
-      if (!resp?.data?.success) { toast.error(resp?.data?.error || "No se pudo eliminar el rubro"); return; }
+      if (!resp?.data?.success) { toast.error(catalogDeleteErrorMessage(resp?.data, "No se pudo eliminar el rubro")); return; }
       setRubros(rubros.filter((r) => r.id !== id));
       toast.success("Rubro eliminado");
     } catch (error) {
-      toast.error(`Error al eliminar: ${error.message}`);
+      toast.error(catalogDeleteErrorMessage(error, `Error al eliminar: ${error.message}`));
     }
   };
 
@@ -231,12 +232,12 @@ export default function Rubros() {
                       <Pencil className="h-4 w-4 text-slate-400" />
                     </Button>
                   )}
-                  {canDelete && (
+                  {canDelete && !r.is_system && (
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(r.id)} {...createButtonProps('delete')}>
                       <Trash2 className="h-4 w-4 text-slate-400" />
                     </Button>
                   )}
-                  {!canEdit && !canDelete && <span className="text-slate-300 text-xs">—</span>}
+                  {!canEdit && (!canDelete || r.is_system) && <span className="text-slate-300 text-xs">—</span>}
                 </TableCell>
               </TableRow>
             ))}

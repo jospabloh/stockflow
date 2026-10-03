@@ -52,6 +52,21 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'No valid fields to update' }, { status: 400 });
     }
 
+    // Name validation — same rules as createCategorySafe (required, trimmed, unique per tenant).
+    if ('name' in sanitized) {
+      const name = typeof sanitized.name === 'string' ? sanitized.name.trim() : '';
+      if (!name) {
+        return Response.json({ success: false, error: 'El nombre de la categoría es obligatorio' }, { status: 400 });
+      }
+      sanitized.name = name;
+      const existing = await base44.asServiceRole.entities.Category.filter({ business_id: record.business_id }, undefined, 5000);
+      const key = name.toLocaleLowerCase();
+      if ((existing || []).some((c: { id?: string; name?: string }) =>
+        c.id !== category_id && String(c.name ?? '').trim().toLocaleLowerCase() === key)) {
+        return Response.json({ success: false, error: 'Ya existe una categoría con ese nombre', code: 'duplicate_name' }, { status: 409 });
+      }
+    }
+
     // LICENSE CHECK
     const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
     const biz2 = bizArr[0];

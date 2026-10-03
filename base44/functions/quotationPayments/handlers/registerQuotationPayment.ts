@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { hasPermission } from './_permissions.ts';
+import { isCashRuleEnabled } from './_cashRule.ts';
 
 function normalizePaymentMethod(method) {
   return String(method || '').trim().toLowerCase().includes('efectivo');
@@ -7,10 +8,16 @@ function normalizePaymentMethod(method) {
 
 function getBalance(q) {
   const total = q.total || 0;
+  if (q.status === 'sent' || q.status === 'accepted') {
+    // Derive from total - amount_paid. The stored `balance` cannot be trusted:
+    // createQuotationSafe never sets it, so the schema default (0) made every
+    // sent/accepted quotation look fully paid and rejected every anticipo.
+    return Math.max(0, total - getAmountPaid(q));
+  }
+  // Other states (converted, etc.): keep the stored behaviour untouched.
   if (q.balance != null) return q.balance;
   if (q.paid) return 0;
-  const amountPaid = q.amount_paid != null ? q.amount_paid : 0;
-  return total - amountPaid;
+  return total - getAmountPaid(q);
 }
 
 function getAmountPaid(q) {
@@ -97,7 +104,9 @@ export async function handle(req: Request): Promise<Response> {
     // Auto-register in petty cash if payment method is cash (efectivo)
     // Each payment gets its own petty cash entry using paymentId as origin_id (avoids duplicate prevention issues)
     let pettyCashMovementId = null;
-    const isCash = normalizePaymentMethod(payment_method);
+    // Solo si el tenant tiene activa la regla cash_sales_to_petty_cash.
+    const isCash = normalizePaymentMethod(payment_method) &&
+      await isCashRuleEnabled(base44.asServiceRole, q.business_id);
     if (isCash) {
       const movDate = paid_at ? paid_at.split('T')[0] : new Date().toLocaleDateString('en-CA');
       try {
