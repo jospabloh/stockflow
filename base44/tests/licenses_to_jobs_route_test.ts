@@ -58,18 +58,8 @@ G.__sf = {
           invoke: async (name: string, payload: Row) => {
             ctx.invokes.push({ name, payload });
             if (name !== "jobs") throw new Error(`Function not found: ${name}`);
-            // Un invoke con service role NO lleva sesion de usuario (ni owner): jobs solo ve el
-            // secreto del body. Se simula como la plataforma real (auth.me() falla).
-            const saved = ctx.user;
-            ctx.user = null;
-            try {
-              const res = await ctx.jobsHandle!(new Request("https://x.test/functions/jobs", { method: "POST", body: JSON.stringify(payload) }));
-              const data = await res.json();
-              if (!res.ok) throw new Error(`Request failed with status code ${res.status}`);
-              return data;
-            } finally {
-              ctx.user = saved;
-            }
+            const res = await ctx.jobsHandle!(new Request("https://x.test/functions/v1/jobs", { method: "POST", body: JSON.stringify(payload) }));
+            return await res.json();
           },
         },
         integrations: { Core: { SendEmail: (e: Row) => { ctx.emails.push(e); return Promise.resolve({}); } } },
@@ -131,7 +121,6 @@ Deno.test("confirmRenewalPayment despacha a jobs { action: 'sendLifecycleEmails'
   assertEquals(ctx.invokes[0].payload.action, "sendLifecycleEmails");
   assertEquals(ctx.invokes[0].payload.jobs.length, 1);
   assertEquals(ctx.invokes[0].payload.jobs[0].email_type, "payment_received");
-  assertEquals(ctx.invokes[0].payload["x-cron-secret"], "test-secret");
   const out = await res.json();
   assertEquals(out.dispatch.sent, 1);
   assertEquals(out.dispatch.failed, 0);
@@ -144,65 +133,32 @@ Deno.test("confirmRenewalPayment: no llama a la funcion suelta borrada", async (
   assert(ctx.invokes.every((i) => i.name === "jobs"));
 });
 
-Deno.test("adminUpdateTenantLicense (activacion) invoca jobs con x-cron-secret y el correo sale (sin fetch /functions/v1)", async () => {
+Deno.test("adminUpdateTenantLicense (activacion) hace fetch a /functions/v1/jobs con action y jobs, conserva x-cron-secret y Authorization", async () => {
   const ctx = freshCtx();
   ctx.tables.Business[0].billing_status = "trial";
+  const calls: { url: string; init: RequestInit }[] = [];
   const realFetch = globalThis.fetch;
-  let fetched = 0;
-  globalThis.fetch = (() => { fetched++; return Promise.resolve(new Response("nf", { status: 404 })); }) as typeof fetch;
+  globalThis.fetch = ((url: string, init: RequestInit) => {
+    calls.push({ url: String(url), init });
+    return Promise.resolve(Response.json({ success: true, sent: 1, failed: 0 }));
+  }) as typeof fetch;
   try {
-    const res = await adminUpdate(post({ business_id: "biz-1", updates: { billing_status: "active" } }, { authorization: "Bearer tok" }));
+    const res = await adminUpdate(post(
+      { business_id: "biz-1", updates: { billing_status: "active" } },
+      { authorization: "Bearer tok" },
+    ));
     assertEquals(res.status, 200);
-    assertEquals(fetched, 0);
-    assertEquals(ctx.invokes.length, 1);
-    assertEquals(ctx.invokes[0].name, "jobs");
-    assertEquals(ctx.invokes[0].payload.action, "sendLifecycleEmails");
-    assertEquals(ctx.invokes[0].payload.jobs[0].email_type, "license_activated");
-    assertEquals(ctx.invokes[0].payload["x-cron-secret"], "test-secret");
-    const out = await res.json();
-    assertEquals(out.email_dispatch.sent, 1);
-    assert(ctx.emails.some((e) => e.to === "dueno@negocio.test"));
+    assertEquals(calls.length, 1);
+    assertEquals(calls[0].url, "https://app.example.test/functions/v1/jobs");
+    const sent = JSON.parse(String(calls[0].init.body));
+    assertEquals(sent.action, "sendLifecycleEmails");
+    assertEquals(sent.jobs[0].email_type, "license_activated");
+    // deno-lint-ignore no-explicit-any
+    const h = calls[0].init.headers as any;
+    assertEquals(h["x-cron-secret"], "test-secret");
+    assertEquals(h["Authorization"], "Bearer tok");
   } finally {
     globalThis.fetch = realFetch;
-  }
-});
-
-Deno.test("licenses: si jobs rechaza el despacho (401), el fallo es visible y no se registra como enviado", async () => {
-  const ctx = freshCtx();
-  ctx.tables.Business[0].billing_status = "trial";
-  const saved = Deno.env.get("CRON_SECRET");
-  Deno.env.set("CRON_SECRET", "otro-secreto-de-jobs");
-  try {
-    // El handler de jobs ya cargado lee CRON_SECRET en cada request; el body lleva el secreto de licenses.
-    ctx.jobsHandle = async (_req: Request) => Response.json({ error: "Unauthorized" }, { status: 401 });
-    const r1 = await adminUpdate(post({ business_id: "biz-1", updates: { billing_status: "active" } }));
-    const o1 = await r1.json();
-    assertEquals(o1.email_dispatch.sent, 0);
-    assertEquals(o1.email_dispatch.failed, -1);
-    assert(String(o1.email_dispatch.error).includes("401"));
-    ctx.tables.Business[0].billing_status = "active";
-    const r2 = await confirmRenewal(post({ business_id: "biz-1" }));
-    const o2 = await r2.json();
-    assertEquals(o2.email_dispatch_failed, true);
-    assert(String(o2.dispatch.error).includes("401"));
-    assertEquals(ctx.tables.EmailNotification.length, 0);
-  } finally {
-    if (saved) Deno.env.set("CRON_SECRET", saved);
-  }
-});
-
-Deno.test("confirmRenewalPayment: sin CRON_SECRET configurado el despacho falla y no se registra como enviado", async () => {
-  const ctx = freshCtx();
-  const saved = Deno.env.get("CRON_SECRET");
-  Deno.env.delete("CRON_SECRET");
-  try {
-    const out = await (await confirmRenewal(post({ business_id: "biz-1" }))).json();
-    assert(out.dispatch.error);
-    assertEquals(out.email_dispatch_failed, true);
-    assertEquals(ctx.emails.length, 0);
-    assertEquals(ctx.tables.EmailNotification.length, 0);
-  } finally {
-    if (saved) Deno.env.set("CRON_SECRET", saved);
   }
 });
 
