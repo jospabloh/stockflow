@@ -70,6 +70,11 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'No valid fields to update' }, { status: 400 });
     }
 
+    // VALIDATION: name cannot be blanked (same rule as createSupplierSafe, 400)
+    if ('name' in sanitized && (typeof sanitized.name !== 'string' || !sanitized.name.trim())) {
+      return Response.json({ error: 'El nombre del proveedor es requerido' }, { status: 400 });
+    }
+
     // PERMISSION CHECK — every changed field needs its own granular key.
     const neededKeys = new Set<string>();
     for (const key of Object.keys(sanitized)) {

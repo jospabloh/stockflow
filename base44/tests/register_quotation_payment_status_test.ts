@@ -47,16 +47,18 @@ async function loadHandle(): Promise<(r: Request) => Promise<Response>> {
   const permsUrl = "data:application/typescript;base64," + btoa(unescape(encodeURIComponent("// @ts-nocheck\n" + perms)));
   const src = await Deno.readTextFile(new URL("registerQuotationPayment.ts", dir));
   const rewritten = "// @ts-nocheck\n" +
-    src.replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK}'`).replace("'./_permissions.ts'", `'${permsUrl}'`);
+    src.replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK}'`).replace("'./_permissions.ts'", `'${permsUrl}'`)
+    .replace("'./_cashRule.ts'", `'${new URL("_cashRule.ts", dir).href}'`);
   const mod = await import("data:application/typescript;base64," + btoa(unescape(encodeURIComponent(rewritten))));
   return mod.handle;
 }
 const handle = await loadHandle();
 
-async function pay(status: string) {
+async function pay(status: string, extra: Row = {}) {
   for (const k of Object.keys(tables)) delete tables[k];
   tables.Business = [{ id: "b1", billing_status: "active" }];
-  tables.Quotation = [{ id: "q1", business_id: "b1", status, total: 100, folio: "F-1", client_name: "C" }];
+  tables.Quotation = [{ id: "q1", business_id: "b1", status, total: 100, folio: "F-1", client_name: "C", ...extra }];
+  tables.TenantRule = [{ id: "r1", business_id: "b1", rule_key: "cash_sales_to_petty_cash", enabled: true, archived: false }];
   const res = await handle(
     new Request("http://t/fn", { method: "POST", body: JSON.stringify({ quotation_id: "q1", amount: 100, payment_method: "Efectivo" }) }),
   );
@@ -87,3 +89,33 @@ for (const st of ["sent", "accepted"]) {
     assertEquals(r.cash.length, 1);
   });
 }
+
+// Regresion: createQuotationSafe no envia balance y el esquema lo defaultea a 0,
+// asi que getBalance() devolvia 0 y todo anticipo fallaba con "supera el saldo ($0.00)".
+for (const st of ["sent", "accepted"]) {
+  Deno.test(`anticipo parcial sobre ${st} con balance=0 (default del esquema)`, async () => {
+    for (const k of Object.keys(tables)) delete tables[k];
+    tables.Business = [{ id: "b1", billing_status: "active" }];
+    tables.Quotation = [{ id: "q1", business_id: "b1", status: st, total: 100, balance: 0, amount_paid: 0, paid: false, folio: "F-1", client_name: "C" }];
+    const res = await handle(
+      new Request("http://t/fn", { method: "POST", body: JSON.stringify({ quotation_id: "q1", amount: 30, payment_method: "Efectivo" }) }),
+    );
+    assertEquals(res.status, 200);
+    assertEquals(tables.Quotation[0].amount_paid, 30);
+    assertEquals(tables.Quotation[0].balance, 70);
+    assertEquals(tables.Quotation[0].paid, false);
+    const over = await handle(
+      new Request("http://t/fn", { method: "POST", body: JSON.stringify({ quotation_id: "q1", amount: 80, payment_method: "Efectivo" }) }),
+    );
+    assertEquals(over.status, 400);
+  });
+}
+
+// Regresion (flujo viejo "Confirmar Pago Total"): ventas converted con paid=true,
+// amount_paid=0, balance=total, payments=[]. La UI muestra Saldo=total y el boton
+// "Registrar Pago"; el backend debe seguir aceptando el pago (comportamiento de main).
+Deno.test("converted legacy paid=true amount_paid=0 balance=total sigue aceptando pago", async () => {
+  const r = await pay("converted", { paid: true, amount_paid: 0, balance: 100, payments: [] });
+  assertEquals(r.status, 200);
+  assertEquals(r.cash.length, 1);
+});
