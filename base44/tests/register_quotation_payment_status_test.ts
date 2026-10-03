@@ -47,7 +47,7 @@ async function loadHandle(): Promise<(r: Request) => Promise<Response>> {
   const permsUrl = "data:application/typescript;base64," + btoa(unescape(encodeURIComponent("// @ts-nocheck\n" + perms)));
   const src = await Deno.readTextFile(new URL("registerQuotationPayment.ts", dir));
   const rewritten = "// @ts-nocheck\n" +
-    src.replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK}'`).replace("'./_permissions.ts'", `'${permsUrl}'`)
+    src.replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK}'`).replace(/from\s+['"](?:\.\.\/)+shared\/authUser\.ts['"]/, `from '${new URL("../shared/authUser.ts", import.meta.url).href}'`).replace("'./_permissions.ts'", `'${permsUrl}'`)
     .replace("'./_cashRule.ts'", `'${new URL("_cashRule.ts", dir).href}'`);
   const mod = await import("data:application/typescript;base64," + btoa(unescape(encodeURIComponent(rewritten))));
   return mod.handle;

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
 const SUPPORT_EMAIL = Deno.env.get('SUPPORT_EMAIL') || Deno.env.get('PLATFORM_OWNER_EMAIL') || '';
@@ -292,7 +293,7 @@ function getEmailTemplate(
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await getAuthUser(base44);
     if (!user || !PLATFORM_OWNER_EMAIL || user.email !== PLATFORM_OWNER_EMAIL) {
       return Response.json({ error: 'Forbidden: platform owner only' }, { status: 403 });
     }

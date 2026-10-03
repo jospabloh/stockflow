@@ -128,7 +128,7 @@ const SHARED_APPLY_STOCK_URL = "data:application/typescript;base64," +
 async function importRewritten(src: string): Promise<Row> {
   const rewritten = "// @ts-nocheck\n" +
     src
-      .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK_URL}'`)
+      .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK_URL}'`).replace(/from\s+['"](?:\.\.\/)+shared\/authUser\.ts['"]/, `from '${new URL("../shared/authUser.ts", import.meta.url).href}'`)
       .replace(/from\s+['"](?:\.\.\/)+shared\/applyStock\.ts['"]/, `from '${SHARED_APPLY_STOCK_URL}'`)
       .replace("Deno.serve(", "globalThis.__serve(");
   const url = "data:application/typescript;base64," + btoa(unescape(encodeURIComponent(rewritten)));

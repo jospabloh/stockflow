@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 const RULE_KEY = 'cash_sales_to_petty_cash';
 const DEFAULT_PAYMENT_METHODS = ['Efectivo'];
@@ -132,7 +133,7 @@ export async function handle(req: Request): Promise<Response> {
       body?.['x-cron-secret'] === cronSecretEnv
     );
 
-    const user = isServiceRole ? null : await base44.auth.me().catch(() => null);
+    const user = isServiceRole ? null : await getAuthUser(base44);
     if (!isServiceRole && !user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 const BONUS_DAYS = 15;
 
@@ -11,7 +12,7 @@ function addDays(dateStr: string | null | undefined, days: number): string {
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getAuthUser(base44);
     if (!user || !user.business_id) {
       return Response.json({ error: 'No autenticado' }, { status: 401 });
     }

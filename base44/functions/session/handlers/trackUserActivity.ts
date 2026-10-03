@@ -5,6 +5,7 @@
  * Does NOT touch business_id, role, or any other field.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 const THROTTLE_MINUTES = 15;
 
@@ -12,7 +13,7 @@ export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
 
-    const user = await base44.auth.me().catch(() => null);
+    const user = await getAuthUser(base44);
     if (!user || !user.id) {
       return Response.json({ skipped: true, reason: 'unauthenticated' }, { status: 200 });
     }

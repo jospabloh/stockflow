@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 // myJoinRequest — the requester's own most recent join request, so the
 // "Solicitud enviada, esperando aprobación" screen survives a reload. Only the
@@ -8,7 +9,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getAuthUser(base44);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const rows = await base44.asServiceRole.entities.JoinRequest.filter({ user_id: user.id }, '-created_date', 5);

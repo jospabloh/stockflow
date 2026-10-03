@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 // createBusinessSafe — server-side counterpart of the "Crear mi negocio" flow in
 // src/pages/BusinessSetup.jsx.
@@ -51,7 +52,7 @@ const generateInviteCode = () => {
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getAuthUser(base44);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Un usuario, un negocio: quien ya pertenece a uno no puede crear otro.

@@ -113,6 +113,7 @@ const load = async (rel: string) => {
   const src = "// @ts-nocheck\n" + (await readSrc(rel))
     .replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK_SDK_URL}'`)
     .replace(/from\s+['"](?:\.\.\/)+shared\/applyStock\.ts['"]/, `from '${SHARED_URL}'`)
+    .replace(/from\s+['"](?:\.\.\/)+shared\/authUser\.ts['"]/, `from '${new URL("../shared/authUser.ts", import.meta.url).href}'`)
     .replace(/from\s+['"]\.\/_permissions\.ts['"]/, `from '${permsUrls[dir]}'`)
     .replace(/from\s+['"]\.\/_validation\.ts['"]/, `from '${VALIDATION_URL}'`);
   return (await import(b64(src))).handle as (r: Request) => Promise<Response>;

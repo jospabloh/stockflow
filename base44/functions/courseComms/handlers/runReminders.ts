@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { reminderEmail } from './emailTemplates.ts';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 // Barre las inscripciones cuya próxima sesión es MAÑANA y aún no tienen recordatorio,
 // y les envía el correo de recordatorio. Pensado para el cron (guardado por CRON_SECRET);
@@ -20,7 +21,7 @@ export async function handle(req: Request): Promise<Response> {
       body?.['x-cron-secret'] === cronSecretEnv
     );
     if (!validCron) {
-      const user = await base44.auth.me().catch(() => null);
+      const user = await getAuthUser(base44);
       const platformOwnerEmail = Deno.env.get('PLATFORM_OWNER_EMAIL');
       if (!user || !platformOwnerEmail || user.email !== platformOwnerEmail) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 });

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { hasPermission } from './_permissions.ts';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 // SECURITY: Explicit whitelist of updatable Course fields (mass assignment protection)
 const ALLOWED_UPDATE_FIELDS = new Set([
@@ -23,7 +24,7 @@ const ALLOWED_UPDATE_FIELDS = new Set([
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getAuthUser(base44);
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });

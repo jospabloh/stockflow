@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { withRetry, isTransient } from '../../../shared/applyStock.ts';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 // Un movimiento SIN stock_apply_state y creado hace más de esto es histórico
 // (aplicado por el flujo anterior o con la marca perdida): no se reaplica nunca
@@ -102,7 +103,7 @@ export async function handle(req: Request): Promise<Response> {
 
     let user = null;
     if (!isServiceRole) {
-      user = await base44.auth.me().catch(() => null);
+      user = await getAuthUser(base44);
       if (!user) {
         return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
       }

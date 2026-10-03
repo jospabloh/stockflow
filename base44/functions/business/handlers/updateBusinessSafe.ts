@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 // Whitelist — only invite-code-related fields allowed from Settings UI
 const ALLOWED_FIELDS = ['invite_code', 'invite_code_active'];
@@ -6,7 +7,7 @@ const ALLOWED_FIELDS = ['invite_code', 'invite_code_active'];
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getAuthUser(base44);
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });

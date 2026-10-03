@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { hasPermission } from './_permissions.ts';
 import { classifyProduct, fetchAll, type DiscrepancyEntry, type Row } from './_inventoryAudit.ts';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 /**
  * auditInventory — auditoría de inventario del tenant (SOLO LECTURA).
@@ -27,7 +28,7 @@ import { classifyProduct, fetchAll, type DiscrepancyEntry, type Row } from './_i
 export async function handle(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await getAuthUser(base44);
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });

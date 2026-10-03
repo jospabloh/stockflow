@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { getAuthUser } from '../../../shared/authUser.ts';
 
 const PLATFORM_OWNER_EMAIL = Deno.env.get('PLATFORM_OWNER_EMAIL');
 const APP_NAME = 'StockFlow';
@@ -117,7 +118,7 @@ export async function handle(req: Request): Promise<Response> {
   let authorized = Boolean(validSecret && cronSecret === validSecret);
   if (!authorized) {
     try {
-      const user = await base44.auth.me();
+      const user = await getAuthUser(base44);
       authorized = Boolean(PLATFORM_OWNER_EMAIL) && user?.email === PLATFORM_OWNER_EMAIL;
     } catch { /* no valid session */ }
   }
