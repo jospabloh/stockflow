@@ -47,7 +47,8 @@ async function loadHandle(): Promise<(r: Request) => Promise<Response>> {
   const permsUrl = "data:application/typescript;base64," + btoa(unescape(encodeURIComponent("// @ts-nocheck\n" + perms)));
   const src = await Deno.readTextFile(new URL("registerQuotationPayment.ts", dir));
   const rewritten = "// @ts-nocheck\n" +
-    src.replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK}'`).replace("'./_permissions.ts'", `'${permsUrl}'`);
+    src.replace(/from\s+['"]npm:@base44\/sdk@[\d.]+['"]/, `from '${MOCK}'`).replace("'./_permissions.ts'", `'${permsUrl}'`)
+    .replace("'./_cashRule.ts'", `'${new URL("_cashRule.ts", dir).href}'`);
   const mod = await import("data:application/typescript;base64," + btoa(unescape(encodeURIComponent(rewritten))));
   return mod.handle;
 }
@@ -57,6 +58,7 @@ async function pay(status: string, extra: Row = {}) {
   for (const k of Object.keys(tables)) delete tables[k];
   tables.Business = [{ id: "b1", billing_status: "active" }];
   tables.Quotation = [{ id: "q1", business_id: "b1", status, total: 100, folio: "F-1", client_name: "C", ...extra }];
+  tables.TenantRule = [{ id: "r1", business_id: "b1", rule_key: "cash_sales_to_petty_cash", enabled: true, archived: false }];
   const res = await handle(
     new Request("http://t/fn", { method: "POST", body: JSON.stringify({ quotation_id: "q1", amount: 100, payment_method: "Efectivo" }) }),
   );
