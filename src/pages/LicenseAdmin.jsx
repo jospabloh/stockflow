@@ -80,7 +80,12 @@ export default function LicenseAdmin() {
     setConfirmingPayment(biz.id);
     try {
       const r = await base44.functions.invoke('licenses', { action: 'confirmRenewalPayment', business_id: biz.id });
-      toast.success(`Correo de pago recibido enviado a ${r.data.recipients} admins`);
+      if (r.data?.email_dispatch_failed) {
+        const cause = r.data.dispatch?.error || "causa desconocida";
+        toast.warning(`Pago confirmado, pero el correo no salió: ${cause}`);
+      } else {
+        toast.success(`Correo de pago recibido enviado a ${r.data.recipients} admins`);
+      }
     } catch (err) {
       toast.error(`Error al confirmar pago: ${err?.message || err}`);
     } finally {

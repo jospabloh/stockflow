@@ -8,6 +8,7 @@ import { getDisplayUnitPrice } from "@/lib/vatCalculator";
 import CreateFromOnDemandModal from "./CreateFromOnDemandModal";
 import QuotationPaymentsSection from "./QuotationPaymentsSection";
 import { usePermissions } from "@/lib/PermissionContext";
+import { getQuotationBalance } from "@/lib/quotationBalance";
 
 function fmt(n) {
   return (n || 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -32,7 +33,7 @@ export default function QuotationPreviewDialog({ quotation, settings, client, op
   const q = {
     ...rawQ,
     amount_paid: rawQ.amount_paid ?? (rawQ.paid ? (rawQ.total || 0) : 0),
-    balance: rawQ.balance ?? ((rawQ.paid ? 0 : (rawQ.total || 0)) - (rawQ.amount_paid ?? 0)),
+    balance: getQuotationBalance(rawQ),
   };
 
   const handleDownload = async () => {
