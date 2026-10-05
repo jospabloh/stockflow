@@ -20,6 +20,8 @@ Deno.env.set("CRON_SECRET", "test-secret");
 class FakeDb {
   tables: Record<string, Row[]> = {};
   writes = 0;
+  /** true = la plataforma ignora el orden pedido (devuelve en el orden de inserción). */
+  ignoreSort = false;
   seed(t: string, rows: Row[]) {
     (this.tables[t] ??= []).push(...rows.map((r) => ({ ...r })));
   }
@@ -36,7 +38,7 @@ class FakeDb {
       // Respeta el orden ('-campo') y el límite, como la plataforma.
       filter: (q: Row = {}, sort?: string, limit?: number) => {
         let out = db.rows(t).filter((r) => Object.entries(q).every(([k, v]) => r[k] === v)).map((r) => ({ ...r }));
-        if (sort) {
+        if (sort && !db.ignoreSort) {
           const desc = sort.startsWith("-");
           const f = desc ? sort.slice(1) : sort;
           out.sort((a, b) => (desc ? -1 : 1) * (a[f] < b[f] ? -1 : a[f] > b[f] ? 1 : 0));
@@ -148,4 +150,26 @@ Deno.test("la guarda no cambia la autorización: un almacenista sigue recibiendo
   const db = history();
   const r = await run(db, { movement_id: "mAdj" }, { id: "u2", role: "user", business_id: "b1", email: "w@x.com" });
   assertEquals(r.status, 403);
+});
+
+Deno.test("la plataforma devuelve los movimientos DESORDENADOS: el ajuste con posteriores sigue bloqueado (409, sin escrituras)", async () => {
+  const db = history();
+  db.ignoreSort = true;
+  // Sin orden, la plataforma devuelve el más antiguo primero (mEntry ... mRet): con límite 1 la guarda vieja miraba mEntry y fallaba abierta.
+  const r = await run(db, { movement_id: "mAdj" });
+  assertEquals(r.status, 409);
+  assertEquals(r.json.blocked_by_history, true);
+  assertEquals(db.get("Product", "p1").stock, 21);
+  assertEquals(db.rows("Movement").length, 4);
+  assertEquals(db.writes, 0);
+});
+
+Deno.test("con la plataforma desordenando, el último ajuste se borra y vuelve al stock_after del movimiento anterior", async () => {
+  const db = history();
+  db.ignoreSort = true;
+  db.tables.Movement = db.rows("Movement").filter((m) => m.id !== "mRet"); // mEntry, mExit, mAdj (más antiguo primero)
+  db.get("Product", "p1").stock = 20;
+  const r = await run(db, { movement_id: "mAdj" });
+  assertEquals(r.status, 200);
+  assertEquals(db.get("Product", "p1").stock, 6);
 });

@@ -70,14 +70,21 @@ export async function handle(req: Request): Promise<Response> {
     // Trazabilidad: un ajuste con historial posterior no se borra; se corrige registrando
     // un ajuste nuevo. El ajuste que es el último movimiento del producto se borra como siempre.
     // Esta guarda va ANTES de cualquier escritura: en el 409 no se modifica nada.
+    // Una sola consulta (hasta 100 movimientos del producto) sirve para la guarda y para
+    // localizar el movimiento anterior. La guarda NO depende de que la plataforma respete el
+    // orden '-created_date': revisa todos los movimientos devueltos con .some().
+    let productMovements = [];
     if (movement.type === 'adjustment') {
-      const latest = await base44.asServiceRole.entities.Movement.filter(
+      productMovements = await base44.asServiceRole.entities.Movement.filter(
         { product_id: movement.product_id, business_id: user.business_id },
         '-created_date',
-        1
+        100
       );
-      const last = latest[0];
-      if (last && last.id !== movement_id && new Date(last.created_date) >= new Date(movement.created_date)) {
+      const adjustmentDate = new Date(movement.created_date).getTime();
+      const hasLaterMovements = productMovements.some(
+        m => m.id !== movement_id && new Date(m.created_date).getTime() >= adjustmentDate
+      );
+      if (hasLaterMovements) {
         return Response.json({
           success: false,
           blocked_by_history: true,
@@ -100,13 +107,8 @@ export async function handle(req: Request): Promise<Response> {
       // Ajuste establece stock absoluto — revertir al valor anterior al ajuste
       // stock_after del movimiento = el valor que quedó; para revertir necesitamos el valor ANTES
       // Buscamos el movimiento anterior al adjustment del mismo producto
-      const previousMovements = await base44.asServiceRole.entities.Movement.filter(
-        { product_id: movement.product_id, business_id: user.business_id },
-        '-created_date',
-        100
-      );
       // Filtrar movimientos anteriores al que se está eliminando
-      const sorted = previousMovements
+      const sorted = productMovements
         .filter(m => m.id !== movement_id)
         .sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
 
