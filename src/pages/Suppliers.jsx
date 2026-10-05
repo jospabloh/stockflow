@@ -128,12 +128,19 @@ export default function Suppliers() {
   };
 
   const handleDeleteSupplier = async (id) => {
-    const response = await base44.functions.invoke('suppliers', { action: 'deleteSupplierSafe', supplier_id: id });
-    if (!response.data.success) {
-      toast.error(response.data.error || 'No se pudo eliminar');
-      return;
+    try {
+      const response = await base44.functions.invoke('suppliers', { action: 'deleteSupplierSafe', supplier_id: id });
+      if (!response.data?.success) {
+        toast.error(response.data?.error || 'No se pudo eliminar el proveedor');
+        return;
+      }
+      await invalidate("Supplier");
+      toast.success(response.data?.notice_created === true
+        ? "Proveedor eliminado. Se dejó un aviso al administrador."
+        : "Proveedor eliminado");
+    } catch (e) {
+      toast.error(e?.response?.data?.error || 'No se pudo eliminar el proveedor. Intenta de nuevo.');
     }
-    await invalidate("Supplier");
   };
 
   if (loading) {

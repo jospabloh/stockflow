@@ -155,13 +155,19 @@ export default function ContactsManager() {
   };
 
   const handleDelete = async (contact) => {
-    const response = await base44.functions.invoke('contacts', { action: 'deleteContactSafe', contact_id: contact.id });
-    if (!response.data?.success) {
-      toast.error(response.data?.error || "No se pudo eliminar el contacto");
-      return;
+    try {
+      const response = await base44.functions.invoke('contacts', { action: 'deleteContactSafe', contact_id: contact.id });
+      if (!response.data?.success) {
+        toast.error(response.data?.error || "No se pudo eliminar el contacto");
+        return;
+      }
+      setContacts(contacts.filter(c => c.id !== contact.id));
+      toast.success(response.data?.notice_created === true
+        ? "Contacto eliminado. Se dejó un aviso al administrador."
+        : "Contacto eliminado");
+    } catch (e) {
+      toast.error(e?.response?.data?.error || "No se pudo eliminar el contacto. Intenta de nuevo.");
     }
-    setContacts(contacts.filter(c => c.id !== contact.id));
-    toast.success("Contacto eliminado");
   };
 
   const filtered = contacts
