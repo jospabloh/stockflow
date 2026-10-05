@@ -1,0 +1,76 @@
+{
+  "name": "AdminNotice",
+  "type": "object",
+  "description": "Aviso para el dueño/administrador de un negocio sobre una acción hecha por un usuario que no es administrador (hoy: borrado de proveedor, cliente o contacto). Lo escribe SOLO el rol de servicio desde las Safe functions; ninguna escritura sale del navegador. Guarda una copia del registro borrado para que el borrado no haga perder la información. Los avisos leídos no se borran: son historial.",
+  "properties": {
+    "business_id": {
+      "type": "string",
+      "description": "ID del negocio"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["directory_delete"],
+      "description": "Tipo de aviso. directory_delete = un no-admin borró un registro del directorio"
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": ["Supplier", "Client", "Contact"],
+      "description": "Entidad del registro borrado"
+    },
+    "record_id": {
+      "type": "string",
+      "description": "ID que tenía el registro borrado"
+    },
+    "record_label": {
+      "type": "string",
+      "description": "Nombre del registro borrado (para mostrar sin abrir el detalle)"
+    },
+    "record_snapshot": {
+      "type": "object",
+      "description": "Copia completa de los campos del registro en el momento de borrarlo (trazabilidad)"
+    },
+    "performed_by_id": {
+      "type": "string",
+      "description": "ID del usuario que borró"
+    },
+    "performed_by_email": {
+      "type": "string",
+      "description": "Correo del usuario que borró"
+    },
+    "performed_by_name": {
+      "type": "string",
+      "description": "Nombre del usuario que borró"
+    },
+    "performed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Momento del borrado"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["unread", "read"],
+      "default": "unread",
+      "description": "unread = pendiente de que un administrador lo marque como leído"
+    },
+    "read_by_id": {
+      "type": "string",
+      "description": "ID del administrador que lo marcó como leído"
+    },
+    "read_by_email": {
+      "type": "string",
+      "description": "Correo del administrador que lo marcó como leído"
+    },
+    "read_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Cuándo se marcó como leído"
+    }
+  },
+  "required": ["business_id", "kind", "entity_type", "performed_by_email", "status"],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

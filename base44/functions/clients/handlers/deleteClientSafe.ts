@@ -1,13 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { hasPermission } from './_permissions.ts';
 import { getAuthUser } from '../../../shared/authUser.ts';
-
-// Compuerta por rol TEMPORAL (decision de JP pendiente). Los perfiles almacenista de prod fueron
-// sembrados con estas claves en true (default viejo), y hasPermission() respeta el true explicito
-// antes de ALMACENISTA_DENIED; quitar la compuerta daria a ese rol borrar/editar sin que nadie lo
-// haya concedido. Con true se conserva el 403 previo para todo rol distinto de admin/owner.
-// Ponerla en false solo tras migrar esos perfiles (ver descripcion del PR).
-const DIRECTORY_ROLE_GATE = true;
+import {
+  createDirectoryDeleteNotice,
+  isBusinessAdmin,
+  NOTICE_FAILED_MESSAGE,
+  voidNoticeBestEffort,
+} from '../../../shared/adminNotice.ts';
 
 export async function handle(req: Request): Promise<Response> {
   try {
@@ -16,9 +15,6 @@ export async function handle(req: Request): Promise<Response> {
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (DIRECTORY_ROLE_GATE && user.role !== 'admin' && user.role !== 'owner') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const body = await req.json();
@@ -69,9 +65,28 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'write_blocked', billing_status: billingStatus }, { status: 403 });
     }
 
-    await base44.asServiceRole.entities.Client.delete(client_id);
+    // AVISO AL ADMINISTRADOR (decision de JP 2026-10-05): si quien borra no es owner/admin, el
+    // aviso se crea ANTES del borrado y, si no se puede crear, NO se borra (falla cerrada).
+    const needsNotice = !isBusinessAdmin(user);
+    let noticeId: string | null = null;
+    if (needsNotice) {
+      try {
+        noticeId = (await createDirectoryDeleteNotice(base44.asServiceRole, { user, entityType: 'Client', record })).id;
+      } catch (noticeError) {
+        console.error(`[deleteClientSafe] aviso no registrado, no se borra: ${(noticeError as Error).message}`);
+        return Response.json({ error: NOTICE_FAILED_MESSAGE, notice_failed: true }, { status: 503 });
+      }
+    }
 
-    return Response.json({ success: true, client_id });
+    try {
+      await base44.asServiceRole.entities.Client.delete(client_id);
+    } catch (deleteError) {
+      // El borrado fallo: el registro sigue existiendo, el aviso no debe quedar.
+      if (noticeId) await voidNoticeBestEffort(base44.asServiceRole, noticeId);
+      throw deleteError;
+    }
+
+    return Response.json({ success: true, client_id, notice_created: needsNotice });
   } catch (error) {
     return Response.json({ error: (error as Error).message }, { status: 500 });
   }

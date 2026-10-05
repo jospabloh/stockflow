@@ -102,13 +102,19 @@ export default function ClientsManager() {
   };
 
   const handleDelete = async (client) => {
-    const result = await base44.functions.invoke('clients', { action: 'deleteClientSafe', client_id: client.id });
-    if (!result.success) {
-      toast.error(result.error || "No se pudo eliminar el cliente");
-      return;
+    try {
+      const response = await base44.functions.invoke('clients', { action: 'deleteClientSafe', client_id: client.id });
+      if (!response.data?.success) {
+        toast.error(response.data?.error || "No se pudo eliminar el cliente");
+        return;
+      }
+      setClients(clients.filter(c => c.id !== client.id));
+      toast.success(response.data?.notice_created === true
+        ? "Cliente eliminado. Se dejó un aviso al administrador."
+        : "Cliente eliminado");
+    } catch (e) {
+      toast.error(e?.response?.data?.error || "No se pudo eliminar el cliente. Intenta de nuevo.");
     }
-    setClients(clients.filter(c => c.id !== client.id));
-    toast.success("Cliente eliminado");
   };
 
   const filtered = clients
