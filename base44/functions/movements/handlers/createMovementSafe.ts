@@ -146,47 +146,61 @@ export async function handle(req: Request): Promise<Response> {
     // TENANT-SCOPED: Caja chica — egreso por devolución de movimiento en efectivo
     // Solo aplica si: type='return', el usuario confirmó deducir, el método de reembolso es efectivo
     // y el tenant tiene activa la regla cash_sales_to_petty_cash.
+    // Se espera (await) el egreso: sin await la función respondía antes de crearlo y podía no generarse.
+    // Un fallo de caja chica NO aborta la devolución ya registrada: se avisa en petty_cash_warning
+    // (misma idea que stock_warning).
+    let pettyCashWarning: { message: string; error?: string } | undefined;
     if (movement.type === 'return' && petty_cash_deduction === true && isCashMethod(movement.reference || '')) {
-      base44.asServiceRole.entities.TenantRule.filter({ business_id, rule_key: CASH_RULE_KEY })
-        .then(async (ruleRows) => {
-          const rule = ruleRows.find((r) => !r.archived && r.enabled);
-          if (!rule) return;
-
+      try {
+        const ruleRows = await base44.asServiceRole.entities.TenantRule.filter({ business_id, rule_key: CASH_RULE_KEY });
+        const rule = ruleRows.find((r) => !r.archived && r.enabled);
+        if (rule) {
           const allowedMethods: string[] =
             Array.isArray(rule.config_json?.payment_methods) && rule.config_json.payment_methods.length > 0
               ? rule.config_json.payment_methods
               : DEFAULT_CASH_METHODS;
 
-          if (!isCashMethod(movement.reference || '', allowedMethods)) return;
-
           const refundAmount = (movement.quantity || 0) * (movement.unit_price || 0);
-          if (refundAmount <= 0) return;
-
-          await base44.asServiceRole.entities.PettyCashMovement.create({
-            business_id,
-            movement_type: 'expense',
-            amount: refundAmount,
-            description: `Devolución en efectivo — ${movement.product_name || ''} (${movement.reason || ''})`,
-            category: 'Devolución efectivo',
-            movement_date: new Date().toLocaleDateString('en-CA'),
-            reference: movement.reference || '',
-            notes: `Generado automáticamente por devolución de movimiento en efectivo. Movimiento: ${movement.id}. Regla: ${CASH_RULE_KEY}.`,
-            generated_by_system: true,
-            origin_type: 'movement_return',
-            origin_id: movement.id,
-            payment_method_snapshot: movement.reference || '',
-          });
-
-          if (rule.id) {
-            await base44.asServiceRole.entities.TenantRule.update(rule.id, {
-              last_applied_at: new Date().toISOString(),
+          if (isCashMethod(movement.reference || '', allowedMethods) && refundAmount > 0) {
+            await base44.asServiceRole.entities.PettyCashMovement.create({
+              business_id,
+              movement_type: 'expense',
+              amount: refundAmount,
+              description: `Devolución en efectivo — ${movement.product_name || ''} (${movement.reason || ''})`,
+              category: 'Devolución efectivo',
+              movement_date: new Date().toLocaleDateString('en-CA'),
+              reference: movement.reference || '',
+              notes: `Generado automáticamente por devolución de movimiento en efectivo. Movimiento: ${movement.id}. Regla: ${CASH_RULE_KEY}.`,
+              generated_by_system: true,
+              origin_type: 'movement_return',
+              origin_id: movement.id,
+              payment_method_snapshot: movement.reference || '',
             });
+
+            // Solo bookkeeping: el egreso YA existe. Si esta actualizacion falla no debe emitirse
+            // petty_cash_warning (el dueño lo registraria a mano y quedaria duplicado).
+            if (rule.id) {
+              try {
+                await base44.asServiceRole.entities.TenantRule.update(rule.id, {
+                  last_applied_at: new Date().toISOString(),
+                });
+              } catch (e) {
+                console.error('[createMovementSafe] last_applied_at update failed for', rule.id, (e as Error).message);
+              }
+            }
           }
-        })
-        .catch(() => {});
+        }
+      } catch (e) {
+        pettyCashWarning = {
+          message: 'La devolución se registró pero el egreso de caja chica NO se pudo generar. ' +
+            'Regístralo manualmente en caja chica.',
+          error: (e as Error).message,
+        };
+        console.error('[createMovementSafe] petty cash expense failed for', movement.id, (e as Error).message);
+      }
     }
 
-    return Response.json({ success: true, movement_id: movement.id, movement, stock_warning: stockWarning(stockFailures) });
+    return Response.json({ success: true, movement_id: movement.id, movement, stock_warning: stockWarning(stockFailures), petty_cash_warning: pettyCashWarning });
   } catch (error) {
     return Response.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
