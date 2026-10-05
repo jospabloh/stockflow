@@ -86,7 +86,6 @@ export async function handle(req: Request): Promise<Response> {
 
     // (1) NO se sana nada automáticamente: un fallo de un día anterior es un problema pasado y
     // solo se REPORTA. La recuperación inmediata ocurre dentro de applyStockForMovement (segundos).
-    const healed: string[] = [];
 
     // (2)+(3) alertas persistentes, una vez por movimiento
     const toAlert = [
@@ -113,7 +112,7 @@ export async function handle(req: Request): Promise<Response> {
         console.log(`[STOCK-RECONCILE] no se pudo guardar alerta de ${m.id}: ${(e as Error).message}`);
       }
     }
-    const anomalies = unapplied.filter((m) => !healed.includes(m.id));
+    const anomalies = unapplied;
 
     const byBusiness: Record<string, number> = {};
     for (const m of anomalies) {
@@ -127,7 +126,6 @@ export async function handle(req: Request): Promise<Response> {
       unapplied_count: anomalies.length,
       unapplied_by_business: byBusiness,
       unapplied_ids: anomalies.slice(0, 100).map((m) => m.id),
-      healed_ids: healed,
       alerts_created: alerted,
       truncated,
       email_sent: false,
@@ -150,7 +148,7 @@ export async function handle(req: Request): Promise<Response> {
             `<tr><td>${escapeHtml(m.business_id)}</td><td>${escapeHtml(m.product_name || m.product_id)}</td><td>${escapeHtml(m.type)}</td><td>${escapeHtml(m.quantity)}</td><td>${escapeHtml(m.created_date)}</td><td>${escapeHtml(m.id)}</td></tr>`
           ).join('');
           const html =
-            `<p>Revisión diaria de stock (se reintentó de forma segura lo recuperable; no se tocó ningún dato histórico). Reintentados con éxito: ${healed.length}. Ventana desde ${escapeHtml(cutoff)}.</p>` +
+            `<p>Revisión diaria de stock (solo se reporta: no se reintentó ni se corrigió nada, y no se tocó ningún dato histórico). Ventana desde ${escapeHtml(cutoff)}.</p>` +
             `<p><b>${anomalies.length}</b> movimiento(s) con stock_applied distinto de true de ${inWindow.length} revisados.` +
             (truncated ? ' <b>La ventana quedó truncada: el reporte puede estar incompleto.</b>' : '') + '</p>' +
             (anomalies.length

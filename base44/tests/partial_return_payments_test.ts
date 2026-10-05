@@ -138,3 +138,49 @@ Deno.test("legacy paid=true, amount_paid=0, payments=[]: se siembra pago base y 
   assertEquals(q.payments.reduce((s: number, p: Row) => s + p.amount, 0), q.amount_paid);
   assertEquals(q.payments.reduce((s: number, p: Row) => s + p.amount, 0), q.total);
 });
+
+// --- Caja chica: un fallo no aborta la devolución ya registrada, pero NO se traga en silencio ---
+// Intención: el dueño debe enterarse de que el egreso en efectivo no se generó (para registrarlo a mano);
+// antes un catch vacío lo ocultaba y la caja quedaba descuadrada sin que nadie lo supiera.
+async function retCash(db: ReturnType<typeof makeDb>, failPetty: boolean) {
+  const base = db.entity;
+  db.entity = (name: string) => {
+    const e = base(name);
+    if (name === "PettyCashMovement" && failPetty) e.create = () => Promise.reject(new Error("petty cash down"));
+    return e;
+  };
+  install(db);
+  const res = await handle(new Request("http://t/f", { method: "POST", body: JSON.stringify({
+    quotation_id: "q1", reason: "t", petty_cash_deduction: true,
+    returned_items: [{ product_id: "p1", product_name: "P", quantity: 1, unit_price: 100 }],
+  }) }));
+  return { status: res.status, json: await res.json() };
+}
+const cashDb = () => {
+  const db = sale({ paid: true, amount_paid: 500, balance: 0, payment_method: "Efectivo", payments: [{ id: "pay1", amount: 500 }] });
+  db.t.TenantRule.push({ id: "tr1", business_id: "b1", rule_key: "cash_sales_to_petty_cash", enabled: true });
+  return db;
+};
+
+Deno.test("devolución en efectivo: si falla caja chica la devolución queda registrada y se devuelve petty_cash_warning", async () => {
+  const db = cashDb();
+  const errs: unknown[][] = [];
+  const orig = console.error;
+  console.error = (...a: unknown[]) => { errs.push(a); };
+  let r;
+  try { r = await retCash(db, true); } finally { console.error = orig; }
+  assertEquals(r.status, 200);
+  assertEquals(r.json.success, true);
+  assertEquals(db.t.Quotation[0].total, 400); // la devolución sí se registró
+  assertEquals(db.t.Movement.length, 1);
+  assertEquals(/caja chica/i.test(String(r.json.petty_cash_warning?.message)), true);
+  assertEquals(errs.length, 1); // visible en consola
+});
+
+Deno.test("devolución en efectivo sin fallo: crea el egreso y no hay petty_cash_warning", async () => {
+  const db = cashDb();
+  const r = await retCash(db, false);
+  assertEquals(r.status, 200);
+  assertEquals(r.json.petty_cash_warning, undefined);
+  assertEquals(db.t.PettyCashMovement?.length, 1);
+});

@@ -413,7 +413,7 @@ Deno.test("dailyStockReconcile: NO sana nada (solo alerta una vez) y no toca dat
   assertEquals(db.get("Movement", "mA").stock_apply_state, "failed");
   assertEquals(db.get("Product", "p1").stock, 9);
   assertEquals(db.get("Movement", "mB").stock_applied, false);
-  assertEquals(r1.json.report.healed_ids, []);
+  assertEquals("healed_ids" in r1.json.report, false); // el job ya no reintenta: no hay campo healed
   assertEquals([...r1.json.report.unapplied_ids].sort(), ["mA", "mB"]);
   assertEquals(db.rows("InventoryAuditLog").length, 2);
   const r2 = await run(db, null, reconcile, { ...CRON });
@@ -478,7 +478,6 @@ Deno.test("ABA (ya escrito): exit x2 escrito 10->8 con marca final fallida; lueg
   assertEquals(db.get("Movement", "mSale").stock_applied, undefined);
   // y el reconcile tampoco lo sana
   const rc = await run(db, null, reconcile, { ...CRON });
-  assertEquals(rc.json.report.healed_ids, []);
   assertEquals(db.get("Product", "p1").stock, 10);
   assertEquals(db.get("Movement", "mSale").stock_applied, undefined);
 });

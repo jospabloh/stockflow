@@ -104,6 +104,7 @@ export default function PartialReturnDialog({ open, onOpenChange, quotation, onS
       }
 
       if (res.data?.stock_warning) toast.warning(res.data.stock_warning.message, { duration: 20000 });
+      if (res.data?.petty_cash_warning) toast.warning(res.data.petty_cash_warning.message, { duration: 20000 });
       toast.success(`Devolución registrada — ${returned_items.length} producto(s) devuelto(s)`);
       onSaved();
       onOpenChange(false);
