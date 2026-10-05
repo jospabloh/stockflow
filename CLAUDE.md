@@ -2479,3 +2479,30 @@ módulo 12); UI/UX visual, cross-device y Core Web Vitals (sin
 se tocó en esta pasada — los tres cambios son housekeeping (dependencias,
 limpieza de documentación muerta, cobertura de CI) y no requieren ningún
 paso de `npm run deploy`/`deploy:entities`/`deploy:site`.
+
+## Lecciones de despliegue verificadas en producción (2026-10-02)
+
+Siete lecciones de la ventana nocturna del 2026-10-02 (trenes, canarios y un rollback). Complementan
+«La sesión de Claude SÍ puede desplegar» y «`npm run deploy` dijo «47 unchanged»».
+
+- **Tras mergear, el webhook de GitHub NO crea el checkpoint.** Hay que llamar
+  `POST /api/apps/{app_id}/github/sync` (el `app_id` vive en el repo, módulo 11) y esperar al checkpoint nuevo
+  antes de publicar.
+- **ROLLBACK: publicar un checkpoint anterior NO revierte las funciones backend.** Revierte el sitio y las
+  entidades publicadas, pero las funciones siguen con el código nuevo. Además hay que correr
+  `base44 functions deploy` **desde el árbol del commit anterior** (worktree en ese commit) y comprobar con una
+  llamada que el comportamiento volvió (`unknown action` / 403 propio, como en la sección del 2026-09-24).
+- **`base44.asServiceRole.functions.invoke` devuelve la respuesta axios completa**, no el cuerpo. Desenvuelve con
+  `resp?.data ?? resp` y nunca hagas `JSON.stringify` de la respuesta cruda (lleva `config`, `request` y
+  referencias circulares). Las pruebas deben simular esa forma (`{ data, status, headers… }`), no devolver el
+  cuerpo directo; si no, pasan en verde y fallan en producción.
+- **La API de logs no registra el tráfico real del sitio publicado.** Un canario no se valida con logs: se valida
+  **leyendo datos** (la entidad o el efecto que la llamada debía producir).
+- **La plataforma tiene rate limit.** Deja **≥ 3 s entre llamadas** en canarios y regresiones; ráfagas más
+  rápidas dan 429 que parecen fallas del código.
+- **`update_entity_schema` confirma el esquema en `main` como commits de `base44-builder[bot]`**, así que
+  `main` puede avanzar sin que lo hayas hecho tú (haz `git fetch` antes de ramificar o mergear). Y la plataforma
+  **descarta en silencio los campos fuera del esquema**: si un campo no persiste, comprueba primero que el
+  esquema desplegado lo tiene.
+- **Un PR que falla en el canario arrastra a todo su tren.** Los cambios riesgosos (RLS, esquemas, permisos,
+  stock/caja) van en **tren propio**, no mezclados con cambios triviales, para poder revertir uno sin tirar el resto.
