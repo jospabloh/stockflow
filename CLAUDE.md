@@ -2391,3 +2391,91 @@ antes de escribir el producto. `dailyStockReconcile` (ventana 25 h; correo al ow
 **Orden de despliegue:** primero las entidades (`Movement`: stock_apply_state/stock_before/stock_apply_error;
 `InventoryAuditLog`: enum `stock_apply_failed`), después las funciones. Sin el esquema la plataforma descarta
 los campos nuevos en silencio y el código queda en modo degradado (sin recuperación automática, sin reintentos ciegos).
+
+## Auditoría rutinaria 2026-10-05: sin drift de RLS, tres hallazgos de housekeeping cerrados
+
+Barrido programado (inventario de PRs/ramas, `npm ci`/lint/build/`validate:rls`,
+`npm audit`, secrets, `deno lint`/`deno test`, comparación esquema repo vs.
+desplegado, workflows de Base44). Con el MCP de Base44 conectado, esta pasada
+comparó programáticamente las 31 `base44/entities/*.jsonc` contra
+`list_entity_schemas` en vivo (appId `69af971d0fdb362c9ae52ed3`) campo por
+campo — RLS de las cuatro operaciones, `required`, presencia de campos,
+`rls` a nivel de campo, y tipos: **cero drift**. Los tres workflows de
+licencia retirados (`Check Account Lifecycle Daily`, `Expire Trials Daily`,
+`Process Monthly Renewal Daily`) siguen `archived` desde el 2026-09-11, sin
+recurrencia de la deriva del 2026-09-06. `Daily Stock Reconcile` y
+`Trial Reactivation Emails Daily` activos con `last_run_status: success`.
+
+**`npm run lint`/`npm run build` no corrían en CI para ningún push ni PR —
+cerrado.** `.github/workflows/ci.yml` sólo ejecutaba las comprobaciones de
+Deno (`deno lint`, `validate-entity-rls.mjs`, `deno test`);
+`auto-release-pr.yml` sí corre en cada push a `main`, pero sólo invoca
+`npm run release`, que a su vez sólo corre `audit-permissions.mjs` y
+`generate:all` (`scripts/publish-release.mjs`) — ni eslint ni `vite build` en
+ningún lugar. Un build roto, una función que suba el conteo de endpoints por
+encima de `maxFunctions`, o código que asigne el rol incorporado `admin`
+podían mergearse a `main` sin que nada en CI lo cazara; dependía enteramente
+de que la sesión de turno corriera `npm run lint`/`npm run build` a mano.
+Arreglo: nuevo job `frontend` en `ci.yml` (`npm ci` + `npm run lint` + `npm run
+build`, en `push`/`pull_request`), como hermano del job `test` existente —
+sin tocar éste, para no invalidar un posible required-status-check que lo
+nombre.
+
+**17 archivos markdown muertos borrados de `src/`.** No son `docs/` ni el
+`CLAUDE.md`/manual actuales: son resúmenes de auditoría sueltos de sesiones
+anteriores a la convención de este archivo, el más viejo fechado
+2026-03-26 (`AUDIT_SUMMARY_HONEST.md`), ninguno importado por código (grep
+confirmó cero referencias). Varios describían como "NOT FIXED" problemas de
+lectura/escritura cruzada entre inquilinos que este mismo archivo documenta
+cerrados desde hace meses (la separación `owner`/`admin` del 2026-09-24, los
+candados de campo del módulo 14 del 2026-08-23/24) — dejarlos en el árbol
+fuente activo es activamente engañoso para la siguiente persona o sesión que
+los encuentre. `src/CHANGELOG.md` era un changelog **separado y
+desconectado** del real: se quedó en v2.18.20 mientras la fuente de verdad
+real (`src/lib/appConfig.js`, alimentada por `auto-release-pr.yml`) ya iba en
+v2.18.28 — sin un solo importador fuera del paquete vendorizado de skills de
+este repo.
+
+**`npm audit`:** `axios`, `brace-expansion` y `dompurify` tenían fix
+disponible (CVEs nuevos desde la pasada del 2026-09-28) — aplicados vía
+`npm audit fix` (sólo `package-lock.json`, diff de 20 líneas, sin arrastrar
+los paquetes de plataforma de Tailwind/Rolldown que trae el `--dry-run`,
+mismo cuidado que auditorías anteriores). `xlsx` sigue sin fix upstream —
+mismo razonamiento aceptado desde 2026-08-10 (sólo escribe XLSX, nunca
+parsea uno subido por el usuario).
+
+**Inventario de PRs abiertos, sin tocar** (ninguno es de esta rama ni de esta
+sesión): `#407` (`automated/release-pr`, bump de versión automático
+2.18.28→2.18.29, generado por el propio workflow — se deja para que el
+workflow lo gestione, es exactamente la convención que este archivo pide no
+competir con un bump a mano); `#408` (dependabot, base desactualizada);
+`#461`/`#466`/`#467` (fixes y docs de una sesión anterior, explícitamente
+anotados por su propio autor como "NO mergear de día" / "entra en la próxima
+ventana nocturna, tren propio" / con un canario de sandbox pendiente antes de
+producción) — se respetó esa anotación en vez de forzar un merge automático:
+son retenciones deliberadas por motivos de ventana de despliegue, no PRs
+abandonados.
+
+**Verificado:** `npm ci`, `npm run lint` (eslint + `validate:functions` 25/40,
+margen 15 + `validate:roles`), `npm run build`, `npm run validate:rls` (31
+entidades, 23 con inquilino), `npm run generate:permission-manifests` (sin
+drift más allá del timestamp), binario de `deno` descargado de la release de
+GitHub (`v2.9.5`) → `deno lint base44/functions/` (196 archivos, limpio) y
+`deno test -A base44/tests` (455 passed, 0 failed — incluye
+`integration_test.ts` y `permissions_safe_functions_test.ts`, que en
+auditorías anteriores no podían correr aquí por bloqueo de `deno.land`; esta
+vez corrieron sin problema). Secrets: limpio, sin `.env*` trackeado, sin
+claves/tokens en claro en `src/`/`base44/`/`scripts/`. Comparación esquema
+desplegado vs. repo: cero drift en las 31 entidades (RLS, required, campos,
+rls de campo, tipos). Workflows de Base44 releídos con `include_archived=true`:
+sin deriva.
+
+**No verificado:** una sesión de navegador como `almacenista` real; `npm run
+test:smoke` (el proxy de este sandbox no alcanza el dominio desplegado,
+módulo 12); UI/UX visual, cross-device y Core Web Vitals (sin
+`VITE_BASE44_APP_ID` ni navegador contra la app real en este entorno).
+
+**Sin cambios de código de aplicación.** Ninguna entidad, handler o regla RLS
+se tocó en esta pasada — los tres cambios son housekeeping (dependencias,
+limpieza de documentación muerta, cobertura de CI) y no requieren ningún
+paso de `npm run deploy`/`deploy:entities`/`deploy:site`.
