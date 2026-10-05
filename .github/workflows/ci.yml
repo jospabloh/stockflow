@@ -38,3 +38,22 @@ jobs:
           else
             echo "No Deno test modules found under base44/; skipping deno test."
           fi
+
+  # Added 2026-10-05: no workflow in this repo ran eslint, validate:functions,
+  # validate:roles or the Vite build on push/PR — only the Deno checks above
+  # did. auto-release-pr.yml runs `npm run release` but only on push to main,
+  # and that script never calls lint or build either (see
+  # scripts/publish-release.mjs). A frontend regression (broken build, an
+  # endpoint over the maxFunctions cap, a function assigning built-in role
+  # 'admin') could merge to main with nothing catching it in CI.
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
