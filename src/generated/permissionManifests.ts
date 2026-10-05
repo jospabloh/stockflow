@@ -1,6 +1,6 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:permission-manifests
-// Generado: 2026-10-05T17:00:12.922Z
+// Generado: 2026-10-05T17:23:27.885Z
 
 export const ALL_PERMISSION_KEYS = [
   "Dashboard:view",
@@ -746,7 +746,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Proveedores:edit_address": false,
   "Proveedores:edit_rfc": false,
   "Proveedores:edit_notes": false,
-  "Proveedores:delete": false,
+  "Proveedores:delete": true,
   "Clientes:view": true,
   "Clientes:create": true,
   "Clientes:edit_name": true,
@@ -759,7 +759,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Clientes:edit_force_wholesale": false,
   "Clientes:edit_force_purchase": false,
   "Clientes:edit_force_zero_price": true,
-  "Clientes:delete": false,
+  "Clientes:delete": true,
   "Cursos:view": true,
   "Cursos:create": true,
   "Cursos:edit": true,
@@ -773,7 +773,7 @@ export const ROLE_DEFAULTS: Record<string, Record<PermissionKey, boolean>> = {
   "Contactos:view": true,
   "Contactos:create": true,
   "Contactos:edit": true,
-  "Contactos:delete": false,
+  "Contactos:delete": true,
   "Tipo de Pago:view": true,
   "Tipo de Pago:create": false,
   "Tipo de Pago:edit_name": false,

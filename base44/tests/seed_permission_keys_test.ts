@@ -51,15 +51,16 @@ Deno.test("seed: sin claves acentuadas y almacenista deniega Configuracion:*", a
     assert(ks.includes(k), `falta la clave ${k}`);
     assert(d.has(k), `almacenista deberia tener ${k} denegada`);
   }
-  assert(d.has("Proveedores:delete") && d.has("Clientes:delete") && d.has("Contactos:delete"));
+  // Borrar proveedores/clientes/contactos ya no se niega (decision de JP 2026-10-05, con aviso al admin).
+  assert(!d.has("Proveedores:delete") && !d.has("Clientes:delete") && !d.has("Contactos:delete"));
 });
 
 // ── Decision de JP 2026-10-05: el almacenista de un negocio nuevo nace igual que el de
 // Baristop Distribuidora (sin reportes, sin precios de cotizacion, sin pagos a proveedores). ──
-// Excepcion: las 8 claves de directorio las decide otro PR (avisos al admin).
+// Excepcion: las 5 claves Proveedores:edit_* (editar proveedor sigue solo owner/admin).
 const DIRECTORY_KEYS_PENDING = [
-  "Proveedores:delete", "Proveedores:edit_name", "Proveedores:edit_contact", "Proveedores:edit_address",
-  "Proveedores:edit_rfc", "Proveedores:edit_notes", "Clientes:delete", "Contactos:delete",
+  "Proveedores:edit_name", "Proveedores:edit_contact", "Proveedores:edit_address",
+  "Proveedores:edit_rfc", "Proveedores:edit_notes",
 ];
 
 function seededAlmacenista(src: string): Record<string, boolean> {
@@ -74,7 +75,7 @@ Deno.test("seed: el almacenista nuevo niega Reportes:view, Cotizaciones:pricing 
   }
 });
 
-Deno.test("seed: el almacenista nuevo coincide con la foto del de Baristop (salvo las 8 claves de directorio)", async () => {
+Deno.test("seed: el almacenista nuevo coincide con la foto del de Baristop (salvo las 5 claves Proveedores:edit_*)", async () => {
   const fixture = JSON.parse(
     await Deno.readTextFile(new URL("./fixtures/baristop_almacenista_profile.json", import.meta.url)),
   ).permissions as Record<string, boolean>;
@@ -87,8 +88,9 @@ Deno.test("seed: el almacenista nuevo coincide con la foto del de Baristop (salv
   for (const k of ["Configuracion:export_data", "Venta de Maquinaria:view", "Venta de Maquinaria:financials"]) {
     assert(k in p, `falta ${k}`);
   }
-  // Las 8 de directorio no se tocaron en este PR: siguen denegadas como antes.
+  // Editar proveedor sigue solo owner/admin: las 5 siguen denegadas. Borrar queda concedido como en Baristop.
   for (const k of DIRECTORY_KEYS_PENDING) assertEquals(p[k], false, k);
+  for (const k of ["Proveedores:delete", "Clientes:delete", "Contactos:delete"]) assertEquals(p[k], true, k);
 });
 
 Deno.test("hasPermission (copia AUTOGEN) usa la misma lista de denegados que el seed", async () => {

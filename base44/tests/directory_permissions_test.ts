@@ -228,14 +228,16 @@ Deno.test("[sin compuerta] updateSupplierSafe: owner edita todo; rol sin perfil 
   assertEquals(db.rows("Supplier")[0].name, "Dueno");
 });
 
-// ---- almacenista SIN perfil explicito: conserva el 403 previo -------------
+// ---- almacenista SIN perfil explicito: defaults (decision de JP 2026-10-05) -------------
+// Borrar proveedores/clientes/contactos se concede por defecto (con aviso al admin, PR de avisos);
+// editar proveedores sigue negado.
 
 for (const d of DELETES) {
-  Deno.test(`${d.name}: almacenista SIN perfil (defaults) NO borra`, async () => {
+  Deno.test(`${d.name}: almacenista SIN perfil (defaults) SI borra`, async () => {
     const db = baseDb();
     const r = await call(d.h, db, ALM, d.body);
-    assertEquals(r.status, 403);
-    assertEquals(db.rows(d.table).length, 1);
+    assertEquals(r.status, 200);
+    assertEquals(db.rows(d.table).length, 0);
   });
 }
 
