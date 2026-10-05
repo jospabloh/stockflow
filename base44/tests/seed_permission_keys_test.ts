@@ -53,3 +53,46 @@ Deno.test("seed: sin claves acentuadas y almacenista deniega Configuracion:*", a
   }
   assert(d.has("Proveedores:delete") && d.has("Clientes:delete") && d.has("Contactos:delete"));
 });
+
+// ── Decision de JP 2026-10-05: el almacenista de un negocio nuevo nace igual que el de
+// Baristop Distribuidora (sin reportes, sin precios de cotizacion, sin pagos a proveedores). ──
+// Excepcion: las 8 claves de directorio las decide otro PR (avisos al admin).
+const DIRECTORY_KEYS_PENDING = [
+  "Proveedores:delete", "Proveedores:edit_name", "Proveedores:edit_contact", "Proveedores:edit_address",
+  "Proveedores:edit_rfc", "Proveedores:edit_notes", "Clientes:delete", "Contactos:delete",
+];
+
+function seededAlmacenista(src: string): Record<string, boolean> {
+  const d = new Set(denied(src));
+  return Object.fromEntries(keys(src).map((k) => [k, !d.has(k)]));
+}
+
+Deno.test("seed: el almacenista nuevo niega Reportes:view, Cotizaciones:pricing y Pagos a Proveedores:view/create", async () => {
+  const p = seededAlmacenista(await read("seedDefaultPermissionProfiles.ts"));
+  for (const k of ["Reportes:view", "Cotizaciones:pricing", "Pagos a Proveedores:view", "Pagos a Proveedores:create"]) {
+    assertEquals(p[k], false, `${k} debe nacer denegada`);
+  }
+});
+
+Deno.test("seed: el almacenista nuevo coincide con la foto del de Baristop (salvo las 8 claves de directorio)", async () => {
+  const fixture = JSON.parse(
+    await Deno.readTextFile(new URL("./fixtures/baristop_almacenista_profile.json", import.meta.url)),
+  ).permissions as Record<string, boolean>;
+  const p = seededAlmacenista(await read("seedDefaultPermissionProfiles.ts"));
+  const diffs = Object.keys(fixture)
+    .filter((k) => !DIRECTORY_KEYS_PENDING.includes(k) && p[k] !== fixture[k])
+    .map((k) => `${k}: sembrado=${p[k]} baristop=${fixture[k]}`);
+  assertEquals(diffs, []);
+  // Las claves que Baristop no tiene siguen existiendo en el perfil sembrado.
+  for (const k of ["Configuracion:export_data", "Venta de Maquinaria:view", "Venta de Maquinaria:financials"]) {
+    assert(k in p, `falta ${k}`);
+  }
+  // Las 8 de directorio no se tocaron en este PR: siguen denegadas como antes.
+  for (const k of DIRECTORY_KEYS_PENDING) assertEquals(p[k], false, k);
+});
+
+Deno.test("hasPermission (copia AUTOGEN) usa la misma lista de denegados que el seed", async () => {
+  const seed = await read("seedDefaultPermissionProfiles.ts");
+  const perm = await Deno.readTextFile(new URL("../../base44/functions/quotations/handlers/_permissions.ts", import.meta.url));
+  assertEquals(denied(perm), denied(seed));
+});
