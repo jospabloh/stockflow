@@ -142,11 +142,12 @@ Deno.test("legacy paid=true, amount_paid=0, payments=[]: se siembra pago base y 
 // --- Caja chica: un fallo no aborta la devolución ya registrada, pero NO se traga en silencio ---
 // Intención: el dueño debe enterarse de que el egreso en efectivo no se generó (para registrarlo a mano);
 // antes un catch vacío lo ocultaba y la caja quedaba descuadrada sin que nadie lo supiera.
-async function retCash(db: ReturnType<typeof makeDb>, failPetty: boolean) {
+async function retCash(db: ReturnType<typeof makeDb>, failPetty: boolean, failRuleUpdate = false) {
   const base = db.entity;
   db.entity = (name: string) => {
     const e = base(name);
     if (name === "PettyCashMovement" && failPetty) e.create = () => Promise.reject(new Error("petty cash down"));
+    if (name === "TenantRule" && failRuleUpdate) e.update = () => Promise.reject(new Error("rule update down"));
     return e;
   };
   install(db);
@@ -183,4 +184,18 @@ Deno.test("devolución en efectivo sin fallo: crea el egreso y no hay petty_cash
   assertEquals(r.status, 200);
   assertEquals(r.json.petty_cash_warning, undefined);
   assertEquals(db.t.PettyCashMovement?.length, 1);
+});
+
+Deno.test("devolución en efectivo: si el egreso SÍ se creó y solo falla TenantRule.update, no hay petty_cash_warning (evita duplicarlo a mano) pero se deja en consola", async () => {
+  const db = cashDb();
+  const errs: unknown[][] = [];
+  const orig = console.error;
+  console.error = (...a: unknown[]) => { errs.push(a); };
+  let r;
+  try { r = await retCash(db, false, true); } finally { console.error = orig; }
+  assertEquals(r.status, 200);
+  assertEquals(r.json.success, true);
+  assertEquals(db.t.PettyCashMovement?.length, 1); // el egreso sí existe
+  assertEquals(r.json.petty_cash_warning, undefined); // no se dice «NO se pudo generar»
+  assertEquals(errs.length, 1); // el fallo del update sigue visible en consola
 });

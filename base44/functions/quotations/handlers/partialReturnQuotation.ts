@@ -185,7 +185,10 @@ export async function handle(req: Request): Promise<Response> {
     // y el tenant tiene activa la regla cash_sales_to_petty_cash.
     // Un fallo de caja chica NO aborta la devolución ya registrada: se avisa en petty_cash_warning
     // (mismo criterio y forma que createMovementSafe) y se deja en consola.
+    // expenseCreated: el aviso «NO se pudo generar» solo sale si el egreso realmente no se creó
+    // (si solo falla el update de last_applied_at, el egreso existe y el usuario no debe duplicarlo).
     let pettyCashWarning: { message: string; error?: string } | undefined;
+    let expenseCreated = false;
     if (petty_cash_deduction === true && quotation.paid && isCashMethod(quotation.payment_method)) {
       try {
         const ruleRows = await base44.asServiceRole.entities.TenantRule.filter({
@@ -220,6 +223,7 @@ export async function handle(req: Request): Promise<Response> {
               origin_id: quotation.id,
               payment_method_snapshot: quotation.payment_method,
             });
+            expenseCreated = true;
 
             if (rule.id) {
               await base44.asServiceRole.entities.TenantRule.update(rule.id, {
@@ -229,11 +233,13 @@ export async function handle(req: Request): Promise<Response> {
           }
         }
       } catch (e) {
-        pettyCashWarning = {
-          message: 'La devolución se registró pero el egreso de caja chica NO se pudo generar. ' +
-            'Regístralo manualmente en caja chica.',
-          error: (e as Error).message,
-        };
+        if (!expenseCreated) {
+          pettyCashWarning = {
+            message: 'La devolución se registró pero el egreso de caja chica NO se pudo generar. ' +
+              'Regístralo manualmente en caja chica.',
+            error: (e as Error).message,
+          };
+        }
         console.error('[partialReturnQuotation] petty cash expense failed for', quotation.id, (e as Error).message);
       }
     }
