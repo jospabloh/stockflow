@@ -64,6 +64,28 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ error: 'El producto no pertenece a tu negocio' }, { status: 403 });
     }
 
+    // Un ajuste fija el stock en un valor absoluto. Si el producto ya tiene movimientos
+    // posteriores, "deshacerlo" reponiendo el stock_after del movimiento anterior ignoraría
+    // todo lo registrado después y el stock saltaría a un valor falso (p. ej. de 6 a 20).
+    // Trazabilidad: un ajuste con historial posterior no se borra; se corrige registrando
+    // un ajuste nuevo. El ajuste que es el último movimiento del producto se borra como siempre.
+    // Esta guarda va ANTES de cualquier escritura: en el 409 no se modifica nada.
+    if (movement.type === 'adjustment') {
+      const latest = await base44.asServiceRole.entities.Movement.filter(
+        { product_id: movement.product_id, business_id: user.business_id },
+        '-created_date',
+        1
+      );
+      const last = latest[0];
+      if (last && last.id !== movement_id && new Date(last.created_date) >= new Date(movement.created_date)) {
+        return Response.json({
+          success: false,
+          blocked_by_history: true,
+          error: 'No se puede eliminar este ajuste porque el producto ya tiene movimientos posteriores. Para corregir el inventario, registra un nuevo ajuste con la cantidad correcta.',
+        }, { status: 409 });
+      }
+    }
+
     // Calcular stock revertido según tipo de movimiento original
     let revertedStock = product.stock ?? 0;
     const qty = movement.quantity ?? 0;

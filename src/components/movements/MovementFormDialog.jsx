@@ -215,6 +215,7 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
       }
 
       const stockWarnings = [];
+      const pettyCashWarnings = [];
       for (const item of validItems) {
         const product = item.product;
         const qty = item.quantity;
@@ -257,10 +258,12 @@ export default function MovementFormDialog({ open, onOpenChange, onSaved }) {
           setSaving(false);
           return;
         }
+        if (movResp.data.petty_cash_warning) pettyCashWarnings.push(`"${product.name}": ${movResp.data.petty_cash_warning.message ?? movResp.data.petty_cash_warning}`);
         if (movResp.data.stock_warning) stockWarnings.push(`"${product.name}": ${movResp.data.stock_warning.message}`);
       }
 
       if (stockWarnings.length) toast.warning(stockWarnings[0] + (stockWarnings.length > 1 ? ` (+${stockWarnings.length - 1} más)` : ''), { duration: 20000 });
+      if (pettyCashWarnings.length) toast.warning(pettyCashWarnings[0] + (pettyCashWarnings.length > 1 ? ` (+${pettyCashWarnings.length - 1} más)` : ''), { duration: 20000 });
       toast.success(`${validItems.length} movimiento(s) registrado(s)`);
       onSaved?.({ success: true, count: validItems.length });
     } catch (error) {
