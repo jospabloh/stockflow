@@ -177,10 +177,16 @@ export async function handle(req: Request): Promise<Response> {
               payment_method_snapshot: movement.reference || '',
             });
 
+            // Solo bookkeeping: el egreso YA existe. Si esta actualizacion falla no debe emitirse
+            // petty_cash_warning (el dueño lo registraria a mano y quedaria duplicado).
             if (rule.id) {
-              await base44.asServiceRole.entities.TenantRule.update(rule.id, {
-                last_applied_at: new Date().toISOString(),
-              });
+              try {
+                await base44.asServiceRole.entities.TenantRule.update(rule.id, {
+                  last_applied_at: new Date().toISOString(),
+                });
+              } catch (e) {
+                console.error('[createMovementSafe] last_applied_at update failed for', rule.id, (e as Error).message);
+              }
             }
           }
         }

@@ -43,6 +43,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 class Db {
   t: Record<string, Row[]> = {};
   failPetty = false;
+  failRuleUpdate = false;
   seq = 0;
   seed(table: string, rows: Row[]) { (this.t[table] ??= []).push(...rows); }
   rows(table: string) { return this.t[table] ?? []; }
@@ -63,6 +64,7 @@ class Db {
       },
       update: async (id: string, patch: Row) => {
         await sleep(DELAY);
+        if (table === "TenantRule" && this.failRuleUpdate) throw new Error("rule update down");
         const r = this.rows(table).find((x) => x.id === id);
         if (!r) throw new Error("not found");
         Object.assign(r, patch);
@@ -145,6 +147,16 @@ Deno.test("createMovementSafe return: si falla caja chica la devolucion sigue re
   assert(r.json.petty_cash_warning, "debe devolver petty_cash_warning");
   assert(/caja chica/i.test(String(r.json.petty_cash_warning.message)));
   assertEquals(db.rows("PettyCashMovement").length, 0);
+});
+
+Deno.test("createMovementSafe return: si solo falla last_applied_at el egreso existe y NO se emite petty_cash_warning (evita duplicado manual)", async () => {
+  const db = baseDb();
+  db.failRuleUpdate = true;
+  const r = await run(db, owner, createMov, RETURN);
+  assertEquals(r.status, 200);
+  assertEquals(r.json.success, true);
+  assertEquals(db.rows("PettyCashMovement").length, 1, "el egreso ya se creo");
+  assertEquals(r.json.petty_cash_warning, undefined, "no pedir registro manual: duplicaria el egreso");
 });
 
 Deno.test("sendTestLifecycleEmails: sin sesion 401; no dueño 403", async () => {
