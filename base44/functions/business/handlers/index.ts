@@ -15,6 +15,8 @@ import { handle as aiIntakeTurn } from './aiIntakeTurn.ts';
 import { handle as createSupportTicketSafe } from './createSupportTicketSafe.ts';
 import { handle as replySupportTicketSafe } from './replySupportTicketSafe.ts';
 import { handle as markSupportTicketReadSafe } from './markSupportTicketReadSafe.ts';
+import { handle as listAdminNotices } from './listAdminNotices.ts';
+import { handle as markAdminNoticeReadSafe } from './markAdminNoticeReadSafe.ts';
 
 type Handler = (req: Request) => Promise<Response>;
 
@@ -36,6 +38,8 @@ const HANDLERS: Record<string, Handler> = {
   createSupportTicketSafe,
   replySupportTicketSafe,
   markSupportTicketReadSafe,
+  listAdminNotices,
+  markAdminNoticeReadSafe,
 };
 
 export function getHandler(action: string): Handler | undefined {

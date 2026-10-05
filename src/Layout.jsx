@@ -57,6 +57,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { isBusinessAdmin } from "@/lib/roles";
+import AdminNoticesBell from "@/components/notices/AdminNoticesBell";
 
 const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
@@ -420,6 +421,7 @@ export default function Layout({ children, currentPageName }) {
             })()}
           </h2>
           <div className="ml-auto flex items-center gap-2">
+            {businessId && isBusinessAdmin(user) && <AdminNoticesBell />}
             {lowStockCount > 0 && (
               <Link to={createPageUrl("Products") + "?filter=low_stock"}>
                 <Button variant="ghost" size="icon" className="relative" aria-label={`${lowStockCount} productos con stock bajo`}>
