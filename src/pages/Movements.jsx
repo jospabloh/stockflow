@@ -130,7 +130,7 @@ export default function Movements() {
       setDeletingMovement(null);
       refreshInventory();
     } catch (e) {
-      toast.error(`Error: ${e.message}`);
+      toast.error(`Error: ${e?.response?.data?.error || e?.message}`);
     } finally {
       setDeleteLoading(false);
     }
