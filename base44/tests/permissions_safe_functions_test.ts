@@ -97,8 +97,17 @@ Deno.test("hasPermission: Utilidad:add_withdrawal is denied by default for almac
   assertEquals(allowed, false);
 });
 
-Deno.test("hasPermission: Pagos a Proveedores:create is granted by default for almacenista", async () => {
+// Decision de JP 2026-10-05: el almacenista nace como el de Baristop, sin pagos a proveedores.
+Deno.test("hasPermission: Pagos a Proveedores:create is denied by default for almacenista", async () => {
   const allowed = await hasPermission(NO_PROFILES, { role: "almacenista", business_id: "biz-1" }, "Pagos a Proveedores", "create");
+  assertEquals(allowed, false);
+});
+
+Deno.test("hasPermission: un perfil explicito con Pagos a Proveedores:create=true sigue concediendolo", async () => {
+  const serviceRole = {
+    entities: { PermissionProfile: { filter: async () => [{ permissions: { "Pagos a Proveedores:create": true } }] } },
+  };
+  const allowed = await hasPermission(serviceRole, { role: "almacenista", business_id: "biz-1" }, "Pagos a Proveedores", "create");
   assertEquals(allowed, true);
 });
 

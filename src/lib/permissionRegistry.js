@@ -317,14 +317,14 @@ export function getDefaultsForRole(role) {
         const key = `${module}:${action.id}`;
         if (action.sensitive) {
           // Sensitive actions deny by default, except where almacenista
-          // already had real access to this — either by explicit business
-          // decision (Cotizaciones:pricing) or because the action was
+          // already had real access to this because the action was
           // previously ungated and this registry must not silently revoke
           // access a 2026-07-31 permission-coverage fix is only meant to
           // make configurable, not restrict on its own.
+          // 2026-10-05 (decision de JP): el almacenista de un negocio nuevo
+          // nace igual que el de Baristop Distribuidora, que NO tiene
+          // Cotizaciones:pricing ni Clientes:edit_force_purchase.
           const sensitiveGrantedForAlmacenista = [
-            'Cotizaciones:pricing',
-            'Clientes:edit_force_purchase',
             'Clientes:edit_force_zero_price',
           ];
           defaults[key] = sensitiveGrantedForAlmacenista.includes(key);
@@ -334,6 +334,10 @@ export function getDefaultsForRole(role) {
             'Dashboard:stat_total_value',
             'Dashboard:supplier_payments_section',
             'Dashboard:financial',
+            // 2026-10-05: igual que el almacenista de Baristop (sin reportes
+            // ni pagos a proveedores). La duena lo cambia en Permisos.
+            'Reportes:view',
+            'Pagos a Proveedores:view',
           ];
           defaults[key] = !financialVisual.includes(key);
         } else if (action.category === 'actionable') {
@@ -342,10 +346,17 @@ export function getDefaultsForRole(role) {
             'Dashboard:*',
             'Productos:edit_stock_quantity',
             'Productos:import',
+            'Productos:edit_min_stock',
+            'Clientes:edit_force_wholesale',
+            'Tipo de Pago:create',
+            'Tipo de Pago:edit_name',
+            'Tipo de Pago:edit_status',
+            'Tipo de Pago:delete',
             'Caja Chica:add_fund',
             'Caja Chica:delete',
             'Movimientos:adjustment',
             'Movimientos:delete',
+            'Pagos a Proveedores:create',
             'Pagos a Proveedores:edit_supplier',
             'Pagos a Proveedores:edit_amount',
             'Pagos a Proveedores:edit_date',
@@ -380,18 +391,15 @@ export function getDefaultsForRole(role) {
             // el registro. El costo/utilidad/comisión quedan fuera por el
             // 'financials' sensitive de arriba, no por esta lista.
             'Venta de Maquinaria:delete',
-            // Borrar proveedores/clientes/contactos y editar proveedores era
-            // solo admin/owner (gate de rol). Al pasar esas funciones al
-            // permiso granular, el almacenista SIN perfil explicito conserva
-            // el comportamiento previo (403). Un perfil puede concederlo.
+            // Editar proveedores sigue siendo solo owner/admin (gate de rol): el
+            // almacenista SIN perfil explicito conserva el 403. Un perfil puede
+            // concederlo. Borrar proveedores/clientes/contactos SI se concede
+            // (decision de JP 2026-10-05, con aviso al admin): ya no se niega aqui.
             'Proveedores:edit_name',
             'Proveedores:edit_contact',
             'Proveedores:edit_address',
             'Proveedores:edit_rfc',
             'Proveedores:edit_notes',
-            'Proveedores:delete',
-            'Clientes:delete',
-            'Contactos:delete',
           ];
           defaults[key] = !deniedActionable.includes(key);
         } else if (action.category === 'report') {
@@ -401,7 +409,6 @@ export function getDefaultsForRole(role) {
             'Dashboard:sales_actual_profit',
             'Dashboard:sales_net_profit',
             'Dashboard:financial',
-            'Dashboard:unpaid_detail',
             'Productos:cost_price',
             'Cotizaciones:pricing',
             'Reportes:view',
