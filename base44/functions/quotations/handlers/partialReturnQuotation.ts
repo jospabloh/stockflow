@@ -10,7 +10,7 @@ import { getAuthUser } from '../../../shared/authUser.ts';
 // 4. Actualiza el total de la cotización (quita los items devueltos)
 // 5. Incrementa el stock de los productos devueltos
 // 6. [Baristop / cash_sales_to_petty_cash] Si petty_cash_deduction=true y la venta fue en efectivo,
-//    registra un egreso en caja chica por el monto devuelto
+//    registra un egreso en caja chica por el monto devuelto (si falla, se avisa en petty_cash_warning)
 
 const CASH_RULE_KEY = 'cash_sales_to_petty_cash';
 const DEFAULT_CASH_METHODS = ['Efectivo'];
@@ -183,6 +183,12 @@ export async function handle(req: Request): Promise<Response> {
     // TENANT-SCOPED: Caja chica — egreso por devolución de venta en efectivo
     // Solo aplica si: el usuario confirmó deducir, la venta fue pagada en efectivo,
     // y el tenant tiene activa la regla cash_sales_to_petty_cash.
+    // Un fallo de caja chica NO aborta la devolución ya registrada: se avisa en petty_cash_warning
+    // (mismo criterio y forma que createMovementSafe) y se deja en consola.
+    // expenseCreated: el aviso «NO se pudo generar» solo sale si el egreso realmente no se creó
+    // (si solo falla el update de last_applied_at, el egreso existe y el usuario no debe duplicarlo).
+    let pettyCashWarning: { message: string; error?: string } | undefined;
+    let expenseCreated = false;
     if (petty_cash_deduction === true && quotation.paid && isCashMethod(quotation.payment_method)) {
       try {
         const ruleRows = await base44.asServiceRole.entities.TenantRule.filter({
@@ -217,6 +223,7 @@ export async function handle(req: Request): Promise<Response> {
               origin_id: quotation.id,
               payment_method_snapshot: quotation.payment_method,
             });
+            expenseCreated = true;
 
             if (rule.id) {
               await base44.asServiceRole.entities.TenantRule.update(rule.id, {
@@ -225,12 +232,19 @@ export async function handle(req: Request): Promise<Response> {
             }
           }
         }
-      } catch (_err) {
-        // Fire-and-forget: un fallo en caja chica no bloquea la devolución de inventario
+      } catch (e) {
+        if (!expenseCreated) {
+          pettyCashWarning = {
+            message: 'La devolución se registró pero el egreso de caja chica NO se pudo generar. ' +
+              'Regístralo manualmente en caja chica.',
+            error: (e as Error).message,
+          };
+        }
+        console.error('[partialReturnQuotation] petty cash expense failed for', quotation.id, (e as Error).message);
       }
     }
 
-    return Response.json({ success: true, quotation_id, returned_count: returned_items.length, stock_warning: stockWarning(stockFailures) });
+    return Response.json({ success: true, quotation_id, returned_count: returned_items.length, stock_warning: stockWarning(stockFailures), petty_cash_warning: pettyCashWarning });
   } catch (error) {
     return Response.json({ error: (error as Error).message }, { status: 500 });
   }
