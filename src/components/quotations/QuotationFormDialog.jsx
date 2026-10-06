@@ -453,9 +453,9 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
 
           {/* Items */}
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <Label className="text-base font-semibold">Productos ({form.items.length})</Label>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <div className="flex rounded-lg border border-border overflow-hidden text-xs">
                   <button
                     type="button"

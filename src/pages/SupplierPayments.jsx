@@ -377,8 +377,8 @@ export default function SupplierPayments() {
       {/* Filtros + tabla */}
       <Card className="border-0 shadow-sm relative">
         <LoadingOverlay show={refreshing} />
-        <div className="p-4 border-b border-border flex flex-col lg:flex-row gap-3 lg:items-end">
-          <div className="flex-1 min-w-[200px]">
+        <div className="p-4 border-b border-border flex flex-wrap gap-3 items-end">
+          <div className="flex-1 min-w-[200px] basis-full xl:basis-0">
             <Label className="text-xs text-muted-foreground">Buscar</Label>
             <div className="relative">
               <Search className="h-4 w-4 absolute left-2.5 top-2.5 text-slate-400" aria-hidden="true" />

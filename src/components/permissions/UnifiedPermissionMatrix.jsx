@@ -86,7 +86,7 @@ export default function UnifiedPermissionMatrix({ perms, onPermChange, onSave, s
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-2xl font-bold">Matriz de Permisos</h2>
             <p className="text-sm text-muted-foreground mt-1">
@@ -95,7 +95,7 @@ export default function UnifiedPermissionMatrix({ perms, onPermChange, onSave, s
                 : "Visualiza todos los permisos del sistema"}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {editMode ? (
               <>
                 <Button variant="outline" size="sm" onClick={() => setEditMode(false)}>
@@ -121,7 +121,7 @@ export default function UnifiedPermissionMatrix({ perms, onPermChange, onSave, s
 
         {/* Role tabs */}
         <Tabs value={activeRole} onValueChange={setActiveRole}>
-          <TabsList>
+          <TabsList className="h-auto w-full flex-wrap justify-start sm:w-auto">
             {ROLES.map(role => {
               const rolePerms = perms?.[role.id] || {};
               const granted = Object.keys(rolePerms).filter(k => rolePerms[k] === true).length;

@@ -218,10 +218,10 @@ export default function PettyCash() {
 
       {/* Tabs: recent / history */}
       <Tabs defaultValue="recent">
-        <TabsList className="bg-white shadow-sm border">
-          <TabsTrigger value="recent"><ListOrdered className="h-4 w-4 mr-1" /> Últimos movimientos</TabsTrigger>
+        <TabsList className="bg-white shadow-sm border h-auto w-full sm:w-auto">
+          <TabsTrigger value="recent" className="flex-1 whitespace-normal"><ListOrdered className="h-4 w-4 mr-1" /> Últimos movimientos</TabsTrigger>
           {can('Caja Chica', 'view_history') && (
-          <TabsTrigger value="history"><History className="h-4 w-4 mr-1" /> Historial completo</TabsTrigger>
+          <TabsTrigger value="history" className="flex-1 whitespace-normal"><History className="h-4 w-4 mr-1" /> Historial completo</TabsTrigger>
           )}
         </TabsList>
 

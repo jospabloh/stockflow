@@ -231,9 +231,13 @@ export default function FloatingHelpChat() {
                     "flex items-center justify-center transition-all duration-200",
                     "hover:scale-110 active:scale-95"
                 )}
+                // Sits directly above the corner theme switcher (40px circle at
+                // --theme-switcher-bottom/right) instead of on top of it: below
+                // `lg` the switcher is lifted over the tab bar, which used to put
+                // the two controls on the same spot.
                 style={{
-                    right: 20,
-                    bottom: 90,
+                    right: 'calc(var(--theme-switcher-right, 1rem) + env(safe-area-inset-right, 0px) - 0.5rem)',
+                    bottom: 'calc(var(--theme-switcher-bottom, 1rem) + env(safe-area-inset-bottom, 0px) + 3.25rem)',
                 }}
                 aria-label="Abrir asistente de ayuda"
             >

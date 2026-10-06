@@ -131,8 +131,8 @@ export default function Products() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header actions */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="relative flex-1 max-w-md w-full">
+      <div className="flex flex-col xl:flex-row gap-4 items-stretch xl:items-center justify-between">
+        <div className="relative xl:flex-1 xl:max-w-md w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             placeholder="Buscar por nombre, SKU o código..."

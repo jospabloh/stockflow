@@ -136,11 +136,13 @@
 }
 /* Corner theme switcher (src/components/ThemeSwitcher.jsx) — placement only.
    Below `lg` the bottom tab bar owns the bottom edge, so lift the control
-   clear of it. */
+   clear of it — but only on screens that actually render the tab bar (the
+   login pages do not, and there the lift just parked the control on top of
+   the form's links). */
 :root {
   --theme-switcher-bottom: 1rem;
   --theme-switcher-right: 1rem;
 }
 @media (max-width: 1023px) {
-  :root { --theme-switcher-bottom: 5.5rem; }
+  :root:has([data-bottom-tabbar]) { --theme-switcher-bottom: 5.5rem; }
 }
