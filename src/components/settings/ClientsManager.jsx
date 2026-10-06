@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Pencil, Trash2, UserCheck, UserX } from "lucide-react";
+import { Plus, Pencil, Trash2, UserCheck, UserX, Download } from "lucide-react";
+import { exportImportFormat, clientsToImportRows } from "@/lib/exportImportFormat";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useBusinessContext } from "@/components/BusinessContext";
@@ -129,11 +130,29 @@ export default function ClientsManager() {
     <Card className="border-0 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-slate-700 text-lg">Clientes</h3>
+        <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            if (clients.length === 0) { toast.error("No hay clientes para exportar"); return; }
+            // Las banderas de precio forzado son confidenciales: sin su permiso la columna no sale.
+            const omit = [
+              ...(can('Clientes', 'edit_force_purchase') ? [] : ["force_purchase_all_products"]),
+              ...(can('Clientes', 'edit_force_zero_price') ? [] : ["force_zero_price"]),
+            ];
+            exportImportFormat("clients", clientsToImportRows(filtered), "clientes_import", { omit });
+            toast.success("CSV descargado en formato de importación");
+          }}
+        >
+          <Download className="h-4 w-4 mr-1" /> CSV importación
+        </Button>
         {can('Clientes', 'create') && (
         <Button size="sm" className="bg-brand-600 hover:bg-brand-700" onClick={openNew}>
           <Plus className="h-4 w-4 mr-1" /> Nuevo cliente
         </Button>
         )}
+        </div>
       </div>
       <Input
         placeholder="Buscar cliente..."
