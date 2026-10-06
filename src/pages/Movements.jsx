@@ -43,6 +43,7 @@ import moment from "moment";
 import MovementEditDialog from "@/components/movements/MovementEditDialog";
 import TableSkeleton from "@/components/skeletons/TableSkeleton";
 import ExportMenu from "@/components/common/ExportMenu";
+import { buildMovementExport } from "@/lib/exportColumns";
 import { toast } from "sonner";
 import { isBusinessAdmin } from "@/lib/roles";
 
@@ -155,27 +156,12 @@ export default function Movements() {
     }
   };
 
-  const exportColumns = [
-    { key: "fecha", label: "Fecha", type: "text" },
-    { key: "producto", label: "Producto", type: "text" },
-    { key: "tipo", label: "Tipo", type: "text" },
-    { key: "cantidad", label: "Cantidad", type: "number" },
-    { key: "precio_unit", label: "Precio Unit.", type: "currency" },
-    { key: "total", label: "Total", type: "currency" },
-    { key: "forma_pago", label: "Forma de Pago", type: "text" },
-    { key: "cliente", label: "Cliente", type: "text" },
-  ];
-
-  const exportRows = filtered.map((m) => ({
-    fecha: moment.utc(m.data?.created_date || m.created_date).local().format("DD/MM/YYYY HH:mm"),
-    producto: m.product_name,
-    tipo: typeConfig[m.type]?.label || m.type,
-    cantidad: m.quantity,
-    precio_unit: m.unit_price || 0,
-    total: getFinalTotal(m),
-    forma_pago: m.reference || "",
-    cliente: m.reason || "",
-  }));
+  // Todos los campos del movimiento; `cost_price` solo con Productos:cost_price.
+  const { columns: exportColumns, rows: exportRows } = buildMovementExport(filtered, {
+    typeLabel: (t) => typeConfig[t]?.label || t,
+    finalTotal: getFinalTotal,
+    includeCost: can('Productos', 'cost_price'),
+  });
 
   if (loading) {
     return <TableSkeleton rows={8} columns={7} />;

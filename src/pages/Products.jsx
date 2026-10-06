@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePermissions } from "@/lib/PermissionContext";
 import { useBusinessContext } from "@/components/BusinessContext";
-import { useProducts, useCategories, useInvalidateEntities } from "@/hooks/queries";
+import { useProducts, useCategories, useSuppliers, useInvalidateEntities } from "@/hooks/queries";
 import { LoadingOverlay } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import {
 import ProductTable from "@/components/products/ProductTable";
 import ExportMenu from "@/components/common/ExportMenu";
 import { exportImportFormat, productsToImportRows } from "@/lib/exportImportFormat";
+import { buildProductExport } from "@/lib/exportColumns";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { isBusinessAdmin } from "@/lib/roles";
@@ -39,8 +40,10 @@ export default function Products() {
 
   const productsQuery = useProducts(businessId);
   const categoriesQuery = useCategories(businessId);
+  const suppliersQuery = useSuppliers(businessId);
   const products = productsQuery.data ?? [];
   const categories = categoriesQuery.data ?? [];
+  const suppliers = suppliersQuery.data ?? [];
   // Carga inicial: muestra skeleton. Refetch en background: muestra overlay.
   const loading = !businessId || productsQuery.isLoading;
   const refreshing = productsQuery.isFetching && !productsQuery.isLoading;
@@ -104,25 +107,9 @@ export default function Products() {
     }
   };
 
-  const exportColumns = [
-    { key: "name", label: "Nombre", type: "text" },
-    { key: "sku", label: "SKU", type: "text" },
-    { key: "barcode", label: "Código de barras", type: "text" },
-    ...(can('Productos', 'cost_price') ? [{ key: "purchase_price", label: "Precio Compra", type: "currency" }] : []),
-    { key: "retail_sale_price", label: "Precio Venta", type: "currency" },
-    { key: "stock", label: "Stock", type: "number" },
-    { key: "unit", label: "Unidad", type: "text" },
-  ];
-
-  const exportRows = filteredProducts.map((p) => ({
-    name: p.name,
-    sku: p.sku || "",
-    barcode: p.barcode || "",
-    ...(can('Productos', 'cost_price') ? { purchase_price: p.purchase_price || 0 } : {}),
-    retail_sale_price: p.retail_sale_price,
-    stock: p.stock,
-    unit: p.unit || "pieza",
-  }));
+  // Todos los campos del producto; el costo solo con `Productos:cost_price`.
+  const canCost = can('Productos', 'cost_price');
+  const { columns: exportColumns, rows: exportRows } = buildProductExport(filteredProducts, categories, suppliers, { includeCost: canCost });
 
   if (loading) {
     return <TableSkeleton rows={8} columns={6} />;
@@ -176,7 +163,7 @@ export default function Products() {
             variant="outline"
             size="default"
             onClick={() => {
-              exportImportFormat("products", productsToImportRows(filteredProducts, categories), "productos_import");
+              exportImportFormat("products", productsToImportRows(filteredProducts, categories, suppliers), "productos_import", { omit: canCost ? [] : ["precio_compra"] });
               toast.success("CSV descargado en formato de importación");
             }}
           >

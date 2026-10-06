@@ -7,6 +7,8 @@ import {
 } from "@/components/ui/table";
 import { Download, Upload, CheckCircle2, AlertCircle, FileText, X, Package, Users, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { IMPORT_HEADERS, SAMPLE_ROWS, normalizeImportRow } from "@/lib/importSpec";
+import { toCSV, parseCSVObjects } from "@/lib/csv";
 
 // ─── Configuración por tipo de importación ───────────────────────────────────
 
@@ -15,13 +17,10 @@ const IMPORT_TYPES = {
     label: "Productos",
     icon: Package,
     color: "indigo",
-    headers: ["nombre","sku","codigo_barras","descripcion","precio_compra","precio_menudeo","precio_mayoreo","stock","stock_minimo","unidad","categoria"],
-    sampleRows: [
-      "Producto Ejemplo,SKU001,7501234567890,Descripción del producto,50.00,100.00,80.00,25,5,pieza,Electrónica",
-      "Otro Producto,SKU002,,Sin descripción,0,200.00,0,10,2,caja,",
-    ],
-    hint: 'La columna "categoria" es opcional. Si se indica, debe existir en Configuración → Categorías.',
-    hintExtra: 'Unidades válidas: pieza, kg, litro, metro, caja, paquete. La cantidad mínima para mayoreo se configura en la Categoría, no en el producto.',
+    headers: IMPORT_HEADERS.products,
+    sampleRows: SAMPLE_ROWS.products,
+    hint: 'Solo "nombre" es obligatorio. "categoria" y "proveedor" son opcionales; si se indican, deben existir (por nombre) en Categorías / Proveedores.',
+    hintExtra: 'Unidades: pieza, kg, litro, metro, caja, paquete. "iva": 0 o 16. "estatus": activo/inactivo. El archivo de "CSV importación" de Productos usa estas mismas columnas.',
     previewColumns: [
       { key: "name", label: "Nombre" },
       { key: "sku", label: "SKU" },
@@ -29,19 +28,18 @@ const IMPORT_TYPES = {
       { key: "wholesale_sale_price", label: "P. Mayoreo", format: "currency" },
       { key: "stock", label: "Stock", format: "number" },
       { key: "unit", label: "Unidad" },
+      { key: "category", label: "Categoría" },
+      { key: "supplier", label: "Proveedor" },
     ],
   },
   clients: {
     label: "Clientes",
     icon: Users,
     color: "emerald",
-    headers: ["nombre","nombre_negocio","giro","telefono","email","direccion","force_wholesale_all_products","force_purchase_all_products"],
-    sampleRows: [
-      "Juan Pérez,Ferretería Pérez,Ferretería,449-123-4567,juan@email.com,Av. Principal 100,false,false",
-      "Distribuidora XYZ,,Distribución,449-987-6543,contacto@xyz.com,Calle 5 #200,true,false",
-    ],
-    hint: 'Los campos "force_wholesale_all_products" y "force_purchase_all_products" aceptan: true/false, 1/0, sí/no. No pueden estar ambos en true.',
-    hintExtra: 'Los campos "nombre_negocio" y "giro" son opcionales.',
+    headers: IMPORT_HEADERS.clients,
+    sampleRows: SAMPLE_ROWS.clients,
+    hint: 'Los campos "force_wholesale_all_products", "force_purchase_all_products" y "force_zero_price" aceptan: true/false, 1/0, sí/no. Solo uno de los tres puede ser verdadero.',
+    hintExtra: 'Solo "nombre" es obligatorio. "estatus": activo/inactivo.',
     previewColumns: [
       { key: "name", label: "Nombre" },
       { key: "business_name", label: "Nombre Negocio" },
@@ -55,12 +53,9 @@ const IMPORT_TYPES = {
     label: "Categorías",
     icon: Tag,
     color: "violet",
-    headers: ["nombre","descripcion","cantidad_minima_mayoreo"],
-    sampleRows: [
-      "Electrónica,Productos electrónicos y accesorios,10",
-      "Herramientas,Herramientas manuales y eléctricas,",
-    ],
-    hint: 'Solo se requiere el nombre. La descripción y cantidad_minima_mayoreo son opcionales.',
+    headers: IMPORT_HEADERS.categories,
+    sampleRows: SAMPLE_ROWS.categories,
+    hint: 'Solo se requiere el nombre. Las demás columnas son opcionales; "color" va en formato #RRGGBB.',
     hintExtra: '"cantidad_minima_mayoreo": si el total de productos de esta categoría en una cotización alcanza este número, se aplica precio mayoreo automáticamente.',
     previewColumns: [
       { key: "name", label: "Nombre" },
@@ -73,15 +68,11 @@ const IMPORT_TYPES = {
 // ─── Parsers ─────────────────────────────────────────────────────────────────
 
 function parseCSV(text) {
-  const lines = text.trim().split("\n");
-  if (lines.length < 2) return [];
-  const headers = lines[0].replace(/\r/g, "").split(",").map(h => h.trim().toLowerCase());
-  return lines.slice(1).map(line => {
-    const values = line.replace(/\r/g, "").split(",");
-    const obj = {};
-    headers.forEach((h, i) => { obj[h] = (values[i] || "").trim(); });
-    return obj;
-  }).filter(row => row["nombre"] || row["name"]);
+  // Parser RFC 4180 (comillas, comas y saltos de línea dentro de campos) y
+  // encabezados sin distinguir mayúsculas/acentos, con alias de plantillas viejas.
+  return parseCSVObjects(text)
+    .map(normalizeImportRow)
+    .filter((row) => row["nombre"]);
 }
 
 function parseBool(val) {
@@ -91,46 +82,41 @@ function parseBool(val) {
   return false;
 }
 
+// Vista previa: el servidor valida y normaliza de nuevo cada fila (importItemsSafe).
+const num = (v) => { const n = Number(String(v ?? "").replace(/[$\s]/g, "")); return Number.isFinite(n) ? n : 0; };
+
 function rowToProduct(row) {
-  const VALID_UNITS = ["pieza", "kg", "litro", "metro", "caja", "paquete"];
-  const unit = VALID_UNITS.includes((row["unidad"] || "").toLowerCase()) ? row["unidad"].toLowerCase() : "pieza";
   return {
-    name: (row["nombre"] || row["name"] || "").trim(),
-    sku: (row["sku"] || "").trim(),
-    barcode: (row["codigo_barras"] || row["barcode"] || "").trim(),
-    description: (row["descripcion"] || "").trim(),
-    purchase_price: parseFloat(row["precio_compra"] || "0") || 0,
-    retail_sale_price: parseFloat(row["precio_menudeo"] || row["precio_venta"] || "0") || 0,
-    wholesale_sale_price: parseFloat(row["precio_mayoreo"] || "0") || 0,
-    stock: parseFloat(row["stock"] || "0") || 0,
-    min_stock: parseFloat(row["stock_minimo"] || "5") || 5,
-    unit,
-    categoria: (row["categoria"] || "").trim(),
+    name: row["nombre"] || "",
+    sku: row["sku"] || "",
+    retail_sale_price: num(row["precio_menudeo"]),
+    wholesale_sale_price: num(row["precio_mayoreo"]),
+    stock: num(row["stock"]),
+    unit: row["unidad"] || "pieza",
+    category: row["categoria"] || "",
+    supplier: row["proveedor"] || "",
     _raw: row,
   };
 }
 
 function rowToClient(row) {
   return {
-    name: (row["nombre"] || row["name"] || "").trim(),
-    business_name: (row["nombre_negocio"] || "").trim(),
-    giro: (row["giro"] || "").trim(),
-    phone: (row["telefono"] || "").trim(),
-    email: (row["email"] || "").trim(),
-    address: (row["direccion"] || "").trim(),
+    name: row["nombre"] || "",
+    business_name: row["nombre_negocio"] || "",
+    giro: row["giro"] || "",
+    phone: row["telefono"] || "",
+    email: row["email"] || "",
     force_wholesale_all_products: parseBool(row["force_wholesale_all_products"]),
-    force_purchase_all_products: parseBool(row["force_purchase_all_products"]),
     _raw: row,
   };
 }
 
 function rowToCategory(row) {
-  const minQtyRaw = (row["cantidad_minima_mayoreo"] || "").trim();
-  const minQty = minQtyRaw !== "" ? parseFloat(minQtyRaw) : null;
+  const minQty = row["cantidad_minima_mayoreo"];
   return {
-    name: (row["nombre"] || row["name"] || "").trim(),
-    description: (row["descripcion"] || "").trim(),
-    wholesale_min_qty: minQty != null && !isNaN(minQty) && minQty >= 0 ? minQty : null,
+    name: row["nombre"] || "",
+    description: row["descripcion"] || "",
+    wholesale_min_qty: minQty !== undefined && minQty !== "" ? num(minQty) : null,
     _raw: row,
   };
 }
@@ -210,7 +196,7 @@ export default function ImportProducts() {
   };
 
   const downloadTemplate = () => {
-    const csv = [config.headers.join(","), ...config.sampleRows].join("\n");
+    const csv = toCSV(config.headers, config.sampleRows);
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

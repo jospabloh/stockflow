@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { MobileSelect } from "@/components/ui/MobileSelect";
 import { Search, Pencil, Trash2, Lock } from "lucide-react";
 import ExportMenu from "@/components/common/ExportMenu";
+import { buildPettyCashExport } from "@/lib/exportColumns";
 import moment from "moment";
 
 const TYPE_LABELS = {
@@ -36,25 +37,10 @@ export default function PettyCashHistory({ movements, canEdit, canDelete, canExp
     });
   }, [movements, search, typeFilter, dateFrom, dateTo]);
 
-  const exportColumns = [
-    { key: "fecha", label: "Fecha", type: "text" },
-    { key: "tipo", label: "Tipo", type: "text" },
-    { key: "descripcion", label: "Descripción", type: "text" },
-    { key: "categoria", label: "Categoría", type: "text" },
-    { key: "monto", label: "Monto", type: "currency" },
-    { key: "referencia", label: "Referencia", type: "text" },
-    { key: "notas", label: "Notas", type: "text" },
-  ];
-
-  const exportRows = filtered.map(m => ({
-    fecha: m.movement_date || moment.utc(m.created_date).local().format("YYYY-MM-DD"),
-    tipo: TYPE_LABELS[m.movement_type]?.label || m.movement_type,
-    descripcion: m.description,
-    categoria: m.category || "",
-    monto: m.amount,
-    referencia: m.reference || "",
-    notas: m.notes || "",
-  }));
+  const { columns: exportColumns, rows: exportRows } = buildPettyCashExport(
+    filtered,
+    (t) => TYPE_LABELS[t]?.label || t,
+  );
 
   return (
     <div className="space-y-4">
