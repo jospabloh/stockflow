@@ -177,7 +177,7 @@ export default function PermissionAdmin() {
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">Configura qué puede ver y hacer cada rol en el sistema.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {(isPlatformAdmin || isBusinessAdmin(user)) && (
             <Button
               variant="outline"

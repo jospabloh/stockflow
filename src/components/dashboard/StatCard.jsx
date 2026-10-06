@@ -13,10 +13,10 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = "
 
   const content = (
     <Card className={`relative overflow-hidden shadow-sm hover:shadow-md hover:border-brand-500/30 dark:hover:border-brand-500/40 transition-all duration-300 ${href ? "cursor-pointer hover:-translate-y-0.5" : ""}`}>
-      <div className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.14em]">{title}</p>
+      <div className="p-4 sm:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 space-y-2">
+            <p className="text-[11px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-[0.04em] sm:tracking-[0.14em] break-words">{title}</p>
             <p className={`font-mono tabular font-semibold text-foreground tracking-tight ${
               String(value).length > 14 ? "text-lg" :
               String(value).length > 10 ? "text-xl" :
@@ -30,7 +30,7 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = "
               </p>
             )}
           </div>
-          <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${colors[color]} shadow-lg flex items-center justify-center`}>
+          <div className={`h-9 w-9 sm:h-12 sm:w-12 shrink-0 rounded-2xl bg-gradient-to-br ${colors[color]} shadow-lg flex items-center justify-center`}>
             <Icon className="h-6 w-6 text-white" />
           </div>
         </div>

@@ -260,7 +260,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="p-6 border-b border-border space-y-3">
           <div className="flex items-center gap-3">
             <img src="https://media.base44.com/images/public/69af971d0fdb362c9ae52ed3/5032b5555_StockFlow_logo.png" alt="StockFlow" className="h-10 w-10 object-contain" />
-            <div>
+            <div className="min-w-0">
               <h1 className="font-bold text-foreground text-lg tracking-tight flex items-center gap-1.5">
                 StockFlow
                 <monthlyTheme.icon className="h-4 w-4 text-primary" aria-hidden="true" />
@@ -456,7 +456,7 @@ export default function Layout({ children, currentPageName }) {
           <motion.main
             key={location.pathname}
             ref={mainRef}
-            className="flex-1 min-w-0 p-4 lg:p-8 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-8 overflow-y-auto overflow-x-hidden"
+            className="flex-1 min-w-0 p-4 lg:p-8 pb-[calc(12.5rem+env(safe-area-inset-bottom))] lg:pb-32 overflow-y-auto overflow-x-hidden"
             initial={prefersReducedMotion ? false : { opacity: 0, x: direction === 'back' ? -30 : 30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: direction === 'back' ? 30 : -30 }}
@@ -489,6 +489,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Bottom Tab Bar — mobile only */}
       <nav
+        data-bottom-tabbar=""
         className="fixed bottom-0 left-0 right-0 z-[70] bg-card border-t border-border flex lg:hidden select-none pointer-events-auto"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         aria-label="Navegación principal"

@@ -427,7 +427,7 @@ function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo 
       <div className="p-4 border-b bg-purple-50/50">
         <h3 className="font-semibold text-slate-700 mb-3">Análisis Dinámico / Pivot</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <div className="min-w-[140px]">
+          <div className="min-w-0">
             <label className="text-xs text-slate-500 mb-1 block">Agrupar Filas</label>
             <MobileSelect 
               value={rowGroupBy} 
@@ -439,7 +439,7 @@ function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo 
               ]} 
             />
           </div>
-          <div className="min-w-[140px]">
+          <div className="min-w-0">
             <label className="text-xs text-slate-500 mb-1 block">Agrupar Columnas</label>
             <MobileSelect 
               value={colGroupBy} 
@@ -451,7 +451,7 @@ function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo 
               ]} 
             />
           </div>
-          <div className="min-w-[140px]">
+          <div className="min-w-0">
             <label className="text-xs text-slate-500 mb-1 block">Métrica</label>
             <MobileSelect 
               value={metric} 
@@ -462,7 +462,7 @@ function DynamicPivotReport({ movements, products, categories, dateFrom, dateTo 
               ]} 
             />
           </div>
-          <div className="min-w-[140px]">
+          <div className="min-w-0">
             <label className="text-xs text-slate-500 mb-1 block">Agregación</label>
             <MobileSelect 
               value={metricType} 

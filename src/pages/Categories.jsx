@@ -144,7 +144,7 @@ export default function Categories() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       <Card className="border-0 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <h1 className="font-semibold text-slate-700 text-lg">Categorías</h1>
           <div className="flex gap-2">
           <Button

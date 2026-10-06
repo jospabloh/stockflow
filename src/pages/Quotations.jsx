@@ -474,8 +474,8 @@ export default function Quotations() {
     <div className="space-y-6 max-w-7xl mx-auto">
       <OnDemandPendingPanel />
       {/* Barra de acciones */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {activeFiltersCount > 0 && (
             <button
               type="button"

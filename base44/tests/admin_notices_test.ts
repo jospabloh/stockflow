@@ -207,14 +207,14 @@ for (const d of DELETES) {
     assertEquals(db.rows("AdminNotice").length, 0);
   });
 
-  Deno.test(`${d.name}: quitar la compuerta no abre nada, almacenista con la clave en false o sin perfil sigue en 403 y sin aviso`, async () => {
-    for (const profile of [{ [d.key]: false }, undefined]) {
-      const db = baseDb(profile);
-      const r = await call(d.h, db, ALM, d.body);
-      assertEquals(r.status, 403);
-      assertEquals(db.rows(d.table).length, 1);
-      assertEquals(db.rows("AdminNotice").length, 0);
-    }
+  // Decision de JP 2026-10-05 (4bfdf78): sin perfil el almacenista hereda el default, que ya
+  // permite borrar (con aviso). Lo que sigue bloqueando es una clave explicita en false.
+  Deno.test(`${d.name}: almacenista con la clave en false sigue en 403 y sin aviso`, async () => {
+    const db = baseDb({ [d.key]: false });
+    const r = await call(d.h, db, ALM, d.body);
+    assertEquals(r.status, 403);
+    assertEquals(db.rows(d.table).length, 1);
+    assertEquals(db.rows("AdminNotice").length, 0);
   });
 
   Deno.test(`${d.name}: otro tenant sigue bloqueado y no deja aviso`, async () => {

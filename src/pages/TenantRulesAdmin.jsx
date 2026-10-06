@@ -200,7 +200,7 @@ export default function TenantRulesAdmin() {
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Shield className="h-6 w-6 text-brand-500" /> Reglas por Tenant</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Excepciones operativas por negocio administradas a nivel plataforma.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={load} disabled={loading}><RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Actualizar</Button>
           {!baristopRuleActive && (
             <Button variant="outline" onClick={handleActivateBaristop} disabled={activating || loading}>
