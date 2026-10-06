@@ -6,7 +6,21 @@
  * entonces la COLUMNA no existe en el archivo. `base44/tests/import_export_fields_test.ts`
  * comprueba que cada campo del esquema tenga una columna aquí.
  */
-import moment from "moment";
+
+const pad = (n) => String(n).padStart(2, "0");
+/** Fecha UTC de Base44 (sin zona = UTC) → hora local. Sin dependencias (corre también en Deno). */
+function localDate(value, withTime) {
+  if (!value) return "";
+  const str = String(value);
+  const d = new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(str) ? str : `${str}Z`);
+  if (Number.isNaN(d.getTime())) return "";
+  const day = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  return withTime ? `${day} ${pad(d.getHours())}:${pad(d.getMinutes())}` : day;
+}
+const isoDay = (value) => {
+  const d = new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(String(value)) ? value : `${value}Z`);
+  return Number.isNaN(d.getTime()) ? "" : `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
 
 const YES_NO = (v) => (v ? "Sí" : "No");
 
@@ -82,7 +96,7 @@ export function buildMovementExport(movements, { typeLabel, finalTotal, includeC
     { key: "stock_pendiente_desde", label: "Stock pendiente desde", type: "text" },
   ];
   const rows = movements.map((m) => ({
-    fecha: moment.utc(m.data?.created_date || m.created_date).local().format("DD/MM/YYYY HH:mm"),
+    fecha: localDate(m.data?.created_date || m.created_date, true),
     producto: m.product_name || "",
     producto_id: m.product_id || "",
     tipo: typeLabel(m.type),
@@ -120,7 +134,7 @@ export function buildPettyCashExport(movements, typeLabel) {
     { key: "origen_id", label: "ID de origen", type: "text" },
   ];
   const rows = movements.map((m) => ({
-    fecha: m.movement_date || moment.utc(m.created_date).local().format("YYYY-MM-DD"),
+    fecha: m.movement_date || isoDay(m.created_date),
     tipo: typeLabel(m.movement_type),
     descripcion: m.description || "",
     categoria: m.category || "",
