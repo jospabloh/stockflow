@@ -5,7 +5,7 @@ import {
   createDirectoryDeleteNotice,
   isBusinessAdmin,
   NOTICE_FAILED_MESSAGE,
-  voidNoticeBestEffort,
+  settleFailedDelete,
 } from '../../../shared/adminNotice.ts';
 
 export async function handle(req: Request): Promise<Response> {
@@ -69,8 +69,15 @@ export async function handle(req: Request): Promise<Response> {
     try {
       await base44.asServiceRole.entities.Contact.delete(contact_id);
     } catch (deleteError) {
-      // El borrado fallo: el registro sigue existiendo, el aviso no debe quedar.
-      if (noticeId) await voidNoticeBestEffort(base44.asServiceRole, noticeId);
+      // Un rechazo no prueba que el borrado no se aplico (respuesta perdida / timeout): se
+      // comprueba el registro. Sigue ahi -> se anula el aviso; ya no esta -> el borrado ocurrio
+      // y el aviso se conserva (Codex #472 P2).
+      if (noticeId) {
+        const outcome = await settleFailedDelete(base44.asServiceRole, { entityName: 'Contact', recordId: contact_id, noticeId });
+        if (outcome === 'gone') {
+          return Response.json({ success: true, contact_id, notice_created: true, delete_confirmed_by_recheck: true });
+        }
+      }
       throw deleteError;
     }
 
