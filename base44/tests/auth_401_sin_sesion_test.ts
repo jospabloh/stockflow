@@ -64,7 +64,10 @@ Deno.test("ninguna funcion llama a auth.me() desnudo (todas usan getAuthUser)", 
     const lines = (await Deno.readTextFile(path)).split("\n");
     lines.forEach((l, i) => {
       if (/^\s*(\/\/|\*)/.test(l)) return;
-      if (/\bauth\.me\(\)/.test(l)) offenders.push(`${rel}:${i + 1}`);
+      // Strings don't call anything: a changelog line that mentions "auth.me()"
+      // (the release snapshot in dailyDocumentationAudit.ts) is not a bare call.
+      const code = l.replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`/g, '""');
+      if (/\bauth\.me\(\)/.test(code)) offenders.push(`${rel}:${i + 1}`);
     });
   }
   assertEquals(offenders, [], "usa getAuthUser(base44) de base44/shared/authUser.ts");
