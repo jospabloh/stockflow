@@ -2727,3 +2727,16 @@ servidor pero nada las consulta, así que no se ofrecen — un switch que no cam
 nada es peor que ningún switch. Para agregar una regla: código que la lea + clave
 en `KNOWN_RULE_KEYS` de los dos handlers + entrada en el catálogo;
 `tenant_rule_catalog_test.ts` y `tenant_rule_keys_test.ts` fallan si se separan.
+
+### Cada negocio controla sus propias reglas (2026-10-07)
+
+El admin de cada negocio (rol guardado `owner`/`admin`, nunca el almacenista) ve
+y enciende o apaga **sus** reglas en Configuración → **Reglas**
+(`BusinessRulesPanel`). Lee con `getCurrentTenantRuleMap` (ya acotado a su
+negocio) y escribe con `tenantRules` → `setMyTenantRule`, que relee el `User`
+con rol de servicio y toma de ahí el negocio y el rol — nunca del cuerpo —, sólo
+acepta `TENANT_TOGGLEABLE_RULE_KEYS` (`_tenantToggle.ts`, igual al catálogo:
+`tenant_rule_catalog_test.ts` falla si se separan), respeta `write_blocked` y
+conserva `config_json`/`notes` de la fila. La página del dueño de plataforma
+(«Reglas por negocio») sigue igual y las dos dibujan las mismas tarjetas
+(`components/rules/TenantRuleCards.jsx`).

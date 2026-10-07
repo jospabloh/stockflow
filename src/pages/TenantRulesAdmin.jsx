@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useLicense } from "@/lib/LicenseContext";
-import { TENANT_RULE_CATALOG } from "@/lib/tenantRuleCatalog";
-import { Card } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+import TenantRuleCards from "@/components/rules/TenantRuleCards";
 import { Shield } from "lucide-react";
 import { toast } from "sonner";
 
@@ -127,40 +125,13 @@ export default function TenantRulesAdmin() {
         </select>
       </div>
 
-      <div className="space-y-3">
-        {TENANT_RULE_CATALOG.map((entry) => {
-          const enabled = ruleFor(entry.key)?.enabled === true;
-          const busy = savingKey === entry.key;
-          return (
-            <Card key={entry.key} className="p-4 sm:p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p id={`rule-${entry.key}`} className="font-semibold text-foreground">{entry.title}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{entry.description}</p>
-                  <p className="text-xs font-medium text-foreground mt-3">Afecta:</p>
-                  <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground list-disc pl-4">
-                    {entry.affects.map((a) => <li key={a}>{a}</li>)}
-                  </ul>
-                  <p className="text-[11px] text-muted-foreground mt-3">
-                    Activa en {activeCount[entry.key] || 0} de {businesses.length} negocios
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-1 shrink-0">
-                  <Switch
-                    aria-labelledby={`rule-${entry.key}`}
-                    checked={enabled}
-                    disabled={loading || busy || !businessId}
-                    onCheckedChange={(v) => toggle(entry, !!v)}
-                  />
-                  <span className={`text-xs font-medium ${enabled ? "text-emerald-600" : "text-muted-foreground"}`}>
-                    {busy ? "Guardando..." : enabled ? "Activa" : "Apagada"}
-                  </span>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+      <TenantRuleCards
+        isEnabled={(key) => ruleFor(key)?.enabled === true}
+        onToggle={toggle}
+        busyKey={savingKey}
+        disabled={loading || !businessId}
+        footer={(entry) => `Activa en ${activeCount[entry.key] || 0} de ${businesses.length} negocios`}
+      />
     </div>
   );
 }
