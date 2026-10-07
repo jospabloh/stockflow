@@ -2506,3 +2506,30 @@ Siete lecciones de la ventana nocturna del 2026-10-02 (trenes, canarios y un rol
   esquema desplegado lo tiene.
 - **Un PR que falla en el canario arrastra a todo su tren.** Los cambios riesgosos (RLS, esquemas, permisos,
   stock/caja) van en **tren propio**, no mezclados con cambios triviales, para poder revertir uno sin tirar el resto.
+
+## Registro: el código del correo tiene dónde escribirse, y el aviso de alta sale del servidor (2026-09-29)
+
+**El registro por correo y contraseña no terminaba.** `base44.auth.register()` manda un
+código por correo y deja la cuenta sin verificar; `loginViaEmailPassword()` se niega hasta
+que se llame `verifyOtp`. `Register.jsx` tragaba ese fallo y mandaba a `/login`, que sólo
+mostraba "Please verify your email" **sin campo para el código** — `verifyOtp`/`resendOtp`
+no se llamaban en ningún lado. Un cliente real (cesar@domsot.com.mx) no pudo crear su
+negocio. No dejaba rastro: una alta atorada no crea cuenta que alguien note.
+
+`src/components/VerifyEmailStep.jsx` (campo, reenviar, cambiar de correo; exporta
+`needsEmailVerification`) lo usan **las dos** pantallas: `Register` tras el `register()` y
+`Login` cuando el login falla por correo sin verificar — esto último rescata a quien ya
+quedó atorado. `AuthContext` expone `verifyOtp`/`resendOtp`. Es el **Módulo 25** del
+estándar; ahí está cómo se comprueba. Cesar terminó su alta el mismo día
+(`Empresa Test`, 2026-09-29).
+
+**El aviso de alta a Mission Control ya no depende del navegador.** El `fetch` a
+`tenant-pull` de `BusinessSetup.jsx` es fire-and-forget y se puede perder: el alta de
+Cesar sólo llegó al dueño por un sync manual, casi dos horas tarde. `initTenantTrial`
+ahora hace el mismo POST desde el servidor (timeout 8 s, nunca fatal). Se conservan los
+dos: MC es idempotente (tenant conocido o ya alertado → no-op).
+
+**Evidencia de que funciona:** las altas de prueba del 30-sep y 1-oct llegaron a la tabla
+`alerts` de MC con `via: ping` y el correo enviado. Ojo: eso prueba que el ping llega,
+no cuál de los dos lo mandó. Y recuerda la regla de este archivo: `npm run deploy` dijo
+"47 unchanged"; lo que se comprobó fue bajando el código con `functions pull`.
