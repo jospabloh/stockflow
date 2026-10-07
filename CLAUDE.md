@@ -234,6 +234,13 @@ path. Run it after touching any `rls` block, and remember to **deploy** the
 fixed schema to the Base44 backend (`update_entity_schema`) — the repo `.jsonc`
 alone does not change runtime behavior.
 
+**Borrado solo de servicio (Supplier, Client, Contact).** Su regla `delete` es
+exactamente `{"user_condition":{"role":"admin"}}` (patrón de `AdminNotice` /
+`JoinRequest`): ningún usuario de negocio borra por la API de entidades; todo
+borrado pasa por `deleteSupplierSafe` / `deleteClientSafe` / `deleteContactSafe`
+(`hasPermission` + aviso al admin). `validate:rls` lo exige. Al tocar estas
+entidades, la regla se aplica en plataforma con `update_entity_schema` (dirigido).
+
 ## Granular permission-key enforcement for Caja Chica / Utilidad / Pagos a Proveedores (fixed 2026-08-17)
 
 RLS only enforces **tenant isolation** (`business_id` match) — it has no concept

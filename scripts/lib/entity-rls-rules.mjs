@@ -40,6 +40,10 @@ const BUILTIN_USER_VARS = new Set(["id", "email", "role"]);
 // exige {{user.id}} a lo que se meta aquí se queda: sin ella, esta lista
 // sería la puerta para saltarse el check de aislamiento por business_id.
 const USER_SCOPED_READ_ALLOWLIST = new Set([]);
+// Entidades cuyo BORRADO es solo de rol de servicio (Codex #472 P1): todo borrado debe pasar por
+// su funcion Safe (hasPermission + aviso al admin); la API de entidades directa no puede borrar.
+// Regla exacta: {"user_condition":{"role":"admin"}} (patron de AdminNotice/JoinRequest).
+const SERVICE_ONLY_DELETE = new Set(["Supplier", "Client", "Contact"]);
 const LOGICAL_OPERATORS = new Set(["$or", "$and", "$nor", "$not"]);
 
 /** Strip // and block comments so JSONC parses as JSON. */
@@ -110,6 +114,16 @@ export function collectRlsErrors(entitiesDir) {
       if (!(op in rls)) continue;
       checkUserTemplates(rls[op], entity, op, errors);
       checkEntityKeys(rls[op], entity, op, errors);
+    }
+
+    if (SERVICE_ONLY_DELETE.has(entity) &&
+      JSON.stringify(rls.delete) !== '{"user_condition":{"role":"admin"}}') {
+      errors.push(
+        `${entity} [delete]: debe ser solo de rol de servicio, exactamente ` +
+          `{"user_condition":{"role":"admin"}}. Un borrado directo por la API de ` +
+          `entidades se saltaria hasPermission y el aviso al administrador; todo ` +
+          `borrado pasa por su funcion Safe.`,
+      );
     }
 
     // Tenant-scoped entities (have business_id) must filter read by

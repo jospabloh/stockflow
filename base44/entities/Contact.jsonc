@@ -36,11 +36,6 @@
         { "user_condition": { "role": "admin" } }
       ]
     },
-    "delete": {
-      "$or": [
-        { "data.business_id": "{{user.data.business_id}}" },
-        { "user_condition": { "role": "admin" } }
-      ]
-    }
+    "delete": { "user_condition": { "role": "admin" } }
   }
 }

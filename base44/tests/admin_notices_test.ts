@@ -24,6 +24,17 @@ const G = globalThis as any;
 class FakeDb {
   tables: Record<string, Row[]> = {};
   faults = new Set<string>();
+  // Borrado ambiguo: la plataforma LO APLICA pero la llamada rechaza (respuesta perdida / timeout).
+  ambiguousDeletes = new Set<string>();
+  // Tras un borrado ambiguo, las lecturas de esa tabla fallan (no se puede comprobar).
+  filterFaultsAfterDelete = new Set<string>();
+  deleted = new Set<string>();
+  // Gancho tras servir una lectura (simula a otro admin escribiendo en paralelo).
+  onFilter: ((table: string, n: number) => void) | null = null;
+  filterCalls: Record<string, number> = {};
+  // Gancho tras aplicar un update (simula una escritura concurrente posterior a la nuestra).
+  onUpdate: ((table: string, id: string, n: number) => void) | null = null;
+  updateCalls: Record<string, number> = {};
   seq = 0;
   seed(table: string, rows: Row[]) {
     (this.tables[table] ??= []).push(...rows.map((r) => ({ ...r })));
@@ -42,11 +53,16 @@ class FakeDb {
     // deno-lint-ignore no-this-alias
     const db = this;
     return {
-      filter: (q: Row = {}, _sort?: string, limit?: number) =>
-        db.check(table, "filter") ??
-          Promise.resolve(
-            db.rows(table).filter((r) => Object.entries(q).every(([k, v]) => r[k] === v)).slice(0, limit ?? 1000).map((r) => ({ ...r })),
-          ),
+      filter: (q: Row = {}, _sort?: string, limit?: number, skip?: number) => {
+        if (db.deleted.has(table) && db.filterFaultsAfterDelete.has(table)) return Promise.reject(new Error(`boom ${table}.filter tras borrar`));
+        const failed = db.check(table, "filter");
+        if (failed) return failed;
+        const out = db.rows(table).filter((r) => Object.entries(q).every(([k, v]) => r[k] === v))
+          .slice(skip ?? 0, (skip ?? 0) + (limit ?? 1000)).map((r) => ({ ...r }));
+        const n = db.filterCalls[table] = (db.filterCalls[table] ?? 0) + 1;
+        db.onFilter?.(table, n);
+        return Promise.resolve(out);
+      },
       create: (row: Row) =>
         db.check(table, "create") ?? (() => {
           const created = { id: `${table}-${++db.seq}`, created_date: new Date().toISOString(), ...row };
@@ -58,11 +74,15 @@ class FakeDb {
           const r = db.rows(table).find((x) => x.id === id);
           if (!r) return Promise.reject(new Error(`${table} ${id} not found`));
           Object.assign(r, patch);
+          const n = db.updateCalls[table] = (db.updateCalls[table] ?? 0) + 1;
+          db.onUpdate?.(table, id, n);
           return Promise.resolve({ ...r });
         })(),
       delete: (id: string) =>
         db.check(table, "delete") ?? (() => {
           db.tables[table] = db.rows(table).filter((x) => x.id !== id);
+          db.deleted.add(table);
+          if (db.ambiguousDeletes.has(table)) return Promise.reject(new Error(`timeout ${table}.delete (aplicado)`));
           return Promise.resolve({});
         })(),
     };
@@ -197,6 +217,47 @@ for (const d of DELETES) {
     assertEquals(db.rows("AdminNotice").length, 1);
   });
 
+  Deno.test(`${d.name}: borrado AMBIGUO (rechaza pero se aplico): el registro ya no existe, el aviso SE CONSERVA y responde exito (Codex #472 P2)`, async () => {
+    const db = baseDb(BARISTOP_PROFILE);
+    db.ambiguousDeletes.add(d.table);
+    const r = await call(d.h, db, ALM, d.body);
+    assertEquals(r.status, 200);
+    assertEquals(r.json.success, true);
+    assertEquals(r.json.delete_confirmed_by_recheck, true);
+    assertEquals(db.rows(d.table).length, 0);
+    assertEquals(db.rows("AdminNotice").length, 1);
+    assertEquals(db.rows("AdminNotice")[0].status, "unread");
+  });
+
+  Deno.test(`${d.name}: borrado fallido y NO se puede comprobar el registro: el aviso se conserva (nunca borrado sin aviso)`, async () => {
+    const db = baseDb(BARISTOP_PROFILE);
+    db.ambiguousDeletes.add(d.table);
+    db.filterFaultsAfterDelete.add(d.table);
+    const r = await call(d.h, db, ALM, d.body);
+    assertEquals(r.status, 500);
+    assertEquals(db.rows(d.table).length, 0);
+    assertEquals(db.rows("AdminNotice").length, 1);
+  });
+
+  Deno.test(`${d.name}: el owner con borrado AMBIGUO (se aplico pero rechaza) tambien se resuelve por relectura: exito, sin aviso (Codex #479 P2)`, async () => {
+    const db = baseDb();
+    db.ambiguousDeletes.add(d.table);
+    const r = await call(d.h, db, OWNER, d.body);
+    assertEquals(r.status, 200);
+    assertEquals(r.json.success, true);
+    assertEquals(r.json.notice_created, false);
+    assertEquals(r.json.delete_confirmed_by_recheck, true);
+    assertEquals(db.rows("AdminNotice").length, 0);
+  });
+
+  Deno.test(`${d.name}: el owner con borrado fallido de verdad (el registro sigue) recibe 500`, async () => {
+    const db = baseDb();
+    db.fault(d.table, "delete");
+    const r = await call(d.h, db, OWNER, d.body);
+    assertEquals(r.status, 500);
+    assertEquals(db.rows(d.table).length, 1);
+  });
+
   Deno.test(`${d.name}: el owner borra sin aviso (notice_created false) aunque la entidad de avisos falle`, async () => {
     const db = baseDb(BARISTOP_PROFILE);
     db.fault("AdminNotice", "create");
@@ -300,6 +361,37 @@ Deno.test("listAdminNotices: un negocio view_only igual puede ver sus avisos (si
   assertEquals((await call(listNotices, db, OWNER, {})).status, 200);
 });
 
+Deno.test("listAdminNotices: unread_count es el total REAL aunque pasen de una pagina (Codex #472 P2)", async () => {
+  const db = baseDb();
+  const rows: Row[] = [];
+  for (let i = 0; i < 450; i++) rows.push({ id: `m${i}`, business_id: "b1", kind: "directory_delete", status: "unread", created_date: "2026-10-05T00:00:00Z" });
+  for (let i = 0; i < 7; i++) rows.push({ id: `r${i}`, business_id: "b1", kind: "directory_delete", status: "read", created_date: "2026-10-04T00:00:00Z" });
+  rows.push({ id: "otro", business_id: "b2", kind: "directory_delete", status: "unread" });
+  db.seed("AdminNotice", rows);
+  const unread = await call(listNotices, db, OWNER, {});
+  assertEquals(unread.json.notices.length, 200, "la lista sigue acotada a una pagina");
+  assertEquals(unread.json.unread_count, 450);
+  const all = await call(listNotices, db, OWNER, { status: "all" });
+  assertEquals(all.json.unread_count, 450);
+  // multiplo exacto de la pagina: no debe quedarse corto ni ciclar
+  const db2 = baseDb();
+  db2.seed("AdminNotice", Array.from({ length: 400 }, (_, i) => ({ id: `e${i}`, business_id: "b1", status: "unread" })));
+  assertEquals((await call(listNotices, db2, OWNER, {})).json.unread_count, 400);
+  assertEquals((await call(listNotices, db2, OWNER, {})).json.unread_count_truncated, undefined);
+});
+
+Deno.test("listAdminNotices: si se agota el tope de paginas lo declara (unread_count_truncated), no lo presenta como total real (Codex #479 P2)", async () => {
+  const db = baseDb();
+  // filtro simulado: cada pagina viene siempre llena, sin fin
+  db.tables["AdminNotice"] = [];
+  const full = (_q: Row = {}, _s?: string, limit?: number) => Promise.resolve(Array.from({ length: limit ?? 200 }, (_, i) => ({ id: `x${i}`, business_id: "b1", status: "unread" })));
+  const orig = db.entity.bind(db);
+  db.entity = (table: string) => table === "AdminNotice" ? { ...orig(table), filter: full } : orig(table);
+  const r = await call(listNotices, db, OWNER, {});
+  assertEquals(r.json.unread_count, 200 * 1000);
+  assertEquals(r.json.unread_count_truncated, true);
+});
+
 // ---- markAdminNoticeReadSafe --------------------------------------------------
 
 Deno.test("markAdminNoticeReadSafe: el owner marca leido y queda registrado quien y cuando", async () => {
@@ -323,6 +415,49 @@ Deno.test("markAdminNoticeReadSafe: idempotente, un segundo acuse no sobrescribe
   assertEquals(r.status, 200);
   assertEquals(r.json.already_read, true);
   assertEquals(db.rows("AdminNotice").find((x) => x.id === "n1")!.read_by_email, "dueno@b1.com");
+});
+
+Deno.test("markAdminNoticeReadSafe: si otro admin acusa entre la primera lectura y la escritura, NO se sobrescribe (relectura previa) (Codex #472 P2)", async () => {
+  const db = noticesDb();
+  db.onFilter = (table, n) => {
+    // justo despues de la 1a lectura del aviso, otro admin lo acusa
+    if (table === "AdminNotice" && n === 1) {
+      Object.assign(db.rows("AdminNotice").find((x) => x.id === "n1")!, { status: "read", read_by_id: "u7", read_by_email: "primero@b1.com", read_at: "2026-10-06T10:00:00.000Z" });
+    }
+  };
+  const r = await call(markRead, db, OWNER, { notice_id: "n1" });
+  assertEquals(r.status, 200);
+  assertEquals(r.json.already_read, true);
+  assertEquals(db.updateCalls["AdminNotice"] ?? 0, 0, "no escribio");
+  assertEquals(db.rows("AdminNotice").find((x) => x.id === "n1")!.read_by_email, "primero@b1.com");
+});
+
+Deno.test("markAdminNoticeReadSafe: si una escritura posterior de otro admin pisa la nuestra, se restituye al PRIMER lector (verificacion posterior)", async () => {
+  const db = noticesDb();
+  db.onUpdate = (table, id, n) => {
+    // tras nuestro primer update, otro admin escribe un acuse POSTERIOR (read_at mayor) encima
+    if (table === "AdminNotice" && id === "n1" && n === 1) {
+      Object.assign(db.rows("AdminNotice").find((x) => x.id === "n1")!, { status: "read", read_by_id: "u7", read_by_email: "despues@b1.com", read_at: "2999-01-01T00:00:00.000Z" });
+    }
+  };
+  const r = await call(markRead, db, OWNER, { notice_id: "n1" });
+  assertEquals(r.status, 200);
+  const n = db.rows("AdminNotice").find((x) => x.id === "n1")!;
+  assertEquals(n.read_by_email, "dueno@b1.com", "queda el primer lector");
+  assertEquals(db.updateCalls["AdminNotice"], 2);
+});
+
+Deno.test("markAdminNoticeReadSafe: si el otro acuse que quedo guardado es ANTERIOR al nuestro, se respeta y no se reescribe", async () => {
+  const db = noticesDb();
+  db.onUpdate = (table, id, n) => {
+    if (table === "AdminNotice" && id === "n1" && n === 1) {
+      Object.assign(db.rows("AdminNotice").find((x) => x.id === "n1")!, { status: "read", read_by_id: "u7", read_by_email: "antes@b1.com", read_at: "2000-01-01T00:00:00.000Z" });
+    }
+  };
+  const r = await call(markRead, db, OWNER, { notice_id: "n1" });
+  assertEquals(r.json.already_read, true);
+  assertEquals(db.rows("AdminNotice").find((x) => x.id === "n1")!.read_by_email, "antes@b1.com");
+  assertEquals(db.updateCalls["AdminNotice"], 1);
 });
 
 Deno.test("markAdminNoticeReadSafe: aviso de otro negocio responde 404 y no se toca", async () => {

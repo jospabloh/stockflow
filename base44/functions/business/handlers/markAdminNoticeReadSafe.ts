@@ -28,12 +28,38 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ success: true, already_read: true });
     }
 
-    await sr.entities.AdminNotice.update(notice.id, {
+    // Base44 no ofrece actualizacion condicional (compare-and-set), asi que el "primer lector
+    // gana" es la mejor aproximacion sin infraestructura nueva (Codex #472 P2):
+    //  1) relectura inmediata antes de escribir: si otro admin ya acuso, no se escribe;
+    //  2) escritura;
+    //  3) verificacion posterior: si otro acuse llego despues y piso el nuestro pero el
+    //     nuestro es anterior (read_at), se restituye al primer lector.
+    // Limite: si otro admin escribe entre (1) y (2) y no vuelve a verificar, la ventana es de
+    // milisegundos y el ultimo en escribir queda; un aviso siempre queda leido por un admin.
+    const fresh = (await sr.entities.AdminNotice.filter({ id: notice.id }))[0];
+    if (fresh?.status === 'read') {
+      return Response.json({ success: true, already_read: true });
+    }
+
+    const ack = {
       status: 'read',
       read_by_id: user.id,
       read_by_email: user.email,
       read_at: new Date().toISOString(),
-    });
+    };
+    await sr.entities.AdminNotice.update(notice.id, ack);
+
+    const after = (await sr.entities.AdminNotice.filter({ id: notice.id }))[0];
+    if (after?.status === 'read' && after.read_by_id !== user.id) {
+      const theirs = String(after.read_at ?? '');
+      const oursIsFirst = ack.read_at < theirs || (ack.read_at === theirs && String(user.id) < String(after.read_by_id));
+      if (!oursIsFirst) {
+        // El otro es anterior: se queda el suyo.
+        return Response.json({ success: true, already_read: true });
+      }
+      // Nosotros somos anteriores y nos pisaron: se restituye al primer lector.
+      await sr.entities.AdminNotice.update(notice.id, ack);
+    }
     return Response.json({ success: true });
   } catch (error) {
     return Response.json({ error: (error as Error).message }, { status: 500 });
