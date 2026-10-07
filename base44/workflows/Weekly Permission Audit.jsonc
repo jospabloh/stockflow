@@ -1,0 +1,43 @@
+{
+  "name": "Weekly Permission Audit",
+  "description": "Auditoría semanal de permisos (jobs:dailyPermissionAudit): crea los perfiles PermissionProfile que falten por negocio y rol, rellena las claves canónicas faltantes de un perfil sin pisar valores existentes y, al reescribir un perfil incompleto, deja solo claves canónicas. No toca usuarios. Un solo correo-resumen al dueño de la plataforma. Corre los lunes 13:00 UTC (07:00 CDMX).",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 13 * * 1",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "weekly_permission_audit",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "jobs",
+            "args": {
+              "action": "dailyPermissionAudit"
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  }
+}
