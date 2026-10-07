@@ -29,7 +29,7 @@ import { isBusinessAdmin } from "@/lib/roles";
 
 export default function Products() {
   const navigate = useNavigate();
-  const { can } = usePermissions();
+  const { can, loading: permissionsLoading } = usePermissions();
   const { businessId, user } = useBusinessContext();
   const isAdmin = isBusinessAdmin(user);
   const invalidate = useInvalidateEntities();
@@ -41,7 +41,9 @@ export default function Products() {
   const productsQuery = useProducts(businessId);
   const categoriesQuery = useCategories(businessId);
   // Proveedores completos (contacto, RFC, notas) solo para quien puede verlos.
-  const canSuppliers = can('Proveedores', 'view');
+  // Mientras los permisos cargan, `can()` cae al rol por defecto (que concede la vista):
+  // no se consulta hasta tener el veredicto definitivo.
+  const canSuppliers = !permissionsLoading && can('Proveedores', 'view');
   const suppliersQuery = useSuppliers(businessId, { enabled: canSuppliers });
   const products = productsQuery.data ?? [];
   const categories = categoriesQuery.data ?? [];
@@ -114,7 +116,7 @@ export default function Products() {
   const { columns: exportColumns, rows: exportRows } = buildProductExport(filteredProducts, categories, suppliers, { includeCost: canCost, includeSupplier: canSuppliers });
   // Sin la lista de proveedores el CSV saldría con «proveedor» vacío y, al reimportarlo,
   // se perderían las asociaciones: no se exporta hasta que la consulta termine bien.
-  const suppliersNotReady = canSuppliers && !suppliersQuery.isSuccess;
+  const suppliersNotReady = permissionsLoading || (canSuppliers && !suppliersQuery.isSuccess);
   const suppliersFailed = canSuppliers && suppliersQuery.isError && !suppliersQuery.isSuccess;
   const exportBlockedHint = suppliersFailed
     ? "No se pudieron cargar los proveedores; recarga la página para exportar."

@@ -251,6 +251,8 @@ Deno.test("Exportar Productos: sin Proveedores:view no sale la columna proveedor
   const page = await Deno.readTextFile(new URL("../../src/pages/Products.jsx", import.meta.url));
   assert(page.includes("useSuppliers(businessId, { enabled: canSuppliers })"));
   assert(page.includes("canSuppliers && !suppliersQuery.isSuccess"));
+  assert(page.includes("!permissionsLoading && can('Proveedores', 'view')"), "no consultar proveedores mientras cargan los permisos");
+  assert(page.includes("permissionsLoading ||"));
   const hook = await Deno.readTextFile(new URL("../../src/hooks/queries/index.js", import.meta.url));
   assert(hook.includes("enabled: !!businessId && enabled"));
 });
