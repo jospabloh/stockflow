@@ -1,83 +1,17 @@
 // AUTO-GENERADO — no editar manualmente.
 // Comando: npm run generate:version-snapshot
-// Generado: 2026-10-07T20:01:51.660Z
+// Generado: 2026-10-07T20:08:32.610Z
 
-export const SNAPSHOT_VERSION = "2.18.29";
+export const SNAPSHOT_VERSION = "2.18.30";
 
 export const SNAPSHOT_RELEASE_DATE = "2026-10-07";
 
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 
-export const SNAPSHOT_GIT_LOG = "d96f6e9 Merge pull request #485 from jospabloh/claude/modest-keller-ez0rz6\n48e2334 Guardia auth.me(): no contar el texto dentro de strings\nc27f72e Merge pull request #484 from jospabloh/claude/modest-keller-ez0rz6\naefb5f5 publish-release: incluir commits directos junto a los PRs mergeados (Codex P2)\n2c77893 Reglas por negocio: distinguir negocios con el mismo nombre (Codex P2)\nd3fa4ac Aviso de versión nueva y changelog que nunca sale genérico\n220036c Quita el switch \"Activar permisos granulares\" de PermissionAdmin\nb24d4c1 Reglas por negocio: un switch por regla con explicación y alcance\n206c034 Update base44 packages\n6a54cd0 Merge pull request #483 from jospabloh/claude/modest-keller-ez0rz6\n61bf003 Regla de tenant: cotizar sólo a clientes del catálogo\n4ff054a Merge pull request #482 from jospabloh/fix/permisos-carga-directa\nbf98b84 Corrige carrera de permisos en carga directa de cotizaciones, spinner infinito en PermissionAdmin y main anidado\nce95c67 Merge pull request #481 from jospabloh/fix/deploy-site-construye\n80c2746 docs: lecciones del 2026-10-07 (deploy:site, sync de GitHub, checkpoint, dependabot)\n4b6fb50 deploy:site construye y verifica el dist/ antes de subir\n7f7e773 Merge pull request #469 from jospabloh/dependabot/npm_and_yarn/npm-dependencies-ae6f907b5c\n19fcd72 Regenerar deno.lock con las subidas de dependencias de #469\n18796b1 Merge pull request #477 from jospabloh/fix/import-stock-no-negativo\n5ce8d86 Merge pull request #478 from jospabloh/fix/products-supplier-gate\nc918e63 Merge pull request #480 from jospabloh/feat/weekly-permission-audit\nd48316a Merge pull request #479 from jospabloh/fix/codex-472-466\n7b756f2 Doc: el prompt de crons del panel ya no configura dailyPermissionAudit (Codex #480 P2)\n07e6a5d Correo de la auditoria de permisos: cadencia semanal en subtitulo y pie (Codex #480 P2)\n9bdb685 Documentacion: dailyPermissionAudit ahora la programa el workflow semanal (no un cron HTTP del panel)";
+export const SNAPSHOT_GIT_LOG = "2aca4c9 Merge pull request #486 from jospabloh/claude/modest-keller-ez0rz6\n2cf28f3 Merge pull request #407 from jospabloh/automated/release-pr\n2d15dac chore: release and update documentation\ndc4473b Cada negocio enciende o apaga sus propias reglas (sólo su admin)\nd96f6e9 Merge pull request #485 from jospabloh/claude/modest-keller-ez0rz6\n48e2334 Guardia auth.me(): no contar el texto dentro de strings\nc27f72e Merge pull request #484 from jospabloh/claude/modest-keller-ez0rz6\naefb5f5 publish-release: incluir commits directos junto a los PRs mergeados (Codex P2)\n2c77893 Reglas por negocio: distinguir negocios con el mismo nombre (Codex P2)\nd3fa4ac Aviso de versión nueva y changelog que nunca sale genérico\n220036c Quita el switch \"Activar permisos granulares\" de PermissionAdmin\nb24d4c1 Reglas por negocio: un switch por regla con explicación y alcance\n206c034 Update base44 packages\n6a54cd0 Merge pull request #483 from jospabloh/claude/modest-keller-ez0rz6\n61bf003 Regla de tenant: cotizar sólo a clientes del catálogo\n4ff054a Merge pull request #482 from jospabloh/fix/permisos-carga-directa\nbf98b84 Corrige carrera de permisos en carga directa de cotizaciones, spinner infinito en PermissionAdmin y main anidado\nce95c67 Merge pull request #481 from jospabloh/fix/deploy-site-construye\n80c2746 docs: lecciones del 2026-10-07 (deploy:site, sync de GitHub, checkpoint, dependabot)\n4b6fb50 deploy:site construye y verifica el dist/ antes de subir\n7f7e773 Merge pull request #469 from jospabloh/dependabot/npm_and_yarn/npm-dependencies-ae6f907b5c\n19fcd72 Regenerar deno.lock con las subidas de dependencias de #469\n18796b1 Merge pull request #477 from jospabloh/fix/import-stock-no-negativo\n5ce8d86 Merge pull request #478 from jospabloh/fix/products-supplier-gate\nc918e63 Merge pull request #480 from jospabloh/feat/weekly-permission-audit";
 
 export const SNAPSHOT_LATEST_CHANGES: string[] = [
-  "Guardia auth.me(): no contar texto dentro de strings (desbloquea el release 2.18.29)",
-  "Reglas por negocio con un switch, quita el toggle falso de permisos, aviso de versión nueva y changelog real",
-  "Regla de tenant: cotizar sólo a clientes del catálogo (Baristop)",
-  "Corrige carrera de permisos en cotizaciones (carga directa), spinner de PermissionAdmin y main anidado",
-  "Deploy:site construye y verifica el dist/ antes de subir",
-  "Importar productos: rechazar stock negativo por fila",
-  "Productos: proveedores solo con permiso y exportación espera a que carguen",
-  "Workflow semanal de auditoría de permisos (lunes 13:00 UTC)",
-  "Codex #472/#466: cerrar borrado directo, borrado ambiguo, conteo real y acuse de primer lector",
-  "Verificar que main está desplegado entero, por contenido (#476)",
-  "CLAUDE.md: signup verification step and server-side tenant ping (#475)",
-  "Exportar e importar con todos los campos (Productos, Clientes, Categorías, Movimientos, Caja chica) (#474)",
-  "Botones traslapados y desbordes en iPad / móvil",
-  "Avisos al admin por borrados de un almacenista (AdminNotice)",
-  "Pendientes menores (aviso caja chica en devolucion parcial, saldo alineado, reconcile)",
-  "No borrar ajustes con movimientos posteriores (+ mensajes del servidor)",
-  "Egreso de caja chica con await + 401 sin sesion (preexistentes)",
-  "Almacenista de negocio nuevo nace igual que el de Baristop (190 claves canonicas)",
-  "401 en vez de 500 sin sesión, con helper compartido getAuthUser",
-  "#458 corregido - desenvolver respuesta de functions.invoke",
-  "Saldo de anticipos, caja chica por regla y alerta de correo de licencias",
-  "Rubros/FundAccounts no ofrecen borrar registros is_system y explican system_record_protected",
-  "Correos payment_received / license_activated no salian (401 y 404 silenciosos)",
-  "Validar nombre unico/obligatorio en updateCategorySafe e importItemsSafe",
-  "UpdateSupplierSafe rechaza nombre vacio",
-  "PartialReturnQuotation rechaza product_id repetido + pruebas de handler (is_system, stock invalido)",
-  "Respetar regla cash_sales_to_petty_cash en pagos en efectivo",
-  "Anticipos en sent/accepted y convert conserva anticipo",
-  "Aplicar stock de forma confiable y avisar cuando falle (sin tocar datos pasados)",
-  "External agent changes",
-  "External agent changes",
-  "Rehabilitar Aceptar actual / Corregir a N con permisos, confirmación y registro",
-  "RespondToPublicQuotation inutilizable (colisión action)",
-  "Aplicar permiso granular al editar/borrar proveedores, clientes y contactos",
-  "Persistir amount_paid/balance/payments en Confirmar pago total",
-  "PartialReturnQuotation deja amount_paid > total",
-  "GenerateBarcodeSafe exige permiso Productos:barcode",
-  "CreateMovementSafe valida tipo, cantidad y sobreventa",
-  "RunReminders solo CRON_SECRET o dueño de plataforma",
-  "RegisterQuotationPayment rechaza pagos en cotizaciones draft o cancelled",
-  "Validaciones menores en cotizaciones y caja chica (400 en vez de 500)",
-  "CancelQuotationSafe limpia paid y es idempotente",
-  "DeleteCatalogItemSafe no debe borrar registros is_system",
-  "Known_rule_keys incluye enable_granular_permissions",
-  "CreateCategorySafe rechaza nombre vacío y duplicado",
-  "UpdateProductBarcodeSafe rechaza barcodes duplicados",
-  "Rechazar stock negativo en createProductSafe/updateProductSafe",
-  "CreateSupplierSafe sin nombre devuelve 400 en vez de 500",
-  "PartialReturnQuotation rechaza cantidades negativas/no enteras",
-  "Tenant_id para que el dueño pueda leer su Business (RLS id no empareja) (#450)",
-  "External agent changes",
-  "Auditoria de inventario restaurada, botones de correccion y aviso diario de stock",
-  "CancelQuotationSafe sobre-restaura stock tras devolución parcial (NO desplegado)",
-  "Ola 4: workflows de correo -> jobs; Daily Stock Reconcile 14:30 UTC",
-  "Workflow archived via API",
-  "Workflow '\"'\"'TEST jobs args (borrar)'\"'\"' updated via API",
-  "Consolidacion ola 4: router jobs para crons",
-  "Ola 3: applyMovementStock, syncCashSaleToPettyCash y reparaciones de dueño a routers",
-  "Consolidation waves 1-2: remove 12 uncalled functions (47 -> 35)",
-  "Workflow archived via API",
-  "CreateBusinessSafe: decide 'already in a business' from a fresh User read, not cached auth.me() (#415)",
-  "Unirse con el código crea una solicitud; el owner/admin aprueba y elige el rol (#414)",
-  "InitTenantTrial pings Mission Control from the server after a new signup (#413)",
-  "Add email-verification code step to register/login (#412)",
-  "Deploy:site passes --yes so the site deploy works non-interactively (#411)",
-  "Restrict platform-wide functions to the platform owner; stop anonymous writes to quotation notes (#410)",
-  "Enforce granular permissions, billing lock and HTML escaping on remaining write paths (#409)",
+  "Cada negocio enciende o apaga sus propias reglas (sólo su admin)",
 ];
 
 export const SNAPSHOT_FULL_CHANGELOG: Array<{
@@ -85,6 +19,13 @@ export const SNAPSHOT_FULL_CHANGELOG: Array<{
   date: string;
   changes: string[];
 }> = [
+  {
+    version: "2.18.30",
+    date: "2026-10-07",
+    changes: [
+    "Cada negocio enciende o apaga sus propias reglas (sólo su admin)"
+    ]
+  },
   {
     version: "2.18.29",
     date: "2026-10-07",
