@@ -73,22 +73,23 @@ export async function voidNoticeBestEffort(asServiceRole: any, noticeId: string)
  *  - 'gone': el registro ya no existe -> el borrado SI ocurrio, el aviso se conserva.
  *  - 'unknown': no se pudo comprobar -> se conserva el aviso (mejor un aviso de mas que un
  *    borrado sin aviso).
+ * Corre para TODO llamador; sin aviso (owner/admin) solo se comprueba la existencia.
  * Nunca lanza.
  */
 export async function settleFailedDelete(
   // deno-lint-ignore no-explicit-any
   asServiceRole: any,
-  { entityName, recordId, noticeId }: { entityName: string; recordId: string; noticeId: string },
+  { entityName, recordId, noticeId }: { entityName: string; recordId: string; noticeId: string | null },
 ): Promise<'still_exists' | 'gone' | 'unknown'> {
   let rows: AnyRecord[];
   try {
     rows = await asServiceRole.entities[entityName].filter({ id: recordId });
   } catch (error) {
-    console.error(`[adminNotice] no se pudo comprobar ${entityName} ${recordId} tras un borrado fallido; el aviso ${noticeId} se conserva: ${(error as Error).message}`);
+    console.error(`[adminNotice] no se pudo comprobar ${entityName} ${recordId} tras un borrado fallido; el aviso ${noticeId ?? '(ninguno)'} se conserva: ${(error as Error).message}`);
     return 'unknown';
   }
   if (Array.isArray(rows) && rows.length > 0) {
-    await voidNoticeBestEffort(asServiceRole, noticeId);
+    if (noticeId) await voidNoticeBestEffort(asServiceRole, noticeId);
     return 'still_exists';
   }
   return 'gone';

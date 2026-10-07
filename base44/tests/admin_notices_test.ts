@@ -239,6 +239,25 @@ for (const d of DELETES) {
     assertEquals(db.rows("AdminNotice").length, 1);
   });
 
+  Deno.test(`${d.name}: el owner con borrado AMBIGUO (se aplico pero rechaza) tambien se resuelve por relectura: exito, sin aviso (Codex #479 P2)`, async () => {
+    const db = baseDb();
+    db.ambiguousDeletes.add(d.table);
+    const r = await call(d.h, db, OWNER, d.body);
+    assertEquals(r.status, 200);
+    assertEquals(r.json.success, true);
+    assertEquals(r.json.notice_created, false);
+    assertEquals(r.json.delete_confirmed_by_recheck, true);
+    assertEquals(db.rows("AdminNotice").length, 0);
+  });
+
+  Deno.test(`${d.name}: el owner con borrado fallido de verdad (el registro sigue) recibe 500`, async () => {
+    const db = baseDb();
+    db.fault(d.table, "delete");
+    const r = await call(d.h, db, OWNER, d.body);
+    assertEquals(r.status, 500);
+    assertEquals(db.rows(d.table).length, 1);
+  });
+
   Deno.test(`${d.name}: el owner borra sin aviso (notice_created false) aunque la entidad de avisos falle`, async () => {
     const db = baseDb(BARISTOP_PROFILE);
     db.fault("AdminNotice", "create");
@@ -358,6 +377,19 @@ Deno.test("listAdminNotices: unread_count es el total REAL aunque pasen de una p
   const db2 = baseDb();
   db2.seed("AdminNotice", Array.from({ length: 400 }, (_, i) => ({ id: `e${i}`, business_id: "b1", status: "unread" })));
   assertEquals((await call(listNotices, db2, OWNER, {})).json.unread_count, 400);
+  assertEquals((await call(listNotices, db2, OWNER, {})).json.unread_count_truncated, undefined);
+});
+
+Deno.test("listAdminNotices: si se agota el tope de paginas lo declara (unread_count_truncated), no lo presenta como total real (Codex #479 P2)", async () => {
+  const db = baseDb();
+  // filtro simulado: cada pagina viene siempre llena, sin fin
+  db.tables["AdminNotice"] = [];
+  const full = (_q: Row = {}, _s?: string, limit?: number) => Promise.resolve(Array.from({ length: limit ?? 200 }, (_, i) => ({ id: `x${i}`, business_id: "b1", status: "unread" })));
+  const orig = db.entity.bind(db);
+  db.entity = (table: string) => table === "AdminNotice" ? { ...orig(table), filter: full } : orig(table);
+  const r = await call(listNotices, db, OWNER, {});
+  assertEquals(r.json.unread_count, 200 * 1000);
+  assertEquals(r.json.unread_count_truncated, true);
 });
 
 // ---- markAdminNoticeReadSafe --------------------------------------------------

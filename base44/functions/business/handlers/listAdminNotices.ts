@@ -2,11 +2,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { getAuthUser } from '../../../shared/authUser.ts';
 import { isBusinessAdmin } from '../../../shared/adminNotice.ts';
 
-// Cuenta los avisos no leidos paginando (Base44 no ofrece un conteo). Tope de seguridad: 100 paginas.
-// deno-lint-ignore no-explicit-any
-async function countUnread(sr: any, businessId: string, pageSize: number): Promise<number> {
+// Cuenta los avisos no leidos paginando hasta una pagina corta (Base44 no ofrece un conteo).
+// Tope de seguridad de 1000 paginas (200 mil): si se agotara, se declara truncado en vez de
+// presentarlo como total real.
+async function countUnread(
+  // deno-lint-ignore no-explicit-any
+  sr: any,
+  businessId: string,
+  pageSize: number,
+): Promise<{ count: number; truncated: boolean }> {
   let total = 0;
-  for (let page = 0; page < 100; page++) {
+  for (let page = 0; page < 1000; page++) {
     const rows = await sr.entities.AdminNotice.filter(
       { business_id: businessId, status: 'unread' },
       '-created_date',
@@ -14,9 +20,9 @@ async function countUnread(sr: any, businessId: string, pageSize: number): Promi
       page * pageSize,
     );
     total += rows.length;
-    if (rows.length < pageSize) break;
+    if (rows.length < pageSize) return { count: total, truncated: false };
   }
-  return total;
+  return { count: total, truncated: true };
 }
 
 // listAdminNotices — avisos de borrados hechos por un no-admin, SOLO del negocio de quien
@@ -51,11 +57,11 @@ export async function handle(req: Request): Promise<Response> {
     );
     // unread_count es el total REAL, no el tamano de la pagina (Codex #472 P2): si la primera
     // pagina de no leidos viene llena se pagina hasta agotarla.
-    const unreadCount = onlyUnread && notices.length < PAGE
-      ? notices.length
+    const unread = onlyUnread && notices.length < PAGE
+      ? { count: notices.length, truncated: false }
       : await countUnread(sr, user.business_id, PAGE);
 
-    return Response.json({ success: true, notices, unread_count: unreadCount });
+    return Response.json({ success: true, notices, unread_count: unread.count, ...(unread.truncated ? { unread_count_truncated: true } : {}) });
   } catch (error) {
     return Response.json({ error: (error as Error).message }, { status: 500 });
   }

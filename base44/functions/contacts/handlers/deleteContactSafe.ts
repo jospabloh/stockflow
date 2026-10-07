@@ -71,12 +71,10 @@ export async function handle(req: Request): Promise<Response> {
     } catch (deleteError) {
       // Un rechazo no prueba que el borrado no se aplico (respuesta perdida / timeout): se
       // comprueba el registro. Sigue ahi -> se anula el aviso; ya no esta -> el borrado ocurrio
-      // y el aviso se conserva (Codex #472 P2).
-      if (noticeId) {
-        const outcome = await settleFailedDelete(base44.asServiceRole, { entityName: 'Contact', recordId: contact_id, noticeId });
-        if (outcome === 'gone') {
-          return Response.json({ success: true, contact_id, notice_created: true, delete_confirmed_by_recheck: true });
-        }
+      // y el aviso (si lo hay) se conserva. Corre para todo llamador (Codex #472 P2).
+      const outcome = await settleFailedDelete(base44.asServiceRole, { entityName: 'Contact', recordId: contact_id, noticeId });
+      if (outcome === 'gone') {
+        return Response.json({ success: true, contact_id, notice_created: needsNotice, delete_confirmed_by_recheck: true });
       }
       throw deleteError;
     }
