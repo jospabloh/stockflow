@@ -17,11 +17,41 @@ async function ask(question) {
   return answer.trim();
 }
 
+// Commit range of this release; set in main() next to the log it describes.
+let releaseRange = '-n 10';
+
+// Changes since the last release, from main's first-parent history. Bot and
+// release commits are skipped so a release never lists itself.
+function plainChanges(version) {
+  const range = releaseRange;
+  // Walk main's own history (first parent): a merge contributes its PR title
+  // (first body line), a direct commit its subject. Both kinds can share one
+  // release, so neither is dropped in favor of the other.
+  const subjects = execSync(`git log ${range} --first-parent --format=%P%x01%s%x01%b%x00`).toString()
+    .split('\0').map((rec) => rec.trim()).filter(Boolean)
+    .map((rec) => {
+      const [parents, subject, body = ''] = rec.split('\x01');
+      const isMerge = parents.trim().split(/\s+/).length > 1;
+      return (isMerge ? body.trim().split('\n')[0] : subject).trim();
+    })
+    .filter(Boolean);
+  // Internal-only work (deps, docs, CI, reverts, release bookkeeping) is not news
+  // for the user; conventional prefixes like "fix(ui): " are stripped.
+  const changes = subjects
+    .filter((t) => !/^(chore|docs|ci|test|build|revert)\b|^reaplicar|automated release|update base44 packages/i.test(t))
+    .map((t) => t.replace(/^(feat|fix|perf|refactor|style)(\([^)]*\))?!?:\s*/i, ''))
+    .map((t) => t.charAt(0).toUpperCase() + t.slice(1));
+  return changes.length ? changes : [`Actualización a la versión ${version}`];
+}
+
 async function callAnthropic(gitLog, version) {
   const apiKey = process.env.ANTHROPIC_API_KEY_SF;
+  // Without the key (or if the call fails) the merged PR titles go in verbatim:
+  // the changelog is what users read to know what changed, so it is never a
+  // generic "Actualización a la versión X" line.
   if (!apiKey) {
-    console.warn("⚠️ ANTHROPIC_API_KEY_SF no configurada. Generando changelog genérico.");
-    return [`Actualización a la versión ${version}`];
+    console.warn("⚠️ ANTHROPIC_API_KEY_SF no configurada. Usando los títulos de los PRs.");
+    return plainChanges(version);
   }
 
   console.log("🤖 Consultando a Anthropic para generar el changelog...");
@@ -43,7 +73,7 @@ Responde ÚNICAMENTE con un array JSON de strings, por ejemplo:
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-3-haiku-20240307',
+      model: 'claude-haiku-5-5',
       max_tokens: 1024,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
@@ -52,14 +82,14 @@ Responde ÚNICAMENTE con un array JSON de strings, por ejemplo:
 
   if (!res.ok) {
     console.warn(`⚠️ Anthropic API falló: ${res.status}`);
-    return [`Actualización a la versión ${version}`];
+    return plainChanges(version);
   }
 
   const data = await res.json();
   const text = data.content?.[0]?.text ?? '[]';
 
   const match = text.match(/\[[\s\S]*\]/);
-  if (!match) return [`Actualización a la versión ${version}`];
+  if (!match) return plainChanges(version);
   return JSON.parse(match[0]);
 }
 
@@ -73,6 +103,7 @@ async function main() {
     // Busca el último commit que modificó appConfig.js (el último release)
     const lastReleaseCommit = execSync('git log -1 --format="%H" -- src/lib/appConfig.js').toString().trim();
     if (lastReleaseCommit) {
+      releaseRange = `${lastReleaseCommit}..HEAD`;
       gitLog = execSync(`git log ${lastReleaseCommit}..HEAD --oneline`).toString().trim();
     } else {
       gitLog = execSync('git log --oneline -10').toString().trim();

@@ -20,6 +20,7 @@ import { useSessionManager } from "@/hooks/useSessionManager";
 import { useRegionalConfig } from "@/hooks/useRegionalConfig";
 import { useActivityTracker } from "@/hooks/useActivityTracker";
 import SessionBanner from "@/components/SessionBanner";
+import AppUpdateBanner from "@/components/AppUpdateBanner";
 import SessionExpiredDialog from "@/components/SessionExpiredDialog";
 import IdleWarningDialog from "@/components/IdleWarningDialog";
 import {
@@ -438,6 +439,11 @@ export default function Layout({ children, currentPageName }) {
         {/* Trial / license banner */}
         <div className="flex-shrink-0">
           <TrialBanner />
+        </div>
+
+        {/* Newer build published: offer a reload (module 21) */}
+        <div className="flex-shrink-0">
+          <AppUpdateBanner />
         </div>
 
         {/* Session passive banner */}

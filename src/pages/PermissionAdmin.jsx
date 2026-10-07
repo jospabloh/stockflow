@@ -4,10 +4,7 @@ import { useLicense } from "@/lib/LicenseContext";
 import { usePermissions } from "@/lib/PermissionContext";
 import { useBusinessContext } from "@/components/BusinessContext";
 
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Shield, RefreshCw, Download } from "lucide-react";
 import { toast } from "sonner";
 import UnifiedPermissionMatrix from "@/components/permissions/UnifiedPermissionMatrix";
@@ -27,14 +24,12 @@ export default function PermissionAdmin() {
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [profiles, setProfiles] = useState({});
-  const [featureEnabled, setFeatureEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [perms, setPerms] = useState({
     admin: {},
     almacenista: {},
   });
   const [saving, setSaving] = useState(false);
-  const [togglingFeature, setTogglingFeature] = useState(false);
   const [seeded, setSeeded] = useState(false);
   const [backfilling, setBackfilling] = useState(false);
 
@@ -51,7 +46,6 @@ export default function PermissionAdmin() {
       const response = await base44.functions.invoke('permissions', { action: 'getPermissionProfiles',});
       const data = response.data;
       setProfiles(data?.profiles || {});
-      setFeatureEnabled(data?.featureEnabled === true);
       // Admin por defecto con todos los permisos activados
       const adminPerms = data?.profiles?.admin;
       if (!adminPerms || Object.keys(adminPerms).length === 0) {
@@ -123,33 +117,6 @@ export default function PermissionAdmin() {
     }
   };
 
-  const handleToggleFeature = async (checked) => {
-    if (!isPlatformAdmin) {
-      toast.error('Solo el administrador de plataforma puede activar esta función');
-      return;
-    }
-    setTogglingFeature(true);
-    try {
-      const response = await base44.functions.invoke('tenantRules', { action: 'adminUpsertTenantRule',
-        business_id: businessId,
-        rule_key: 'enable_granular_permissions',
-        enabled: checked,
-        config_json: {},
-        notes: checked ? 'Activado desde PermissionAdmin' : 'Desactivado desde PermissionAdmin',
-      });
-      if (!response.data?.success) {
-        toast.error(response.data?.error || 'No se pudo cambiar el estado');
-        return;
-      }
-      setFeatureEnabled(checked);
-      toast.success(checked ? 'Permisos granulares activados' : 'Permisos granulares desactivados');
-    } catch (error) {
-      toast.error(`Error: ${error.message}`);
-    } finally {
-      setTogglingFeature(false);
-    }
-  };
-
   // Un no-admin nunca dispara loadProfiles(), así que `loading` no termina para él:
   // solo se espera la carga de perfiles cuando quien mira es administrador.
   const isAdminUser = isPlatformAdmin || isBusinessAdmin(user);
@@ -211,29 +178,6 @@ export default function PermissionAdmin() {
           </Button>
         </div>
       </div>
-
-      {isPlatformAdmin && (
-        <Card className="p-4 flex items-center justify-between gap-4">
-          <div>
-            <p className="font-medium text-sm">Activar permisos granulares</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Cuando está desactivado, se usan los permisos por defecto del sistema.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge className={featureEnabled ? "bg-emerald-100 text-emerald-700 border-0" : "bg-slate-100 text-slate-700 border-0"}>
-              {featureEnabled ? "Activado" : "Desactivado"}
-            </Badge>
-            <Switch
-              checked={featureEnabled}
-              onCheckedChange={handleToggleFeature}
-              disabled={togglingFeature}
-            />
-          </div>
-        </Card>
-      )}
-
-
 
       <UnifiedPermissionMatrix
         perms={perms}
