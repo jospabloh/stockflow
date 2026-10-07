@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.24';
 import { hasPermission } from './_permissions.ts';
 import { validateQuotationUpdates } from './_validation.ts';
+import { checkCatalogClient, catalogClientName, CATALOG_CLIENT_RULE_KEY } from './_catalogClientRule.ts';
 import { getAuthUser } from '../../../shared/authUser.ts';
 
 // Permission key required to change each field (permissionRegistry.js › Cotizaciones).
@@ -75,7 +76,7 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     // SECURITY: Filter updates through whitelist (mass assignment protection)
-    const sanitized = {};
+    const sanitized: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(updates)) {
       if (ALLOWED_UPDATE_FIELDS.has(key)) {
         sanitized[key] = value;
@@ -109,6 +110,23 @@ export async function handle(req: Request): Promise<Response> {
     for (const action of neededKeys) {
       if (!(await hasPermission(base44.asServiceRole, user, 'Cotizaciones', action))) {
         return Response.json({ success: false, error: 'Forbidden: missing permission', permission: `Cotizaciones:${action}` }, { status: 403 });
+      }
+    }
+
+    // TENANT RULE: catalog-only clients. Only enforced when the client changes,
+    // so quotations saved before the rule was turned on stay editable.
+    const clientChanged = ['client_id', 'client_name'].some(
+      (k) => k in sanitized && !same(sanitized[k], (quotation as Record<string, unknown>)[k]),
+    );
+    if (clientChanged) {
+      const clientId = 'client_id' in sanitized ? sanitized.client_id : quotation.client_id;
+      const clientCheck = await checkCatalogClient(base44.asServiceRole, user.business_id, clientId);
+      if (clientCheck.error) {
+        return Response.json({ success: false, error: clientCheck.error, rule: CATALOG_CLIENT_RULE_KEY }, { status: 400 });
+      }
+      if (clientCheck.client) {
+        sanitized.client_id = clientCheck.client.id;
+        sanitized.client_name = catalogClientName(clientCheck.client);
       }
     }
 

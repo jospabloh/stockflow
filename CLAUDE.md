@@ -2699,3 +2699,18 @@ inquilino real — mismo límite y misma razón que declara el resto del archivo
    se atrasó respecto a `main` y probar la fusión, no la rama sola.
    `deno test -A base44/tests` reescribe `deno.lock` por sí mismo; así se
    regenera.
+
+## Regla de tenant: cotizar sólo a clientes del catálogo (2026-10-07)
+
+Baristop pidió que no se pueda cotizar a un cliente tecleado a mano. Es la regla
+`require_catalog_client_for_quotations` (apagada por defecto; se enciende por
+negocio en TenantRulesAdmin). Con ella encendida, `createQuotationSafe` y
+`updateQuotationSafe` exigen un `client_id` del catálogo **de ese negocio** y no
+`inactive` (400 con `rule` en el cuerpo), y guardan el nombre **del catálogo**,
+no el del cuerpo. En update sólo se valida si el cliente cambia, para que las
+cotizaciones viejas con nombre libre sigan editables. La lógica vive en
+`quotations/handlers/_catalogClientRule.ts` (sin imports, con
+`base44/tests/catalog_client_rule_test.ts`). El formulario lo refleja (placeholder,
+aviso, bloqueo al guardar) pero el candado real es el servidor. Las tres listas de
+claves (`adminUpsertTenantRule`, `adminListTenantRules`, `TenantRulesAdmin.jsx`)
+deben ir juntas; `tenant_rule_keys_test.ts` vigila las dos del servidor.

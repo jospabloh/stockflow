@@ -51,6 +51,8 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
   });
   const [saving, setSaving] = useState(false);
   const [addMode, setAddMode] = useState("catalog"); // "catalog" | "on_demand"
+  // Regla de tenant: solo clientes del catálogo (el servidor la vuelve a validar).
+  const [catalogOnly, setCatalogOnly] = useState(false);
 
   useEffect(() => {
     if (open && businessId) {
@@ -65,8 +67,12 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
         setClients(cls);
         setPaymentMethods(pms);
       });
+      base44.functions.invoke('tenantRules', { action: 'getCurrentTenantRuleMap' })
+        .then(res => setCatalogOnly(res?.data?.rules?.require_catalog_client_for_quotations?.enabled === true))
+        .catch(() => setCatalogOnly(false));
       if (quotation) {
         setForm({
+          client_id: quotation.client_id || null,
           client_name: quotation.client_name || "",
           client_email: quotation.client_email || "",
           client_phone: quotation.client_phone || "",
@@ -84,7 +90,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
         }
       } else {
         setForm({
-          client_name: "", client_email: "", client_phone: "",
+          client_id: null, client_name: "", client_email: "", client_phone: "",
           items: [], notes: "", valid_until: "", status: "draft",
           payment_method: "Por definir",
         });
@@ -275,6 +281,10 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
       toast.error("⚠️ El nombre del cliente es requerido");
       return;
     }
+    if (catalogOnly && !form.client_id) {
+      toast.error("⚠️ Selecciona un cliente del catálogo. Si es nuevo, primero dalo de alta en Clientes.");
+      return;
+    }
     if (form.items.length === 0) {
       toast.error("⚠️ Agrega al menos un producto a la cotización");
       return;
@@ -361,13 +371,13 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                 value={clientSearch || form.client_name}
                 onChange={(e) => {
                   setClientSearch(e.target.value);
-                  setForm(prev => ({ ...prev, client_name: e.target.value, client_email: "", client_phone: "" }));
+                  setForm(prev => ({ ...prev, client_id: null, client_name: e.target.value, client_email: "", client_phone: "" }));
                   setSelectedClient(null);
                   setShowClientSuggestions(true);
                 }}
                 onFocus={() => setShowClientSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowClientSuggestions(false), 150)}
-                placeholder="Buscar o escribir cliente..."
+                placeholder={catalogOnly ? "Buscar cliente del catálogo..." : "Buscar o escribir cliente..."}
               />
               {showClientSuggestions && clientSearch && (
                 <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg max-h-48 overflow-y-auto">
@@ -377,7 +387,7 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                       c.name.toLowerCase().includes(q) || (c.business_name || "").toLowerCase().includes(q)
                     );
                     if (filtered.length === 0) {
-                      return <p className="text-sm text-slate-400 px-3 py-2">Sin coincidencias — se guardará como nuevo</p>;
+                      return <p className="text-sm text-slate-400 px-3 py-2">{catalogOnly ? "Sin coincidencias — da de alta al cliente en Clientes" : "Sin coincidencias — se guardará como nuevo"}</p>;
                     }
                     return filtered.map(c => (
                       <button
@@ -408,6 +418,9 @@ export default function QuotationFormDialog({ open, onOpenChange, quotation, onS
                     ));
                   })()}
                 </div>
+              )}
+              {catalogOnly && !form.client_id && form.client_name && !showClientSuggestions && (
+                <p className="text-[10px] text-amber-600 font-medium mt-1">Elige un cliente de la lista para poder guardar.</p>
               )}
               {selectedClient && (selectedClient.force_purchase_all_products || selectedClient.force_wholesale_all_products) && !isZeroPriceClient && (
                 <p className="text-[10px] text-brand-600 font-medium mt-1">

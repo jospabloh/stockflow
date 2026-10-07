@@ -18,6 +18,7 @@ const RULE_KEYS = [
   "allow_manual_petty_cash_edit_delete",
   "special_delivery_flow",
   "custom_pricing_override",
+  "require_catalog_client_for_quotations",
 ];
 
 const EMPTY_FORM = {
