@@ -2495,8 +2495,8 @@ Siete lecciones de la ventana nocturna del 2026-10-02 (trenes, canarios y un rol
   confiable; solo el `git_commit_hash`.
 - **ROLLBACK: publicar un checkpoint anterior NO revierte las funciones backend.** Revierte el sitio y las
   entidades publicadas, pero las funciones siguen con el código nuevo. Además hay que correr
-  `base44 functions deploy` **desde el árbol del commit anterior** (worktree en ese commit) y comprobar con una
-  llamada que el comportamiento volvió (`unknown action` / 403 propio, como en la sección del 2026-09-24).
+  `npm run deploy` (el script con salvaguardas; nunca `base44 functions deploy` directo) **desde un worktree del
+  commit anterior** y comprobar con una llamada que el comportamiento volvió (`unknown action` / 403 propio, como en la sección del 2026-09-24).
 - **`base44.asServiceRole.functions.invoke` devuelve la respuesta axios completa**, no el cuerpo. Desenvuelve con
   `resp?.data ?? resp` y nunca hagas `JSON.stringify` de la respuesta cruda (lleva `config`, `request` y
   referencias circulares). Las pruebas deben simular esa forma (`{ data, status, headers… }`), no devolver el
@@ -2518,7 +2518,7 @@ Siete lecciones de la ventana nocturna del 2026-10-02 (trenes, canarios y un rol
 código por correo y deja la cuenta sin verificar; `loginViaEmailPassword()` se niega hasta
 que se llame `verifyOtp`. `Register.jsx` tragaba ese fallo y mandaba a `/login`, que sólo
 mostraba "Please verify your email" **sin campo para el código** — `verifyOtp`/`resendOtp`
-no se llamaban en ningún lado. Un cliente real (cesar@domsot.com.mx) no pudo crear su
+no se llamaban en ningún lado. Un cliente real (identificado como «cliente A», sin dato personal en el repo) no pudo crear su
 negocio. No dejaba rastro: una alta atorada no crea cuenta que alguien note.
 
 `src/components/VerifyEmailStep.jsx` (campo, reenviar, cambiar de correo; exporta
