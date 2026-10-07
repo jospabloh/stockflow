@@ -25,7 +25,7 @@ const isoDay = (value) => {
 const YES_NO = (v) => (v ? "Sí" : "No");
 
 // ─── Productos ───────────────────────────────────────────────────────────────
-export function buildProductExport(products, categories = [], suppliers = [], { includeCost = false } = {}) {
+export function buildProductExport(products, categories = [], suppliers = [], { includeCost = false, includeSupplier = true } = {}) {
   const cat = new Map(categories.map((c) => [c.id, c.name]));
   const sup = new Map(suppliers.map((s) => [s.id, s.name]));
   const columns = [
@@ -40,7 +40,7 @@ export function buildProductExport(products, categories = [], suppliers = [], { 
     { key: "min_stock", label: "Stock mínimo", type: "number" },
     { key: "unit", label: "Unidad", type: "text" },
     { key: "category", label: "Categoría", type: "text" },
-    { key: "supplier", label: "Proveedor", type: "text" },
+    ...(includeSupplier ? [{ key: "supplier", label: "Proveedor", type: "text" }] : []),
     { key: "tax_rate", label: "IVA (%)", type: "number" },
     { key: "status", label: "Estatus", type: "text" },
     { key: "image_url", label: "Imagen (URL)", type: "text" },
@@ -57,7 +57,7 @@ export function buildProductExport(products, categories = [], suppliers = [], { 
     min_stock: p.min_stock ?? 5,
     unit: p.unit || "pieza",
     category: p.category ? (cat.get(p.category) || "") : "",
-    supplier: p.supplier ? (sup.get(p.supplier) || "") : "",
+    ...(includeSupplier ? { supplier: p.supplier ? (sup.get(p.supplier) || "") : "" } : {}),
     tax_rate: p.tax_rate ?? 16,
     status: p.status === "inactive" ? "Inactivo" : "Activo",
     image_url: p.image_url || "",

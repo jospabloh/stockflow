@@ -237,3 +237,20 @@ Deno.test("CSV: parser y serializador son inversos con comillas, comas y CRLF", 
   assertEquals(parseCSVMatrix(toCSV(m[0].map(String), [m[1]])), m);
   assertEquals(parseCSVMatrix("﻿x,y\r\n1,2\r\n"), [["x", "y"], ["1", "2"]]);
 });
+
+Deno.test("Exportar Productos: sin Proveedores:view no sale la columna proveedor ni se cargan proveedores", async () => {
+  const sup = [{ id: "s1", name: "Prov Uno" }];
+  const prod = [{ name: "a", supplier: "s1" }];
+  const full = buildProductExport(prod, [], sup, { includeSupplier: true });
+  assert(full.columns.some((c: Row) => c.key === "supplier"));
+  assertEquals(full.rows[0].supplier, "Prov Uno");
+  const none = buildProductExport(prod, [], [], { includeSupplier: false });
+  assert(!none.columns.some((c: Row) => c.key === "supplier"));
+  assert(!("supplier" in none.rows[0]), "sin permiso no debe viajar el proveedor (ni vacío)");
+  // La página solo consulta proveedores con permiso y bloquea la exportación hasta que carguen.
+  const page = await Deno.readTextFile(new URL("../../src/pages/Products.jsx", import.meta.url));
+  assert(page.includes("useSuppliers(businessId, { enabled: canSuppliers })"));
+  assert(page.includes("canSuppliers && !suppliersQuery.isSuccess"));
+  const hook = await Deno.readTextFile(new URL("../../src/hooks/queries/index.js", import.meta.url));
+  assert(hook.includes("enabled: !!businessId && enabled"));
+});

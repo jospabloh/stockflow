@@ -40,7 +40,9 @@ export default function Products() {
 
   const productsQuery = useProducts(businessId);
   const categoriesQuery = useCategories(businessId);
-  const suppliersQuery = useSuppliers(businessId);
+  // Proveedores completos (contacto, RFC, notas) solo para quien puede verlos.
+  const canSuppliers = can('Proveedores', 'view');
+  const suppliersQuery = useSuppliers(businessId, { enabled: canSuppliers });
   const products = productsQuery.data ?? [];
   const categories = categoriesQuery.data ?? [];
   const suppliers = suppliersQuery.data ?? [];
@@ -109,7 +111,14 @@ export default function Products() {
 
   // Todos los campos del producto; el costo solo con `Productos:cost_price`.
   const canCost = can('Productos', 'cost_price');
-  const { columns: exportColumns, rows: exportRows } = buildProductExport(filteredProducts, categories, suppliers, { includeCost: canCost });
+  const { columns: exportColumns, rows: exportRows } = buildProductExport(filteredProducts, categories, suppliers, { includeCost: canCost, includeSupplier: canSuppliers });
+  // Sin la lista de proveedores el CSV saldría con «proveedor» vacío y, al reimportarlo,
+  // se perderían las asociaciones: no se exporta hasta que la consulta termine bien.
+  const suppliersNotReady = canSuppliers && !suppliersQuery.isSuccess;
+  const suppliersFailed = canSuppliers && suppliersQuery.isError && !suppliersQuery.isSuccess;
+  const exportBlockedHint = suppliersFailed
+    ? "No se pudieron cargar los proveedores; recarga la página para exportar."
+    : suppliersNotReady ? "Cargando proveedores…" : undefined;
 
   if (loading) {
     return <TableSkeleton rows={8} columns={6} />;
@@ -158,12 +167,16 @@ export default function Products() {
             title="Productos"
             variant="outline"
             size="default"
+            disabled={suppliersNotReady}
           />
           <Button
             variant="outline"
             size="default"
+            disabled={suppliersNotReady}
+            title={exportBlockedHint}
             onClick={() => {
-              exportImportFormat("products", productsToImportRows(filteredProducts, categories, suppliers), "productos_import", { omit: canCost ? [] : ["precio_compra"] });
+              const omit = [...(canCost ? [] : ["precio_compra"]), ...(canSuppliers ? [] : ["proveedor"])];
+              exportImportFormat("products", productsToImportRows(filteredProducts, categories, suppliers), "productos_import", { omit });
               toast.success("CSV descargado en formato de importación");
             }}
           >
