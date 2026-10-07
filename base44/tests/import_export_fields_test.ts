@@ -221,6 +221,27 @@ Deno.test("Importar valida tipos y reporta error por fila (sin abortar el archiv
   assertEquals(ct.errorCount, 2);
 });
 
+Deno.test("Importar: fila con stock negativo queda en error, sin Product ni Movement; stock 0 y positivo siguen igual", async () => {
+  reset();
+  const out = await run("products", [
+    { nombre: "Neg", precio_menudeo: "1", stock: "-5" },
+    { nombre: "Cero", precio_menudeo: "1", stock: "0" },
+    { nombre: "Pos", precio_menudeo: "1", precio_compra: "2", stock: "7" },
+  ]);
+  assertEquals(out.results.map((r: Row) => r.status), ["error", "ok", "ok"]);
+  assertEquals(out.results[0].message, "El stock no puede ser negativo"); // mismo texto que createProductSafe
+  assertEquals(out.successCount, 2);
+  assertEquals(out.errorCount, 1);
+  assertEquals(tables.Product.map((p) => p.name), ["Cero", "Pos"]);
+  assertEquals(tables.Product.find((p) => p.name === "Cero")?.stock, 0);
+  assertEquals(tables.Product.find((p) => p.name === "Pos")?.stock, 7);
+  // Solo la fila positiva genera movimiento de entrada (stock inicial).
+  assertEquals(tables.Movement.length, 1);
+  assertEquals(tables.Movement[0].product_name, "Pos");
+  assertEquals(tables.Movement[0].type, "entry");
+  assertEquals(tables.Movement[0].quantity, 7);
+});
+
 Deno.test("importItemsSafe sigue exigiendo admin y licencia vigente", async () => {
   reset();
   tables.Business = [{ id: "b1", billing_status: "suspended" }];

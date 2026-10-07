@@ -2488,6 +2488,11 @@ Siete lecciones de la ventana nocturna del 2026-10-02 (trenes, canarios y un rol
 - **Tras mergear, el webhook de GitHub NO crea el checkpoint.** Hay que llamar
   `POST /api/apps/{app_id}/github/sync` (el `app_id` vive en el repo, módulo 11) y esperar al checkpoint nuevo
   antes de publicar.
+- **Antes de publicar, confirma que el checkpoint más reciente es el HEAD de `main`.** Compara
+  `GET app-checkpoints[0].git_commit_hash` con el HEAD de `main`: si la sincronización con GitHub no creó
+  checkpoint, `deploy` vuelve a publicar el checkpoint viejo y parece exitoso (pasó el 2026-10-05: se mergearon
+  6 PRs y producción siguió en el commit anterior hasta el día siguiente). El nombre del checkpoint no es
+  confiable; solo el `git_commit_hash`.
 - **ROLLBACK: publicar un checkpoint anterior NO revierte las funciones backend.** Revierte el sitio y las
   entidades publicadas, pero las funciones siguen con el código nuevo. Además hay que correr
   `base44 functions deploy` **desde el árbol del commit anterior** (worktree en ese commit) y comprobar con una

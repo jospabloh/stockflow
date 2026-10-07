@@ -10,6 +10,8 @@
  * (`Código de barras` == `codigo_barras`).
  */
 
+import { validateProductStock } from './productStockValidation.ts';
+
 export const PRODUCT_HEADERS = [
   'nombre', 'sku', 'codigo_barras', 'descripcion', 'precio_compra', 'precio_menudeo',
   'precio_mayoreo', 'stock', 'stock_minimo', 'unidad', 'categoria', 'proveedor',
@@ -105,6 +107,9 @@ export function mapProductRow(row: Record<string, string>): Result<ProductMapped
   if ('error' in wholesale) return wholesale;
   const stock = num(row.stock || '', 'stock', 0);
   if ('error' in stock) return stock;
+  // Misma regla que createProductSafe: sin stock negativo (quedaría sin Movement que lo respalde).
+  const stockError = validateProductStock(stock.value);
+  if (stockError) return { error: stockError };
   const minStock = num(row.stock_minimo || '', 'stock_minimo', 5, { min: 0 });
   if ('error' in minStock) return minStock;
   const unit = (row.unidad || 'pieza').toLowerCase();
