@@ -18,9 +18,11 @@
 //
 // Usage:
 //   npm run deploy            → functions only (safe, additive + prune)
+//   npm run deploy:site       → frontend: construye (npm run build) y VERIFICA el
+//                               dist/ antes de subirlo; si no construye, no sube
 //   npm run deploy:entities   → schema push (DESTRUCTIVE, typed confirmation)
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
@@ -139,7 +141,9 @@ const steps = deploySite
   // --yes: sin él la CLI aborta en modo no interactivo (sesión de Claude, CI) con
   // «--yes is required in non-interactive mode». Desplegar el sitio no es destructivo,
   // así que confirmar aquí no salta ninguna puerta; la de entidades sigue pidiendo el nombre.
-  ? [['site', 'deploy', '--app-id', config.appId, '--yes']]
+  // --no-build: el build lo hace este script (arriba, con el id inyectado); `base44 build`
+  // falla en este repo porque no hay .app.jsonc, así que la CLI no debe intentar el suyo.
+  ? [['site', 'deploy', '--app-id', config.appId, '--yes', '--no-build']]
   : [['functions', 'deploy', '--app-id', config.appId, '--force']];
 
 if (pushEntities) {
@@ -156,6 +160,32 @@ if (pushEntities) {
   const typed = await confirm(`\n  Escribe "${config.name}" para confirmar: `);
   if (typed !== config.name) die('Confirmación no coincide. No se envió nada.');
   steps.push(['entities', 'push', '--app-id', config.appId]);
+}
+
+// `base44 site deploy` sube `dist/` TAL COMO ESTÁ: no construye. La noche del
+// 2026-10-06 (21:57–22:01 CDMX) subió un `dist/` del 24-sep que había quedado en el
+// clon, y producción sirvió 4 minutos un frontend de dos semanas atrás, que llamaba
+// a funciones que ya no existen. Por eso el sitio se construye aquí, con el id de la
+// app inyectado, y no se sube nada si la construcción falla o si no dejó un
+// `dist/index.html` escrito en ESTA corrida (un `dist/` viejo no cuenta).
+if (deploySite) {
+  const startedAt = Date.now();
+  console.log('\n$ npm run build\n');
+  const build = spawnSync('npm', ['run', 'build'], {
+    cwd: ROOT,
+    stdio: 'inherit',
+    env: { ...process.env, VITE_BASE44_APP_ID: config.appId },
+  });
+  if (build.status !== 0) {
+    die(`\`npm run build\` salió con código ${build.status ?? 'desconocido'}. No se subió nada.`, 'Arregla la construcción antes de reintentar.');
+  }
+  const indexFile = path.join(ROOT, 'dist', 'index.html');
+  if (!existsSync(indexFile) || statSync(indexFile).mtimeMs < startedAt) {
+    die(
+      'La construcción terminó, pero no escribió un dist/index.html nuevo. No se subió nada.',
+      'Subir el dist/ que ya estaba ahí es exactamente el incidente del 2026-10-06.',
+    );
+  }
 }
 
 for (const args of steps) {

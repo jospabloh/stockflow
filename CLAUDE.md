@@ -2672,3 +2672,30 @@ archivos) y `deno test -A base44/tests` (**532 pasaron, 0 fallaron**),
 verificado:** una sesión de navegador como `almacenista` restringido de un
 inquilino real — mismo límite y misma razón que declara el resto del archivo
 (no se escribe en el inquilino de producción de un cliente para demostrar algo).
+
+## `deploy:site` ya construye; sync de GitHub, checkpoint y dependabot (2026-10-07)
+
+1. **`deploy:site` subía `dist/` sin construir.** La noche del 2026-10-06
+   (21:57–22:01 CDMX) subió un build del 24-sep que estaba en el clon y
+   producción lo sirvió 4 minutos, sin actividad de usuarios en ese rato. Ahora
+   `scripts/base44-deploy.mjs --site` corre `npm run build` con
+   `VITE_BASE44_APP_ID` tomado de `base44.app.json`, y no sube nada si el build
+   falla o si no dejó un `dist/index.html` escrito en esa corrida. Pasa
+   `--no-build` a la CLI para que no intente el suyo. Lo cubre
+   `base44/tests/deploy_site_builds_first_test.ts` (npm/npx falsos; CI corre
+   `deno test` con `--allow-run=node` por eso).
+2. **El sync de GitHub** (`POST /api/apps/{app_id}/github/sync`) aplica por sí
+   solo las funciones, la RLS de las entidades y los workflows del repo. Un
+   cambio de RLS queda vivo en el momento del sync, antes de cualquier comando
+   de deploy; por eso `npm run deploy` reportó «25 unchanged» y era verdad.
+3. **Publicar el checkpoint por la API** (`POST /api/apps/{app_id}/deploy` con
+   `checkpoint_id`) construye en la plataforma un sitio equivalente byte a byte,
+   salvo hashes de nombres de chunk, al `npm ci && npm run build` local del mismo
+   commit (comprobado con 7f7e773: 58 de 58 chunks del mismo tamaño), y marca
+   `last_deployed_at`. Subir el sitio por la CLI **no** marca el checkpoint como
+   publicado: el panel sigue mostrando el anterior aunque el contenido servido
+   sea el nuevo.
+4. **Antes de probar un PR de dependabot**, comprobar con `git merge-base` cuánto
+   se atrasó respecto a `main` y probar la fusión, no la rama sola.
+   `deno test -A base44/tests` reescribe `deno.lock` por sí mismo; así se
+   regenera.
