@@ -20,15 +20,21 @@ async function ask(question) {
 // Commit range of this release; set in main() next to the log it describes.
 let releaseRange = '-n 10';
 
-// Merged PR titles since the last release (the first body line of each
-// "Merge pull request" commit), else the non-merge commit subjects. Bot and
+// Changes since the last release, from main's first-parent history. Bot and
 // release commits are skipped so a release never lists itself.
 function plainChanges(version) {
   const range = releaseRange;
-  const fromMerges = execSync(`git log ${range} --merges --format=%b%x00`).toString()
-    .split('\0').map((b) => b.trim().split('\n')[0].trim()).filter(Boolean);
-  const subjects = fromMerges.length ? fromMerges
-    : execSync(`git log ${range} --no-merges --format=%s`).toString().split('\n').map((l) => l.trim()).filter(Boolean);
+  // Walk main's own history (first parent): a merge contributes its PR title
+  // (first body line), a direct commit its subject. Both kinds can share one
+  // release, so neither is dropped in favor of the other.
+  const subjects = execSync(`git log ${range} --first-parent --format=%P%x01%s%x01%b%x00`).toString()
+    .split('\0').map((rec) => rec.trim()).filter(Boolean)
+    .map((rec) => {
+      const [parents, subject, body = ''] = rec.split('\x01');
+      const isMerge = parents.trim().split(/\s+/).length > 1;
+      return (isMerge ? body.trim().split('\n')[0] : subject).trim();
+    })
+    .filter(Boolean);
   // Internal-only work (deps, docs, CI, reverts, release bookkeeping) is not news
   // for the user; conventional prefixes like "fix(ui): " are stripped.
   const changes = subjects
