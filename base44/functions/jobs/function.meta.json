@@ -55,7 +55,7 @@
         "Business",
         "PermissionProfile"
       ],
-      "callers": "cron HTTP del panel (NO programado en repo; ver NIGHTLY_AUTOMATIONS_SETUP.md) o disparo manual del owner"
+      "callers": "workflow 'Weekly Permission Audit' (cron 0 13 * * 1 UTC, args {action}) o disparo manual del owner; NO añadir un cron HTTP del panel"
     },
     "dailyDocumentationAudit": {
       "purpose": "Compara versión en código vs AppChangelog/AppVersion, genera changelog (Anthropic) si falta, email al owner. Escribe AppChangelog/AppVersion.",

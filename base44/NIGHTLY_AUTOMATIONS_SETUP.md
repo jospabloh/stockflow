@@ -4,13 +4,15 @@
 > (`POST /functions/v1/jobs`, body `{"action": "<nombre>"}`, mismo header `x-cron-secret`).
 > Actions: `sendLifecycleEmails`, `processTrialReactivationEmails`, `dailyPermissionAudit`,
 > `dailyDocumentationAudit`, `dailyStockReconcile`, `cleanupSessions`. Workflows en repo:
-> Los 3 workflows del repo (Daily Stock Reconcile, Send Lifecycle Emails, Trial Reactivation Emails Daily)
-> apuntan a `jobs`. Las funciones sueltas viejas ya NO existen (borradas en ola 4b): cualquier cron HTTP del
+> Los 4 workflows del repo (Daily Stock Reconcile, Send Lifecycle Emails, Trial Reactivation Emails Daily,
+> Weekly Permission Audit) apuntan a `jobs`. Las funciones sueltas viejas ya NO existen (borradas en ola 4b): cualquier cron HTTP del
 > panel que aun apunte a `/functions/v1/<nombre viejo>` debe repuntarse a `/functions/v1/jobs` con el body de arriba.
 > `cleanupSessions` existe como action pero NO
-> se programa: decisión del owner tras medir el impacto (>1000 sesiones viejas, cross-tenant). `dailyPermissionAudit` y `dailyDocumentationAudit` escriben datos
-> (PermissionProfile / AppChangelog / AppVersion) y NO se programan desde el repo: siguen como
-> crons HTTP del panel (actualizar su URL/body según el prompt de abajo).
+> se programa: decisión del owner tras medir el impacto (>1000 sesiones viejas, cross-tenant). `dailyDocumentationAudit` escribe datos
+> (AppChangelog / AppVersion) y NO se programa desde el repo: sigue como cron HTTP del panel
+> (actualizar su URL/body según el prompt de abajo). `dailyPermissionAudit` (escribe PermissionProfile)
+> SÍ se programa desde el repo, semanal: workflow `Weekly Permission Audit` (lunes 13:00 UTC, `0 13 * * 1`).
+> NO crear además un cron HTTP del panel para ella (duplicaría escrituras y correos); si existe uno, desactivarlo.
 > Recordatorios de cursos: cron del panel -> `/functions/v1/courseComms`, body `{"action":"runReminders"}`
 > (reemplaza al wrapper `sendCourseReminders`).
 
@@ -42,7 +44,7 @@ CONTEXTO
   `x-cron-secret: <valor de CRON_SECRET>` para autorización.
 - El CRON_SECRET ya está configurado como variable de entorno.
 
-CRON 1 — dailyPermissionAudit
+CRON 1 — dailyPermissionAudit (OBSOLETO: ahora lo corre el workflow `Weekly Permission Audit`; no configurar este cron del panel)
 - Horario: cada día a las 09:00 hora Ciudad de México (15:00 UTC invierno / 14:00 UTC verano).
   Si el scheduler no admite zona horaria usa: 15:00 UTC fijo. Expresión cron: 0 9 * * *
 - Método: POST
