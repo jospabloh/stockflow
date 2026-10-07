@@ -46,7 +46,7 @@ Deno.test("entry.ts del router responde 400 a action desconocida", async () => {
   assert(entry.includes("status: 400"));
 });
 
-// Tras #420 los 3 workflows apuntan al router jobs; ya no hay workflows legacy.
+// Tras #420 los workflows apuntan al router jobs; ya no hay workflows legacy.
 const LEGACY_WORKFLOWS_KEPT: string[] = [];
 
 Deno.test("workflows de jobs usan function_name 'jobs' con action registrada", async () => {
@@ -65,7 +65,7 @@ Deno.test("workflows de jobs usan function_name 'jobs' con action registrada", a
       assert(!txt.includes(`"function_name": "${a}"`), `${f.name} sigue apuntando a la función vieja ${a}`);
     }
   }
-  assertEquals(found, 3); // Daily Stock Reconcile, Send Lifecycle Emails, Trial Reactivation Emails Daily
+  assertEquals(found, 4); // Daily Stock Reconcile, Send Lifecycle Emails, Trial Reactivation Emails Daily, Weekly Permission Audit
 });
 
 Deno.test("dailyStockReconcile no escribe Movement ni Product ni reintenta/sana (solo alerta)", async () => {
