@@ -23,6 +23,7 @@ import ImportProducts from "@/components/settings/ImportProducts";
 import TeamMembersManager from "@/components/settings/TeamMembersManager";
 import JoinRequestsManager from "@/components/settings/JoinRequestsManager";
 import ReferralPanel from "@/components/settings/ReferralPanel";
+import BusinessRulesPanel from "@/components/settings/BusinessRulesPanel";
 import { useBusinessContext } from "@/components/BusinessContext";
 import LicenseInfoCard from "@/components/license/LicenseInfoCard";
 import { useLicense } from "@/lib/LicenseContext";
@@ -291,9 +292,11 @@ export default function Settings() {
     }
   };
   const canReferrals = can('Configuracion', 'manage_referral');
+  // Reglas del negocio: solo su admin (el servidor lo vuelve a exigir).
+  const canRules = canCorrectInventory;
   const canViewConfig = can('Configuracion', 'view');
-  const anyConfigTab = canBusiness || canSat || canTeam || canImport || canAccountTab || canAuditInventory || canReferrals;
-  const defaultTab = canBusiness ? 'business' : (canSat ? 'sat' : (canTeam ? 'team' : (canImport ? 'import' : (canAccountTab ? 'account' : (canAuditInventory ? 'inventario' : (canReferrals ? 'referidos' : 'clients'))))));
+  const anyConfigTab = canBusiness || canSat || canTeam || canImport || canAccountTab || canAuditInventory || canReferrals || canRules;
+  const defaultTab = canBusiness ? 'business' : (canSat ? 'sat' : (canTeam ? 'team' : (canImport ? 'import' : (canAccountTab ? 'account' : (canAuditInventory ? 'inventario' : (canReferrals ? 'referidos' : (canRules ? 'reglas' : 'clients')))))));
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -308,6 +311,7 @@ export default function Settings() {
               {canAccountTab && <TabsTrigger value="account"><UserX className="h-4 w-4 mr-1" /> Cuenta</TabsTrigger>}
               {canAuditInventory && <TabsTrigger value="inventario"><PackageSearch className="h-4 w-4 mr-1" /> Audit Inventario</TabsTrigger>}
               {canReferrals && <TabsTrigger value="referidos"><Gift className="h-4 w-4 mr-1" /> Referidos</TabsTrigger>}
+              {canRules && <TabsTrigger value="reglas"><ShieldCheck className="h-4 w-4 mr-1" /> Reglas</TabsTrigger>}
             </>
           )}
         </TabsList>
@@ -896,6 +900,13 @@ export default function Settings() {
           {canReferrals && (
             <TabsContent value="referidos">
               <ReferralPanel />
+            </TabsContent>
+          )}
+
+          {/* Reglas del negocio */}
+          {canRules && (
+            <TabsContent value="reglas">
+              <BusinessRulesPanel />
             </TabsContent>
           )}
 

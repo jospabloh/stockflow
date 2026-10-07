@@ -22,3 +22,22 @@ Deno.test('every catalog rule explains itself: title, description and what it af
     }
   }
 });
+
+// Configuración → Reglas lets a business's admin flip these; the server's
+// allowlist (setMyTenantRule) must be exactly the catalog the screen shows.
+import { TENANT_TOGGLEABLE_RULE_KEYS, isBusinessAdminRole } from '../functions/tenantRules/handlers/_tenantToggle.ts';
+
+Deno.test('a business admin can toggle exactly the catalog rules, nothing else', () => {
+  const catalog = TENANT_RULE_CATALOG.map((r) => r.key).sort();
+  const server = [...TENANT_TOGGLEABLE_RULE_KEYS].sort();
+  if (JSON.stringify(catalog) !== JSON.stringify(server)) {
+    throw new Error(`catalog ${catalog} vs server allowlist ${server}`);
+  }
+});
+
+Deno.test('only owner/admin count as the business admin (almacenista cannot toggle)', () => {
+  if (!isBusinessAdminRole('owner') || !isBusinessAdminRole('admin')) throw new Error('admin roles rejected');
+  for (const r of ['almacenista', 'user', undefined, null, '']) {
+    if (isBusinessAdminRole(r)) throw new Error(`role ${r} accepted`);
+  }
+});
