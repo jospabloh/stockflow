@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { hasPermission } from './_permissions.ts';
 import { validateQuotationCreate } from './_validation.ts';
+import { checkCatalogClient, catalogClientName, CATALOG_CLIENT_RULE_KEY } from './_catalogClientRule.ts';
 import { getAuthUser } from '../../../shared/authUser.ts';
 
 /**
@@ -56,11 +57,19 @@ export async function handle(req: Request): Promise<Response> {
       return Response.json({ success: false, error: validationError }, { status: 400 });
     }
 
+    // TENANT RULE: catalog-only clients. The stored name comes from the catalog,
+    // never from the body, so a valid client_id can't carry a free-typed name.
+    const clientCheck = await checkCatalogClient(base44.asServiceRole, user.business_id, client_id);
+    if (clientCheck.error) {
+      return Response.json({ success: false, error: clientCheck.error, rule: CATALOG_CLIENT_RULE_KEY }, { status: 400 });
+    }
+    const finalClientName = clientCheck.client ? catalogClientName(clientCheck.client) : client_name;
+
     // All validations passed, create the quotation — use asServiceRole to allow almacenista to bypass RLS
     const quotation = await base44.asServiceRole.entities.Quotation.create({
       folio,
       client_id,
-      client_name,
+      client_name: finalClientName,
       client_email,
       client_phone,
       items,

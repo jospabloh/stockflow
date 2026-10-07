@@ -8,6 +8,7 @@ const KNOWN_RULE_KEYS = [
   'special_delivery_flow',
   'custom_pricing_override',
   'enable_granular_permissions',
+  'require_catalog_client_for_quotations',
 ];
 
 export async function handle(req: Request): Promise<Response> {
