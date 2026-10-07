@@ -66,11 +66,13 @@ export function useMachinerySales(businessId) {
   });
 }
 
-export function useSuppliers(businessId) {
+// `enabled: false` evita traer proveedores (contacto, RFC, notas) a quien no tiene
+// Proveedores:view.
+export function useSuppliers(businessId, { enabled = true } = {}) {
   return useQuery({
     queryKey: ["Supplier", businessId],
     queryFn: () => base44.entities.Supplier.filter({ business_id: businessId }),
-    enabled: !!businessId,
+    enabled: !!businessId && enabled,
   });
 }
 
