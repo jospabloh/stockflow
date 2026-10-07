@@ -16,8 +16,8 @@
 > Recordatorios de cursos: cron del panel -> `/functions/v1/courseComms`, body `{"action":"runReminders"}`
 > (reemplaza al wrapper `sendCourseReminders`).
 
-Este documento contiene el **prompt exacto** para configurar los dos cron jobs nocturnos
-en Base44, y los pasos de verificación post-deploy.
+Este documento contiene el **prompt exacto** para configurar el cron job nocturno de
+`dailyDocumentationAudit` en Base44 (`dailyPermissionAudit` ya NO va por cron del panel: lo corre el workflow semanal del repo), y los pasos de verificación post-deploy.
 
 ---
 
@@ -35,7 +35,7 @@ Configúralas en Base44 → Settings → Environment Variables **antes** de crea
 ## Prompt para Base44 (cópialo textual en el chat de Base44)
 
 ```
-Necesito que configures dos cron jobs nocturnos adicionales en este proyecto Base44.
+Necesito que configures un cron job nocturno adicional en este proyecto Base44.
 
 CONTEXTO
 - StockFlow es un SaaS multi-tenant de gestión de inventario.
@@ -44,24 +44,7 @@ CONTEXTO
   `x-cron-secret: <valor de CRON_SECRET>` para autorización.
 - El CRON_SECRET ya está configurado como variable de entorno.
 
-CRON 1 — dailyPermissionAudit (OBSOLETO: ahora lo corre el workflow `Weekly Permission Audit`; no configurar este cron del panel)
-- Horario: cada día a las 09:00 hora Ciudad de México (15:00 UTC invierno / 14:00 UTC verano).
-  Si el scheduler no admite zona horaria usa: 15:00 UTC fijo. Expresión cron: 0 9 * * *
-- Método: POST
-- URL: ${APP_URL}/functions/v1/jobs   (router; antes /functions/v1/dailyPermissionAudit)
-- Headers:
-    Content-Type: application/json
-    x-cron-secret: ${CRON_SECRET}
-- Body: {"action":"dailyPermissionAudit"}
-- Qué hace:
-    * Recorre todos los negocios (Business) × roles (admin, almacenista)
-    * Para cada par, verifica que exista un PermissionProfile en BD
-    * Crea perfiles faltantes con los 142 permisos por defecto del rol
-    * Actualiza perfiles existentes añadiendo claves nuevas sin pisar valores actuales
-    * Opera en batches de 50 operaciones para no exceder límites de la API
-    * Envía reporte por email al platform owner al finalizar
-
-CRON 2 — dailyDocumentationAudit
+CRON — dailyDocumentationAudit
 - Horario: cada día a las 09:15 hora Ciudad de México (15:15 UTC invierno / 14:15 UTC verano).
   Si el scheduler no admite zona horaria usa: 15:15 UTC fijo. Expresión cron: 15 9 * * *
 - Método: POST
@@ -80,14 +63,12 @@ CRON 2 — dailyDocumentationAudit
 
 VERIFICACIÓN (ejecuta después de configurar)
 
-1. Llama manualmente dailyPermissionAudit con el header x-cron-secret correcto.
-   Respuesta esperada: 200 OK con { success: true, businessesScanned: N, ... }
-
-2. Llama manualmente dailyDocumentationAudit con el header x-cron-secret correcto.
+1. Llama manualmente dailyDocumentationAudit con el header x-cron-secret correcto.
    Respuesta esperada: 200 OK con { success: true, snapshotVersion: "2.12.0", ... }
 
 NO HAGAS
 - No modifiques el código de las funciones.
+- No configures un cron de dailyPermissionAudit: la programa el workflow `Weekly Permission Audit` del repo (lunes 13:00 UTC).
 - No uses el horario 08:00-09:00 CDMX sin verificar primero qué otros crons de licencia siguen agendados en el panel de Base44 (el ciclo de vida nativo de StockFlow fue retirado — ver `base44/AUTOMATION_SETUP_PROMPT.md` — pero un cron viejo puede seguir agendado ahí hasta que se borre a mano).
 - No configures ANTHROPIC_API_KEY_SF si no la tienes; dailyDocumentationAudit degradará
   graciosamente usando los cambios del snapshot en lugar de generarlos con IA.
@@ -126,7 +107,7 @@ los handlers de `base44/functions/jobs/handlers/`). Base44 desplegará automáti
 | Archivo | Propósito |
 |---|---|
 | `base44/entities/AppChangelog.jsonc` | Entidad BD para historial de versiones |
-| `base44/functions/jobs/handlers/dailyPermissionAudit.ts` | Handler del router `jobs` — cron 09:00 |
+| `base44/functions/jobs/handlers/dailyPermissionAudit.ts` | Handler del router `jobs` — workflow semanal (lunes 13:00 UTC) |
 | `base44/functions/jobs/handlers/dailyDocumentationAudit.ts` | Handler del router `jobs` — cron 09:15 |
 | `scripts/generatePermissionManifests.mjs` | Regenera permisos desde permissionRegistry.js |
 | `scripts/generateVersionHistorySnapshot.mjs` | Regenera snapshot de versión desde appConfig.js + git |
@@ -138,7 +119,7 @@ los handlers de `base44/functions/jobs/handlers/`). Base44 desplegará automáti
 ## Flujo end-to-end de la auditoría nocturna
 
 ```
-09:00 → dailyPermissionAudit
+lunes 13:00 UTC → dailyPermissionAudit (workflow del repo)
   ├── Business.list() — todos los tenants
   ├── Por cada tenant × rol: filter PermissionProfile
   ├── Crea/actualiza en batches de 50
