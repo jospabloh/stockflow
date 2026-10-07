@@ -181,7 +181,7 @@ export default function HelpCenter() {
       />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto p-8">
+      <div className="flex-1 overflow-auto p-8">
         {activeArticle ? (
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold mb-6">{activeArticle.title}</h1>
@@ -194,7 +194,7 @@ export default function HelpCenter() {
             <p className="text-slate-400">Selecciona un tema</p>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

@@ -21,7 +21,7 @@ function buildInitialPerms() {
 }
 
 export default function PermissionAdmin() {
-  const { isPlatformAdmin } = useLicense();
+  const { isPlatformAdmin, loading: licenseLoading } = useLicense();
   const { reload: reloadPermissions } = usePermissions();
   const { businessId } = useBusinessContext();
   const [user, setUser] = useState(null);
@@ -150,7 +150,10 @@ export default function PermissionAdmin() {
     }
   };
 
-  if (loadingUser || loading) {
+  // Un no-admin nunca dispara loadProfiles(), así que `loading` no termina para él:
+  // solo se espera la carga de perfiles cuando quien mira es administrador.
+  const isAdminUser = isPlatformAdmin || isBusinessAdmin(user);
+  if (loadingUser || licenseLoading || (isAdminUser && loading)) {
     return (
       <div className="flex items-center justify-center min-h-64">
         <div className="h-8 w-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
