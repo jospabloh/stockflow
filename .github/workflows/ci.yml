@@ -33,8 +33,11 @@ jobs:
           #
           # --allow-write: procesos_control_test.ts reescribe los handlers a un
           # directorio temporal (Deno.makeTempDir) para cargarlos con un SDK simulado.
+          #
+          # --allow-run=node: deploy_site_builds_first_test.ts ejecuta el script real
+          # scripts/base44-deploy.mjs con node (y npm/npx falsos), sin tocar Base44.
           if find base44 -type f \( -name '*_test.ts' -o -name '*_test.js' -o -name '*.test.ts' -o -name '*.test.js' \) | grep -q .; then
-            deno test --allow-env --allow-read --allow-write base44
+            deno test --allow-env --allow-read --allow-write --allow-run=node base44
           else
             echo "No Deno test modules found under base44/; skipping deno test."
           fi
