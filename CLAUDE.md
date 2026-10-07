@@ -2711,6 +2711,19 @@ no el del cuerpo. En update sólo se valida si el cliente cambia, para que las
 cotizaciones viejas con nombre libre sigan editables. La lógica vive en
 `quotations/handlers/_catalogClientRule.ts` (sin imports, con
 `base44/tests/catalog_client_rule_test.ts`). El formulario lo refleja (placeholder,
-aviso, bloqueo al guardar) pero el candado real es el servidor. Las tres listas de
-claves (`adminUpsertTenantRule`, `adminListTenantRules`, `TenantRulesAdmin.jsx`)
-deben ir juntas; `tenant_rule_keys_test.ts` vigila las dos del servidor.
+aviso, bloqueo al guardar) pero el candado real es el servidor.
+
+### «Reglas por negocio»: un switch por regla, nada más (2026-10-07)
+
+La página `TenantRulesAdmin` era un CRUD genérico (rule_key crudo, `config_json`
+a mano, diálogo de cuatro campos) para lo que es encender o apagar una regla.
+Ahora: eliges negocio y cada regla sale como tarjeta con nombre, qué hace, qué
+afecta y **un switch** que guarda al instante (conserva `config_json`/`notas` que
+ya tuviera la fila). El catálogo vive en **un solo lugar**,
+`src/lib/tenantRuleCatalog.js`, y **sólo lleva reglas que algún código lee**:
+`allow_manual_petty_cash_edit_delete`, `special_delivery_flow`,
+`custom_pricing_override` y `enable_granular_permissions` siguen aceptadas por el
+servidor pero nada las consulta, así que no se ofrecen — un switch que no cambia
+nada es peor que ningún switch. Para agregar una regla: código que la lea + clave
+en `KNOWN_RULE_KEYS` de los dos handlers + entrada en el catálogo;
+`tenant_rule_catalog_test.ts` y `tenant_rule_keys_test.ts` fallan si se separan.
