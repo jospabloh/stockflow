@@ -2533,3 +2533,130 @@ dos: MC es idempotente (tenant conocido o ya alertado → no-op).
 `alerts` de MC con `via: ping` y el correo enviado. Ojo: eso prueba que el ping llega,
 no cuál de los dos lo mandó. Y recuerda la regla de este archivo: `npm run deploy` dijo
 "47 unchanged"; lo que se comprobó fue bajando el código con `functions pull`.
+
+## Verificación de despliegue 2026-10-07: `main` ya estaba vivo entero, y comprobado por contenido
+
+Pasada de cierre: desplegar lo que faltara de `main` y comprobarlo. **No faltaba
+nada** — lo que vale la pena guardar es *cómo* se demostró, porque las tres
+superficies se pueden comprobar por contenido en vez de creerle a la CLI, y una
+de ellas decide si hace falta correr el comando destructivo.
+
+### Funciones: 231 archivos idénticos byte a byte, no «25 unchanged»
+
+`npm run deploy` reportó `25 unchanged`, que es exactamente la señal que la
+sección del 2026-09-24 documenta como poco fiable. La comprobación que sí
+concluye, generalizada a **todos** los grupos de una vez:
+
+```bash
+mkdir -p /tmp/pullcheck/base44 && cd /tmp/pullcheck
+cp <repo>/base44.app.json . && cp <repo>/base44/config.jsonc base44/
+BASE44_APP_ID=69af971d0fdb362c9ae52ed3 npx --yes base44@latest functions pull
+```
+
+`functions pull` necesita **las dos cosas**: `base44/config.jsonc` (si no:
+«Project root not found») y el id por `BASE44_APP_ID` o `--app-id` (no lee
+`base44.app.json`). Deja cada grupo como
+`base44/functions/<grupo>/base44/<ruta original>` + un `function.jsonc`, así que
+un `diff -r` contra el repo sólo informa de la diferencia de layout: hay que
+comparar archivo por archivo contra `<repo>/base44/<ruta>`. Resultado:
+**231 iguales, 0 diferentes, 0 sólo-desplegados**, y ningún `.ts` del repo
+ausente del bundle. Esta vez `unchanged` era verdad; la diferencia es que ahora
+se sabe.
+
+El sondeo por comportamiento también sirve y cuesta una llamada, pero hay que
+elegir bien el dominio: `app.base44.com` responde **403 «Backend functions
+cannot be accessed from the platform domain»**; el que sirve las funciones es
+`https://stockflow.base44.app/api/apps/<appId>/functions/<grupo>`. Y el router
+contesta `unknown action` **antes** de autenticar, así que la pareja
+acción-inventada → 400 / acción-nueva → 401 distingue código viejo de nuevo sin
+necesitar una sesión de usuario.
+
+### Entidades: cero deriva, así que `deploy:entities` NO se corrió
+
+Comparando las 32 `base44/entities/*.jsonc` contra `list_entity_schemas` en vivo
+(RLS de las cuatro operaciones, `required`, campos, `rls` por campo, tipos):
+**cero deriva, nada sólo en el repo, nada sólo desplegado**. Es decir, el push
+habría sido un no-op — y para eso sirve la comparación: **decide si hace falta
+correr el comando destructivo, en vez de correrlo para averiguarlo.** La lista
+de «sólo desplegadas» es la que importa, porque ésas son las que `entities push`
+borraría.
+
+### Sitio: el chunk servido es un build de HEAD, byte a byte salvo hashes
+
+Las cadenas nuevas del commit de HEAD (#474, `exportColumns.js`/`importSpec.js`)
+están en el bundle servido, y más fuerte: el `index-*.js` servido y el de un
+`npm run build` local **tienen el mismo tamaño** y difieren en 711 bytes
+repartidos en 93 tramos, **todos dentro de un nombre de chunk** (`./utils-HASH.js`
+y compañía). Un chunk perezoso (`ProductFormDialog`) da lo mismo: 52 bytes, 7
+tramos, todos hashes. Los hashes difieren porque el build de producción inyecta
+el app id y eso cascadea; el código es el mismo. No se corrió `deploy:site`: ya
+estaba servido.
+
+### `npm run test:smoke` SÍ corre desde el sandbox — y el dominio SÍ se alcanza
+
+Este archivo repite en cinco secciones que «el proxy de este sandbox no alcanza
+el dominio desplegado» y que la suite sólo corre en Actions. **Hoy no es
+cierto**: `curl https://stockflow.acaciaco.com.mx/` responde 200 y se bajaron los
+2 MB del bundle. Dos cosas había que arreglar, ninguna de ellas la red:
+
+1. **El binario.** `@playwright/test` 1.63 quiere Chromium 1243; el sandbox trae
+   el 1194 en `/opt/pw-browsers`. No se instala nada: se apunta el launch al que
+   hay, con un config de usar y tirar (en el scratchpad, con
+   `NODE_PATH=<repo>/node_modules` para que resuelva `@playwright/test`):
+   `use: { launchOptions: { executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' } }`.
+2. **El CA del proxy no estaba en el almacén NSS**, pese a que el README del
+   proxy afirma que sí («the browser NSS store … already set up»). Chromium daba
+   `ERR_CERT_AUTHORITY_INVALID` con un `~/.pki/nssdb` vacío. Se arregla
+   confiando el CA, no desactivando la verificación:
+
+   ```bash
+   apt-get update -q && apt-get install -y libnss3-tools
+   certutil -d sql:$HOME/.pki/nssdb -A -t "C,," -n ccr-agent-proxy \
+     -i /root/.ccr/agent-proxy-ca.crt
+   ```
+
+Con eso: **6 pasaron, 1 saltada (24.8 s) contra producción**, desde aquí. Es la
+tercera vez que este portafolio escribe la misma lección —el `000` del proxy en
+Mission Control, `deno` que sí se bajaba de GitHub— y conviene leerla al revés
+de como suena: **«no verificado» por una vía bloqueada es una hipótesis sobre la
+vía, no una respuesta sobre la pregunta.** Las notas anteriores de este archivo
+sobre el smoke y el dominio quedan superadas por ésta.
+
+### Lo que se leyó del backend y estaba bien
+
+- **Workflows** (`GET /workflows?include_archived=true`): los tres crons de
+  licencia retirados siguen `archived` desde el 2026-09-11, sin recurrencia de
+  la deriva de `base44-builder[bot]`. **«Sync Product Stock on Movement» ya
+  está archivado** — la sección del 2026-09-24 lo dejó como «se puede archivar
+  desde el panel» y ya se hizo. Los tres activos (`Daily Stock Reconcile`
+  `30 14 * * *`, `Trial Reactivation Emails Daily` `0 16 * * *`,
+  `Send Lifecycle Emails` `0 15 * * *`) tienen cron válido y
+  `last_run_status: success` el 2026-10-06.
+- **Los correos del trial.** Las 25 filas más recientes de `EmailNotification`
+  están **todas** en `sent`: el defecto 1 del 2026-09-24 (nada marcaba la fila,
+  así que el cron la habría reenviado a diario) está cerrado y corriendo. **No
+  hay ninguna fila `trial_day_*` todavía, y eso es correcto, no un hueco**: la
+  primera ventana de `TRIAL_REMINDERS` es `daysLeft` entre 13 y 15, y Baristop
+  Durango (`trial_end_at` 2026-10-24) la alcanza el **2026-10-09**. Las otras
+  dos pruebas vivas van a 22 y 24 días.
+- **Mission Control** (Supabase `audit_actions`): los cuatro crons corrieron
+  **7 de los últimos 7 días** (`cron:license-lifecycle`,
+  `cron:renewal-reminders:upcoming`, `cron:usage-reminders`, `sync`), el último
+  el 2026-10-06. La gestión de licencias del portafolio sigue siendo suya.
+- `Business.tenant_id` está puesto en los **5** negocios, incluido el creado
+  después del backfill del 2026-10-01 — `createBusinessSafe` lo fija solo.
+
+### Un arreglo de paso
+
+`deno.lock` tenía `npm:@base44/sdk@~0.8.52` mientras `package.json` ya iba en
+`^0.8.53` (lo dejó así el commit «Update base44 packages»). `deno test` lo
+regeneró; se commitea la línea.
+
+**Verificado:** `npm ci`, `npm run lint` (eslint + `validate:functions` 25/40,
+margen 15 + `validate:roles`), `npm run build`, `npm run validate:rls` (32
+entidades, 23 con inquilino), `deno lint base44/functions base44/tests` (240
+archivos) y `deno test -A base44/tests` (**532 pasaron, 0 fallaron**),
+`npx base44 whoami`, y el smoke contra producción (6/1 saltada). **No
+verificado:** una sesión de navegador como `almacenista` restringido de un
+inquilino real — mismo límite y misma razón que declara el resto del archivo
+(no se escribe en el inquilino de producción de un cliente para demostrar algo).
