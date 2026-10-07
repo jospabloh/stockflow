@@ -353,7 +353,7 @@ function buildEmail(s: AuditStats): string {
 <div style="max-width:640px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)">
   <div style="background:${BRAND_COLOR};padding:20px 24px">
     <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700">${APP_NAME}</h1>
-    <p style="margin:4px 0 0;color:#c7d2fe;font-size:13px">Auditoría Nocturna de Permisos</p>
+    <p style="margin:4px 0 0;color:#c7d2fe;font-size:13px">Auditoría Semanal de Permisos</p>
   </div>
   <div style="padding:28px 24px">
     <h2 style="margin-top:0;color:#111827">Reporte — ${fmtDate(new Date(s.runAt))}</h2>
@@ -369,7 +369,7 @@ function buildEmail(s: AuditStats): string {
     ${manualSection}
   </div>
   <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 24px;text-align:center">
-    <p style="margin:0;font-size:11px;color:#9ca3af">Cron: 0 9 * * * — ${APP_NAME} Platform</p>
+    <p style="margin:0;font-size:11px;color:#9ca3af">Cron semanal: lunes 13:00 UTC (0 13 * * 1) — ${APP_NAME} Platform</p>
   </div>
 </div>
 </body></html>`;
