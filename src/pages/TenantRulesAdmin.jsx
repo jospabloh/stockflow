@@ -52,6 +52,14 @@ export default function TenantRulesAdmin() {
   const ruleFor = (key, bizId = businessId) =>
     rules.find((r) => r.business_id === bizId && r.rule_key === key);
 
+  // Business names aren't unique; a repeated name gets the end of its id so the
+  // wrong tenant can't be picked by mistake.
+  const businessLabel = useMemo(() => {
+    const seen = {};
+    for (const b of businesses) seen[b.name] = (seen[b.name] || 0) + 1;
+    return (b) => (seen[b.name] > 1 ? `${b.name} · …${String(b.id).slice(-6)}` : b.name);
+  }, [businesses]);
+
   const activeCount = useMemo(() => {
     const counts = {};
     for (const r of rules) if (r.enabled) counts[r.rule_key] = (counts[r.rule_key] || 0) + 1;
@@ -115,7 +123,7 @@ export default function TenantRulesAdmin() {
           disabled={loading || businesses.length === 0}
         >
           {businesses.length === 0 && <option value="">{loading ? "Cargando..." : "Sin negocios"}</option>}
-          {businesses.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          {businesses.map((b) => <option key={b.id} value={b.id}>{businessLabel(b)}</option>)}
         </select>
       </div>
 
