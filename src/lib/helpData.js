@@ -1903,7 +1903,7 @@ Una guía de bolsillo con las acciones más frecuentes.
 
 Las **Reglas por Tenant** son excepciones operativas controladas por administradores de plataforma en **Sistema → Reglas por Tenant**.
 
-> 📍 Desde esta misma página el dueño de la plataforma también puede dejar que cada negocio prenda o apague, por sí mismo, las reglas que sí están pensadas como autoservicio — ver "Reglas por tu Negocio" más abajo. Esta página sigue siendo la única forma de crear una regla nueva o de tocar las reglas que no son autoservicio.
+> 📍 Dos de las reglas de este catálogo (cotizar solo a clientes del catálogo, ventas en efectivo a Caja Chica) son además autoservicio: cualquier negocio las enciende o apaga por su cuenta desde Configuración → Reglas, sin que la plataforma tenga que activárselas — ver "Reglas por tu Negocio" más abajo. El resto de las reglas, y crear una regla nueva, sigue siendo exclusivo de esta página.
 
 ### Qué son
 - Reglas de comportamiento específicas para **un negocio concreto** (por \`business_id\`).

@@ -1263,7 +1263,7 @@ Si tu negocio necesita que alguien con rol Almacenista también vea esas cifras,
 
 ### 🗑️ Eliminar una venta
 
-Solo el Administrador puede eliminar un registro de Venta de Maquinaria. Un Almacenista con acceso al módulo puede crear y editar, pero el botón de eliminar no aparece para su rol.`
+Por defecto, eliminar un registro de Venta de Maquinaria es solo del Administrador — un Almacenista con acceso al módulo puede crear y editar, pero no ve el botón de eliminar. A diferencia del costo/utilidad/comisión, esto sí es un permiso configurable: el Administrador puede concederle \`Venta de Maquinaria:delete\` a Almacenista desde **Configuración → Permisos** si su negocio lo necesita.`
   },
 
   // ─── CLIENTES — PRECIO CERO / MUESTRAS / INTERNOS ────────────────────────
