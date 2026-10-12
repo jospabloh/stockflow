@@ -1081,11 +1081,9 @@ El sistema de Permisos Granulares permite controlar exactamente qué puede hacer
 
 ---
 
-### ⚠️ Activación
+### ✅ Siempre activos
 
-Los permisos granulares están **desactivados por defecto**. Para activarlos, el administrador de plataforma debe habilitar la regla \`enable_granular_permissions\` para el tenant.
-
-> Mientras esté desactivada, el comportamiento de la app es exactamente igual al anterior — sin impacto en los usuarios.
+Los permisos granulares **están siempre activos** — no hay un interruptor que los encienda ni una regla de tenant que haya que habilitar. El servidor (\`hasPermission()\`) re-comprueba cada clave en cada escritura, no solo la interfaz: ocultar un botón nunca es, por sí solo, la protección real.
 
 ---
 
@@ -1093,27 +1091,33 @@ Los permisos granulares están **desactivados por defecto**. Para activarlos, el
 
 Para cada módulo y para cada rol (Admin, Almacenista/Member), puedes configurar accesos de visualización y operación.
 
-La matriz cubre **15 módulos** con **155 claves de permiso** en total, granuladas a nivel de acción individual (no solo "ver/crear/editar/eliminar", sino cada campo o tarjeta sensible por separado).
+La matriz cubre **21 módulos** con **190 claves de permiso** en total, granuladas a nivel de acción individual (no solo "ver/crear/editar/eliminar", sino cada campo o tarjeta sensible por separado).
 
-**Módulos cubiertos por la matriz (claves por módulo):**
+**Módulos cubiertos por la matriz:**
 
-| Módulo | Página | Claves | Notas |
-|---|---|---|---|
-| Dashboard | Dashboard | 22 | tarjetas, gráficos y reportes individuales; 6 sensibles (valor, utilidad, pagos a prov.) |
-| Productos | Products | 18 | edición campo por campo; costo de compra es sensible |
-| Categorías | Categories | 7 | |
-| Proveedores | Suppliers | 8 | |
-| Clientes | Clients | 12 | forzar mayoreo/compra es sensible |
-| Tipo de Pago | PaymentMethods | 5 | |
-| Movimientos | Movements | 12 | entradas, salidas, devoluciones, ajustes |
-| Cotizaciones | Quotations | 18 | crear, convertir, cobrar, devolver; precios es sensible |
-| Caja Chica | PettyCash | 11 | |
-| Pagos a Proveedores | SupplierPayments | 11 | edición campo por campo |
-| Reportes | Reports | 7 | reportes financieros sensibles |
-| Configuración | Settings | 13 | empresa, logo, colores, equipo, importación |
-| Utilidad | Utility | 3 | retiro y proyección son sensibles |
-| Rubros | Rubros | 4 | |
-| Cuentas de Fondos | FundAccounts | 4 | |
+| Módulo | Página | Notas |
+|---|---|---|
+| Dashboard | Dashboard | tarjetas, gráficos y reportes individuales; varias sensibles (valor, utilidad, pagos a prov.) |
+| Productos | Products | edición campo por campo; costo de compra es sensible |
+| Categorías | Categories | |
+| Proveedores | Suppliers | |
+| Clientes | Clients | forzar mayoreo/compra es sensible |
+| Cursos | Courses | |
+| Inscripciones | Enrollments | |
+| Campañas | Campaigns | envío de correos a inscritos/contactos |
+| Contactos | Contacts | |
+| Tipo de Pago | PaymentMethods | |
+| Movimientos | Movements | entradas, salidas, devoluciones, ajustes; ajuste es admin-only por defecto |
+| Cotizaciones | Quotations | crear, convertir, cobrar, devolver; precios es sensible |
+| Caja Chica | PettyCash | |
+| Pagos a Proveedores | SupplierPayments | edición campo por campo |
+| Reportes | Reports | reportes financieros sensibles |
+| Configuración | Settings | empresa, logo, colores, equipo, importación, exportar datos |
+| Utilidad | Utility | retiro y proyección son sensibles |
+| Rubros | Rubros | |
+| Cuentas de Fondos | FundAccounts | |
+| Venta de Maquinaria | MachinerySales | costo/utilidad/comisión es sensible ("financials") |
+| Centro de Soporte | SupportTickets | |
 
 Cada clave pertenece a una **categoría**: \`visual\` (ver una página/tarjeta), \`actionable\` (crear/editar/eliminar) o \`report\` (datos analíticos/financieros). Las claves marcadas como **sensibles** exponen información financiera confidencial.
 
@@ -1128,7 +1132,7 @@ Cada clave pertenece a una **categoría**: \`visual\` (ver una página/tarjeta),
 
 ### 🧭 Política de Defaults por Rol
 
-- **Admin:** **todos** los permisos inician en **true** — el administrador siempre tiene acceso completo a las 155 claves.
+- **Admin:** **todos** los permisos inician en **true** — el administrador siempre tiene acceso completo a las 190 claves.
 - **Almacenista (Member):** mantiene acceso operativo. Por defecto:
   - **Ver (visual)** — concedido (**true**), salvo las tarjetas financieras del Dashboard.
   - **Acciones (crear/editar)** — concedidas para operación diaria, salvo operaciones sensibles (ajustes de stock, importación, pagos a proveedores, configuración de empresa, retiros de utilidad, etc.).
@@ -1169,7 +1173,97 @@ Además de controlar el acceso a páginas y acciones, el sistema puede ocultar c
 | Margen de ganancia | ✅ Visible | ❌ Oculto |
 | Costo de lo vendido | ✅ Visible | ❌ Oculto |
 
-> Esta configuración es automática cuando los permisos granulares están activos.`
+> Esta configuración es automática — no requiere activar nada por separado.`
+  },
+
+  // ─── REGLAS POR TU NEGOCIO (AUTOSERVICIO) ────────────────────────────────
+  {
+    id: "business-self-service-rules",
+    category: "Configuración",
+    role: "admin",
+    title: "⚙️ Reglas por tu Negocio",
+    keywords: ["reglas", "tenant rules", "autoservicio", "cotizar solo catálogo", "caja chica efectivo", "configuración", "admin"],
+    related_ids: ["platform-tenant-rules", "tenant-cash-sales-to-petty-cash", "settings-business"],
+    content: `## ⚙️ Reglas por tu Negocio
+
+> 📍 *Configuración → pestaña Reglas* (visible solo para el Administrador del negocio; nunca para Almacenista)
+
+Algunas reglas de comportamiento ya no requieren pedirle al dueño de la plataforma que las active por ti. Las que están pensadas como autoservicio aparecen aquí como una tarjeta con nombre, qué hace, qué afecta, y un interruptor que guarda al instante.
+
+---
+
+### Reglas disponibles hoy
+
+| Regla | Qué hace | A qué afecta |
+|---|---|---|
+| **Cotizar solo a clientes del catálogo** | No permite escribir el nombre del cliente a mano en una cotización nueva: hay que elegirlo de la lista de Clientes. Si el cliente es nuevo, primero se da de alta ahí. | Cotizaciones nuevas y el cambio de cliente en una cotización existente (las cotizaciones ya guardadas con nombre libre siguen editables). |
+| **Ventas en efectivo entran a Caja Chica** | Cada cobro en efectivo genera solo un ingreso en Caja Chica, sin capturarlo a mano y sin duplicados. | Pagos en efectivo de cotizaciones, salidas de inventario cobradas en efectivo, y devoluciones parciales. |
+
+---
+
+### Qué NO es esta pantalla
+
+- No crea reglas nuevas — el catálogo de reglas disponibles lo define el código de la app; esta pantalla solo prende o apaga las que ya existen para tu negocio.
+- No afecta a otros negocios — cada interruptor es exclusivamente para el tuyo.
+- No la ve el Almacenista — encender o apagar una regla de negocio es una decisión del Administrador.
+
+Si necesitas una excepción que no está en esta lista, contacta a soporte: ese tipo de reglas sigue siendo exclusivo del dueño de la plataforma (ver "Reglas por Tenant (Solo Plataforma)").`
+  },
+
+  // ─── VENTA DE MAQUINARIA ──────────────────────────────────────────────────
+  {
+    id: "machinery-sales-overview",
+    category: "Venta de Maquinaria",
+    role: "all",
+    title: "⚙️ Venta de Maquinaria",
+    keywords: ["maquinaria", "venta de maquinaria", "comisión", "utilidad", "costo", "factura", "cliente", "equipo"],
+    related_ids: ["roles-overview", "granular-permissions"],
+    content: `## ⚙️ Venta de Maquinaria
+
+> 📍 *Menú lateral → Venta de Maquinaria*
+
+Un registro simple para capturar ventas de equipo/maquinaria: quién compró, qué tipo de máquina, fecha, factura, y — para quien tiene acceso — costo, utilidad y comisión.
+
+---
+
+### 📋 Qué se captura
+
+| Campo | Obligatorio | Notas |
+|---|---|---|
+| Tipo de máquina | ✅ | único campo obligatorio además del negocio |
+| Cliente y nombre del negocio comprador | ❌ | |
+| Fecha de la venta | ❌ | una venta sin fecha ni importes se puede capturar y terminar después — se marca "En trámite" |
+| Número de factura | ❌ | folio de texto libre |
+| Costo | ❌ (solo quien tiene acceso a "ver costo, utilidad y comisión") | |
+| Precio de venta | ❌ | visible para todos los que ven el módulo |
+| Notas | ❌ | |
+
+---
+
+### 💰 Utilidad y comisión — se calculan solas
+
+**No se capturan a mano.** Se derivan del costo y el precio de venta:
+
+- **Utilidad** = Precio de venta − Costo
+- **Comisión** = Utilidad × 5%
+
+Una venta a pérdida da comisión **$0**, nunca negativa. Si editas el costo o el precio de venta más adelante, la utilidad y la comisión de esa fila se recalculan solas — no hay nada que reconciliar a mano.
+
+---
+
+### 🔒 Costo, utilidad y comisión son confidenciales
+
+Por defecto, un **Almacenista** puede registrar y editar ventas de maquinaria, pero **no ve el costo, la utilidad ni la comisión** — ni en la tabla ni en el formulario. Solo ve cliente, tipo de máquina, fecha, factura y precio de venta.
+
+Si tu negocio necesita que alguien con rol Almacenista también vea esas cifras, el Administrador lo activa en **Configuración → Permisos → Almacenista → módulo "Venta de Maquinaria" → "Ver costo, utilidad y comisión"**. Es reversible desde la misma pantalla.
+
+> 💡 Si ves una venta con Costo $0.00 y Utilidad igual al Precio de venta, casi siempre significa que el costo real nunca se capturó (por ejemplo, quien registró la venta no tenía acceso a ese campo) — no que la venta no tuvo costo. Edítala con una cuenta que sí vea costos para completarla.
+
+---
+
+### 🗑️ Eliminar una venta
+
+Solo el Administrador puede eliminar un registro de Venta de Maquinaria. Un Almacenista con acceso al módulo puede crear y editar, pero el botón de eliminar no aparece para su rol.`
   },
 
   // ─── CLIENTES — PRECIO CERO / MUESTRAS / INTERNOS ────────────────────────

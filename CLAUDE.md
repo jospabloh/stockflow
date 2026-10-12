@@ -2740,3 +2740,119 @@ acepta `TENANT_TOGGLEABLE_RULE_KEYS` (`_tenantToggle.ts`, igual al catálogo:
 conserva `config_json`/`notes` de la fila. La página del dueño de plataforma
 («Reglas por negocio») sigue igual y las dos dibujan las mismas tarjetas
 (`components/rules/TenantRuleCards.jsx`).
+
+## Auditoría completa rutinaria 2026-10-12: Centro de Ayuda desactualizado (corregido), 12 archivos muertos borrados, sin drift de seguridad
+
+Barrido completo (inventario de PRs, `npm ci`/lint/build/`validate:rls`,
+`npm audit`, secrets, deno lint/test, comparación esquema+funciones+workflows
+repo vs. desplegado, matriz de permisos, correos, Centro de Ayuda, smoke test).
+Con el MCP de Base44 y la CLI autenticada conectados, y dos sub-agentes de
+exploración de solo lectura para el escaneo de bypasses de escritura directa y
+el inventario de correos.
+
+**Cero drift de seguridad — el hallazgo real de esta pasada es documentación,
+no código inseguro:**
+
+- **Esquema**: las 32 `.jsonc` del repo comparadas campo por campo (RLS de las
+  cuatro operaciones, `required`, campos, RLS por campo) contra
+  `list_entity_schemas` en vivo — **cero diferencias**.
+- **Funciones**: las 25 funciones desplegadas descargadas con `functions pull`
+  y comparadas byte a byte contra el código fuente del repo — **234 de 234
+  archivos idénticos**, ninguno solo-desplegado, ninguno faltante.
+- **Workflows**: los tres crons de licencia retirados y "Sync Product Stock on
+  Movement" siguen `archived`; los activos (`Daily Stock Reconcile`,
+  `Trial Reactivation Emails Daily`, `Send Lifecycle Emails`, la nueva
+  `Weekly Permission Audit` del 2026-10-07) con `last_run_status: success`.
+- **Escritura directa de entidades** (`base44.entities.X.create/update/delete`
+  sin pasar por una Safe function): un sub-agente reescaneó **todo** `src/` —
+  los únicos 3 hits son las dos excepciones ya documentadas
+  (`SessionHeartbeat.jsx`/`AppSession`, auto-borrado de `User` en
+  `Settings.jsx`); los bypasses que el 2026-09-14/25 cerraron
+  (`ProductFormDialog.jsx`, `SupportTickets.jsx`) se confirmaron **cerrados**
+  leyendo el contenido actual, no de oídas. Ningún hallazgo nuevo.
+- **Correos**: un segundo sub-agente inventarió los 11 handlers que llaman
+  `Core.SendEmail`. El escapado de HTML que el 2026-09-28 documentó para
+  `sendLifecycleEmails`/`sendTestLifecycleEmails`/`processTrialReactivationEmails`
+  sigue presente; `sendCampaignEmails`/`sendEnrollmentEmail`/`runReminders`
+  también escapan (vía `emailTemplates.ts`, no documentado antes pero ya
+  correcto). Dos observaciones acotadas, ninguna explotable hoy, anotadas para
+  no re-investigarlas de cero: (1) `acaciaControl`'s `emails.sendFollowup`
+  relaya `to`/`subject`/`html` sin escapar — por diseño, MC es quien controla
+  el contenido tras verificar la firma HMAC, pero es el único `SendEmail` sin
+  ningún escapado; (2) la ruta `jobs` inline de `sendLifecycleEmails` confía en
+  que todo llamador (hoy: el propio cron y `confirmRenewalPayment`, ambos
+  dueño-de-plataforma) ya validó `recipient_email` antes de pasarlo — el
+  handler no lo re-deriva de `business_id` por su cuenta. Ninguna fuga de PII
+  nueva.
+- **`npm audit`**: `source-map-js` (alto, vía `postcss`/`@tailwindcss/node`,
+  solo build-time) tenía fix — aplicado con `npm audit fix` (diff de 6 líneas
+  en `package-lock.json`, sin arrastrar paquetes de plataforma del
+  `--dry-run`). `xlsx` sigue sin fix upstream — mismo razonamiento aceptado
+  desde 2026-08-10.
+- **Matriz de permisos**: `permissionRegistry.js` tiene **21 módulos, 190
+  claves** (confirmado programáticamente), coincide con
+  `generate:permission-manifests`. `functions:audit` — 25/25 endpoints
+  `en uso (repo)`, cero `REVISAR EN PANEL`.
+
+**Hallazgo real — el Centro de Ayuda llevaba más de un mes sin estas dos
+páginas, y un artículo activo describía un feature que ya no existe:**
+
+- **Faltaban por completo** los artículos de "Venta de Maquinaria" (módulo
+  enviado 2026-09-03) y de "Reglas por tu Negocio" / `BusinessRulesPanel`
+  (2026-10-07) — cero menciones en `helpData.js`/`helpDataExtension.js`/
+  `helpDataNew.js` pese a que ambos módulos llevan semanas en producción con
+  su propia página y permiso. Agregados como artículos nuevos en
+  `helpDataExtension.js` (categorías "Venta de Maquinaria" y "Configuración"),
+  siguiendo el formato existente — incluyendo la trampa de `applyCost` ("Costo
+  $0.00 no significa venta sin costo, sino costo nunca capturado").
+- **El artículo `granular-permissions` describía un interruptor que ya no
+  existe.** Decía "los permisos granulares están desactivados por defecto;
+  para activarlos, el administrador de plataforma debe habilitar la regla
+  `enable_granular_permissions`" — exactamente lo que el commit `220036c`
+  (2026-10-07, "Quita el switch 'Activar permisos granulares' de
+  PermissionAdmin") eliminó, porque `getPermissionProfiles` ya fijaba
+  `featureEnabled = true` siempre y el texto "se usan los permisos por
+  defecto" era falso. El artículo seguía diciéndole a cualquier admin que
+  leyera el Centro de Ayuda que había un paso de activación que ya no existe
+  y nunca hizo falta. Corregido, junto con sus conteos obsoletos ("15
+  módulos, 155 claves" → 21/190, con la tabla completa de módulos). El
+  artículo `platform-tenant-rules` también describía las Reglas por Tenant
+  como exclusivas de plataforma sin mencionar el autoservicio del
+  2026-10-07 — corregido con una referencia cruzada.
+- **12 archivos sin un solo importador en todo el repo, borrados** tras
+  verificar cero referencias (estáticas y `import()` dinámico) y que ninguno
+  está en `App.jsx`/el router real: `src/lib/base44.js` (re-export que nadie
+  usaba — cada call site importa `@/api/base44Client` directo),
+  `src/lib/dateUtils.js`, `src/lib/fuzzySearch.js`, `src/lib/ean13.js`,
+  `src/lib/authReturnTo.js`, `src/hooks/useOptimisticMutation.js`,
+  `src/components/PermissionGate.jsx`,
+  `src/components/help/{HelpSearchBot,HelpViewer}.jsx`,
+  `src/components/auth/SocialButtons.jsx`,
+  `src/components/skeletons/CardSkeleton.jsx`, `src/pages/OAuthConsent.jsx`
+  (ni siquiera está en `src/pages.config.js`, que tampoco es el router real —
+  ver `src/App.jsx`). Los ~22 primitivos de shadcn/ui sin usar en
+  `src/components/ui/` (drawer, carousel, sidebar, etc.) se dejaron: son
+  andamiaje estándar generado, no código propio que confunda a quien lo lea,
+  y ninguna pasada anterior los había marcado como objetivo.
+
+**Verificado:** `npm ci`, `npm run lint` (eslint + `validate:functions` 25/40
++ `validate:roles`), `npm run build`, `npm run validate:rls` (32 entidades,
+23 con inquilino — sin cambio), `npm run generate:permission-manifests` (190
+claves, sin drift de contenido más allá del timestamp, descartado sin
+commitear), binario de `deno` descargado de la release de GitHub (`v2.9.5`)
+→ `deno lint base44/functions base44/tests` (247 archivos, limpio) y
+`deno test -A base44/tests` (**565 pasaron, 0 fallaron**). `npm run
+test:smoke` corrió desde este mismo sandbox contra producción (misma receta
+del 2026-10-07: Chromium en `/opt/pw-browsers/chromium`, CA del proxy ya
+confiada en el almacén NSS) — **6 pasaron, 1 saltada** (la de "un solo tema",
+que no aplica a esta app). Comparación esquema/funciones/workflows repo vs.
+desplegado: cero drift, detallado arriba. Secrets: limpio, sin `.env*`
+trackeado.
+
+**No verificado:** una sesión de navegador autenticada como `almacenista`
+real — mismo límite que declara el resto de este archivo (no se abre sesión
+en el inquilino de producción de un cliente real para verificar un hallazgo
+sin uno). UI/UX de las pantallas autenticadas más allá de lo que el smoke
+test cubre (tema, render sin excepciones, selector de esquina) tampoco se
+re-verificó pantalla por pantalla esta pasada — ninguna de las dos cosas
+cambió de estado respecto a la última vez que este archivo lo declaró.

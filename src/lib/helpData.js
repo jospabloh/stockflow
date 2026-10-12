@@ -2,8 +2,8 @@ import { helpDataExtension } from './helpDataExtension.js';
 import { newHelpArticles } from './helpDataNew';
 
 export const localHelpData = {
-  version: "2.18.8",
-  last_updated: "2026-07-06",
+  version: "2.18.29",
+  last_updated: "2026-10-12",
   get articles() { return [..._baseArticles, ...helpDataExtension, ...newHelpArticles]; }
 };
 
@@ -1898,18 +1898,19 @@ Una guía de bolsillo con las acciones más frecuentes.
       role: "admin",
       title: "🛡️ Reglas por Tenant (Solo Plataforma)",
       keywords: ["tenant rules", "reglas por tenant", "plataforma", "sistema", "cash_sales_to_petty_cash", "excepciones"],
-      related_ids: ["settings-business", "petty-cash-overview", "version-about"],
+      related_ids: ["settings-business", "petty-cash-overview", "version-about", "business-self-service-rules"],
       content: `## 🛡️ Reglas por Tenant
 
 Las **Reglas por Tenant** son excepciones operativas controladas por administradores de plataforma en **Sistema → Reglas por Tenant**.
 
+> 📍 Desde esta misma página el dueño de la plataforma también puede dejar que cada negocio prenda o apague, por sí mismo, las reglas que sí están pensadas como autoservicio — ver "Reglas por tu Negocio" más abajo. Esta página sigue siendo la única forma de crear una regla nueva o de tocar las reglas que no son autoservicio.
+
 ### Qué son
 - Reglas de comportamiento específicas para **un negocio concreto** (por \`business_id\`).
-- Se gestionan a nivel plataforma, no como configuración normal del negocio.
+- Se crean y gestionan a nivel plataforma, no como configuración normal del negocio.
 - Su uso debe ser **puntual, justificado y auditable**.
 
 ### Qué NO son
-- No reemplazan Configuración del negocio.
 - No son parámetros generales para todos los tenants.
 - No deben usarse para hardcodes por nombre de cliente.
 
