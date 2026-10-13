@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "next-themes"
 import ThemeSwitcher from "@/components/ThemeSwitcher"
+import UpdateBanner from "@/components/UpdateBanner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
@@ -171,6 +172,7 @@ function App() {
             </Router>
             <Toaster position="top-center" richColors expand />
             <ThemeSwitcher />
+            <UpdateBanner />
           </BusinessProvider>
         </QueryClientProvider>
       </AuthProvider>
