@@ -1,8 +1,13 @@
 name: Deno CI
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # A stalled step otherwise runs to GitHub's 6-hour default and bills every minute.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
       - uses: denoland/setup-deno@v2
@@ -51,6 +56,8 @@ jobs:
   # 'admin') could merge to main with nothing catching it in CI.
   frontend:
     runs-on: ubuntu-latest
+    # A stalled step otherwise runs to GitHub's 6-hour default and bills every minute.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
