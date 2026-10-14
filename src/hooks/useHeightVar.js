@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 
 /**
  * Publishes the element's rendered height as a CSS custom property on <html>
@@ -30,8 +30,8 @@ export function useHeightVar(name) {
     }
   }, [name, clear]);
 
-  // Callback refs get null on unmount too; this also covers a change of name.
-  useEffect(() => clear, [clear]);
+  // No cleanup effect: React calls the ref with null on unmount, and a new
+  // name makes a new callback, which detaches the old one the same way.
 
   return ref;
 }
