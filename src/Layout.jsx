@@ -19,6 +19,7 @@ import { useBusinessContext } from "@/components/BusinessContext";
 import { useSessionManager } from "@/hooks/useSessionManager";
 import { useRegionalConfig } from "@/hooks/useRegionalConfig";
 import { useActivityTracker } from "@/hooks/useActivityTracker";
+import { useHeightVar } from "@/hooks/useHeightVar";
 import SessionBanner from "@/components/SessionBanner";
 import SessionExpiredDialog from "@/components/SessionExpiredDialog";
 import IdleWarningDialog from "@/components/IdleWarningDialog";
@@ -127,6 +128,8 @@ export default function Layout({ children, currentPageName }) {
   const [lowStockCount, setLowStockCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
+  // Measured so the new-version notice (src/index.css) stacks below the trial banner.
+  const trialBannerRef = useHeightVar("--trial-banner-h");
   const touchStartY = useRef(0);
   const mainRef = useRef(null);
   const { businessId, businessName, isLoading: bizLoading, user } = useBusinessContext();
@@ -436,7 +439,7 @@ export default function Layout({ children, currentPageName }) {
         </header>
 
         {/* Trial / license banner */}
-        <div className="flex-shrink-0">
+        <div ref={trialBannerRef} className="flex-shrink-0">
           <TrialBanner />
         </div>
 

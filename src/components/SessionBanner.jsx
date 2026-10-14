@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { MonitorSmartphone, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useHeightVar } from '@/hooks/useHeightVar';
 
 export default function SessionBanner({ onReactivate }) {
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  // Measured so the new-version notice (src/index.css) stacks below this banner.
+  const cardRef = useHeightVar('--session-banner-h');
 
   if (dismissed) return null;
 
@@ -16,7 +19,7 @@ export default function SessionBanner({ onReactivate }) {
 
   return (
     <div className="fixed top-16 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
-      <div className="bg-amber-50 border border-amber-300 rounded-xl shadow-lg px-4 py-3 flex items-center gap-3 max-w-xl w-full pointer-events-auto">
+      <div ref={cardRef} className="bg-amber-50 border border-amber-300 rounded-xl shadow-lg px-4 py-3 flex items-center gap-3 max-w-xl w-full pointer-events-auto">
         <MonitorSmartphone className="h-5 w-5 text-amber-500 flex-shrink-0" />
         <p className="text-sm text-amber-800 flex-1">
           Tu sesión está activa en otro dispositivo. ¿Retomar aquí?
