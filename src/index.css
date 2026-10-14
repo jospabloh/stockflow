@@ -146,3 +146,18 @@
 @media (max-width: 1023px) {
   :root:has([data-bottom-tabbar]) { --theme-switcher-bottom: 5.5rem; }
 }
+
+/* New-version notice (src/components/UpdateBanner.jsx, Module 30) — placement
+   only. Layout.jsx's top bar is `h-16` (4rem) at every width, sticky under the
+   safe-area inset, with the menu/back buttons on the left and the bells on the
+   right: the card drops below it (plus the card's own 0.75rem gap) instead of
+   sitting on those controls. Screens without the bar (login) just get a lower
+   card. Layout.jsx's trial banner (in flow under the bar) and SessionBanner
+   (fixed at top-16) publish their measured heights as --trial-banner-h and
+   --session-banner-h; the card goes below both. Each is 0 when not shown. */
+:root {
+  --update-banner-top: calc(
+    4.75rem + env(safe-area-inset-top, 0px)
+    + var(--trial-banner-h, 0px) + var(--session-banner-h, 0px)
+  );
+}
