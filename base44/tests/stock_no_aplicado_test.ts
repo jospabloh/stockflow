@@ -54,7 +54,7 @@ class FakeDb {
     const db = this;
     return {
       filter: (q: Row = {}) =>
-        Promise.resolve(db.rows(table).filter((r) => Object.entries(q).every(([k, v]) => r[k] === v)).map((r) => ({ ...r }))),
+        Promise.resolve(db.rows(table).filter((r) => Object.entries(q).every(([k, v]) => (v && typeof v === "object" && Array.isArray(v.$in) ? v.$in.includes(r[k]) : r[k] === v))).map((r) => ({ ...r }))),
       list: () => Promise.resolve(db.rows(table).map((r) => ({ ...r }))),
       get: (id: string) => {
         const r = db.rows(table).find((x) => x.id === id);

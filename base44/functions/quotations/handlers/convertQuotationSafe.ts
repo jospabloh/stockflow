@@ -1,10 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { applyStockForMovement, stockWarning } from '../../../shared/applyStock.ts';
 import { hasPermission } from './_permissions.ts';
-import { CONVERSION_STALE_MS, lastActivityMs, planConversion } from './_convertPlan.ts';
+import { CONVERSION_STALE_MS, CONVERT_BUDGET_MS_DEFAULT, lastActivityMs, planConversion } from './_convertPlan.ts';
 import { getAuthUser } from '../../../shared/authUser.ts';
 
 export async function handle(req: Request): Promise<Response> {
+  const startedAt = Date.now();
   try {
     const base44 = createClientFromRequest(req);
     const stockFailures: Array<{ movement_id: string; product_name?: string; error?: string }> = [];
@@ -15,7 +16,8 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     const body = await req.json();
-    const { quotation_id, payment_method } = body;
+    const { quotation_id, payment_method, continuation } = body;
+    const budgetMs = Number(Deno.env.get('CONVERT_BUDGET_MS') ?? CONVERT_BUDGET_MS_DEFAULT);
 
     if (!quotation_id) {
       return Response.json({ error: 'quotation_id is required' }, { status: 400 });
@@ -56,6 +58,10 @@ export async function handle(req: Request): Promise<Response> {
     // COT-261013-0004, 2026-10-15: 4 de 11 renglones, y el guardia anterior
     // bloqueaba la cotización para siempre) → se REANUDA: sólo se crean los
     // renglones que faltan (planConversion) y se termina de marcar `converted`.
+    // Presupuesto: con la plataforma lenta la función no alcanza a terminar, así
+    // que pasado CONVERT_BUDGET_MS no se empiezan renglones nuevos y se responde
+    // 202 `partial`; el cliente reinvoca con `continuation: true`, que salta la
+    // ventana de "en curso" sólo si todas las salidas existentes ya terminaron.
     const existingMovements = await base44.asServiceRole.entities.Movement.filter({
       quotation_id: quotation.id,
       type: 'exit',
@@ -70,7 +76,11 @@ export async function handle(req: Request): Promise<Response> {
       if (!['draft', 'sent', 'accepted'].includes(quotation.status || 'draft')) {
         return Response.json({ error: 'Quotation already converted', already_converted: true }, { status: 400 });
       }
-      if (Date.now() - lastActivityMs(existingMovements) < CONVERSION_STALE_MS) {
+      const terminal = existingMovements.every((m) =>
+        m.stock_applied === true || ['applied', 'failed'].includes(m.stock_apply_state));
+      const canContinue = continuation === true && terminal;
+      const stale = Date.now() - lastActivityMs(existingMovements) >= CONVERSION_STALE_MS;
+      if (!canContinue && !stale) {
         return Response.json({ error: 'Conversión en curso: espera unos minutos y vuelve a intentar.', conversion_in_progress: true }, { status: 409 });
       }
       if (matched.length !== existingMovements.length) {
@@ -79,7 +89,7 @@ export async function handle(req: Request): Promise<Response> {
           needs_review: true,
         }, { status: 409 });
       }
-      resumed = true;
+      resumed = stale;
     }
 
     // PERMISSION CHECK — the granular key is re-checked server-side (the UI gate alone is bypassable).
@@ -97,27 +107,41 @@ export async function handle(req: Request): Promise<Response> {
 
     // PHASE 1: Validate stock BEFORE any operations — skip on-demand items
     // Sólo se validan los renglones que faltan (los ya registrados ya descontaron stock).
-    const itemsWithStock = [];
-    for (const item of missing) {
-      let prods;
+    // UNA lectura de productos; la cantidad se suma por producto.
+    const productsById = new Map<string, any>();
+    if (missing.length > 0) {
+      const uniqueIds = [...new Set(missing.map((i) => i.product_id))];
       try {
-        prods = await base44.asServiceRole.entities.Product.filter({ id: item.product_id, business_id: user.business_id });
+        const prods = await base44.asServiceRole.entities.Product.filter({ id: { $in: uniqueIds }, business_id: user.business_id });
+        for (const p of prods) productsById.set(p.id, p);
       } catch (err) {
         return Response.json({ error: `Error fetching product: ${err.message}` }, { status: 500 });
       }
-      if (prods.length === 0) {
+    }
+    const requestedByProduct = new Map<string, number>();
+    for (const item of missing) {
+      requestedByProduct.set(item.product_id, (requestedByProduct.get(item.product_id) || 0) + Number(item.quantity));
+    }
+    const itemsWithStock = [];
+    for (const item of missing) {
+      const product = productsById.get(item.product_id);
+      if (!product) {
         return Response.json({ error: `Product ${item.product_id} not found` }, { status: 404 });
       }
-      const product = prods[0];
-      if (item.quantity > (product.stock || 0)) {
-        return Response.json({ error: `Insufficient stock for ${item.product_name}: available ${product.stock}, requested ${item.quantity}` }, { status: 400 });
+      const summedQty = requestedByProduct.get(item.product_id) || 0;
+      if (summedQty > (product.stock || 0)) {
+        return Response.json({ error: `Insufficient stock for ${item.product_name}: available ${product.stock}, requested ${summedQty}` }, { status: 400 });
       }
       itemsWithStock.push({ ...item, product });
     }
 
     // PHASE 2: Create movements for catalog items only — on-demand items stay pending
     try {
+      let created = 0;
+      // Secuencial y en orden: Base44 limita las operaciones de servicio de toda la
+      // app; el paralelismo sólo subiría la ráfaga y provocaría 429 para todos.
       for (const item of itemsWithStock) {
+        if (Date.now() - startedAt >= budgetMs && created >= 1) break;
         const mov = await base44.asServiceRole.entities.Movement.create({
           product_id: item.product_id,
           product_name: item.product_name,
@@ -132,10 +156,20 @@ export async function handle(req: Request): Promise<Response> {
           quotation_id: quotation.id,
           business_id: user.business_id,
         });
+        created++;
         // Descuento de stock síncrono y exactamente-una-vez (no depende del trigger).
         // Best-effort: automatización + dailyStockReconcile son respaldo.
         const r = await applyStockForMovement(base44, { movement_id: mov.id, business_id: user.business_id, product_id: mov.product_id, product_name: item.product_name, caller: 'convertQuotationSafe' });
         if (!r.ok) stockFailures.push({ movement_id: mov.id, product_name: item.product_name, error: r.error });
+      }
+      if (created < missing.length) {
+        return Response.json({
+          success: false,
+          partial: true,
+          done: matched.length + created,
+          total: matched.length + missing.length,
+          message: 'Procesando venta…',
+        }, { status: 202 });
       }
 
       // Al reanudar: las salidas ya registradas cuyo stock no se aplicó se reintentan (idempotente).
