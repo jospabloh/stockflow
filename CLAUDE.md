@@ -2856,3 +2856,37 @@ sin uno). UI/UX de las pantallas autenticadas más allá de lo que el smoke
 test cubre (tema, render sin excepciones, selector de esquina) tampoco se
 re-verificó pantalla por pantalla esta pasada — ninguna de las dos cosas
 cambió de estado respecto a la última vez que este archivo lo declaró.
+
+## Conversión de cotización cortada a medias: ya no queda bloqueada (2026-10-15)
+
+Reporte de Baristop: COT-261013-0004 respondía «Quotation already converted» y
+seguía en **Borrador**. `convertQuotationSafe` no es atómico: crea una salida por
+renglón (con su `applyStockForMovement`, una invocación anidada) y sólo al final
+marca `converted`. Con la plataforma lenta ese día (20–65 s por renglón, contra
+~1 s normal) la función murió tras 4 de 11 salidas. El guardia de idempotencia
+(«existe alguna salida ⇒ ya convertida») volvió ese corte un bloqueo permanente.
+Era la **única** cotización afectada en toda la plataforma (revisados todos los
+`draft/sent/accepted` de todos los inquilinos).
+
+**Regla actual** (`_convertPlan.ts`, `base44/tests/convert_resume_interrupted_test.ts`):
+- salidas con actividad < 10 min (`CONVERSION_STALE_MS`, sobre `created_date` y
+  `updated_date`) ⇒ 409 `conversion_in_progress`, sin escribir (el doble clic
+  sigue cubierto);
+- salidas viejas y status `draft/sent/accepted` ⇒ **reanuda**: empareja salidas con
+  renglones (product_id + cantidad, multiconjunto), valida y crea sólo lo que falta,
+  reintenta el stock de las salidas no aplicadas y marca `converted`;
+- `cancelled` con salidas ⇒ 400 como antes. **No quites este caso**: las
+  cotizaciones canceladas conservan sus salidas, y sin él la reanudación las
+  devolvería a `converted`;
+- una salida que no corresponde a ningún renglón ⇒ 409 `needs_review`, no se adivina.
+
+La reparación del caso real no se hizo a mano: tras el deploy, reintentar
+«Confirmar Venta» toma la ruta de reanudación. Desplegado con sync de GitHub +
+publish del checkpoint `de3c995`; el código de `quotations` se comprobó idéntico
+con `functions pull`.
+
+**Corrección a la sección del 2026-10-07:** el sondeo sin sesión por
+`https://stockflow.base44.app/api/apps/<appId>/functions/<grupo>` ahora responde
+403 «App ID mismatch». El que sirve es el dominio propio:
+`https://stockflow.acaciaco.com.mx/api/apps/<appId>/functions/<grupo>`
+(400 `unknown action` = router vivo; 401 sin sesión = acción existente).
