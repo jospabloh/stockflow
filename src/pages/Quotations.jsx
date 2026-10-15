@@ -282,12 +282,22 @@ export default function Quotations() {
       setConvertPaymentMethod("");
       setConvertError("");
       if (response.data?.stock_warning) toast.warning(response.data.stock_warning.message, { duration: 20000 });
-      toast.success("✓ Cotización convertida en venta");
+      if (response.data?.resumed) {
+        toast.success("✓ Venta completada (se terminó una conversión que había quedado a medias)");
+      } else {
+        toast.success("✓ Cotización convertida en venta");
+      }
       invalidate("Quotation");
     } catch (error) {
       const errMsg = error.response?.data?.error || error.message || "Intenta nuevamente";
-      setConvertError(`❌ ${errMsg}`);
-      toast.error(`Error en conversión: ${errMsg}`);
+      if (error.response?.status === 409 && error.response?.data?.conversion_in_progress) {
+        setConvertError(`⏳ ${errMsg}`);
+        toast.info(errMsg);
+        invalidate("Quotation");
+      } else {
+        setConvertError(`❌ ${errMsg}`);
+        toast.error(`Error en conversión: ${errMsg}`);
+      }
     } finally {
       setIsConverting(false);
     }
