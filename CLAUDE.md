@@ -2890,3 +2890,30 @@ con `functions pull`.
 403 «App ID mismatch». El que sirve es el dominio propio:
 `https://stockflow.acaciaco.com.mx/api/apps/<appId>/functions/<grupo>`
 (400 `unknown action` = router vivo; 401 sin sesión = acción existente).
+
+### Seguimiento: la conversión ya no depende de que la plataforma vaya rápida (#495, 2026-10-15)
+
+Las marcas de las salidas (`created_date` → `stock_pending_at` → `updated_date`)
+mostraron que esa mañana **cada llamada de servicio** tardó 4–13 s (normal:
+~0.15 s). Eso encaja con la cuota compartida de ~400 ops/min del estándar
+(módulo 31) más el backoff 0.3/1/3 s de `withRetry` ante 429. No fue nuestro
+bucle: entre renglones pasaba ~1 s. Una venta de 11 renglones eran ~99
+operaciones en serie.
+
+- **Una sola lectura de productos** (`$in`), con la cantidad sumada por producto.
+- **En serie a propósito.** Se probó en diseño un pool de 3 y se descartó:
+  paralelizar no baja operaciones, sube la ráfaga contra la cuota de **todos**
+  los inquilinos. `convert_performance_test.ts` lo fija (máx. 1 en vuelo).
+- **Presupuesto de 60 s** → 202 `{partial, done, total}`; el cliente reinvoca con
+  `continuation: true` ("Procesando venta… n de m"). `continuation` sólo salta la
+  ventana de 10 min si todas las salidas existentes están en estado terminal.
+
+Queda como regla del portafolio: **módulo 32** de `acacia-app-standard`
+(jospabloh/acacia-app-standard#40). **Pendiente en este repo:** `deliverQuotationSafe`,
+`cancelQuotationSafe` y `partialReturnQuotation` tienen el mismo bucle por renglón
+y aún no cumplen el módulo 32. El ahorro siguiente es mover `applyMovementStock`
+en proceso (sin el salto HTTP a `movements` y sin re-leer el movimiento recién
+creado). Toca a los 6 escritores de stock, así que va en su propio PR.
+El manual se actualizó a mano (Centro de Ayuda → Convertir en Venta). El changelog lo
+genera `auto-release-pr.yml` a partir de los títulos de PR, así que esos títulos
+se escriben para el cliente.
