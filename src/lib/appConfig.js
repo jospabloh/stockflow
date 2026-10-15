@@ -2,9 +2,9 @@
  * StockFlow — Fuente única de verdad para la versión de la aplicación.
  * Actualiza APP_VERSION aquí y se reflejará automáticamente en la pestaña "Acerca de".
  */
-export const APP_VERSION = "2.18.29";
+export const APP_VERSION = "2.18.30";
 
-export const RELEASE_DATE = "2026-10-07";
+export const RELEASE_DATE = "2026-10-15";
 
 // URL pública de la página comercial donde el cliente contrata o renueva su
 // licencia. Es información pública (NO un secreto): aparece también en el manual
@@ -21,6 +21,18 @@ export const STOCKFLOW_UPGRADE_URL =
 export const USER_MANUAL_LAST_REVIEWED = "2026-07-27";
 
 export const CHANGELOG = [
+  {
+    version: "2.18.30",
+    date: "2026-10-15",
+    changes: [
+      "Una falla momentánea de la base de datos ya no tira la venta",
+      "Ventas grandes se completan aunque el sistema esté lento",
+      "Reanuda conversiones de cotización cortadas a medias (COT-261013-0004)",
+      "Módulo 30: aviso de versión nueva compartido (reemplaza AppUpdateBanner) (#491)",
+      "Audit 2026-10-12: Help Center docs fixed, dead code removed, source-map-js patched",
+      "Cada negocio enciende o apaga sus propias reglas (sólo su admin)",
+    ],
+  },
   {
     version: "2.18.29",
     date: "2026-10-07",
