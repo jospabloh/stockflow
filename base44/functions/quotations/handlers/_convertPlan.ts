@@ -49,3 +49,7 @@ export function planConversion(items: Row[], existingExits: Row[]): { matched: A
   }
   return { matched, missing };
 }
+
+// Presupuesto de tiempo por invocación (ms). Pasado éste no se empiezan renglones
+// nuevos y se responde 202 `partial`; el cliente continúa con `continuation: true`.
+export const CONVERT_BUDGET_MS_DEFAULT = 60_000;

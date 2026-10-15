@@ -1134,7 +1134,7 @@ Los filtros de **Folio**, **Cliente** y **N° Factura** (encabezado de la tabla)
       category: "Cotizaciones",
       role: "all",
       title: "✅ Convertir en Venta y Seguimiento de Pedido",
-      keywords: ["convertir", "venta", "pago", "entrega", "ruta", "cobrar", "seguimiento", "factura", "concretar"],
+      keywords: ["convertir", "venta", "pago", "entrega", "ruta", "cobrar", "seguimiento", "factura", "concretar", "procesando", "en curso", "a medias", "lento"],
       related_ids: ["quotations-states", "quotations-cancel", "quotations-create"],
       content: `## ✅ Convertir una Cotización en Venta
 
@@ -1148,6 +1148,12 @@ Los filtros de **Folio**, **Cliente** y **N° Factura** (encabezado de la tabla)
 4. Confirma — el stock se descuenta automáticamente
 
 > ⚠️ Si la cotización está **vencida**, no podrás convertirla. Edítala primero y actualiza la fecha de vigencia.
+
+#### ⏳ Ventas con muchos productos o con el sistema lento
+
+- Mientras se registra la venta verás **"Procesando venta… 6 de 11 productos"**. Es normal en ventas grandes: el sistema avanza solo, **no cierres la ventana ni vuelvas a dar clic**.
+- Si ves **"Conversión en curso: espera unos minutos"**, la venta se sigue procesando (por ejemplo, la abriste en otra pestaña). Espera unos 10 minutos y vuelve a intentarlo.
+- Si una conversión se interrumpe a medias (se cerró la pestaña, se fue el internet), **vuelve a darle "Convertir en Venta"**: el sistema termina sólo los productos que faltaban, **sin descontar dos veces** los que ya se habían registrado. Verás el aviso *"Venta completada (se terminó una conversión que había quedado a medias)"*.
 
 ---
 

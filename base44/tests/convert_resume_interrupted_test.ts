@@ -35,7 +35,7 @@ let seq = 0;
 function entity(name: string) {
   return {
     filter: (q: Row = {}) =>
-      Promise.resolve((tables[name] ?? []).filter((r) => Object.entries(q).every(([k, v]) => r[k] === v)).map((r) => ({ ...r }))),
+      Promise.resolve((tables[name] ?? []).filter((r) => Object.entries(q).every(([k, v]) => (v && typeof v === "object" && Array.isArray(v.$in) ? v.$in.includes(r[k]) : r[k] === v))).map((r) => ({ ...r }))),
     get: (id: string) => Promise.resolve({ ...(tables[name] ?? []).find((r) => r.id === id) }),
     create: (data: Row) => {
       const now = new Date().toISOString();

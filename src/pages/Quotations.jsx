@@ -119,6 +119,7 @@ export default function Quotations() {
   const [convertQuotation, setConvertQuotation] = useState(null);
   const [convertPaymentMethod, setConvertPaymentMethod] = useState("");
   const [convertError, setConvertError] = useState("");
+  const [convertProgress, setConvertProgress] = useState("");
   const [isConverting, setIsConverting] = useState(false);
   const [cancelQuotation, setCancelQuotation] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
@@ -266,10 +267,29 @@ export default function Quotations() {
     setIsConverting(true);
 
     try {
-      const response = await base44.functions.invoke('quotations', { action: 'convertQuotationSafe',
+      let response = await base44.functions.invoke('quotations', { action: 'convertQuotationSafe',
         quotation_id: targetQuotation.id,
-        payment_method: targetPaymentMethod
+        payment_method: targetPaymentMethod,
+        continuation: false
       });
+
+      // La plataforma puede ser lenta: el servidor responde 202 `partial` y se continúa.
+      let rounds = 0;
+      while (response.data?.partial && rounds < 30) {
+        rounds += 1;
+        setConvertProgress(`Procesando venta… ${response.data.done} de ${response.data.total} productos`);
+        response = await base44.functions.invoke('quotations', { action: 'convertQuotationSafe',
+          quotation_id: targetQuotation.id,
+          payment_method: targetPaymentMethod,
+          continuation: true
+        });
+      }
+      setConvertProgress("");
+      if (response.data?.partial) {
+        setConvertError('⏳ La venta sigue procesándose; vuelve a abrir la cotización en unos minutos.');
+        invalidate("Quotation");
+        return;
+      }
 
       if (!response.data.success) {
         const errMsg = response.data.error || response.data.message || 'Conversion failed';
@@ -280,7 +300,7 @@ export default function Quotations() {
 
       setConvertQuotation(null);
       setConvertPaymentMethod("");
-      setConvertError("");
+      setConvertError(""); setConvertProgress("");
       if (response.data?.stock_warning) toast.warning(response.data.stock_warning.message, { duration: 20000 });
       if (response.data?.resumed) {
         toast.success("✓ Venta completada (se terminó una conversión que había quedado a medias)");
@@ -299,6 +319,7 @@ export default function Quotations() {
         toast.error(`Error en conversión: ${errMsg}`);
       }
     } finally {
+      setConvertProgress("");
       setIsConverting(false);
     }
   };
@@ -574,7 +595,7 @@ export default function Quotations() {
         onConvert={(q) => {
           setConvertQuotation(q);
           setConvertPaymentMethod(q.payment_method || "");
-          setConvertError("");
+          setConvertError(""); setConvertProgress("");
         }}
         onCancel={(q) => {
           setCancelQuotation(q);
@@ -862,7 +883,7 @@ export default function Quotations() {
       </AlertDialog>
 
       {/* Convert confirmation */}
-      <AlertDialog open={!!convertQuotation} onOpenChange={(v) => { if (!v) { setConvertError(""); setConvertPaymentMethod(""); setConvertQuotation(null); } }}>
+      <AlertDialog open={!!convertQuotation} onOpenChange={(v) => { if (!v) { setConvertError(""); setConvertProgress(""); setConvertPaymentMethod(""); setConvertQuotation(null); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Convertir en venta?</AlertDialogTitle>
@@ -896,6 +917,7 @@ export default function Quotations() {
               onChange={(e) => { setConvertPaymentMethod(e.target.value); setConvertError(""); }}
               disabled={paymentMethodsCatalog.length > 0}
             />
+            {convertProgress && <p className="text-sm text-muted-foreground">{convertProgress}</p>}
             {convertError && <p className="text-sm text-red-600">{convertError}</p>}
           </div>
           <AlertDialogFooter>
