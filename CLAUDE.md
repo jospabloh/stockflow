@@ -2917,3 +2917,42 @@ creado). Toca a los 6 escritores de stock, así que va en su propio PR.
 El manual se actualizó a mano (Centro de Ayuda → Convertir en Venta). El changelog lo
 genera `auto-release-pr.yml` a partir de los títulos de PR, así que esos títulos
 se escriben para el cliente.
+
+### Seguimiento 2: un timeout de la base de datos tiraba la venta entera (#497, 2026-10-15)
+
+El reintento de Silvita (13:13 CDMX) falló con
+`pl-0-us-west-2…mongodb.net:1063: timed out (timeoutMS: 20000)` sin escribir nada:
+la base de datos de Base44 tiró **una** llamada y la función respondió error. La
+API de logs vino vacía otra vez, así que no se supo cuál; por eso se blindaron
+**todas**:
+
+- lecturas (cotización, salidas, negocio, productos, cliente) y la actualización
+  final con `withRetry` (leer o escribir lo mismo dos veces es idempotente);
+- `Movement.create` **no** se reintenta a ciegas: un timeout puede llegar después
+  de guardar. Ante error transitorio se busca la salida (misma cotización,
+  producto, cantidad, id no visto) y se usa ésa; si no está, se reintenta.
+- `convert_transient_db_test.ts` inyecta el timeout en cada llamada: 0/9 antes,
+  9/9 después.
+
+**Lección de proceso (la cara):** el deploy de #495 se dio por bueno con
+«código idéntico + sondeo 400/401». Eso prueba que el código llegó, **no** que una
+venta funciona. Lo que sí lo prueba —y se hizo después, en producción— es una
+venta real en el negocio **ACACIA OWNER SANDBOX** (`69c593f99e0839c7e07fb5d0`)
+con la sesión del dueño en su Chrome (Claude in Chrome; `embed-url` de Base44
+**no** permite firmar como dueño/editor), llamando
+`/api/apps/<appId>/functions/quotations` con el `base44_access_token` de la
+página. Probado así el 2026-10-15: venta de 11 renglones (11.9 s, stock exacto),
+corte simulado → 409 inmediato → reanudación a los 10 min sin doble descuento →
+segundo clic 400. **Ningún cambio a un flujo de dinero/stock se da por cerrado sin
+esa prueba.** Las cotizaciones de prueba quedan en el sandbox con cliente
+«PRUEBA E2E … (no es venta real)».
+
+**COT-261013-0004 se completó a mano, con autorización explícita del dueño
+(2026-10-15 20:12 UTC)**, porque la función sólo corre con sesión de un usuario
+de Baristop y no se quiso pedir otro reintento a la clienta: `$inc stock -1`
+atómico sobre los 7 productos pendientes (guardado `stock >= 1`, 7/7), 7
+`Movement` de salida con los mismos campos que escribe la función
+(`created_by` = dueño, `stock_pending_at` nulo: así se distinguen) y
+`Quotation` → `converted`, Transferencia AFIRME, sin pagar (balance 4402).
+Verificado: 11 salidas que suman $4,402.00, stock = `stock_after` de cada una.
+La clienta confirmó por escrito que se ve bien.
