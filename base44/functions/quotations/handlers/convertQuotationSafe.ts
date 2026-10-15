@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { applyStockForMovement, stockWarning } from '../../../shared/applyStock.ts';
+import { applyStockForMovement, stockWarning, withRetry, isTransient, RETRY_DELAYS_MS } from '../../../shared/applyStock.ts';
 import { hasPermission } from './_permissions.ts';
 import { CONVERSION_STALE_MS, CONVERT_BUDGET_MS_DEFAULT, lastActivityMs, planConversion } from './_convertPlan.ts';
 import { getAuthUser } from '../../../shared/authUser.ts';
@@ -28,7 +28,10 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     // Fetch quotation to validate ownership — use asServiceRole to avoid RLS blocking almacenista users
-    const quotations = await base44.asServiceRole.entities.Quotation.filter({ id: quotation_id });
+    // Toda lectura de esta venta se reintenta ante un fallo transitorio (timeout de la
+    // base de datos de Base44, 429, 5xx): el 2026-10-15 un solo timeout de Mongo
+    // tiraba la venta entera (COT-261013-0004). Leer dos veces no cambia nada.
+    const quotations = await withRetry(() => base44.asServiceRole.entities.Quotation.filter({ id: quotation_id }));
     if (quotations.length === 0) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -62,10 +65,10 @@ export async function handle(req: Request): Promise<Response> {
     // que pasado CONVERT_BUDGET_MS no se empiezan renglones nuevos y se responde
     // 202 `partial`; el cliente reinvoca con `continuation: true`, que salta la
     // ventana de "en curso" sólo si todas las salidas existentes ya terminaron.
-    const existingMovements = await base44.asServiceRole.entities.Movement.filter({
+    const existingMovements = await withRetry(() => base44.asServiceRole.entities.Movement.filter({
       quotation_id: quotation.id,
       type: 'exit',
-    });
+    }));
     // Sólo se reanuda desde un estado previo a la venta: una cotización cancelada
     // también conserva sus salidas y NUNCA debe volver a `converted` por esta vía.
     // Y si alguna salida existente no corresponde a ningún renglón (se editó la
@@ -98,7 +101,7 @@ export async function handle(req: Request): Promise<Response> {
     }
 
     // LICENSE CHECK
-    const bizArr = await base44.asServiceRole.entities.Business.filter({ id: user.business_id });
+    const bizArr = await withRetry(() => base44.asServiceRole.entities.Business.filter({ id: user.business_id }));
     const tenantBiz = bizArr[0];
     const billingStatus = tenantBiz?.billing_status || 'active';
     if (billingStatus === 'view_only' || billingStatus === 'suspended') {
@@ -112,7 +115,7 @@ export async function handle(req: Request): Promise<Response> {
     if (missing.length > 0) {
       const uniqueIds = [...new Set(missing.map((i) => i.product_id))];
       try {
-        const prods = await base44.asServiceRole.entities.Product.filter({ id: { $in: uniqueIds }, business_id: user.business_id });
+        const prods = await withRetry(() => base44.asServiceRole.entities.Product.filter({ id: { $in: uniqueIds }, business_id: user.business_id }));
         for (const p of prods) productsById.set(p.id, p);
       } catch (err) {
         return Response.json({ error: `Error fetching product: ${err.message}` }, { status: 500 });
@@ -135,6 +138,34 @@ export async function handle(req: Request): Promise<Response> {
       itemsWithStock.push({ ...item, product });
     }
 
+    // Crear una salida NO se reintenta a ciegas: un timeout puede llegar DESPUÉS de
+    // que la base de datos guardó el registro (sólo se perdió la respuesta). Antes de
+    // reintentar se busca si ya quedó guardada; si sí, se usa ésa y no se duplica.
+    const knownExitIds = new Set<string>(existingMovements.map((m: any) => m.id));
+    const retryDelays = Deno.env.get('STOCK_APPLY_RETRY_MS') === '0' ? [0, 0, 0] : RETRY_DELAYS_MS;
+    const createExit = async (payload: Record<string, unknown>) => {
+      let lastErr: unknown;
+      for (let i = 0; i < 3; i++) {
+        try {
+          const mov = await base44.asServiceRole.entities.Movement.create(payload);
+          knownExitIds.add(mov.id);
+          return mov;
+        } catch (e) {
+          lastErr = e;
+          if (!isTransient(e)) throw e;
+          const landed = (await withRetry(() => base44.asServiceRole.entities.Movement.filter({
+            quotation_id: quotation.id, type: 'exit', product_id: payload.product_id,
+          }))).find((m: any) => !knownExitIds.has(m.id) && Number(m.quantity) === Number(payload.quantity));
+          if (landed) {
+            knownExitIds.add(landed.id);
+            return landed;
+          }
+          await new Promise((r) => setTimeout(r, retryDelays[Math.min(i, retryDelays.length - 1)]));
+        }
+      }
+      throw lastErr;
+    };
+
     // PHASE 2: Create movements for catalog items only — on-demand items stay pending
     try {
       let created = 0;
@@ -142,7 +173,7 @@ export async function handle(req: Request): Promise<Response> {
       // app; el paralelismo sólo subiría la ráfaga y provocaría 429 para todos.
       for (const item of itemsWithStock) {
         if (Date.now() - startedAt >= budgetMs && created >= 1) break;
-        const mov = await base44.asServiceRole.entities.Movement.create({
+        const mov = await createExit({
           product_id: item.product_id,
           product_name: item.product_name,
           type: 'exit',
@@ -185,7 +216,7 @@ export async function handle(req: Request): Promise<Response> {
       const clientId = quotation.client_id;
       let isZeroPrice = (quotation.total || 0) === 0;
       if (!isZeroPrice && clientId) {
-        const clients = await base44.asServiceRole.entities.Client.filter({ id: clientId, business_id: user.business_id });
+        const clients = await withRetry(() => base44.asServiceRole.entities.Client.filter({ id: clientId, business_id: user.business_id }));
         if (clients[0]?.force_zero_price) isZeroPrice = true;
       }
 
@@ -202,14 +233,15 @@ export async function handle(req: Request): Promise<Response> {
        const convTotal = quotation.total || 0;
        const convAmountPaid = isZeroPrice ? convTotal : paidSoFar;
        const convBalance = isZeroPrice ? 0 : Math.max(0, convTotal - paidSoFar);
-       await base44.asServiceRole.entities.Quotation.update(quotation.id, {
+       // Escribir los mismos valores dos veces es idempotente: se reintenta.
+       await withRetry(() => base44.asServiceRole.entities.Quotation.update(quotation.id, {
          status: 'converted',
          payment_method: finalPaymentMethod,
          paid: isZeroPrice ? true : convBalance <= 0.01,
          amount_paid: convAmountPaid,
          balance: convBalance,
          payments: existingPayments,
-       });
+       }));
 
       return Response.json({ success: true, quotation_id, resumed, stock_warning: stockWarning(stockFailures) });
     } catch (error) {
